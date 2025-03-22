@@ -1,0 +1,4 @@
+# Ignore node_modules in backend, mobile, and web folders
+/backend/node_modules/
+/mobile/node_modules/
+/web/node_modules/
