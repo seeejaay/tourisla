@@ -1,20 +1,40 @@
 "use client";
 import { useEffect, useState } from "react";
 import { fetchData } from "@/lib/api";
-import { Button } from "@/components/ui/button";
 
 export default function Home() {
-  const [data, setData] = useState("");
+  const [user, setUsers] = useState<
+    { first_name: string; last_name: string; email: string }[]
+  >([]); // State to store user data
+  const [error, setError] = useState<string | null>(null); // State to store errors
 
   useEffect(() => {
-    fetchData().then(setData);
+    const fetchUsers = async () => {
+      const data = await fetchData("users"); // Call the API endpoint "users"
+      if (data) {
+        setUsers(data); // Set the fetched data to state
+      } else {
+        setError("Failed to fetch users.");
+      }
+    };
+
+    fetchUsers(); // Call the function
   }, []);
 
   return (
     <div className="p-10">
       <h1 className="text-2xl font-bold">TourISLA Web</h1>
-      <p>API Response: {data}</p>
-      <Button>Click Me</Button>
+      {error ? (
+        <p className="text-red-500">Error: {error}</p>
+      ) : (
+        <ul>
+          {user.map((user, index) => (
+            <li key={index}>
+              {user.first_name} {user.last_name} - {user.email}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
