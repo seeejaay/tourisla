@@ -16,8 +16,8 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="fixed w-full z-50 bg-[#F1f1f1] flex items-center justify-between p-3 ">
-        <nav className="flex flex-1  gap-[2rem] text-lg border-2 p-2 rounded-md  bg-[#408763]">
+      <header className="fixed w-full z-50 bg-[#F1f1f1] flex  justify-between p-3 ">
+        <nav className="flex flex-1  gap-[2rem] text-lg border-2 p-2 rounded-md  bg-[#408763] items-center">
           {/* Large Screens */}
           <Link
             href="/"

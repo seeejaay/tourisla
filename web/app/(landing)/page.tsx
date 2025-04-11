@@ -32,7 +32,7 @@ export default function Home() {
           <ul>
             {user.map((user, index) => (
               <li key={index}>
-                {user.first_name} {user.last_name} - {user.email}
+                {user.first_name} {user.last_name} - {user.email},
               </li>
             ))}
           </ul>
