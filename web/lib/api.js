@@ -12,32 +12,14 @@ export const fetchData = async (endpoint) => {
   }
 };
 
-export const postData = async (endpoint, data) => {
+export const addUser = async (userData) => {
   try {
-    const response = await axios.post(`${API_URL}/${endpoint}`, data);
-    return response.data; // Return the response data
+    console.log("Sending user data to API:", userData); // Log data being sent to the API
+    const response = await axios.post(`${API_URL}/signup`, userData);
+    console.log("API Response:", response.data); // Log the API response
+    return response.data; // Return response data
   } catch (error) {
-    console.error(`Error posting data to ${endpoint}:`, error);
-    return null;
-  }
-};
-
-export const updateData = async (endpoint, data) => {
-  try {
-    const response = await axios.put(`${API_URL}/${endpoint}`, data);
-    return response.data; // Return the updated data
-  } catch (error) {
-    console.error(`Error updating data at ${endpoint}:`, error);
-    return null;
-  }
-};
-
-export const deleteData = async (endpoint) => {
-  try {
-    const response = await axios.delete(`${API_URL}/${endpoint}`);
-    return response.data; // Return the response data
-  } catch (error) {
-    console.error(`Error deleting data at ${endpoint}:`, error);
+    console.error("Error adding user:", error);
     return null;
   }
 };
