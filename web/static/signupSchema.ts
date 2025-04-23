@@ -1,5 +1,5 @@
 import { z } from "zod";
-import countries from "@/app/static/countries.json";
+import countries from "@/static/countries.json";
 
 {
   /*Code for Validation */
@@ -44,18 +44,10 @@ const formSchema = z
           message: "Invalid phone number format",
         }
       ),
-    role: z.literal("tourist"),
-    traveller_type: z.enum(
-      [
-        "solo_traveller",
-        "family_traveller",
-        "group_traveller",
-        "business_traveller",
-      ],
-      {
-        required_error: "Traveller type is required",
-      }
-    ),
+    role: z.literal("Tourist"),
+    traveller_type: z.enum(["Solo", "Couple", "Family", "Group"], {
+      required_error: "Traveller type is required",
+    }),
     nationality: z
       .string()
       .refine((val) => countries.some((country) => country.name === val), {

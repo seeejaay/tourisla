@@ -1,4 +1,4 @@
-import countries from "@/app/static/countries.json";
+import countries from "@/static/countries.json";
 const formFields = [
   {
     name: "first_name",
@@ -44,10 +44,10 @@ const selectFields = [
     name: "traveller_type",
     label: "Traveller Type",
     options: [
-      { value: "solo_traveller", label: "Solo Traveller" },
-      { value: "family_traveller", label: "Family Traveller" },
-      { value: "group_traveller", label: "Group Traveller" },
-      { value: "business_traveller", label: "Business Traveller" },
+      { value: "Solo", label: "Solo" },
+      { value: "Couple", label: "Couple" },
+      { value: "Family", label: "Family" },
+      { value: "Group", label: "Group" },
     ],
   },
   {
