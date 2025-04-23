@@ -1,24 +1,28 @@
 "use client";
 import { useEffect, useState } from "react";
-import { fetchData } from "@/lib/api";
+import { fetchUsers } from "@/lib/api"; // Import the fetchUsers function
 import Navbar from "@/components/custom/navbar"; // Import the Navbar component
+
 export default function Home() {
-  const [user, setUsers] = useState<
-    { first_name: string; last_name: string; email: string }[]
-  >([]); // State to store user data
-  const [error, setError] = useState<string | null>(null); // State to store errors
+  interface User {
+    first_name: string;
+    last_name: string;
+    email: string;
+  }
+  const [users, setUsers] = useState<User[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      const data = await fetchData("users"); // Call the API endpoint "users"
-      if (data) {
-        setUsers(data); // Set the fetched data to state
-      } else {
-        setError("Failed to fetch users.");
+    const fetchData = async () => {
+      try {
+        const data = await fetchUsers();
+        setUsers(data);
+      } catch (err) {
+        setError(`Failed to fetch users ` + (err as Error).message);
       }
     };
 
-    fetchUsers(); // Call the function
+    fetchData();
   }, []);
 
   return (
@@ -30,9 +34,9 @@ export default function Home() {
           <p className="text-red-500">Error: {error}</p>
         ) : (
           <ul>
-            {user.map((user, index) => (
+            {users.map((user, index) => (
               <li key={index}>
-                {user.first_name} {user.last_name} - {user.email},
+                {user.first_name} {user.last_name} - {user.email}
               </li>
             ))}
           </ul>
