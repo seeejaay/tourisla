@@ -74,7 +74,7 @@ export default function Header() {
             >
             <FontAwesomeIcon
               icon={isMobileMenuOpen ? faTimes : faBars}
-              className= {`${isMobileMenuOpen ? "text-gray-900 rotate-0" : "text-gray-700 rotate-180"} text-xl transition-transform duration-300 ease-in-out`} 
+              className= {`${isMobileMenuOpen ? "text-gray-900 rotate-0" : "text-gray-700 rotate-[360deg]"} text-xl transition-transform duration-300 ease-in-out`} 
             />
             </Button>
           <Pill />
