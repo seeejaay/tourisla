@@ -15,15 +15,3 @@ export const fetchUsers = async () => {
     throw err; // Re-throw the error for handling in the calling code
   }
 };
-
-export const addUser = async (userData) => {
-  try {
-    console.log("Sending user data to API:", userData); // Log data being sent to the API
-    const response = await axios.post(`${API_URL}`, userData);
-    console.log("API Response:", response.data); // Log the API response
-    return response.data; // Return response data
-  } catch (error) {
-    console.error("Error adding user:", error);
-    throw error; // Re-throw the error for handling in the calling code
-  }
-};
