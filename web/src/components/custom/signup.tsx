@@ -46,6 +46,7 @@ export default function SignUp() {
       .then((response) => {
         if (response) {
           console.log("User successfully added:", response);
+          window.location.href = "/login"; // RTemporary redirect, will open a dialog instead, tomorrow q gawin
         } else {
           console.error("Error adding user: No data received from the API.");
         }
