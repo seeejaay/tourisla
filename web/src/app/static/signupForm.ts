@@ -1,0 +1,35 @@
+const formFields = [
+  {
+    name: "first_name",
+    label: "First Name",
+    type: "text",
+    placeholder: "First Name",
+  },
+  {
+    name: "last_name",
+    label: "Last Name",
+    type: "text",
+    placeholder: "Last Name",
+  },
+  { name: "email", label: "Email", type: "text", placeholder: "Email" },
+  {
+    name: "password",
+    label: "Password",
+    type: "password",
+    placeholder: "Password",
+  },
+  {
+    name: "confirm_password",
+    label: "Confirm Password",
+    type: "password",
+    placeholder: "Confirm Password",
+  },
+  {
+    name: "phone_number",
+    label: "Phone Number",
+    type: "text",
+    placeholder: "Phone Number",
+  },
+];
+
+export default formFields;

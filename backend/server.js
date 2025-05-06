@@ -34,7 +34,6 @@ app.post("/api/v1/users", async (req, res) => {
       password,
       phone_number,
       role,
-      traveller_type,
       nationality,
       deleted_at,
       last_login_at,
@@ -42,7 +41,7 @@ app.post("/api/v1/users", async (req, res) => {
       created_at,
     } = req.body;
     const result = await db.query(
-      "INSERT INTO users (first_name, last_name, email, password, phone_number, role, traveller_type, nationality, deleted_at, last_login_at, last_login_ip, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW()) RETURNING *",
+      "INSERT INTO users (first_name, last_name, email, password, phone_number, role, nationality, deleted_at, last_login_at, last_login_ip, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,NOW()) RETURNING *",
       [
         first_name,
         last_name,
@@ -50,7 +49,6 @@ app.post("/api/v1/users", async (req, res) => {
         password,
         phone_number,
         role,
-        traveller_type,
         nationality,
         deleted_at,
         last_login_at,
