@@ -1,22 +1,37 @@
+import SignUp from "@/components/custom/signup";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightToBracket, faUser } from "@fortawesome/free-solid-svg-icons";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@radix-ui/react-dropdown-menu";
+} from "@/components/ui/dropdown-menu";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
 import { Button } from "@/components/ui/button";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface PillProps {
   className?: string;
 }
 
 export default function Pill({ className }: PillProps) {
+  const router = useRouter();
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return (
     <>
       <div className={className}>
@@ -33,40 +48,59 @@ export default function Pill({ className }: PillProps) {
               />
             </Button>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent className="w-44 bg-gray-100 flex gap-2 flex-col rounded-md shadow-lg mt-2 lg:mr-0 mr-2 border-1 border-gray-400 ">
             <DropdownMenuLabel className="text-center border-b-1 border-gray-400 font-bold py-2.5">
               My Account
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <div className="px-2 pb-2 flex flex-col gap-2">
-              <DropdownMenuItem className="hover:bg-gray-200 rounded-sm px-2 outline-0">
-                <Link
-                  href="/login"
-                  className="text-gray-700 hover:text-gray-900  rounded-sm  hover:font-bold transition-all duration-300 ease-in-out flex flex-row gap-[38px] hover:gap-16 items-center p-2"
+
+            <div className="pb-2 px-1.5 flex flex-col gap-1">
+              <DropdownMenuItem className="hover:bg-gray-200 p-0 rounded-sm outline-0 flex items-start justify-start">
+                <Button
+                  onClick={() => router.push("/login")}
+                  variant={"link"}
+                  className="text-gray-700 hover:text-gray-900 hover:font-bold transition-all duration-300 ease-in-out flex flex-row hover:gap-16 items-center justify-start w-full rounded-none gap-6"
                 >
                   Login
                   <FontAwesomeIcon
                     icon={faRightToBracket}
                     className="text-gray-700 text-xs"
                   />
-                </Link>
+                </Button>
               </DropdownMenuItem>
-              <DropdownMenuItem className="hover:bg-gray-200 rounded-sm px-2 outline-0">
-                <Link
-                  href="/signup"
-                  className="text-gray-700 hover:text-gray-900 hover:font-bold transition-all duration-300 ease-in-out flex flex-row gap-[20px] hover:gap-12 items-center p-2"
+
+              <DropdownMenuItem className="hover:bg-gray-200 p-0 rounded-sm outline-0 overflow-hidden">
+                <Button
+                  variant={"link"}
+                  className="text-gray-700 hover:text-gray-900 hover:font-bold transition-all duration-300 ease-in-out flex flex-row hover:gap-16 items-center justify-start w-full rounded-none gap-6"
+                  onClick={() => {
+                    setTimeout(() => setDialogOpen(true), 0);
+                  }}
                 >
                   Sign Up
                   <FontAwesomeIcon
                     icon={faRightToBracket}
                     className="text-gray-700 text-xs"
                   />
-                </Link>
+                </Button>
               </DropdownMenuItem>
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Always mounted outside the dropdown */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Sign Up</DialogTitle>
+            <DialogDescription>
+              Create an account to get started.
+            </DialogDescription>
+          </DialogHeader>
+          <SignUp />
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

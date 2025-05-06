@@ -15,3 +15,22 @@ export const fetchUsers = async () => {
     throw err; // Re-throw the error for handling in the calling code
   }
 };
+
+export const createUser = async (userData) => {
+  try {
+    console.log("Sending user data to API:", userData); // Log data being sent to the API
+    const response = await axios.post(`${API_URL}`, userData);
+
+    if (response.status !== 201) {
+      throw new Error(
+        `Failed to create user. Server responded with status: ${response.status}`
+      );
+    }
+
+    console.log("API Response:", response.data); // Log the API response
+    return response.data; // Return response data
+  } catch (error) {
+    console.error("Error adding user:", error.response?.data || error.message);
+    throw error; // Re-throw the error for handling in the calling code
+  }
+};
