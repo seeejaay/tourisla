@@ -1,0 +1,68 @@
+require("dotenv").config();
+const express = require("express");
+const session = require("express-session");
+const db = require("../db/index.js");
+const app = express();
+const cors = require("cors");
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Controllers
+const { loginUser, logoutUser } = require("../controllers/authController.js");
+const {
+  createUserController,
+  currentUserController,
+} = require("../controllers/userController.js");
+const {
+  authenticateUser,
+  authenticateAdmin,
+} = require("../middleware/middleware.js");
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // Set to true in production
+      httpOnly: false,
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    },
+  })
+);
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  }) // Allow credentials (cookies) to be sent
+);
+
+const port = process.env.PORT || 3005;
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
+app.get("/api/v1/users", async (req, res) => {
+  try {
+    const result = await db.query("SELECT * FROM users");
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Route for creating users (accessible by both admins and new users)
+app.post("/api/v1/users", createUserController);
+
+// Route for admin-only actions
+app.post("/api/v1/admin-action", authenticateAdmin, (req, res) => {
+  res.json({ message: "This is an admin-only action" });
+});
+
+app.post("/api/v1/login", loginUser);
+app.post("/api/v1/logout", logoutUser);
+
+app.get("/api/v1/user", authenticateUser, currentUserController);

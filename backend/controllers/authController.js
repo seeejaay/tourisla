@@ -1,0 +1,54 @@
+const bcrypt = require("bcrypt");
+const { findUserByEmail } = require("../models/userModel");
+
+const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await findUserByEmail(email);
+    if (!user) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    req.session.user = {
+      id: user.id,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      phone_number: user.phone_number,
+      role: user.role,
+    };
+
+    res.status(200).json({
+      message: "Login successful",
+      user: {
+        id: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        phone_number: user.phone_number,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error("Error during login:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const logoutUser = (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ error: "Internal server error" });
+    }
+    res.clearCookie("connect.sid");
+    res.status(200).json({ message: "Logout successful" });
+  });
+};
+
+module.exports = { loginUser, logoutUser };
