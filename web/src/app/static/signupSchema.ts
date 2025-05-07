@@ -44,7 +44,7 @@ const formSchema = z
           message: "Invalid phone number format",
         }
       ),
-    role: z.literal("Tourist"),
+    role: z.literal("Admin"),
     nationality: z
       .string()
       .refine((val: string) => val !== "Select Your Nationality", {

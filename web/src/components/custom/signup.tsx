@@ -34,7 +34,7 @@ export default function SignUp() {
       password: "",
       confirm_password: "",
       phone_number: "",
-      role: "Tourist",
+      role: "Admin",
       nationality: "",
       terms: false,
     },

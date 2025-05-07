@@ -1,4 +1,5 @@
 import SignUp from "@/components/custom/signup";
+import { logout } from "@/lib/api";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightToBracket, faUser } from "@fortawesome/free-solid-svg-icons";
@@ -31,6 +32,16 @@ interface PillProps {
 export default function Pill({ className }: PillProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logout(); // Ensure logout is completed before refreshing
+
+      await router.push("/login"); // Redirect to login page
+    } catch (err) {
+      console.error("Error during logout:", err);
+    }
+  };
 
   return (
     <>
@@ -82,6 +93,15 @@ export default function Pill({ className }: PillProps) {
                     icon={faRightToBracket}
                     className="text-gray-700 text-xs"
                   />
+                </Button>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="hover:bg-gray-200 p-0 rounded-sm outline-0 overflow-hidden">
+                <Button
+                  variant={"link"}
+                  className="text-gray-700 hover:text-gray-900 hover:font-bold transition-all duration-300 ease-in-out flex flex-row hover:gap-16 items-center justify-start w-full rounded-none gap-6"
+                  onClick={handleLogout}
+                >
+                  Logout
                 </Button>
               </DropdownMenuItem>
             </div>
