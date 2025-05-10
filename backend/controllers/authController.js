@@ -1,16 +1,21 @@
 const bcrypt = require("bcrypt");
-const { findUserByEmail } = require("../models/userModel");
+const { findUserByEmail, statusCheck } = require("../models/userModel");
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const user = await findUserByEmail(email);
+    const status = await statusCheck(email);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (status && status.status === "Inactive") {
+      return res.status(401).json({ error: "Account is inactive" });
+    }
+
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid email or password" });
     }

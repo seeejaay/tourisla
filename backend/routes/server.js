@@ -12,6 +12,8 @@ const { loginUser, logoutUser } = require("../controllers/authController.js");
 const {
   createUserController,
   currentUserController,
+  editUserController,
+  deleteUserController,
 } = require("../controllers/userController.js");
 const {
   authenticateUser,
@@ -66,3 +68,6 @@ app.post("/api/v1/login", loginUser);
 app.post("/api/v1/logout", logoutUser);
 
 app.get("/api/v1/user", authenticateUser, currentUserController);
+
+app.put("/api/v1/edit", authenticateUser, editUserController);
+app.put("/api/v1/delete", authenticateUser, deleteUserController);
