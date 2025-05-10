@@ -19,6 +19,11 @@ export const navigation = [
     href: "/contact",
     title: "Contact",
   },
+  {
+    tag: "Blog",
+    href: "/blog",
+    title: "Blog",
+  },
 ];
 export const footerNavigation = [
   {
