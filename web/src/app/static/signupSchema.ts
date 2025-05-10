@@ -44,7 +44,7 @@ const formSchema = z
           message: "Invalid phone number format",
         }
       ),
-    role: z.literal("Admin"),
+    role: z.literal("Tourist"),
     nationality: z
       .string()
       .refine((val: string) => val !== "Select Your Nationality", {
@@ -59,6 +59,7 @@ const formSchema = z
     terms: z.boolean().refine((val) => val === true, {
       message: "You must accept the terms and conditions",
     }),
+    status: z.literal("Active"),
   })
   .refine((data) => data.password === data.confirm_password, {
     message: "Passwords must match",

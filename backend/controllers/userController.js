@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
-const { createUser } = require("../models/userModel");
-
+const { createUser, editUser, deleteUser } = require("../models/userModel");
+const { findUserByEmail } = require("../models/userModel");
 const createUserController = async (req, res) => {
   try {
     const {
@@ -74,4 +74,59 @@ const currentUserController = async (req, res) => {
   }
 };
 
-module.exports = { createUserController, currentUserController };
+const editUserController = async (req, res) => {
+  try {
+    const oldEmail = req.session.user.email;
+    const {
+      first_name,
+      last_name,
+      email,
+      password,
+      phone_number,
+      nationality,
+    } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const updatedUser = await editUser(oldEmail, {
+      first_name,
+      last_name,
+      email,
+      password: hashedPassword,
+      phone_number,
+      nationality,
+    });
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json({
+      status: "success",
+      data: { user: updatedUser },
+    });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const deleteUserController = async (req, res) => {
+  try {
+    const email = req.session.user.email;
+    const deletedUser = await deleteUser(email);
+    if (!deletedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json({
+      status: "success",
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+module.exports = {
+  createUserController,
+  currentUserController,
+  editUserController,
+  deleteUserController,
+};
