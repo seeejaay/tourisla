@@ -20,6 +20,12 @@ const {
   authenticateAdmin,
 } = require("../middleware/middleware.js");
 
+const {
+  createAnnouncementController,
+  editAnnouncementController,
+  deleteAnnouncementController,
+} = require("../controllers/announceController.js");
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -71,3 +77,9 @@ app.get("/api/v1/user", authenticateUser, currentUserController);
 
 app.put("/api/v1/edit", authenticateUser, editUserController);
 app.put("/api/v1/delete", authenticateUser, deleteUserController);
+
+// Route for announcements
+app.post("/api/v1/announcements", createAnnouncementController); // add authenticateAdmin later
+app.put("/api/v1/announcements/:announcementId", editAnnouncementController);
+app.delete("/api/v1/announcements/:announcementId", deleteAnnouncementController);
+
