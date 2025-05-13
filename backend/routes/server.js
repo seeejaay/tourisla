@@ -26,6 +26,7 @@ const {
   deleteAnnouncementController,
   viewAnnouncementController,
   viewAnnouncementByIdController,
+  getByCategoryController,
 } = require("../controllers/announceController.js");
 
 app.use(
@@ -97,3 +98,4 @@ app.delete(
   deleteAnnouncementController,
   authenticateAdmin
 );
+app.get("/api/v1/announcements/category/:category([a-zA-Z0-9-_]+)", getByCategoryController);
