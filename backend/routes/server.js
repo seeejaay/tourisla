@@ -24,6 +24,8 @@ const {
   createAnnouncementController,
   editAnnouncementController,
   deleteAnnouncementController,
+  viewAnnouncementController,
+  viewAnnouncementByIdController,
 } = require("../controllers/announceController.js");
 
 app.use(
@@ -79,7 +81,19 @@ app.put("/api/v1/edit", authenticateUser, editUserController);
 app.put("/api/v1/delete", authenticateUser, deleteUserController);
 
 // Route for announcements
-app.post("/api/v1/announcements", createAnnouncementController); // add authenticateAdmin later
+app.get("/api/v1/announcements", viewAnnouncementController);
+app.get(
+  "/api/v1/announcements/:announcementId",
+  viewAnnouncementByIdController
+);
+app.post(
+  "/api/v1/announcements",
+  createAnnouncementController,
+  authenticateAdmin
+);
 app.put("/api/v1/announcements/:announcementId", editAnnouncementController);
-app.delete("/api/v1/announcements/:announcementId", deleteAnnouncementController);
-
+app.delete(
+  "/api/v1/announcements/:announcementId",
+  deleteAnnouncementController,
+  authenticateAdmin
+);
