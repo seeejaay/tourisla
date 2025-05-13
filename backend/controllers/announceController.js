@@ -9,7 +9,7 @@ const {
 
 const createAnnouncementController = async (req, res) => {
   try {
-    const { title, description, date_posted, location, image_url } = req.body;
+    const { title, description, date_posted, location, image_url, category } = req.body;
 
     // Create the announcement in the database
     const announcement = await createAnnouncement({
@@ -18,6 +18,7 @@ const createAnnouncementController = async (req, res) => {
       date_posted,
       location,
       image_url,
+      category
     });
 
     res.json(announcement);
@@ -30,7 +31,7 @@ const createAnnouncementController = async (req, res) => {
 const editAnnouncementController = async (req, res) => {
   try {
     const { announcementId } = req.params;
-    const { title, description, date_posted, location, image_url } = req.body;
+    const { title, description, date_posted, location, image_url, category } = req.body;
 
     // Edit the announcement in the database
     const announcement = await editAnnouncement(announcementId, {
@@ -39,6 +40,7 @@ const editAnnouncementController = async (req, res) => {
       date_posted,
       location,
       image_url,
+      category
     });
 
     res.json(announcement);
