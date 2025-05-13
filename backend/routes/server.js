@@ -29,6 +29,15 @@ const {
   getByCategoryController,
 } = require("../controllers/announceController.js");
 
+const {
+  createHotlineController, 
+  editHotlineController,
+  deleteHotlineController,
+  viewHotlinesController,
+  viewHotlineByIdController
+} = require("../controllers/hotlineController.js");
+
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -99,3 +108,10 @@ app.delete(
   authenticateAdmin
 );
 app.get("/api/v1/announcements/category/:category([a-zA-Z0-9-_]+)", getByCategoryController);
+
+// Routes for Hotlines
+app.post("/api/v1/hotlines", authenticateAdmin, createHotlineController);
+app.put("/api/v1/hotlines/:hotlineId", authenticateAdmin, editHotlineController);
+app.delete("/api/v1/hotlines/:hotlineId", authenticateAdmin, deleteHotlineController);
+app.get("/api/v1/hotlines", viewHotlinesController);
+app.get("/api/v1/hotlines/:hotlineId", viewHotlineByIdController);
