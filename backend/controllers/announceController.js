@@ -5,6 +5,7 @@ const {
   deleteAnnouncement,
   getAllAnnouncements,
   getAnnouncementById,
+  getAnnouncementsByCategory,
 } = require("../models/announceModel.js");
 
 const createAnnouncementController = async (req, res) => {
@@ -90,10 +91,23 @@ const viewAnnouncementByIdController = async (req, res) => {
   }
 };
 
+const getByCategoryController = async (req, res) => {
+  try {
+    const { category } = req.params;
+    const announcements = await getAnnouncementsByCategory(category);
+
+    res.json(announcements);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+};
+
 module.exports = {
   createAnnouncementController,
   editAnnouncementController,
   deleteAnnouncementController,
   viewAnnouncementController,
   viewAnnouncementByIdController,
+  getByCategoryController,
 };

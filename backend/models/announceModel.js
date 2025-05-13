@@ -46,10 +46,19 @@ const getAnnouncementById = async (announcementId) => {
   return result.rows[0];
 };
 
+const getAnnouncementsByCategory = async (category) => {
+  const result = await db.query(
+    "SELECT * FROM announcements WHERE category = $1",
+    [category]
+  );
+  return result.rows;
+};
+
 module.exports = {
   createAnnouncement,
   editAnnouncement,
   deleteAnnouncement,
   getAllAnnouncements,
   getAnnouncementById,
+  getAnnouncementsByCategory,
 };
