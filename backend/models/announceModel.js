@@ -46,6 +46,7 @@ const getAnnouncementById = async (announcementId) => {
   return result.rows[0];
 };
 
+// havent finalized which categories yet, refer to bantayan modules
 const getAnnouncementsByCategory = async (category) => {
   const result = await db.query(
     "SELECT * FROM announcements WHERE category = $1",

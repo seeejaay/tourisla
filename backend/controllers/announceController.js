@@ -12,7 +12,6 @@ const createAnnouncementController = async (req, res) => {
   try {
     const { title, description, date_posted, location, image_url, category } = req.body;
 
-    // Create the announcement in the database
     const announcement = await createAnnouncement({
       title,
       description,
