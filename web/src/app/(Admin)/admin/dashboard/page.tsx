@@ -7,7 +7,7 @@ export default function DashboardPage() {
     <>
       <Sidebar />
       {/* Main content */}
-      <div className="flex flex-col items-center justify-center min-h-screen py-2">
+      <div className="flex flex-col items-center justify-center min-h-screen py-2 lg:pl-0 pl-16">
         <h1 className="text-4xl font-bold">Admin Dashboard</h1>
         <p className="mt-4 text-lg">Welcome to the admin dashboard!</p>
       </div>
