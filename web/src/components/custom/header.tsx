@@ -20,12 +20,10 @@ import { Button } from "@/components/ui/button";
 import { navigation } from "@/app/static/navigation";
 
 {
-  /*font awesome imports*/
+  /*lucid icons*/
 }
 
-
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { Menu, X } from "lucide-react";
 
 {
   /*Import custom components*/
@@ -35,7 +33,6 @@ import Pill from "@/components/custom/pill";
 export default function Header() {
   const pathName = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
 
   return (
     <>
@@ -66,17 +63,18 @@ export default function Header() {
 
         {/* Hamburger Menu for Mobile */}
         <div className="flex lg:hidden items-center space-x-4">
-            <Button
+          <Button
             className="lg:hidden hover:bg-gray-300 rounded-full w-10 h-10 p-2.5 cursor-pointer hover:text-gray-900 transition-all duration-300 ease-in-out flex items-center justify-center hover:shadow-lg"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Menu"
             variant={"outline"}
-            >
-            <FontAwesomeIcon
-              icon={isMobileMenuOpen ? faTimes : faBars}
-              className= {`${isMobileMenuOpen ? "text-gray-900 rotate-0" : "text-gray-700 rotate-[360deg]"} text-xl transition-transform duration-300 ease-in-out`} 
-            />
-            </Button>
+          >
+            {isMobileMenuOpen ? (
+              <X className="text-gray-900 text-xl transition-transform duration-300 ease-in-out " />
+            ) : (
+              <Menu className="text-gray-700 text-xl transition-transform duration-300 ease-in-out" />
+            )}
+          </Button>
           <Pill />
         </div>
         <Pill className="hidden lg:flex" />
@@ -87,6 +85,7 @@ export default function Header() {
         className={`absolute top-20 left-0 w-full bg-[#f1f1f1] p-4 flex flex-col items-center space-y-4 lg:hidden transition-all duration-300 ease-in-out ${
           isMobileMenuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         {navigation.map((item, index) => (
           <Link
@@ -97,12 +96,18 @@ export default function Header() {
                 ? "text-gray-900 border-b-[#F1f1f1] border-b-2"
                 : "text-gray-600"
             }`}
+            onClick={() => setIsMobileMenuOpen(false)}
           >
             {item.title}
           </Link>
         ))}
       </div>
-      
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-10 bg-transparent"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
     </>
   );
 }
