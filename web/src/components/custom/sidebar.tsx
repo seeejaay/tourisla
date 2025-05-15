@@ -18,7 +18,7 @@ const Sidebar = () => {
     <>
       <nav
         className={`fixed bg-gray-900 text-white h-full flex flex-col transition-all duration-300 shadow-lg ${
-          isCollapsed ? "w-16" : "w-64"
+          isCollapsed ? "w-16 z-0" : "w-64 z-10"
         }`}
       >
         {/* Sidebar Header */}
