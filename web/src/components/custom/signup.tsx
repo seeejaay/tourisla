@@ -1,13 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import FormSchema from "@/app/static/signupSchema";
 import formFields from "@/app/static/signupForm";
-import countrySelectField from "@/app/static/countrySelectField";
+import selectFields from "@/app/static/selectFields";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-
-// import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +24,18 @@ import {
 import { createUser } from "@/lib/api";
 
 export default function SignUp() {
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    // Simulate fetching the user's role
+    const fetchUserRole = async () => {
+      const userRole = await getUserRole(); // Replace with actual logic
+      setIsAdmin(userRole === "Admin");
+    };
+
+    fetchUserRole();
+  }, []);
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -47,7 +58,7 @@ export default function SignUp() {
       .then((response) => {
         if (response) {
           console.log("User successfully added:", response);
-          window.location.href = "/login"; // RTemporary redirect, will open a dialog instead, tomorrow q gawin
+          window.location.href = "/login"; // Temporary redirect
         } else {
           console.error("Error adding user: No data received from the API.");
         }
@@ -57,14 +68,14 @@ export default function SignUp() {
       });
   };
 
-  const countrySelect = countrySelectField(); // Call the function to get the options
+  const selectField = selectFields(); // Call the function to get the options
 
   return (
     <div className="flex flex-col">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="bg-white rounded px-8 pt-6 pb-8 mb-4"
+          className="bg-white rounded"
         >
           <div className="flex flex-col gap-3">
             <div className="flex flex-row gap-3 w-full">
@@ -79,7 +90,7 @@ export default function SignUp() {
                     name={name as keyof z.infer<typeof FormSchema>}
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel className="block text-gray-700 text-sm font-medium mb-2">
+                        <FormLabel className="block text-gray-700 text-sm font-medium ">
                           {label}
                         </FormLabel>
                         <FormControl>
@@ -112,7 +123,7 @@ export default function SignUp() {
                   name={name as keyof z.infer<typeof FormSchema>}
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel className="block text-gray-700 text-sm font-medium mb-2">
+                      <FormLabel className="block text-gray-700 text-sm font-medium ">
                         {label}
                       </FormLabel>
                       <FormControl>
@@ -131,6 +142,59 @@ export default function SignUp() {
                 />
               ))}
 
+            {/* Conditionally render the role field */}
+            {isAdmin && (
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel className="block text-gray-700 text-sm font-medium mb-2">
+                      Select Role
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <select
+                          {...field}
+                          className="appearance-none border border-gray-300 rounded-md px-2 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="" disabled>
+                            Select Role
+                          </option>
+                          <option value="Tourist">Tourist</option>
+                          <option value="Tour Guide">Tour Guide</option>
+                          <option value="Tour Operator">Tour Operator</option>
+                          <option value="Admin">Admin</option>
+                          <option value="Cultural Director">
+                            Cultural Director
+                          </option>
+                          <option value="Tourism Officer">
+                            Tourism Officer
+                          </option>
+                          <option value="Tourism Staff">Tourism Staff</option>
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <svg
+                            className="w-4 h-4 text-gray-500"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             <FormField
               control={form.control}
               name="nationality"
@@ -148,7 +212,7 @@ export default function SignUp() {
                         <option value="" disabled>
                           Select Nationality
                         </option>
-                        {countrySelect[0]?.options.map(
+                        {selectField[0]?.options.map(
                           (option: { value: string; label: string }) => (
                             <option key={option.value} value={option.value}>
                               {option.label}
@@ -211,4 +275,9 @@ export default function SignUp() {
       </Form>
     </div>
   );
+}
+
+// Mock function to simulate fetching the user's role
+async function getUserRole() {
+  return "Tourist"; // Replace with actual logic
 }
