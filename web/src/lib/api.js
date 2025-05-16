@@ -46,7 +46,7 @@ export const createUser = async (userData) => {
   }
 };
 
-export const myData = async () => {
+export const currentUser = async () => {
   try {
     const response = await axios.get(`${API_URL}user`, {
       withCredentials: true, // Include cookies in the request
