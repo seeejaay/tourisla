@@ -23,7 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface PillProps {
   className?: string;
@@ -32,6 +32,13 @@ interface PillProps {
 export default function Pill({ className }: PillProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setDropdownOpen(false);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -46,7 +53,7 @@ export default function Pill({ className }: PillProps) {
   return (
     <>
       <div className={className}>
-        <DropdownMenu>
+        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"

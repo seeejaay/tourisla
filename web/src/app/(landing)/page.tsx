@@ -2,7 +2,7 @@
 
 import Header from "@/components/custom/header";
 import { useEffect, useState } from "react";
-import { myData } from "@/lib/api";
+import { currentUser } from "@/lib/api";
 
 export default function Home() {
   const [data, setData] = useState(null); // State for fetched data
@@ -12,7 +12,7 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await myData(); // Fetch data from API
+        const response = await currentUser(); // Fetch data from API
         setData(response); // Set the fetched data
       } catch (err) {
         setError(err.message || "An error occurred"); // Handle errors
