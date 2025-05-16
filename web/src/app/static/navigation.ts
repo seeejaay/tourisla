@@ -6,7 +6,7 @@ export const navigation = [
   },
   {
     tag: "About",
-    href: "/about",
+    href: "about",
     title: "About",
   },
   {

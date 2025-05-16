@@ -29,10 +29,9 @@ export default function SignUp() {
   useEffect(() => {
     // Simulate fetching the user's role
     const fetchUserRole = async () => {
-      const userRole = await getUserRole(); // Replace with actual logic
+      const userRole = await getUserRole(); // Replace with actual API call
       setIsAdmin(userRole === "Admin");
     };
-
     fetchUserRole();
   }, []);
 
