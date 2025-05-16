@@ -4,25 +4,41 @@ import Sidebar from "@/components/custom/sidebar";
 import { columns } from "@/components/custom/users/columns";
 import { DataTable } from "@/components/custom/users/data-table";
 import { useEffect, useState } from "react";
-import { fetchUsers } from "@/lib/api"; // Import the fetchUsers function
-
+import { fetchUsers, currentUser } from "@/lib/api"; // Import the fetchUsers function
+import { useRouter } from "next/navigation"; // Import Router for navigation
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    async function getUsers() {
+    async function getCurrentUserAndUsers() {
       try {
-        const data = await fetchUsers(); // Use the fetchUsers function
+        const user = await currentUser();
+        console.log("Current user:", user); // Debug log
+
+        // Fix: Check if user exists and has a role
+        if (!user || !user.data.user.role || user.data.user.role !== "Admin") {
+          router.replace("/");
+          return;
+        }
+        const data = await fetchUsers();
         setUsers(data);
       } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error("Error fetching user or users:", error);
+        router.replace("/");
       } finally {
         setLoading(false);
+        setAuthChecked(true);
       }
     }
-    getUsers();
-  }, []);
+    getCurrentUserAndUsers();
+  }, [router]);
+
+  if (!authChecked) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <>

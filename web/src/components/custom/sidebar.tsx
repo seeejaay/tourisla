@@ -6,6 +6,8 @@ import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
+import { logout } from "@/lib/api"; // Import the logout function
+
 import { LogOut, PanelLeftOpen, PanelLeftClose } from "lucide-react";
 
 import { usePathname } from "next/navigation";
@@ -14,6 +16,14 @@ const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const pathName = usePathname();
 
+  const handleLogout = async () => {
+    try {
+      await logout(); // Ensure logout is completed before refreshing
+      window.location.href = "/login"; // Redirect to login page
+    } catch (err) {
+      console.error("Error during logout:", err);
+    }
+  };
   return (
     <>
       <nav
@@ -83,7 +93,10 @@ const Sidebar = () => {
         <div className="flex items-center justify-center p-4">
           <Button
             variant={"destructive"}
-            onClick={() => console.log("Logging out...")}
+            onClick={() => {
+              console.log("Logging out...");
+              handleLogout();
+            }}
             className={`flex items-center space-x-2 w-full rounded-md text-white cursor-pointer transition ${
               isCollapsed ? "justify-center p-2" : "p-3"
             }`}
