@@ -14,6 +14,7 @@ const {
   currentUserController,
   editUserController,
   deleteUserController,
+  viewUserController,
 } = require("../controllers/userController.js");
 const {
   authenticateUser,
@@ -68,9 +69,14 @@ app.use(
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: [
+      "http://localhost:3000",
+      "http://192.168.0.130:3000",
+      "http://192.168.0.130", // change this to your local IP address
+      process.env.CLIENT_URL, // Add this if you want to support env config too
+    ],
     credentials: true,
-  }) // Allow credentials (cookies) to be sent
+  })
 );
 
 const port = process.env.PORT || 3005;
@@ -101,8 +107,13 @@ app.post("/api/v1/login", loginUser);
 app.post("/api/v1/logout", logoutUser);
 
 app.get("/api/v1/user", authenticateUser, currentUserController);
-
-app.put("/api/v1/edit", authenticateUser, editUserController);
+app.get(
+  "/api/v1/users/:userId",
+  authenticateUser,
+  authenticateAdmin,
+  viewUserController
+);
+app.put("/api/v1/users/:userId", authenticateUser, editUserController);
 app.put("/api/v1/delete", authenticateUser, deleteUserController);
 
 // Route for announcements
