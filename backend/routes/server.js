@@ -46,6 +46,12 @@ const {
   viewGuideRegisByIdController,
 } = require("../controllers/guideRegisController.js");
 
+const {
+  createGuideUploadDocuController,
+  editGuideUploadDocuController,
+  getGuideUploadDocuByIdController,
+} = require("../controllers/guideUploadDocuController.js");
+
 
 app.use(
   session({
@@ -131,3 +137,20 @@ app.put("/api/v1/guideRegis/:guideId", authenticateTourGuide, editGuideRegisCont
 app.delete("/api/v1/guideRegis/:guideId", authenticateTourGuide, deleteGuideRegisController);
 app.get("/api/v1/guideRegis", authenticateTourGuide, viewGuideRegisController);
 app.get("/api/v1/guideRegis/:guideId", authenticateTourGuide, viewGuideRegisByIdController);
+
+// Routes for Tour Guide Document Upload
+app.post(
+  "/api/v1/guideUploadDocu/:guideId",
+  authenticateTourGuide,
+  createGuideUploadDocuController
+);
+app.put(
+  "/api/v1/guideUploadDocu/:docuId",
+  authenticateTourGuide,
+  editGuideUploadDocuController
+);
+app.get(
+  "/api/v1/guideUploadDocu/:docuId",
+  authenticateTourGuide,
+  getGuideUploadDocuByIdController
+);
