@@ -36,29 +36,27 @@ const findUserByEmail = async (email) => {
   return result.rows[0];
 };
 
-const editUser = async (oldEmail, userData) => {
-  const {
-    first_name,
-    last_name,
-    email: newEmail,
-    password,
-    phone_number,
-    nationality,
-  } = userData;
+const editUser = async (userId, userData) => {
+  // Build dynamic SQL for only provided fields
+  const fields = [];
+  const values = [];
+  let idx = 1;
+
+  for (const [key, value] of Object.entries(userData)) {
+    if (value !== undefined) {
+      fields.push(`${key} = $${idx}`);
+      values.push(value);
+      idx++;
+    }
+  }
+  if (fields.length === 0) return null;
+
+  values.push(userId);
 
   const result = await db.query(
-    "UPDATE users SET first_name = $1, last_name = $2, email = $3, password = $4, phone_number = $5, nationality = $6 WHERE email = $7 RETURNING *",
-    [
-      first_name,
-      last_name,
-      newEmail,
-      password,
-      phone_number,
-      nationality,
-      oldEmail,
-    ]
+    `UPDATE users SET ${fields.join(", ")} WHERE user_id = $${idx} RETURNING *`,
+    values
   );
-
   return result.rows[0];
 };
 
