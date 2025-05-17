@@ -134,9 +134,13 @@ export const viewUser = async (userId) => {
 };
 export const editUser = async (userData) => {
   try {
-    const response = await axios.put(`${API_URL}edit`, userData, {
-      withCredentials: true, // Include cookies in the request
-    });
+    const response = await axios.put(
+      `${API_URL}users/${userData.user_id}`,
+      userData,
+      {
+        withCredentials: true,
+      }
+    );
 
     if (response.status !== 200) {
       throw new Error(
@@ -154,7 +158,7 @@ export const editUser = async (userData) => {
 export const deleteUser = async (userId) => {
   try {
     const response = await axios.put(
-      `${API_URL}delete`,
+      `${API_URL}users/d/${userId}`,
       { userId },
       {
         withCredentials: true, // Include cookies in the request

@@ -104,7 +104,8 @@ export function DataTable<TData, TValue>({
               className="max-w-md w-full "
             />
             <Button
-              variant={"outline"}
+              variant={"default"}
+              className="bg-zinc-700 text-white hover:bg-zinc-800"
               onClick={() => {
                 setTimeout(() => setDialogOpen(true), 0);
               }}
@@ -143,24 +144,25 @@ export function DataTable<TData, TValue>({
         {/* Table for Larger Screens */}
         <div className="rounded-lg w-full border shadow-sm overflow-x-auto hidden md:block">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-zinc-50">
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead
-                        key={header.id}
-                        className="text-sm sm:text-base font-medium"
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    );
-                  })}
+                <TableRow
+                  key={headerGroup.id}
+                  className="h-14 border-b border-zinc-200"
+                >
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className="text-xs sm:text-sm font-semibold text-zinc-700 px-4 py-2 bg-zinc-50 uppercase tracking-wide"
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  ))}
                 </TableRow>
               ))}
             </TableHeader>
@@ -230,38 +232,65 @@ export function DataTable<TData, TValue>({
 
         {/* Pagination Controls */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <span className="text-sm text-gray-600">
-            Page <strong>{table.getState().pagination.pageIndex + 1}</strong> of{" "}
-            <strong>{table.getPageCount()}</strong>
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className="rounded-md px-4 py-2"
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className="rounded-md px-4 py-2"
+            >
+              Next
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">
+              Page{" "}
+              <strong className="text-zinc-800">
+                {table.getState().pagination.pageIndex + 1}
+              </strong>{" "}
+              of{" "}
+              <strong className="text-zinc-800">{table.getPageCount()}</strong>
+            </span>
+            <span className="text-sm text-gray-500">|</span>
+            <span className="text-sm text-gray-600">Go to page:</span>
+            <Input
+              type="number"
+              min={1}
+              max={table.getPageCount()}
+              value={table.getState().pagination.pageIndex + 1}
+              onChange={(e) => {
+                const page = e.target.value ? Number(e.target.value) - 1 : 0;
+                table.setPageIndex(page);
+              }}
+              className="w-16 h-8 px-2 py-1 text-center border rounded"
+            />
+          </div>
         </div>
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Add User</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="sm:max-w-[400px] p-0 overflow-hidden">
+          <DialogHeader className="px-6 pt-6 pb-2 border-b">
+            <DialogTitle className="text-lg font-semibold">
+              Add User
+            </DialogTitle>
+            <DialogDescription className="text-sm text-gray-500">
               Fill in the details to add a new user.
             </DialogDescription>
           </DialogHeader>
-          <SignUp />
+          <div className="px-6 py-4">
+            <SignUp />
+          </div>
         </DialogContent>
       </Dialog>
     </>

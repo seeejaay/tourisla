@@ -18,7 +18,7 @@ import { z } from "zod";
 
 // Define the Zod schema for user data
 export const UserSchema = z.object({
-  user_id: z.number(),
+  user_id: z.string(),
   first_name: z.string(),
   last_name: z.string(),
   email: z.string().email(),
@@ -39,7 +39,9 @@ export const UserSchema = z.object({
 export type User = z.infer<typeof UserSchema>;
 // Define the columns using the schema
 export function columns(
-  setDialogUser: (user: User | null) => void
+  setDialogUser: (user: User | null) => void,
+  setEditDialogUser: (user: User | null) => void,
+  setDeleteDialogUser: (user: User | null) => void
 ): ColumnDef<User>[] {
   return [
     {
@@ -160,13 +162,11 @@ export function columns(
                 <DropdownMenuItem onClick={() => setDialogUser(user)}>
                   View
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => console.log("Edit user", user)}
-                >
+                <DropdownMenuItem onClick={() => setEditDialogUser(user)}>
                   Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => console.log("Delete user", user)}
+                  onClick={() => setDeleteDialogUser(user)}
                   className="text-red-500"
                 >
                   Delete
