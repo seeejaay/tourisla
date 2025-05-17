@@ -77,10 +77,25 @@ const statusCheck = async (email) => {
   return result.rows[0];
 };
 
+const loginDate = async (email, ipAddress) => {
+  const result = await db.query(
+    "UPDATE users SET last_login_at = NOW(), last_login_ip = $2 WHERE email = $1 RETURNING *",
+    [email, ipAddress]
+  );
+  return result.rows[0];
+};
+
+const findUserById = async (id) => {
+  const result = await db.query("SELECT * FROM users WHERE user_id = $1", [id]);
+  return result.rows[0];
+};
+
 module.exports = {
-  createUser,
+  findUserById,
   findUserByEmail,
+  createUser,
   editUser,
   deleteUser,
   statusCheck,
+  loginDate,
 };
