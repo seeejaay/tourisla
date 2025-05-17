@@ -18,6 +18,7 @@ const {
 const {
   authenticateUser,
   authenticateAdmin,
+  authenticateTourGuide,
 } = require("../middleware/middleware.js");
 
 const {
@@ -36,6 +37,14 @@ const {
   viewHotlinesController,
   viewHotlineByIdController
 } = require("../controllers/hotlineController.js");
+
+const {
+  createGuideRegisController,
+  editGuideRegisController,
+  deleteGuideRegisController,
+  viewGuideRegisController,
+  viewGuideRegisByIdController,
+} = require("../controllers/guideRegisController.js");
 
 
 app.use(
@@ -115,3 +124,10 @@ app.put("/api/v1/hotlines/:hotlineId", authenticateAdmin, editHotlineController)
 app.delete("/api/v1/hotlines/:hotlineId", authenticateAdmin, deleteHotlineController);
 app.get("/api/v1/hotlines", viewHotlinesController);
 app.get("/api/v1/hotlines/:hotlineId", viewHotlineByIdController);
+
+// Routes for Tour Guide Registration
+app.post("/api/v1/guideRegis", authenticateTourGuide, createGuideRegisController);
+app.put("/api/v1/guideRegis/:guideId", authenticateTourGuide, editGuideRegisController);
+app.delete("/api/v1/guideRegis/:guideId", authenticateTourGuide, deleteGuideRegisController);
+app.get("/api/v1/guideRegis", authenticateTourGuide, viewGuideRegisController);
+app.get("/api/v1/guideRegis/:guideId", authenticateTourGuide, viewGuideRegisByIdController);
