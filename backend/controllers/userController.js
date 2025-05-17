@@ -25,6 +25,7 @@ const createUserController = async (req, res) => {
         "Tourism Officer",
         "Cultural Director",
         "Tour Guide",
+        "Tour Operator"
       ];
       if (role && allowedRoles.includes(role)) {
         assignedRole = role; // Allow admins to assign roles
