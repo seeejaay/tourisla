@@ -22,7 +22,22 @@ const authenticateAdmin = (req, res, next) => {
   next();
 };
 
+// Middleware to check if the user is a tour guide
+const authenticateTourGuide = (req, res, next) => {
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ error: "Unauthorized: Please log in" });
+  }
+
+  if (req.session.user.role !== "Tour Guide") {
+    return res.status(403).json({ error: "Forbidden: Tour guides only" });
+  }
+
+  req.user = req.session.user; // Attach user info to the request object
+  next();
+};
+
 module.exports = {
   authenticateUser,
   authenticateAdmin,
+  authenticateTourGuide,
 };
