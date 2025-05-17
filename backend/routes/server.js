@@ -30,6 +30,17 @@ const {
   viewAnnouncementByIdController,
   getByCategoryController,
 } = require("../controllers/announceController.js");
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "http://192.168.0.130:3000",
+      "http://192.168.0.130", // change this to your local IP address
+      process.env.CLIENT_URL, // Add this if you want to support env config too
+    ],
+    credentials: true,
+  })
+);
 
 const {
   createHotlineController, 
@@ -64,18 +75,6 @@ app.use(
       httpOnly: false,
       maxAge: 1000 * 60 * 60 * 24, // 1 day
     },
-  })
-);
-
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "http://192.168.0.130:3000",
-      "http://192.168.0.130", // change this to your local IP address
-      process.env.CLIENT_URL, // Add this if you want to support env config too
-    ],
-    credentials: true,
   })
 );
 
@@ -114,7 +113,7 @@ app.get(
   viewUserController
 );
 app.put("/api/v1/users/:userId", authenticateUser, editUserController);
-app.put("/api/v1/delete", authenticateUser, deleteUserController);
+app.put("/api/v1/users/d/:userId", authenticateUser, deleteUserController);
 
 // Route for announcements
 app.get("/api/v1/announcements", viewAnnouncementController);

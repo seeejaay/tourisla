@@ -4,7 +4,7 @@ import Sidebar from "@/components/custom/sidebar";
 import { columns } from "@/components/custom/users/columns";
 import { DataTable } from "@/components/custom/users/data-table";
 import { useEffect, useState } from "react";
-import { fetchUsers, currentUser } from "@/lib/api";
+import { fetchUsers, currentUser, editUser, deleteUser } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { User } from "@/components/custom/users/columns";
 import {
@@ -16,14 +16,16 @@ import {
 } from "@/components/ui/dialog";
 
 import ViewUser from "@/components/custom/users/viewUser";
-
+import EditUser from "@/components/custom/users/editUser";
+import DeleteUser from "@/components/custom/users/deleteUser";
 export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
   const router = useRouter();
   const [dialogUser, setDialogUser] = useState<User | null>(null);
-
+  const [editDialogUser, setEditDialogUser] = useState<User | null>(null);
+  const [deleteDialogUser, setDeleteDialogUser] = useState<User | null>(null);
   useEffect(() => {
     async function getCurrentUserAndUsers() {
       try {
@@ -56,7 +58,14 @@ export default function Users() {
         <div className="flex max-w-[100rem] w-full flex-col items-center justify-start gap-4 px-4 py-2 lg:pl-0">
           <h1 className="text-4xl font-bold">Users</h1>
           <div className="w-full max-w-[90rem]">
-            <DataTable columns={columns(setDialogUser)} data={users} />
+            <DataTable
+              columns={columns(
+                setDialogUser,
+                setEditDialogUser,
+                setDeleteDialogUser
+              )}
+              data={users}
+            />
             <Dialog
               open={!!dialogUser}
               onOpenChange={() => setDialogUser(null)}
@@ -67,10 +76,75 @@ export default function Users() {
                   <DialogDescription>
                     Here are the details of the user.
                   </DialogDescription>
-                  <div className="mt-4">
-                    {dialogUser && <ViewUser user={dialogUser} />}
-                  </div>
                 </DialogHeader>
+                <div className="mt-4">
+                  {dialogUser && <ViewUser user={dialogUser} />}
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog
+              open={!!editDialogUser}
+              onOpenChange={() => setEditDialogUser(null)}
+            >
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit User</DialogTitle>
+                  <DialogDescription>
+                    Edit the details of the user.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="mt-4">
+                  {editDialogUser && (
+                    <EditUser
+                      user={editDialogUser}
+                      onSave={async (updatedUser) => {
+                        await editUser(updatedUser);
+                        setUsers((prev) =>
+                          prev.map((u) =>
+                            u.user_id === updatedUser.user_id ? updatedUser : u
+                          )
+                        );
+                        setEditDialogUser(null);
+                      }}
+                      onCancel={() => setEditDialogUser(null)}
+                    />
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog
+              open={!!deleteDialogUser}
+              onOpenChange={() => setDeleteDialogUser(null)}
+            >
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Delete User</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to delete this user? This action
+                    cannot be undone.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="mt-4">
+                  {deleteDialogUser && (
+                    <DeleteUser
+                      user={deleteDialogUser}
+                      onDelete={async (userId) => {
+                        await deleteUser(userId);
+                        setUsers((prev) =>
+                          prev.map((u) =>
+                            u.user_id === userId
+                              ? { ...u, status: "Inactive" }
+                              : u
+                          )
+                        );
+                        setDeleteDialogUser(null);
+                      }}
+                      onCancel={() => setDeleteDialogUser(null)}
+                    />
+                  )}
+                </div>
               </DialogContent>
             </Dialog>
           </div>

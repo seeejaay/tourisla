@@ -2,7 +2,7 @@ const bcrypt = require("bcrypt");
 const {
   createUser,
   editUser,
-  deleteUse,
+  deleteUser,
   findUserById,
 } = require("../models/userModel");
 
