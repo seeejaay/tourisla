@@ -185,6 +185,7 @@ const forgotPasswordController = async (req, res) => {
 
     await setResetPasswordToken(email, token, expires);
 
+    //on production, use the actual URL of your frontend
     const resetLink = `http://localhost:3000/reset-password?token=${token}`;
     await sendResetPasswordEmail(email, resetLink);
 
