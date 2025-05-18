@@ -18,7 +18,8 @@
     "express": "^4.21.2",
     "express-session": "^1.18.1",
     "jsonwebtoken": "^9.0.2",
-    "pg": "^8.14.1"
+    "pg": "^8.14.1",
+    "resend": "^4.5.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

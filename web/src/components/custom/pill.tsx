@@ -1,5 +1,4 @@
-import SignUp from "@/components/custom/signup";
-import { logout } from "@/lib/api";
+import { logout, currentUser } from "@/lib/api";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightToBracket, faUser } from "@fortawesome/free-solid-svg-icons";
@@ -12,14 +11,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-
 import { Button } from "@/components/ui/button";
 
 import { useRouter } from "next/navigation";
@@ -28,13 +19,17 @@ import { useState, useEffect } from "react";
 interface PillProps {
   className?: string;
 }
-
 export default function Pill({ className }: PillProps) {
   const router = useRouter();
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [user, setUser] = useState<{ name: string } | null>(null);
 
   useEffect(() => {
+    const fetchUser = async () => {
+      const userData = await currentUser();
+      setUser(userData);
+    };
+    fetchUser();
     const handleResize = () => setDropdownOpen(false);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -42,11 +37,12 @@ export default function Pill({ className }: PillProps) {
 
   const handleLogout = async () => {
     try {
-      await logout(); // Ensure logout is completed before refreshing
-
-      await router.push("/login"); // Redirect to login page
+      await logout();
+      setUser(null);
+      await router.push("/login");
     } catch (err) {
-      console.error("Error during logout:", err);
+      router.push("/login");
+      console.error("Logout failed", err);
     }
   };
 
@@ -73,61 +69,63 @@ export default function Pill({ className }: PillProps) {
             </DropdownMenuLabel>
 
             <div className="pb-2 px-1.5 flex flex-col gap-1">
-              <DropdownMenuItem className="hover:bg-gray-200 p-0 rounded-sm outline-0 flex items-start justify-start">
-                <Button
-                  onClick={() => router.push("/login")}
-                  variant={"link"}
-                  className="text-gray-700 hover:text-gray-900 hover:font-bold transition-all duration-300 ease-in-out flex flex-row hover:gap-16 items-center justify-start w-full rounded-none gap-6"
-                >
-                  Login
-                  <FontAwesomeIcon
-                    icon={faRightToBracket}
-                    className="text-gray-700 text-xs"
-                  />
-                </Button>
-              </DropdownMenuItem>
-
-              <DropdownMenuItem className="hover:bg-gray-200 p-0 rounded-sm outline-0 overflow-hidden">
-                <Button
-                  variant={"link"}
-                  className="text-gray-700 hover:text-gray-900 hover:font-bold transition-all duration-300 ease-in-out flex flex-row hover:gap-16 items-center justify-start w-full rounded-none gap-6"
-                  onClick={() => {
-                    setTimeout(() => setDialogOpen(true), 0);
-                  }}
-                >
-                  Sign Up
-                  <FontAwesomeIcon
-                    icon={faRightToBracket}
-                    className="text-gray-700 text-xs"
-                  />
-                </Button>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="hover:bg-gray-200 p-0 rounded-sm outline-0 overflow-hidden">
-                <Button
-                  variant={"link"}
-                  className="text-gray-700 hover:text-gray-900 hover:font-bold transition-all duration-300 ease-in-out flex flex-row hover:gap-16 items-center justify-start w-full rounded-none gap-6"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </Button>
-              </DropdownMenuItem>
+              {!user ? (
+                <>
+                  <DropdownMenuItem className="hover:bg-gray-200 p-0 rounded-sm outline-0 flex items-start justify-start">
+                    <Button
+                      onClick={() => router.push("/login")}
+                      variant={"link"}
+                      className="text-gray-700 hover:text-gray-900 hover:font-bold transition-all duration-300 ease-in-out flex flex-row hover:gap-16 items-center justify-start w-full rounded-none gap-6"
+                    >
+                      Login
+                      <FontAwesomeIcon
+                        icon={faRightToBracket}
+                        className="text-gray-700 text-xs"
+                      />
+                    </Button>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-gray-200 p-0 rounded-sm outline-0 overflow-hidden">
+                    <Button
+                      variant={"link"}
+                      className="text-gray-700 hover:text-gray-900 hover:font-bold transition-all duration-300 ease-in-out flex flex-row hover:gap-16 items-center justify-start w-full rounded-none gap-6"
+                      onClick={() => {
+                        router.push("/signup");
+                      }}
+                    >
+                      Sign Up
+                      <FontAwesomeIcon
+                        icon={faRightToBracket}
+                        className="text-gray-700 text-xs"
+                      />
+                    </Button>
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuItem className="hover:bg-gray-200 p-0 rounded-sm outline-0 flex items-start justify-start">
+                    <Button
+                      onClick={() => router.push("/profile")}
+                      variant={"link"}
+                      className="text-gray-700 hover:text-gray-900 hover:font-bold transition-all duration-300 ease-in-out flex flex-row hover:gap-16 items-center justify-start w-full rounded-none gap-6"
+                    >
+                      Profile
+                    </Button>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-gray-200 p-0 rounded-sm outline-0 overflow-hidden">
+                    <Button
+                      variant={"link"}
+                      className="text-gray-700 hover:text-gray-900 hover:font-bold transition-all duration-300 ease-in-out flex flex-row hover:gap-16 items-center justify-start w-full rounded-none gap-6"
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </Button>
+                  </DropdownMenuItem>
+                </>
+              )}
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-
-      {/* Always mounted outside the dropdown */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Sign Up</DialogTitle>
-            <DialogDescription>
-              Create an account to get started.
-            </DialogDescription>
-          </DialogHeader>
-          <SignUp />
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
