@@ -20,6 +20,7 @@ const {
   authenticateUser,
   authenticateAdmin,
   authenticateTourGuide,
+  authenticateTourOperator,
 } = require("../middleware/middleware.js");
 
 const {
@@ -63,6 +64,14 @@ const {
   editGuideUploadDocuController,
   getGuideUploadDocuByIdController,
 } = require("../controllers/guideUploadDocuController.js");
+
+const {
+  createOperatorRegisController,
+  editOperatorRegisController,
+  deleteOperatorRegisController,
+  viewAllOperatorRegisController,
+  viewOperatorRegisByIdController,
+} = require("../controllers/operatorRegisController.js");
 
 app.use(
   session({
@@ -189,4 +198,31 @@ app.get(
   "/api/v1/guideUploadDocu/:docuId",
   authenticateTourGuide,
   getGuideUploadDocuByIdController
+);
+
+// Routes for Tour Operator Registration
+app.post(
+  "/api/v1/operatorRegis",
+  authenticateTourOperator,
+  createOperatorRegisController
+);
+app.put(
+  "/api/v1/operatorRegis/:operatorId",
+  authenticateTourOperator,
+  editOperatorRegisController
+);
+app.delete(
+  "/api/v1/operatorRegis/:operatorId",
+  authenticateTourOperator,
+  deleteOperatorRegisController
+);
+app.get(
+  "/api/v1/operatorRegis",
+  authenticateTourOperator,
+  viewAllOperatorRegisController
+);
+app.get(
+  "/api/v1/operatorRegis/:operatorId",
+  authenticateTourOperator,
+  viewOperatorRegisByIdController
 );
