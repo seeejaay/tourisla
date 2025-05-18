@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const db = require("../db/index.js");
 
 const createOperatorRegis = async (operatorRegisData) => {
   const { operator_name, representative_name, email, mobile_number, office_address, application_status } = operatorRegisData;

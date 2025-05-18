@@ -5,9 +5,7 @@ const {
   getGuideUploadDocuById
 } = require("../models/guideUploadDocuModel.js");
 
-
 // from tour guide's end: can upload (create), update, and view their own documents only
-
 
 const createGuideUploadDocuController = async (req, res) => {
   try {

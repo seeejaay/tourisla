@@ -73,6 +73,12 @@ const {
   viewOperatorRegisByIdController,
 } = require("../controllers/operatorRegisController.js");
 
+const {
+  createOperatorUploadDocuController,
+  editOperatorUploadDocuController,
+  getOperatorUploadDocuByIdController,
+} = require("../controllers/operatorUploadDocuController.js");
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -225,4 +231,21 @@ app.get(
   "/api/v1/operatorRegis/:operatorId",
   authenticateTourOperator,
   viewOperatorRegisByIdController
+);
+
+// Routes for Tour Operator Document Upload
+app.post(
+  "/api/v1/operatorUploadDocu/:operatorId",
+  authenticateTourOperator,
+  createOperatorUploadDocuController
+);
+app.put(
+  "/api/v1/operatorUploadDocu/:documentId",
+  authenticateTourOperator,
+  editOperatorUploadDocuController
+);
+app.get(
+  "/api/v1/operatorUploadDocu/:documentId",
+  authenticateTourOperator,
+  getOperatorUploadDocuByIdController
 );
