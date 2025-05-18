@@ -1,5 +1,5 @@
 const db = require("../db/index.js");
-
+const bcrypt = require("bcrypt");
 const createUser = async (userData) => {
   const {
     first_name,
@@ -88,6 +88,31 @@ const findUserById = async (id) => {
   return result.rows[0];
 };
 
+const setResetPasswordToken = async (email, token, expires) => {
+  const result = await db.query(
+    "UPDATE users SET reset_password_token = $1, reset_password_expires = $2 WHERE email = $3 RETURNING *",
+    [token, expires, email]
+  );
+  return result.rows[0];
+};
+
+const getUserByResetToken = async (token) => {
+  const result = await db.query(
+    "SELECT * FROM users WHERE reset_password_token = $1 AND reset_password_expires > NOW()",
+    [token]
+  );
+  return result.rows[0];
+};
+
+const updatePassword = async (userId, newPassword) => {
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  const result = await db.query(
+    "UPDATE users SET password = $1, reset_password_token = NULL, reset_password_expires = NULL WHERE user_id = $2 RETURNING *",
+    [hashedPassword, userId]
+  );
+  return result.rows[0];
+};
+
 module.exports = {
   findUserById,
   findUserByEmail,
@@ -96,4 +121,7 @@ module.exports = {
   deleteUser,
   statusCheck,
   loginDate,
+  setResetPasswordToken,
+  getUserByResetToken,
+  updatePassword,
 };

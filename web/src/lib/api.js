@@ -181,3 +181,42 @@ export const deleteUser = async (userId) => {
     throw error; // Re-throw the error for handling in the calling code
   }
 };
+
+export const forgotPassword = async (email) => {
+  try {
+    const response = await axios.post(`${API_URL}forgot-password`, { email });
+    if (response.status !== 200) {
+      throw new Error(
+        `Failed to send reset link. Server responded with status: ${response.status}`
+      );
+    }
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error sending forgot password email:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const resetPassword = async (token, password) => {
+  try {
+    const response = await axios.post(`${API_URL}reset-password`, {
+      token,
+      password,
+    });
+    if (response.status !== 200) {
+      throw new Error(
+        `Failed to reset password. Server responded with status: ${response.status}`
+      );
+    }
+    return response.data;
+  } catch (error) {
+    console.log(
+      "Error resetting password:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};

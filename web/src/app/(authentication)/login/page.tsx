@@ -2,7 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { login } from "@/lib/api"; // Import the login function
+import { login } from "@/lib/api";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -12,12 +23,10 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
+    setError("");
 
     try {
-      await login({ email, password }); // Use the login function
-
-      // Redirect to the dashboard or home page
+      await login({ email, password });
       router.push("/");
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -29,57 +38,82 @@ export default function Login() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-4 text-center">Login</h1>
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-3xl font-extrabold text-center text-blue-700 tracking-tight">
+            Welcome Back
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <Label htmlFor="email" className="mb-1">
+                Email
+              </Label>
+              <Input
+                type="email"
+                id="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="you@email.com"
+              />
+            </div>
+            <div>
+              <Label htmlFor="password" className="mb-1">
+                Password
+              </Label>
+              <Input
+                type="password"
+                id="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="••••••••"
+              />
+              <div className="flex justify-end mt-1">
+                <Button
+                  type="button"
+                  variant="link"
+                  className="text-xs text-blue-600 p-0 h-auto"
+                  onClick={() => router.push("/forgot-password")}
+                >
+                  Forgot password?
+                </Button>
+              </div>
+            </div>
+            <Button type="submit" className="w-full">
+              Login
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="flex flex-col gap-4">
+          <div className="flex items-center w-full">
+            <div className="flex-grow border-t border-gray-200"></div>
+            <span className="mx-3 text-gray-400 text-xs">or</span>
+            <div className="flex-grow border-t border-gray-200"></div>
           </div>
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
+          <p className="text-center text-gray-600 text-sm w-full">
+            Don&apos;t have an account?{" "}
+            <Button
+              type="button"
+              variant="link"
+              className="text-blue-600 font-medium p-0 h-auto"
+              onClick={() => router.push("/signup")}
             >
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Login
-          </button>
-        </form>
-        <p className="text-center text-gray-500 mt-4">
-          Don&apos;t have an account?{" "}
-          <a href="/signup" className="text-blue-500 hover:underline">
-            Sign up here
-          </a>
-        </p>
-      </div>
+              Sign up here
+            </Button>
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

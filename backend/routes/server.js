@@ -15,6 +15,8 @@ const {
   editUserController,
   deleteUserController,
   viewUserController,
+  forgotPasswordController,
+  resetPasswordController,
 } = require("../controllers/userController.js");
 const {
   authenticateUser,
@@ -96,6 +98,9 @@ app.get("/api/v1/users", async (req, res) => {
 // Route for creating users (accessible by both admins and new users)
 app.post("/api/v1/users", createUserController);
 
+// Route for forgot password
+app.post("/api/v1/forgot-password", forgotPasswordController);
+app.post("/api/v1/reset-password", resetPasswordController);
 // Route for admin-only actions
 app.post("/api/v1/admin-action", authenticateAdmin, (req, res) => {
   res.json({ message: "This is an admin-only action" });
