@@ -15,7 +15,6 @@ const {
   editUserController,
   deleteUserController,
   viewUserController,
-  viewUserController,
 } = require("../controllers/userController.js");
 const {
   authenticateUser,
