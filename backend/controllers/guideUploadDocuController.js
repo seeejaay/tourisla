@@ -47,7 +47,7 @@ const createGuideUploadDocuController = async (req, res) => {
       tourguide_id: guideId,
       document_type,
       file_path,
-      requirements
+      requirements: JSON.stringify(requirements)
     });
 
     res.json(guideUploadDocu);
