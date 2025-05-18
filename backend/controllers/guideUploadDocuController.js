@@ -5,22 +5,49 @@ const {
   getGuideUploadDocuById
 } = require("../models/guideUploadDocuModel.js");
 
+
 // from tour guide's end: can upload (create), update, and view their own documents only
+
 
 const createGuideUploadDocuController = async (req, res) => {
   try {
     const { guideId } = req.params;
-    const { document_type, file_path } = req.body;
+    const { document_type, file_path, requirements } = req.body;
 
-    const allowedTypes = ['gov_id', 'residency_cert', 'training_cert', 'resume'];
+    const allowedTypes = [
+      'gov_id',
+      'birth_cert',
+      'nbi_clearance',
+      'brgy_clearance',
+      'med_cert',
+      'passport_photo',
+      'resume'
+    ];
+
     if (!allowedTypes.includes(document_type)) {
       return res.status(400).json({ error: "Invalid document type" });
+    }
+
+    // all 5 requirements should be checked
+    const requiredFlags = [
+      "filipino_citizen",
+      "fit",
+      "fluent",
+      "training_certified",
+      "no_criminal_record"
+    ];
+
+    const isComplete = requiredFlags.every(flag => requirements.includes(flag));
+
+    if (!isComplete) {
+      return res.status(400).json({ error: "All qualifications must be checked." });
     }
 
     const guideUploadDocu = await createGuideUploadDocu({
       tourguide_id: guideId,
       document_type,
-      file_path
+      file_path,
+      requirements
     });
 
     res.json(guideUploadDocu);
@@ -30,12 +57,22 @@ const createGuideUploadDocuController = async (req, res) => {
   }
 };
 
+
 const editGuideUploadDocuController = async (req, res) => {
   try {
     const { docuId } = req.params;
     const { document_type, file_path } = req.body;
 
-    const allowedTypes = ['gov_id', 'residency_cert', 'training_cert', 'resume'];
+    const allowedTypes = [
+      'gov_id',
+      'birth_cert',
+      'nbi_clearance',
+      'brgy_clearance',
+      'med_cert',
+      'passport_photo',
+      'resume'
+    ];
+
     if (!allowedTypes.includes(document_type)) {
       return res.status(400).json({ error: "Invalid document type" });
     }
@@ -52,11 +89,11 @@ const editGuideUploadDocuController = async (req, res) => {
   }
 };
 
+
 const getGuideUploadDocuByIdController = async (req, res) => {
   try {
     const { docuId } = req.params;
     const currentUserId = req.session.user.id; // current user ID from session
-
     const guideUploadDocu = await getGuideUploadDocuById(docuId);
 
     if (!guideUploadDocu) {
@@ -73,6 +110,7 @@ const getGuideUploadDocuByIdController = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 module.exports = {
   createGuideUploadDocuController,
