@@ -1,6 +1,11 @@
 const bcrypt = require("bcrypt");
-const { createUser, editUser, deleteUser } = require("../models/userModel");
-const { findUserByEmail } = require("../models/userModel");
+const {
+  createUser,
+  editUser,
+  deleteUser,
+  findUserById,
+} = require("../models/userModel");
+
 const createUserController = async (req, res) => {
   try {
     const {
@@ -77,7 +82,7 @@ const currentUserController = async (req, res) => {
 
 const editUserController = async (req, res) => {
   try {
-    const oldEmail = req.session.user.email;
+    const userId = req.params.userId; // Get userId from URL
     const {
       first_name,
       last_name,
@@ -85,16 +90,31 @@ const editUserController = async (req, res) => {
       password,
       phone_number,
       nationality,
+      role,
+      status,
+      last_login_at,
     } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const updatedUser = await editUser(oldEmail, {
+
+    let updatedFields = {
       first_name,
       last_name,
       email,
-      password: hashedPassword,
       phone_number,
       nationality,
-    });
+      role,
+      status,
+      last_login_at,
+    };
+
+    // Only hash and update password if provided
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updatedFields.password = hashedPassword;
+    }
+
+    // Call your model's editUser with userId and updatedFields
+    const updatedUser = await editUser(userId, updatedFields);
+
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -125,9 +145,28 @@ const deleteUserController = async (req, res) => {
   }
 };
 
+const viewUserController = async (req, res) => {
+  try {
+    const userId = req.params.userId; // Assuming userId is passed as a URL parameter
+    const user = await findUserById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json({
+      status: "success",
+      data: { user },
+    });
+    console.log("User data:", user);
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   createUserController,
   currentUserController,
   editUserController,
   deleteUserController,
+  viewUserController,
 };

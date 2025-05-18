@@ -1,21 +1,25 @@
 const bcrypt = require("bcrypt");
-const { findUserByEmail, statusCheck } = require("../models/userModel");
+const {
+  findUserByEmail,
+  statusCheck,
+  loginDate,
+} = require("../models/userModel");
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
+  const ipAddress = req.headers["x-forwarded-for"]?.split(",")[0] || req.ip;
+
   try {
     const user = await findUserByEmail(email);
-    const status = await statusCheck(email);
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (status && status.status === "Inactive") {
-      return res.status(401).json({ error: "Account is inactive" });
-    }
-
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
-
+    const status = await statusCheck(email);
+    if (status && status.status === "Inactive") {
+      return res.status(401).json({ error: "Account is inactive" });
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
@@ -28,7 +32,7 @@ const loginUser = async (req, res) => {
       phone_number: user.phone_number,
       role: user.role,
     };
-
+    await loginDate(email, ipAddress);
     res.status(200).json({
       message: "Login successful",
       user: {
@@ -49,7 +53,7 @@ const loginUser = async (req, res) => {
 const logoutUser = (req, res) => {
   req.session.destroy((err) => {
     if (err) {
-      return res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({ error: "Internal server error" + err });
     }
     res.clearCookie("connect.sid");
     res.status(200).json({ message: "Logout successful" });
