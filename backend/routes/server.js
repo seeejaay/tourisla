@@ -15,6 +15,7 @@ const {
   editUserController,
   deleteUserController,
   viewUserController,
+  viewUserController,
 } = require("../controllers/userController.js");
 const {
   authenticateUser,
@@ -43,11 +44,11 @@ app.use(
 );
 
 const {
-  createHotlineController, 
+  createHotlineController,
   editHotlineController,
   deleteHotlineController,
   viewHotlinesController,
-  viewHotlineByIdController
+  viewHotlineByIdController,
 } = require("../controllers/hotlineController.js");
 
 const {
@@ -63,7 +64,6 @@ const {
   editGuideUploadDocuController,
   getGuideUploadDocuByIdController,
 } = require("../controllers/guideUploadDocuController.js");
-
 
 app.use(
   session({
@@ -132,21 +132,48 @@ app.delete(
   deleteAnnouncementController,
   authenticateAdmin
 );
-app.get("/api/v1/announcements/category/:category([a-zA-Z0-9-_]+)", getByCategoryController);
+app.get(
+  "/api/v1/announcements/category/:category([a-zA-Z0-9-_]+)",
+  getByCategoryController
+);
 
 // Routes for Hotlines
 app.post("/api/v1/hotlines", authenticateAdmin, createHotlineController);
-app.put("/api/v1/hotlines/:hotlineId", authenticateAdmin, editHotlineController);
-app.delete("/api/v1/hotlines/:hotlineId", authenticateAdmin, deleteHotlineController);
+app.put(
+  "/api/v1/hotlines/:hotlineId",
+  authenticateAdmin,
+  editHotlineController
+);
+app.delete(
+  "/api/v1/hotlines/:hotlineId",
+  authenticateAdmin,
+  deleteHotlineController
+);
 app.get("/api/v1/hotlines", viewHotlinesController);
 app.get("/api/v1/hotlines/:hotlineId", viewHotlineByIdController);
 
 // Routes for Tour Guide Registration
-app.post("/api/v1/guideRegis", authenticateTourGuide, createGuideRegisController);
-app.put("/api/v1/guideRegis/:guideId", authenticateTourGuide, editGuideRegisController);
-app.delete("/api/v1/guideRegis/:guideId", authenticateTourGuide, deleteGuideRegisController);
+app.post(
+  "/api/v1/guideRegis",
+  authenticateTourGuide,
+  createGuideRegisController
+);
+app.put(
+  "/api/v1/guideRegis/:guideId",
+  authenticateTourGuide,
+  editGuideRegisController
+);
+app.delete(
+  "/api/v1/guideRegis/:guideId",
+  authenticateTourGuide,
+  deleteGuideRegisController
+);
 app.get("/api/v1/guideRegis", authenticateTourGuide, viewGuideRegisController);
-app.get("/api/v1/guideRegis/:guideId", authenticateTourGuide, viewGuideRegisByIdController);
+app.get(
+  "/api/v1/guideRegis/:guideId",
+  authenticateTourGuide,
+  viewGuideRegisByIdController
+);
 
 // Routes for Tour Guide Document Upload
 app.post(
