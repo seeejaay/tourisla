@@ -14,6 +14,7 @@ const {
   currentUserController,
   editUserController,
   deleteUserController,
+  viewUserController,
 } = require("../controllers/userController.js");
 const {
   authenticateUser,
@@ -29,13 +30,24 @@ const {
   viewAnnouncementByIdController,
   getByCategoryController,
 } = require("../controllers/announceController.js");
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "http://192.168.0.130:3000",
+      "http://192.168.0.130", // change this to your local IP address
+      process.env.CLIENT_URL, // Add this if you want to support env config too
+    ],
+    credentials: true,
+  })
+);
 
 const {
-  createHotlineController, 
+  createHotlineController,
   editHotlineController,
   deleteHotlineController,
   viewHotlinesController,
-  viewHotlineByIdController
+  viewHotlineByIdController,
 } = require("../controllers/hotlineController.js");
 
 const {
@@ -52,7 +64,6 @@ const {
   getGuideUploadDocuByIdController,
 } = require("../controllers/guideUploadDocuController.js");
 
-
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -64,13 +75,6 @@ app.use(
       maxAge: 1000 * 60 * 60 * 24, // 1 day
     },
   })
-);
-
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL,
-    credentials: true,
-  }) // Allow credentials (cookies) to be sent
 );
 
 const port = process.env.PORT || 3005;
@@ -101,9 +105,14 @@ app.post("/api/v1/login", loginUser);
 app.post("/api/v1/logout", logoutUser);
 
 app.get("/api/v1/user", authenticateUser, currentUserController);
-
-app.put("/api/v1/edit", authenticateUser, editUserController);
-app.put("/api/v1/delete", authenticateUser, deleteUserController);
+app.get(
+  "/api/v1/users/:userId",
+  authenticateUser,
+  authenticateAdmin,
+  viewUserController
+);
+app.put("/api/v1/users/:userId", authenticateUser, editUserController);
+app.put("/api/v1/users/d/:userId", authenticateUser, deleteUserController);
 
 // Route for announcements
 app.get("/api/v1/announcements", viewAnnouncementController);
@@ -122,21 +131,48 @@ app.delete(
   deleteAnnouncementController,
   authenticateAdmin
 );
-app.get("/api/v1/announcements/category/:category([a-zA-Z0-9-_]+)", getByCategoryController);
+app.get(
+  "/api/v1/announcements/category/:category([a-zA-Z0-9-_]+)",
+  getByCategoryController
+);
 
 // Routes for Hotlines
 app.post("/api/v1/hotlines", authenticateAdmin, createHotlineController);
-app.put("/api/v1/hotlines/:hotlineId", authenticateAdmin, editHotlineController);
-app.delete("/api/v1/hotlines/:hotlineId", authenticateAdmin, deleteHotlineController);
+app.put(
+  "/api/v1/hotlines/:hotlineId",
+  authenticateAdmin,
+  editHotlineController
+);
+app.delete(
+  "/api/v1/hotlines/:hotlineId",
+  authenticateAdmin,
+  deleteHotlineController
+);
 app.get("/api/v1/hotlines", viewHotlinesController);
 app.get("/api/v1/hotlines/:hotlineId", viewHotlineByIdController);
 
 // Routes for Tour Guide Registration
-app.post("/api/v1/guideRegis", authenticateTourGuide, createGuideRegisController);
-app.put("/api/v1/guideRegis/:guideId", authenticateTourGuide, editGuideRegisController);
-app.delete("/api/v1/guideRegis/:guideId", authenticateTourGuide, deleteGuideRegisController);
+app.post(
+  "/api/v1/guideRegis",
+  authenticateTourGuide,
+  createGuideRegisController
+);
+app.put(
+  "/api/v1/guideRegis/:guideId",
+  authenticateTourGuide,
+  editGuideRegisController
+);
+app.delete(
+  "/api/v1/guideRegis/:guideId",
+  authenticateTourGuide,
+  deleteGuideRegisController
+);
 app.get("/api/v1/guideRegis", authenticateTourGuide, viewGuideRegisController);
-app.get("/api/v1/guideRegis/:guideId", authenticateTourGuide, viewGuideRegisByIdController);
+app.get(
+  "/api/v1/guideRegis/:guideId",
+  authenticateTourGuide,
+  viewGuideRegisByIdController
+);
 
 // Routes for Tour Guide Document Upload
 app.post(
