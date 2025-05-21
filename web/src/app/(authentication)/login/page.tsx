@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/lib/api";
+import { loginSchema } from "@/app/static/loginSchema";
 import {
   Card,
   CardContent,
@@ -25,9 +26,21 @@ export default function Login() {
     e.preventDefault();
     setError("");
 
+    // Validate with Zod before API call
+    const result = loginSchema.safeParse({ email, password });
+    if (!result.success) {
+      setError(result.error.errors[0].message);
+      return;
+    }
+
     try {
-      await login({ email, password });
-      router.push("/");
+      const res = await login({ email, password });
+      const user = res.user;
+      if (user.role === "Admin") {
+        router.replace("/admin/dashboard");
+      } else {
+        router.replace("/");
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message || "An error occurred during login.");
@@ -90,7 +103,10 @@ export default function Login() {
                 </Button>
               </div>
             </div>
-            <Button type="submit" className="w-full">
+            <Button
+              type="submit"
+              className="w-full cursor-pointer bg-blue-400 hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded"
+            >
               Login
             </Button>
           </form>
@@ -106,7 +122,7 @@ export default function Login() {
             <Button
               type="button"
               variant="link"
-              className="text-blue-600 font-medium p-0 h-auto"
+              className="text-blue-600 font-medium p-0 h-auto cursor-pointer"
               onClick={() => router.push("/signup")}
             >
               Sign up here

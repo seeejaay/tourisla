@@ -1,4 +1,4 @@
-import { User } from "./columns";
+import { User } from "../announcements/columns";
 
 export default function ViewUser({ user }: { user: User }) {
   if (!user) return null;

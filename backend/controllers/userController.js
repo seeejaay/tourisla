@@ -27,7 +27,10 @@ const createUserController = async (req, res) => {
 
     // Default role for new users
     let assignedRole = "Tourist";
-
+    const existingUser = await findUserByEmail(email);
+    if (existingUser) {
+      return res.status(409).json({ error: "Email already exists" });
+    }
     // Check if the authenticated user is an admin
     if (req.session && req.session.user && req.session.user.role === "Admin") {
       const allowedRoles = [
