@@ -6,8 +6,8 @@ const {
 } = require("../models/userModel");
 
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
-
+  let { email, password } = req.body;
+  email = email.toUpperCase();
   const ipAddress = req.headers["x-forwarded-for"]?.split(",")[0] || req.ip;
 
   try {

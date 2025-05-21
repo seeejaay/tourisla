@@ -5,6 +5,7 @@ import adminNavigation from "@/app/static/admin-navigation";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 import { logout } from "@/lib/api"; // Import the logout function
 
@@ -13,13 +14,14 @@ import { LogOut, PanelLeftOpen, PanelLeftClose } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 const Sidebar = () => {
+  const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const pathName = usePathname();
 
   const handleLogout = async () => {
     try {
       await logout(); // Ensure logout is completed before refreshing
-      window.location.href = "/login"; // Redirect to login page
+      router.replace("/login"); // Redirect to the login page
     } catch (err) {
       console.error("Error during logout:", err);
     }
@@ -27,7 +29,7 @@ const Sidebar = () => {
   return (
     <>
       <nav
-        className={`fixed bg-gray-900 text-white h-full flex flex-col transition-all duration-300 shadow-lg ${
+        className={`fixed bg-gray-900 text-white h-full flex flex-col transition-all duration-300  ${
           isCollapsed ? "w-16 z-0" : "w-64 z-10"
         }`}
       >
@@ -59,16 +61,19 @@ const Sidebar = () => {
         <Separator />
 
         {/* Sidebar Body */}
-        <div className="flex-grow flex flex-col">
-          <ul className="space-y-4 p-4">
+        <div className="flex-grow flex flex-col ">
+          <ul className="space-y-4 py-5 pl-4">
             {adminNavigation.map((item) => (
               <li key={item.name} className="group relative">
-                <Link
-                  href={item.href}
-                  className={`flex items-center space-x-4 p-2 rounded-md transition ${
-                    isCollapsed ? "justify-center" : ""
-                  } ${
-                    pathName === item.href ? "bg-gray-700" : "hover:bg-gray-700"
+                <Button
+                  variant={"ghost"}
+                  onClick={() => {
+                    router.push(item.href);
+                  }}
+                  className={`flex items-center space-x-4 p-2 rounded-bl-full rounded-tl-full transition hover:text-white hover:bg-gray-700 w-full justify-start  ${
+                    pathName === item.href
+                      ? "bg-gray-200 text-gray-700"
+                      : "hover:bg-gray-700"
                   }`}
                 >
                   <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -77,7 +82,7 @@ const Sidebar = () => {
                       {item.name}
                     </span>
                   )}
-                </Link>
+                </Button>
                 {isCollapsed && (
                   <span className="absolute left-16 top-0 bg-gray-800 text-white rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition w-auto">
                     {item.name}
@@ -97,9 +102,7 @@ const Sidebar = () => {
               console.log("Logging out...");
               handleLogout();
             }}
-            className={`flex items-center space-x-2 w-full rounded-md text-white cursor-pointer transition ${
-              isCollapsed ? "justify-center p-2" : "p-3"
-            }`}
+            className={`flex items-center space-x-2 w-full rounded-md justify-start text-white cursor-pointer transition rounded-bl-full rounded-tl-full`}
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
             {/* Show text only if not collapsed */}
@@ -109,11 +112,14 @@ const Sidebar = () => {
           </Button>
         </div>
         <Separator />
-        <div className="p-4">
+        <div className="p-4 w-full flex flex-col items-center justify-start">
           {!isCollapsed && (
-            <p className="text-xs text-gray-400 text-center">
+            <p className="text-xs text-gray-400  ">
               © 2025 tourisla. All rights reserved.
             </p>
+          )}
+          {isCollapsed && (
+            <p className="text-xs text-gray-400 opacity-100 transition">2025</p>
           )}
         </div>
       </nav>

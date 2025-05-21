@@ -4,14 +4,22 @@ const formFields = [
     label: "First Name",
     type: "text",
     placeholder: "First Name",
+    className: "uppercase",
   },
   {
     name: "last_name",
     label: "Last Name",
     type: "text",
     placeholder: "Last Name",
+    className: "uppercase",
   },
-  { name: "email", label: "Email", type: "text", placeholder: "Email" },
+  {
+    name: "email",
+    label: "Email",
+    type: "text",
+    placeholder: "Email",
+    className: "uppercase",
+  },
   {
     name: "password",
     label: "Password",
@@ -27,7 +35,7 @@ const formFields = [
   {
     name: "phone_number",
     label: "Phone Number",
-    type: "text",
+    type: "tel",
     placeholder: "Phone Number",
   },
 ];

@@ -39,7 +39,7 @@ export default function DashboardPage() {
     <>
       <Sidebar />
       {/* Main content */}
-      <div className="flex flex-col items-center justify-center min-h-screen py-2 lg:pl-0 pl-16">
+      <div className="flex flex-col items-center justify-center bg-gray-200 min-h-screen py-2 lg:pl-0 pl-16">
         {loading ? (
           <p>Loading...</p>
         ) : (

@@ -1,12 +1,11 @@
 "use client";
 
 import Sidebar from "@/components/custom/sidebar";
-import { columns } from "@/components/custom/users/columns";
+import { User, columns } from "@/components/custom/users/columns";
 import { DataTable } from "@/components/custom/users/data-table";
 import { useEffect, useState } from "react";
 import { fetchUsers, currentUser, editUser, deleteUser } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { User } from "@/components/custom/users/columns";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +17,7 @@ import {
 import ViewUser from "@/components/custom/users/viewUser";
 import EditUser from "@/components/custom/users/editUser";
 import DeleteUser from "@/components/custom/users/deleteUser";
+
 export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +26,7 @@ export default function Users() {
   const [dialogUser, setDialogUser] = useState<User | null>(null);
   const [editDialogUser, setEditDialogUser] = useState<User | null>(null);
   const [deleteDialogUser, setDeleteDialogUser] = useState<User | null>(null);
+
   useEffect(() => {
     async function getCurrentUserAndUsers() {
       try {
@@ -54,9 +55,14 @@ export default function Users() {
   return (
     <>
       <Sidebar />
-      <main className="flex flex-col items-center justify-start min-h-screen gap-12 w-full">
+      <main className="flex flex-col items-center justify-start min-h-screen gap-12 w-full bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4">
         <div className="flex max-w-[100rem] w-full flex-col items-center justify-start gap-4 px-4 py-2 lg:pl-0">
-          <h1 className="text-4xl font-bold">Users</h1>
+          <h1 className="text-4xl font-extrabold text-center text-blue-700 tracking-tight">
+            Users
+          </h1>
+          <p className="mt-2 text-lg text-gray-700">
+            Manage all users in the system.
+          </p>
           <div className="w-full max-w-[90rem]">
             <DataTable
               columns={columns(

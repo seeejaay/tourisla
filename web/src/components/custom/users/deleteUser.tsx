@@ -1,4 +1,4 @@
-import { User } from "./columns";
+import { User } from "../announcements/columns";
 import { Button } from "@/components/ui/button";
 
 export default function DeleteUser({

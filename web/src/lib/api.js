@@ -78,7 +78,7 @@ export const login = async (userData) => {
       );
     }
 
-    console.log("API Response"); // Log the API response
+    console.log("Login Successful"); // Log the API response
     return response.data; // Return response data
   } catch (error) {
     console.error("Error during login:", error.response?.data || error.message);
