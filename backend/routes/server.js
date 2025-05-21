@@ -36,6 +36,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://192.168.0.130:3000",
+      "http://192.168.0.135:3000",
       "http://192.168.0.130", // change this to your local IP address
       process.env.CLIENT_URL, // Add this if you want to support env config too
     ],
