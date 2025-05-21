@@ -1,11 +1,15 @@
-import { Text, View } from "react-native";
+import { useEffect } from 'react';
+import { useRouter } from 'expo-router';
 
 export default function Index() {
-  return (
-    <View className="flex-1 justify-center items-center">
-      <Text className="text-red-500">
-        Edit app/index.tsx to edit this screen.
-      </Text>
-    </View>
-  );
+  const router = useRouter();
+
+  useEffect(() => {
+    // Don't run immediately unless you're sure the layout is mounted
+    setTimeout(() => {
+      router.push('/login'); // or whatever route
+    }, 100); // delay to ensure layout mounts
+  }, []);
+
+  return null;
 }
