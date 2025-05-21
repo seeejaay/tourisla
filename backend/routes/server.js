@@ -64,6 +64,15 @@ const {
   getGuideUploadDocuByIdController,
 } = require("../controllers/guideUploadDocuController.js");
 
+const {
+  createTouristSpotController,
+  editTouristSpotController,
+  deleteTouristSpotController,
+  viewTouristSpotsController,
+  viewTouristSpotByIdController,
+} = require('../controllers/touristSpotController');
+
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -137,7 +146,11 @@ app.get(
 );
 
 // Routes for Hotlines
-app.post("/api/v1/hotlines", authenticateAdmin, createHotlineController);
+app.post(
+  "/api/v1/hotlines", 
+  authenticateAdmin, 
+  createHotlineController
+);
 app.put(
   "/api/v1/hotlines/:hotlineId",
   authenticateAdmin,
@@ -190,3 +203,23 @@ app.get(
   authenticateTourGuide,
   getGuideUploadDocuByIdController
 );
+
+// Routes for Tourist Spots
+app.post(
+  "/api/v1/tourist-spots",
+  authenticateAdmin,
+  createTouristSpotController
+);
+app.put(
+  "/api/v1/tourist-spots/:touristSpotId",
+  authenticateAdmin,
+  editTouristSpotController
+);
+app.delete(
+  "/api/v1/tourist-spots/:touristSpotId",
+  authenticateAdmin,
+  deleteTouristSpotController
+);
+app.get("/api/v1/tourist-spots", viewTouristSpotsController);
+app.get("/api/v1/tourist-spots/:touristSpotId", viewTouristSpotByIdController);
+
