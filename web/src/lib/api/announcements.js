@@ -55,7 +55,7 @@ export const createAnnouncement = async (announcementData) => {
       }
     );
 
-    if (response.status !== 201) {
+    if (response.status !== 200) {
       throw new Error(
         `Failed to create announcement. Server responded with status: ${response.status}`
       );

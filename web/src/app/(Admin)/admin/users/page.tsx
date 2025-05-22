@@ -1,8 +1,12 @@
 "use client";
 
 import Sidebar from "@/components/custom/sidebar";
-import { User, columns } from "@/components/custom/users/columns";
-import { DataTable } from "@/components/custom/users/data-table";
+import {
+  User,
+  columns as userColumns,
+} from "@/components/custom/users/columns";
+import DataTable from "@/components/custom/data-table";
+import SignUp from "@/components/custom/signup";
 import { useEffect, useState } from "react";
 import { fetchUsers, currentUser, editUser, deleteUser } from "@/lib/api";
 import { useRouter } from "next/navigation";
@@ -65,12 +69,16 @@ export default function Users() {
           </p>
           <div className="w-full max-w-[90rem]">
             <DataTable
-              columns={columns(
+              columns={userColumns(
                 setDialogUser,
                 setEditDialogUser,
                 setDeleteDialogUser
               )}
               data={users}
+              addDialogTitle="Add User"
+              AddDialogComponent={<SignUp />}
+              searchPlaceholder="Search users..."
+              searchColumn="name"
             />
             <Dialog
               open={!!dialogUser}
