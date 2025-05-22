@@ -1,13 +1,20 @@
 "use client";
 
 import Sidebar from "@/components/custom/sidebar";
+// import {
+//   Announcement,
+//   columns,
+// } from "@/components/custom/announcements/columns";
 import {
   Announcement,
-  columns,
+  columns as announcementColumns,
 } from "@/components/custom/announcements/columns";
-import { DataTable } from "@/components/custom/announcements/data-table";
+import DataTable from "@/components/custom/data-table";
+import AddAnnouncement from "@/components/custom/announcements/addAnnouncement";
+
 import { useEffect, useState } from "react";
 import { currentUser } from "@/lib/api";
+
 import {
   fetchAnnouncements,
   updateAnnouncement,
@@ -36,6 +43,15 @@ export default function AnnouncementsPage() {
     useState<Announcement | null>(null);
   const [deleteDialogAnnouncement, setDeleteDialogAnnouncement] =
     useState<Announcement | null>(null);
+
+  const refreshAnnouncements = async () => {
+    try {
+      const data = await fetchAnnouncements();
+      setAnnouncements(data);
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+    }
+  };
 
   useEffect(() => {
     async function getCurrentUserAndAnnouncements() {
@@ -68,12 +84,18 @@ export default function AnnouncementsPage() {
           </p>
           <div className="w-full max-w-[90rem]">
             <DataTable
-              columns={columns(
+              columns={announcementColumns(
                 setDialogAnnouncement,
                 setEditDialogAnnouncement,
                 setDeleteDialogAnnouncement
               )}
               data={announcements}
+              addDialogTitle="Add Announcement"
+              AddDialogComponent={
+                <AddAnnouncement onSuccess={refreshAnnouncements} />
+              }
+              searchPlaceholder="Search announcements..."
+              searchColumn="title"
             />
             {/* View Dialog */}
             <Dialog
