@@ -141,8 +141,8 @@ const editUserController = async (req, res) => {
 
 const deleteUserController = async (req, res) => {
   try {
-    const email = req.session.user.email;
-    const deletedUser = await deleteUser(email);
+    const userId = req.params.userId; // <-- get from URL
+    const deletedUser = await deleteUser(userId); // <-- pass userId, not email!
     if (!deletedUser) {
       return res.status(404).json({ error: "User not found" });
     }

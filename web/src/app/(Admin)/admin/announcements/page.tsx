@@ -1,31 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import Sidebar from "@/components/custom/sidebar";
-import { useRouter } from "next/navigation";
 import {
   Announcement,
   columns,
 } from "@/components/custom/announcements/columns";
 import { DataTable } from "@/components/custom/announcements/data-table";
-
+import { useEffect, useState } from "react";
 import { currentUser } from "@/lib/api";
-import { fetchAnnouncements } from "@/lib/api/announcements";
-export default function Announcements() {
-  const router = useRouter();
+import {
+  fetchAnnouncements,
+  updateAnnouncement,
+  deleteAnnouncement,
+} from "@/lib/api/announcements";
+import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
+import ViewAnnouncement from "@/components/custom/announcements/viewAnnouncement";
+import EditAnnouncement from "@/components/custom/announcements/editAnnouncement";
+import DeleteAnnouncement from "@/components/custom/announcements/deleteAnnouncement";
+
+export default function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
-  //for actions view, edit, delete
-  const [loading, setLoading] = useState(true);
-  const [authChecked, setAuthChecked] = useState(false);
+  const router = useRouter();
   const [dialogAnnouncement, setDialogAnnouncement] =
     useState<Announcement | null>(null);
   const [editDialogAnnouncement, setEditDialogAnnouncement] =
     useState<Announcement | null>(null);
   const [deleteDialogAnnouncement, setDeleteDialogAnnouncement] =
     useState<Announcement | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function getCurrentUserAndAnnouncements() {
@@ -40,9 +50,6 @@ export default function Announcements() {
       } catch (error) {
         router.replace("/");
         console.error("Error fetching announcements:", error);
-      } finally {
-        setLoading(false);
-        setAuthChecked(true);
       }
     }
     getCurrentUserAndAnnouncements();
@@ -57,11 +64,101 @@ export default function Announcements() {
             Announcements
           </h1>
           <p className="mt-2 text-lg text-gray-700">
-            Manage all announcements for your users here.
+            Manage all announcements in the system.
           </p>
           <div className="w-full max-w-[90rem]">
-            <DataTable columns={columns()} data={announcements} />
-            {/* Dialogs for view, edit, delete can be added here if needed */}
+            <DataTable
+              columns={columns(
+                setDialogAnnouncement,
+                setEditDialogAnnouncement,
+                setDeleteDialogAnnouncement
+              )}
+              data={announcements}
+            />
+            {/* View Dialog */}
+            <Dialog
+              open={!!dialogAnnouncement}
+              onOpenChange={() => setDialogAnnouncement(null)}
+            >
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Announcement Details</DialogTitle>
+                  <DialogDescription>
+                    Here are the details of the announcement.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="mt-4">
+                  {dialogAnnouncement && (
+                    <ViewAnnouncement announcement={dialogAnnouncement} />
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Edit Dialog */}
+            <Dialog
+              open={!!editDialogAnnouncement}
+              onOpenChange={() => setEditDialogAnnouncement(null)}
+            >
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Announcement</DialogTitle>
+                  <DialogDescription>
+                    Edit the details of the announcement.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="mt-4">
+                  {editDialogAnnouncement && (
+                    <EditAnnouncement
+                      announcement={editDialogAnnouncement}
+                      onSave={async (updatedAnnouncement) => {
+                        await updateAnnouncement(updatedAnnouncement);
+                        setAnnouncements((prev) =>
+                          prev.map((a) =>
+                            a.id === updatedAnnouncement.id
+                              ? updatedAnnouncement
+                              : a
+                          )
+                        );
+                        setEditDialogAnnouncement(null);
+                      }}
+                      onCancel={() => setEditDialogAnnouncement(null)}
+                    />
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Delete Dialog */}
+            <Dialog
+              open={!!deleteDialogAnnouncement}
+              onOpenChange={() => setDeleteDialogAnnouncement(null)}
+            >
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Delete Announcement</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to delete this announcement? This
+                    action cannot be undone.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="mt-4">
+                  {deleteDialogAnnouncement && (
+                    <DeleteAnnouncement
+                      announcement={deleteDialogAnnouncement}
+                      onDelete={async (announcementId) => {
+                        await deleteAnnouncement(announcementId);
+                        setAnnouncements((prev) =>
+                          prev.filter((a) => a.id !== announcementId)
+                        );
+                        setDeleteDialogAnnouncement(null);
+                      }}
+                      onCancel={() => setDeleteDialogAnnouncement(null)}
+                    />
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </main>

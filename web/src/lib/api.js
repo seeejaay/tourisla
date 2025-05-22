@@ -6,7 +6,7 @@ import axios from "axios";
   REMOVE THEM BEFORE DEPLOYING YOUR APPLICATION
 */
 
-const API_URL = "http://192.168.0.130:3005/api/v1/";
+const API_URL = "http://localhost:3005/api/v1/";
 
 export const fetchUsers = async () => {
   try {
@@ -56,6 +56,7 @@ export const currentUser = async () => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
+    console.log("API Response", response); // Log the API response
     return response.data; // Return the fetched user data
   } catch (err) {
     console.error(
@@ -157,8 +158,8 @@ export const editUser = async (userData) => {
 };
 export const deleteUser = async (userId) => {
   try {
-    const response = await axios.put(
-      `${API_URL}users/d/${userId}`,
+    const response = await axios.patch(
+      `${API_URL}users/${userId}`,
       { userId },
       {
         withCredentials: true, // Include cookies in the request
