@@ -49,7 +49,7 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
-//TO MODIFY
+
 export function DataTable<TData, TValue>({
   columns,
   data,
@@ -96,10 +96,10 @@ export function DataTable<TData, TValue>({
             <Input
               placeholder="Search users..."
               value={
-                (table.getColumn("title")?.getFilterValue() as string) ?? ""
+                (table.getColumn("name")?.getFilterValue() as string) ?? ""
               }
               onChange={(event) =>
-                table.getColumn("titles")?.setFilterValue(event.target.value)
+                table.getColumn("name")?.setFilterValue(event.target.value)
               }
               className="max-w-md w-full "
             />
@@ -110,7 +110,7 @@ export function DataTable<TData, TValue>({
                 setTimeout(() => setDialogOpen(true), 0);
               }}
             >
-              Add Announcement
+              Add User
             </Button>
           </div>
           <DropdownMenu>

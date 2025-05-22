@@ -117,7 +117,7 @@ app.get(
   viewUserController
 );
 app.put("/api/v1/users/:userId", authenticateUser, editUserController);
-app.put("/api/v1/users/d/:userId", authenticateUser, deleteUserController);
+app.patch("/api/v1/users/:userId", authenticateUser, deleteUserController);
 
 // Route for announcements
 app.get("/api/v1/announcements", viewAnnouncementController);

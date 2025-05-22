@@ -30,7 +30,11 @@ import {
 // Infer the TypeScript type from the Zod schema
 export type Announcement = z.infer<typeof AnnouncementSchema>;
 // Define the columns using the schema
-export function columns(): ColumnDef<Announcement>[] {
+export function columns(
+  setDialogAnnouncement: (announcement: Announcement | null) => void,
+  setEditDialogAnnouncement: (announcement: Announcement | null) => void,
+  setDeleteDialogAnnouncement: (announcement: Announcement | null) => void
+): ColumnDef<Announcement>[] {
   return [
     {
       accessorKey: "title",
@@ -128,7 +132,6 @@ export function columns(): ColumnDef<Announcement>[] {
       accessorKey: "actions",
       header: () => <span className="font-bold">Actions</span>,
       cell: ({ row }) => {
-        const announcement = row.original;
         return (
           <>
             <DropdownMenu>
@@ -142,21 +145,21 @@ export function columns(): ColumnDef<Announcement>[] {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => {
-                    /* handle view announcement */
+                    setDialogAnnouncement(row.original);
                   }}
                 >
                   View
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    /* handle edit announcement */
+                    setEditDialogAnnouncement(row.original);
                   }}
                 >
                   Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    /* handle delete announcement */
+                    setDeleteDialogAnnouncement(row.original);
                   }}
                   className="text-red-500"
                 >

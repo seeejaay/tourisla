@@ -60,10 +60,10 @@ const editUser = async (userId, userData) => {
   return result.rows[0];
 };
 
-const deleteUser = async (email) => {
+const deleteUser = async (id) => {
   const result = await db.query(
-    "UPDATE users SET deleted_at = NOW(), status =$1 WHERE email = $2",
-    ["Inactive", email]
+    "UPDATE users SET deleted_at = NOW(), status =$1 WHERE user_id = $2",
+    ["Inactive", id]
   );
   return result.rowCount > 0; // Return true if a user was deleted
 };
