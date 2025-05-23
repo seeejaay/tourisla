@@ -46,7 +46,6 @@ export const viewAnnouncement = async (announcementId) => {
 
 export const createAnnouncement = async (announcementData) => {
   try {
-    console.log("Sending announcement data to API:", announcementData); // Log data being sent to the API
     const response = await axios.post(
       `${API_URL}announcements`,
       announcementData,
@@ -61,7 +60,6 @@ export const createAnnouncement = async (announcementData) => {
       );
     }
 
-    console.log("API Response:", response.data); // Log the API response
     return response.data; // Return response data
   } catch (error) {
     console.error(

@@ -1,14 +1,14 @@
 "use client";
 
 import adminNavigation from "@/app/static/admin-navigation";
-import { Separator } from "@/components/ui/separator";
+// import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 import { logout } from "@/lib/api/auth"; // Import the logout function
 
-import { LogOut, PanelLeftOpen, PanelLeftClose } from "lucide-react";
+import { LogOut, ChevronsRight, ChevronsLeft } from "lucide-react";
 
 import { usePathname } from "next/navigation";
 
@@ -28,98 +28,90 @@ const Sidebar = () => {
   return (
     <>
       <nav
-        className={`fixed bg-gray-900 text-white h-full flex flex-col transition-all duration-300  ${
-          isCollapsed ? "w-16 z-0" : "w-64 z-10"
+        className={`fixed bg-gradient-to-b from-gray-800 to-gray-900 text-white h-full flex flex-col transition-all duration-300 ease-in-out shadow-xl ${
+          isCollapsed ? "w-20" : "w-64"
         }`}
       >
         {/* Sidebar Header */}
-        <div className="p-4 flex items-center justify-between">
+        <div className="p-4 flex items-center justify-between border-b border-gray-700/50">
           {!isCollapsed && (
-            <h2
-              className={`text-xl font-bold transition-opacity duration-300 ${
-                isCollapsed ? "opacity-0" : "opacity-100"
-              }`}
-            >
+            <h2 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
               tourisla.
             </h2>
           )}
-          <Button
+          <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className={`text-white hover:text-gray-300 focus:outline-none flex items-center justify-center transition-transform duration-300 hover:bg-transparent cursor-pointer ${
-              isCollapsed ? "rotate-0" : "rotate-180"
-            } bg-transparent`}
-            style={{ transform: "scale(1.5)" }}
+            className={`p-2 rounded-full hover:bg-gray-700/50 transition-all duration-200 ${
+              isCollapsed ? "mx-auto" : ""
+            }`}
           >
             {isCollapsed ? (
-              <PanelLeftOpen className="w-6 h-6" />
+              <ChevronsRight className="w-5 h-5 text-cyan-400" />
             ) : (
-              <PanelLeftClose className="w-6 h-6" />
+              <ChevronsLeft className="w-5 h-5 text-cyan-400" />
             )}
-          </Button>
+          </button>
         </div>
-        <Separator />
 
         {/* Sidebar Body */}
-        <div className="flex-grow flex flex-col ">
-          <ul className="space-y-4 py-5 pl-4">
+        <div className="flex-grow overflow-y-auto custom-scrollbar py-4">
+          <ul className="space-y-1 px-2">
             {adminNavigation.map((item) => (
               <li key={item.name} className="group relative">
-                <Button
-                  variant={"ghost"}
-                  onClick={() => {
-                    router.push(item.href);
-                  }}
-                  className={`flex items-center space-x-4 p-2 rounded-bl-full rounded-tl-full transition hover:text-white hover:bg-gray-700 w-full justify-start  ${
+                <button
+                  onClick={() => router.push(item.href)}
+                  className={`flex items-center w-full p-3 rounded-lg transition-all duration-200 ${
                     pathName === item.href
-                      ? "bg-gray-200 text-gray-700"
-                      : "hover:bg-gray-700"
-                  }`}
+                      ? "bg-blue-500/10 text-cyan-400 border-l-4 border-cyan-400"
+                      : "hover:bg-gray-700/50 text-gray-300 hover:text-white"
+                  } ${isCollapsed ? "justify-center" : "pl-4"}`}
                 >
-                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                  <item.icon
+                    className={`w-5 h-5 flex-shrink-0 ${
+                      pathName === item.href ? "text-cyan-400" : "text-gray-400"
+                    }`}
+                  />
                   {!isCollapsed && (
-                    <span className="text-sm font-medium transition-opacity duration-1000">
+                    <span className="ml-3 text-sm font-medium">
                       {item.name}
                     </span>
                   )}
-                </Button>
-                {isCollapsed && (
-                  <span className="absolute left-16 top-0 bg-gray-800 text-white rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition w-auto">
-                    {item.name}
-                  </span>
-                )}
+                  {isCollapsed && (
+                    <span className="absolute left-full ml-4 px-2 py-1 bg-gray-800 text-white text-sm rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap">
+                      {item.name}
+                    </span>
+                  )}
+                </button>
               </li>
             ))}
           </ul>
         </div>
-        <Separator />
 
         {/* Sidebar Footer */}
-        <div className="flex items-center justify-center p-4">
-          <Button
-            variant={"destructive"}
-            onClick={() => {
-              console.log("Logging out...");
-              handleLogout();
-            }}
-            className={`flex items-center space-x-2 w-full rounded-md justify-start text-white cursor-pointer transition rounded-bl-full rounded-tl-full`}
+        <div className="border-t border-gray-700/50 p-4">
+          <button
+            onClick={handleLogout}
+            className={`flex items-center w-full p-3 rounded-lg hover:bg-red-500/10 text-red-400 hover:text-red-300 transition-all duration-200 ${
+              isCollapsed ? "justify-center" : "pl-4"
+            }`}
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
-            {/* Show text only if not collapsed */}
             {!isCollapsed && (
-              <span className="text-sm font-medium">Log Out</span>
+              <span className="ml-3 text-sm font-medium">Log Out</span>
             )}
-          </Button>
-        </div>
-        <Separator />
-        <div className="p-4 w-full flex flex-col items-center justify-start">
-          {!isCollapsed && (
-            <p className="text-xs text-gray-400  ">
-              © 2025 tourisla. All rights reserved.
-            </p>
-          )}
-          {isCollapsed && (
-            <p className="text-xs text-gray-400 opacity-100 transition">2025</p>
-          )}
+          </button>
+
+          <div className={`mt-4 text-center ${isCollapsed ? "px-0" : "px-4"}`}>
+            {!isCollapsed ? (
+              <p className="text-xs text-gray-500">
+                © 2025 tourisla.
+                <br />
+                All rights reserved.
+              </p>
+            ) : (
+              <p className="text-xs text-gray-500">© 25</p>
+            )}
+          </div>
         </div>
       </nav>
     </>
