@@ -178,11 +178,16 @@ export function DataTable<TData, TValue>({
                     className="hover:bg-gray-100"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="text-sm sm:text-base">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
+                      <TableCell
+                        key={cell.id}
+                        className="text-sm sm:text-base max-w-[200px] truncate overflow-hidden whitespace-nowrap"
+                      >
+                        <span className="block truncate">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </span>
                       </TableCell>
                     ))}
                   </TableRow>
