@@ -1,36 +1,44 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { resetPassword } from "@/lib/api";
+
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
+  const { handleResetPassword, loading, error } = useAuth();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
+    if (!token) {
+      setMessage("Invalid or missing token.");
+      return;
+    }
     if (password !== confirm) {
       setMessage("Passwords do not match.");
       return;
     }
-    setLoading(true);
-    try {
-      await resetPassword(token, password); // Use your API function here
+    const resResetPassword = await handleResetPassword(
+      token,
+      password,
+      confirm
+    );
+    if (resResetPassword) {
       setMessage("Password reset successful! You can now log in.");
       setTimeout(() => router.push("/login"), 2000);
-    } catch {
-      setMessage("Reset failed. The link may be invalid or expired.");
+    } else {
+      setMessage(error || "Reset failed. The link may be invalid or expired.");
     }
-    setLoading(false);
   };
 
   return (

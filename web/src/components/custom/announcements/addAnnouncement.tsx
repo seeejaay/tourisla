@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createAnnouncement } from "@/lib/api/announcements";
+import { useAnnouncementManager } from "@/hooks/useAnnouncementManager"; // <-- use the hook
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,6 +27,8 @@ export default function AddAnnouncement({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { createAnnouncement } = useAnnouncementManager(); // <-- get from hook
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -39,7 +41,11 @@ export default function AddAnnouncement({
     setLoading(true);
     setError(null);
     try {
-      await createAnnouncement(form);
+      const result = await createAnnouncement(form); // <-- use the hook's function
+      if (!result) {
+        setError("Failed to create announcement.");
+        return;
+      }
       setForm({
         title: "",
         description: "",
@@ -86,6 +92,8 @@ export default function AddAnnouncement({
           value={form.date_posted}
           onChange={handleChange}
           required
+          readOnly
+          className="cursor-not-allowed"
         />
       </div>
       <div>

@@ -1,4 +1,4 @@
-const formFields = [
+const signUpForm = [
   {
     name: "first_name",
     label: "First Name",
@@ -40,4 +40,4 @@ const formFields = [
   },
 ];
 
-export default formFields;
+export default signUpForm;

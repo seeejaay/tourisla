@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import FormSchema from "@/app/static/signupSchema";
+import FormSchema from "@/app/static/userManagerSchema";
 import formFields from "@/app/static/signupForm";
 import selectFields from "@/app/static/selectFields";
 import { z } from "zod";
@@ -21,7 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-import { createUser } from "@/lib/api";
+import { createUser } from "@/lib/api/users";
 
 export default function SignUp() {
   const [isAdmin, setIsAdmin] = useState(false);

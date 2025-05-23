@@ -62,7 +62,7 @@ export function DataTable<TData, TValue>({
     React.useState<VisibilityState>({});
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
-    pageSize: 25,
+    pageSize: 10,
   });
   const [dialogOpen, setDialogOpen] = React.useState(false);
 

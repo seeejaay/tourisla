@@ -1,4 +1,4 @@
-import { logout, currentUser } from "@/lib/api";
+import { logout, currentUser } from "@/lib/api/auth";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightToBracket, faUser } from "@fortawesome/free-solid-svg-icons";

@@ -1,27 +1,29 @@
 "use client";
 
 import { useState } from "react";
+
+import { useAuth } from "@/hooks/useAuth";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { forgotPassword } from "@/lib/api"; // <-- Import your function
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
 
+  const { handleForgotPassword, error, setError, loading } = useAuth();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setMessage("");
-    try {
-      await forgotPassword(email); // <-- Use your function here
+    setError("");
+
+    const resForgotPassword = await handleForgotPassword(email);
+
+    if (resForgotPassword) {
       setMessage("If that email exists, a reset link has been sent.");
-    } catch {
-      setMessage("There was a problem. Please try again.");
+    } else {
+      setMessage(error);
     }
-    setLoading(false);
   };
 
   return (
