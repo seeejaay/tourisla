@@ -91,8 +91,9 @@ export const useAnnouncementManager = () => {
       setLoading(true);
       setError("");
       try {
+        // FIX: Pass id and data separately
         const response: Announcement & { error?: string } =
-          await apiUpdateAnnouncement(data);
+          await apiUpdateAnnouncement(data.id, data);
         if (response.error) {
           setError(response.error);
           return null;
