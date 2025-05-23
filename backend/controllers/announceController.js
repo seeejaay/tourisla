@@ -37,12 +37,12 @@ const editAnnouncementController = async (req, res) => {
 
     // Edit the announcement in the database
     const announcement = await editAnnouncement(announcementId, {
-      title,
+      title: title.toUpperCase(),
       description,
       date_posted,
-      location,
+      location: location.toUpperCase(),
       image_url,
-      category,
+      category: category.toUpperCase(),
     });
 
     res.json(announcement);
