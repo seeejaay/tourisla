@@ -7,9 +7,18 @@ const {
     getOperatorRegisById,
 } = require("../models/operatorRegisModel.js");
 
+// enum for application status 'PENDING', 'APPROVED', 'REVISION', 'REJECTED'
+
 const createOperatorRegisController = async (req, res) => {
   try {
-    const { operator_name, representative_name, email, mobile_number, office_address, application_status } = req.body;
+    let { operator_name, representative_name, email, mobile_number, office_address, application_status } = req.body;
+
+    operator_name = operator_name.toUpperCase();
+    representative_name = representative_name.toUpperCase();
+    email = email.toLowerCase();
+    office_address = office_address.toUpperCase();
+    application_status = application_status.toUpperCase();
+
 
     const operatorRegis = await createOperatorRegis({
       operator_name,
@@ -30,7 +39,14 @@ const createOperatorRegisController = async (req, res) => {
 const editOperatorRegisController = async (req, res) => {
     try {
         const { operatorId } = req.params;
-        const { operator_name, representative_name, email, mobile_number, office_address, application_status } = req.body;
+        let { operator_name, representative_name, email, mobile_number, office_address, application_status } = req.body;
+
+        operator_name = operator_name.toUpperCase();
+        representative_name = representative_name.toUpperCase();
+        email = email.toLowerCase();
+        office_address = office_address.toUpperCase();
+        application_status = application_status.toUpperCase();
+
         
         const operatorRegis = await editOperatorRegis(operatorId, {
             operator_name,
