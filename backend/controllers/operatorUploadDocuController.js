@@ -10,27 +10,28 @@ const {
 const createOperatorUploadDocuController = async (req, res) => {
     try {
         const { operatorId } = req.params;
-        const { document_type, file_path } = req.body;
+        let { document_type, file_path } = req.body;
 
         const allowedTypes = [
-            "letter_of_intent",
-            "business_permit",
-            "dti_or_sec",
-            "bir_certificate",
-            "proof_of_office",
-            "office_photos",
-            "brgy_clearance",
-            "dole_registration",
-            "employee_list",
-            "manager_resume_id",
-            "manager_proof_of_experience",
-            "tour_packages_list",
-            "partner_establishments",
-            "voucher_sample",
-            "client_feedback_form",
-            "affidavit_of_undertaking",
-            "ecc_or_cnc"
+            "LETTER_OF_INTENT",
+            "BUSINESS_PERMIT",
+            "DTI_OR_SEC",
+            "BIR_CERTIFICATE",
+            "PROOF_OF_OFFICE",
+            "OFFICE_PHOTOS",
+            "BRGY_CLEARANCE",
+            "DOLE_REGISTRATION",
+            "EMPLOYEE_LIST",
+            "MANAGER_RESUME_ID",
+            "MANAGER_PROOF_OF_EXPERIENCE",
+            "TOUR_PACKAGES_LIST",
+            "PARTNER_ESTABLISHMENTS",
+            "VOUCHER_SAMPLE",
+            "CLIENT_FEEDBACK_FORM",
+            "AFFIDAVIT_OF_UNDERTAKING",
+            "ECC_OR_CNC"
         ];
+
 
         if (!allowedTypes.includes(document_type)) {
             return res.status(400).json({ error: "Invalid document type." });
@@ -52,26 +53,26 @@ const createOperatorUploadDocuController = async (req, res) => {
 const editOperatorUploadDocuController = async (req, res) => {
     try {
         const { operatorId, documentId } = req.params;
-        const { document_type, file_path } = req.body;
+        let { document_type, file_path } = req.body;
 
         const allowedTypes = [
-            "letter_of_intent",
-            "business_permit",
-            "dti_or_sec",
-            "bir_certificate",
-            "proof_of_office",
-            "office_photos",
-            "brgy_clearance",
-            "dole_registration",
-            "employee_list",
-            "manager_resume_id",
-            "manager_proof_of_experience",
-            "tour_packages_list",
-            "partner_establishments",
-            "voucher_sample",
-            "client_feedback_form",
-            "affidavit_of_undertaking",
-            "ecc_or_cnc"
+            "LETTER_OF_INTENT",
+            "BUSINESS_PERMIT",
+            "DTI_OR_SEC",
+            "BIR_CERTIFICATE",
+            "PROOF_OF_OFFICE",
+            "OFFICE_PHOTOS",
+            "BRGY_CLEARANCE",
+            "DOLE_REGISTRATION",
+            "EMPLOYEE_LIST",
+            "MANAGER_RESUME_ID",
+            "MANAGER_PROOF_OF_EXPERIENCE",
+            "TOUR_PACKAGES_LIST",
+            "PARTNER_ESTABLISHMENTS",
+            "VOUCHER_SAMPLE",
+            "CLIENT_FEEDBACK_FORM",
+            "AFFIDAVIT_OF_UNDERTAKING",
+            "ECC_OR_CNC"
         ];
 
         if (!allowedTypes.includes(document_type)) {
