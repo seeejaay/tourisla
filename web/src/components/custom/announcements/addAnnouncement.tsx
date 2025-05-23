@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useAnnouncementManager } from "@/hooks/useAnnouncementManager"; // <-- use the hook
+import { useAnnouncementManager } from "@/hooks/useAnnouncementManager";
+import { announcementSchema } from "@/app/static/announcement/useAnnouncementManagerSchema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,7 +28,7 @@ export default function AddAnnouncement({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { createAnnouncement } = useAnnouncementManager(); // <-- get from hook
+  const { createAnnouncement } = useAnnouncementManager();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -40,9 +41,18 @@ export default function AddAnnouncement({
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Validate with Zod schema
+    const result = announcementSchema.safeParse(form);
+    if (!result.success) {
+      setError(result.error.errors[0].message);
+      setLoading(false);
+      return;
+    }
+
     try {
-      const result = await createAnnouncement(form); // <-- use the hook's function
-      if (!result) {
+      const created = await createAnnouncement(form);
+      if (!created) {
         setError("Failed to create announcement.");
         return;
       }
