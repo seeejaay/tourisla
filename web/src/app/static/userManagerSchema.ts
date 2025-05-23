@@ -11,7 +11,7 @@ function sanitizePHPhoneNumber(phoneNumber: string): string {
 {
   /*Code for Validation */
 }
-const formSchema = z
+const signupSchema = z
   .object({
     first_name: z
       .string()
@@ -73,5 +73,5 @@ const formSchema = z
     path: ["confirm_password"],
   });
 
-export type FormSchema = z.infer<typeof formSchema>;
-export default formSchema;
+export type signupSchema = z.infer<typeof signupSchema>;
+export default signupSchema;

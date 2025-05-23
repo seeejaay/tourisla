@@ -8,7 +8,8 @@ import {
 import DataTable from "@/components/custom/data-table";
 import SignUp from "@/components/custom/signup";
 import { useEffect, useState } from "react";
-import { fetchUsers, currentUser, editUser, deleteUser } from "@/lib/api";
+import { fetchUsers, editUser, deleteUser } from "@/lib/api/users";
+import { currentUser } from "@/lib/api/auth"; // Import the currentUser function
 import { useRouter } from "next/navigation";
 import {
   Dialog,

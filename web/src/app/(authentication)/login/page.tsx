@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { login } from "@/lib/api";
-import { loginSchema } from "@/app/static/loginSchema";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Card,
   CardContent,
@@ -19,34 +18,20 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const router = useRouter();
+  const { loginUser, error, setError, loading } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-
-    // Validate with Zod before API call
-    const result = loginSchema.safeParse({ email, password });
-    if (!result.success) {
-      setError(result.error.errors[0].message);
-      return;
-    }
 
     try {
-      const res = await login({ email, password });
-      const user = res.user;
-      if (user.role === "Admin") {
-        router.replace("/admin/dashboard");
-      } else {
-        router.replace("/");
+      if (!(await loginUser(email, password, router))) {
+        setError("Invalid email or password");
+        return;
       }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message || "An error occurred during login.");
-      } else {
-        setError("An error occurred during login.");
-      }
+      setError("");
+    } catch (err) {
+      setError("An error occurred during login: " + err);
     }
   };
 
@@ -66,9 +51,7 @@ export default function Login() {
           )}
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <Label htmlFor="email" className="mb-1">
-                Email
-              </Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 type="email"
                 id="email"
@@ -80,9 +63,7 @@ export default function Login() {
               />
             </div>
             <div>
-              <Label htmlFor="password" className="mb-1">
-                Password
-              </Label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 type="password"
                 id="password"
@@ -105,9 +86,10 @@ export default function Login() {
             </div>
             <Button
               type="submit"
-              className="w-full cursor-pointer bg-blue-400 hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded"
+              className="w-full bg-blue-400 hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded"
+              disabled={loading}
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </Button>
           </form>
         </CardContent>
@@ -120,8 +102,8 @@ export default function Login() {
           <p className="text-center text-gray-600 text-sm w-full">
             Don&apos;t have an account?{" "}
             <Button
-              type="button"
               variant="link"
+              type="button"
               className="text-blue-600 font-medium p-0 h-auto cursor-pointer"
               onClick={() => router.push("/signup")}
             >

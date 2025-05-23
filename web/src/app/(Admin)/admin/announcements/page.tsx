@@ -1,26 +1,21 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { useAnnouncementManager } from "@/hooks/useAnnouncementManager";
+
 import Sidebar from "@/components/custom/sidebar";
-// import {
-//   Announcement,
-//   columns,
-// } from "@/components/custom/announcements/columns";
 import {
   Announcement,
   columns as announcementColumns,
 } from "@/components/custom/announcements/columns";
 import DataTable from "@/components/custom/data-table";
 import AddAnnouncement from "@/components/custom/announcements/addAnnouncement";
+import ViewAnnouncement from "@/components/custom/announcements/viewAnnouncement";
+import EditAnnouncement from "@/components/custom/announcements/editAnnouncement";
+import DeleteAnnouncement from "@/components/custom/announcements/deleteAnnouncement";
 
-import { useEffect, useState } from "react";
-import { currentUser } from "@/lib/api";
-
-import {
-  fetchAnnouncements,
-  updateAnnouncement,
-  deleteAnnouncement,
-} from "@/lib/api/announcements";
-import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -29,13 +24,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-import ViewAnnouncement from "@/components/custom/announcements/viewAnnouncement";
-import EditAnnouncement from "@/components/custom/announcements/editAnnouncement";
-import DeleteAnnouncement from "@/components/custom/announcements/deleteAnnouncement";
-
 export default function AnnouncementsPage() {
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-
   const router = useRouter();
   const [dialogAnnouncement, setDialogAnnouncement] =
     useState<Announcement | null>(null);
@@ -44,32 +33,37 @@ export default function AnnouncementsPage() {
   const [deleteDialogAnnouncement, setDeleteDialogAnnouncement] =
     useState<Announcement | null>(null);
 
+  const { loggedInUser } = useAuth();
+  const {
+    announcements,
+    fetchAnnouncements,
+    updateAnnouncement,
+    deleteAnnouncement,
+    loading,
+    error,
+  } = useAnnouncementManager();
+
+  // Refresh announcements after add/edit/delete
   const refreshAnnouncements = async () => {
-    try {
-      const data = await fetchAnnouncements();
-      setAnnouncements(data);
-    } catch (error) {
-      console.error("Error fetching announcements:", error);
-    }
+    await fetchAnnouncements();
   };
 
   useEffect(() => {
     async function getCurrentUserAndAnnouncements() {
       try {
-        const user = await currentUser();
+        const user = await loggedInUser(router);
         if (!user || !user.data.user.role || user.data.user.role !== "Admin") {
           router.replace("/");
           return;
         }
-        const data = await fetchAnnouncements();
-        setAnnouncements(data);
+        await fetchAnnouncements();
       } catch (error) {
         router.replace("/");
         console.error("Error fetching announcements:", error);
       }
     }
     getCurrentUserAndAnnouncements();
-  }, [router]);
+  }, [router, loggedInUser, fetchAnnouncements]);
 
   return (
     <>
@@ -82,6 +76,8 @@ export default function AnnouncementsPage() {
           <p className="mt-2 text-lg text-gray-700">
             Manage all announcements in the system.
           </p>
+          {loading && <div>Loading...</div>}
+          {error && <div className="text-red-500">{error}</div>}
           <div className="w-full max-w-[90rem]">
             <DataTable
               columns={announcementColumns(
@@ -135,13 +131,7 @@ export default function AnnouncementsPage() {
                       announcement={editDialogAnnouncement}
                       onSave={async (updatedAnnouncement) => {
                         await updateAnnouncement(updatedAnnouncement);
-                        setAnnouncements((prev) =>
-                          prev.map((a) =>
-                            a.id === updatedAnnouncement.id
-                              ? updatedAnnouncement
-                              : a
-                          )
-                        );
+                        await refreshAnnouncements();
                         setEditDialogAnnouncement(null);
                       }}
                       onCancel={() => setEditDialogAnnouncement(null)}
@@ -170,9 +160,7 @@ export default function AnnouncementsPage() {
                       announcement={deleteDialogAnnouncement}
                       onDelete={async (announcementId) => {
                         await deleteAnnouncement(announcementId);
-                        setAnnouncements((prev) =>
-                          prev.filter((a) => a.id !== announcementId)
-                        );
+                        await refreshAnnouncements();
                         setDeleteDialogAnnouncement(null);
                       }}
                       onCancel={() => setDeleteDialogAnnouncement(null)}

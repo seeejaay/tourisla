@@ -1,13 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import adminNavigation from "@/app/static/admin-navigation";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
-import { logout } from "@/lib/api"; // Import the logout function
+import { logout } from "@/lib/api/auth"; // Import the logout function
 
 import { LogOut, PanelLeftOpen, PanelLeftClose } from "lucide-react";
 
