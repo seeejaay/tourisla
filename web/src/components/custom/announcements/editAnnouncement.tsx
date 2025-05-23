@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { announcementSchema } from "@/app/static/announcement/useAnnouncementManagerSchema";
 
 export default function EditAnnouncement({
   announcement,
@@ -15,7 +16,11 @@ export default function EditAnnouncement({
   onSave: (updatedAnnouncement: Announcement) => void | Promise<void>;
   onCancel: () => void;
 }) {
-  const [form, setForm] = useState<Announcement>(announcement);
+  const [form, setForm] = useState<Announcement>({
+    ...announcement,
+    id: String(announcement.id),
+  });
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -31,6 +36,15 @@ export default function EditAnnouncement({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    // Validate with Zod schema (regex included)
+    const result = announcementSchema.safeParse(form);
+    if (!result.success) {
+      setError(result.error.errors[0].message);
+      return;
+    }
+
     onSave(form);
   };
 
@@ -101,6 +115,7 @@ export default function EditAnnouncement({
               onChange={handleChange}
             />
           </div>
+          {error && <div className="text-red-500 text-sm">{error}</div>}
           <div className="flex gap-4 pt-6 justify-end">
             <Button type="submit" variant="default">
               Save
