@@ -60,8 +60,7 @@ const createAnnouncementController = async (req, res) => {
 const editAnnouncementController = async (req, res) => {
   try {
     const { announcementId } = req.params;
-    const { title, description, date_posted, location, image_url, category } =
-      req.body;
+
     let { title, description, date_posted, location, image_url, category } =
       req.body;
 
