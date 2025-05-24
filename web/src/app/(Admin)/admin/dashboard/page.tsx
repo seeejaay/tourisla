@@ -4,18 +4,20 @@ import Sidebar from "@/components/custom/sidebar";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { currentUser } from "@/lib/api"; // Import the currentUser function
+
+import { useAuth } from "@/hooks/useAuth";
+
 export default function DashboardPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true); // State for loading status
-  const [authChecked, setAuthChecked] = useState(false); // State to check if auth is checked
+  const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
+  const { loggedInUser } = useAuth();
+
   useEffect(() => {
     async function getCurrentUser() {
       try {
-        const user = await currentUser();
-        console.log("Current user:", user); // Debug log
+        const user = await loggedInUser(router);
 
-        // Fix: Check if user exists and has a role
         if (!user || !user.data.user.role || user.data.user.role !== "Admin") {
           router.replace("/");
           return;
@@ -24,12 +26,12 @@ export default function DashboardPage() {
         console.error("Error fetching user:", error);
         router.replace("/");
       } finally {
-        setLoading(false); //optional can remove
+        setLoading(false);
         setAuthChecked(true);
       }
     }
     getCurrentUser();
-  }, [router]);
+  }, [router, loggedInUser]);
 
   if (!authChecked) {
     return <p>Loading...</p>;
@@ -39,7 +41,7 @@ export default function DashboardPage() {
     <>
       <Sidebar />
       {/* Main content */}
-      <div className="flex flex-col items-center justify-center min-h-screen py-2 lg:pl-0 pl-16">
+      <div className="flex flex-col items-center justify-center bg-gray-200 min-h-screen py-2 lg:pl-0 pl-16">
         {loading ? (
           <p>Loading...</p>
         ) : (

@@ -33,7 +33,8 @@ const {
 
 const createAnnouncementController = async (req, res) => {
   try {
-    let { title, description, date_posted, location, image_url, category } = req.body;
+    let { title, description, date_posted, location, image_url, category } =
+      req.body;
 
     title = title.toUpperCase();
     description = description.toUpperCase();
@@ -41,12 +42,12 @@ const createAnnouncementController = async (req, res) => {
     category = category.toUpperCase();
 
     const announcement = await createAnnouncement({
-      title,
+      title: title.toUpperCase(),
       description,
       date_posted,
-      location,
+      location: location.toUpperCase(),
       image_url,
-      category
+      category: category.toUpperCase(),
     });
 
     res.json(announcement);
@@ -59,7 +60,10 @@ const createAnnouncementController = async (req, res) => {
 const editAnnouncementController = async (req, res) => {
   try {
     const { announcementId } = req.params;
-    let { title, description, date_posted, location, image_url, category } = req.body;
+    const { title, description, date_posted, location, image_url, category } =
+      req.body;
+    let { title, description, date_posted, location, image_url, category } =
+      req.body;
 
     title = title.toUpperCase();
     description = description.toUpperCase();
@@ -68,12 +72,12 @@ const editAnnouncementController = async (req, res) => {
 
     // Edit the announcement in the database
     const announcement = await editAnnouncement(announcementId, {
-      title,
+      title: title.toUpperCase(),
       description,
       date_posted,
-      location,
+      location: location.toUpperCase(),
       image_url,
-      category
+      category: category.toUpperCase(),
     });
 
     res.json(announcement);
