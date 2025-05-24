@@ -19,7 +19,6 @@ const createArticleController = async (req, res) => {
       tags,
       status,
       is_featured,
-      category_id,
       updated_by,
     } = req.body;
 
@@ -34,7 +33,6 @@ const createArticleController = async (req, res) => {
       tags,
       status,
       is_featured,
-      category_id,
       updated_by,
     });
 
@@ -59,7 +57,6 @@ const editArticleController = async (req, res) => {
       tags,
       status,
       is_featured,
-      category_id,
       updated_by,
     } = req.body;
 
@@ -74,7 +71,6 @@ const editArticleController = async (req, res) => {
       tags,
       status,
       is_featured,
-      category_id,
       updated_by,
     });
 

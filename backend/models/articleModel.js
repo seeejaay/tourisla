@@ -12,7 +12,6 @@ const createArticle = async (data) => {
     tags,
     status,
     is_featured,
-    category_id,
     updated_by,
   } = data;
 
@@ -20,9 +19,9 @@ const createArticle = async (data) => {
     `INSERT INTO articles (
       title, author, published_date, published_at, body,
       video_url, thumbnail_url, tags, status, is_featured,
-      category_id, updated_by, created_at, updated_at
+      updated_by, created_at, updated_at
     ) VALUES (
-      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW()
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW()
     ) RETURNING *`,
     [
       title,
@@ -35,7 +34,6 @@ const createArticle = async (data) => {
       tags,
       status,
       is_featured,
-      category_id,
       updated_by,
     ]
   );
@@ -55,7 +53,6 @@ const editArticle = async (id, data) => {
     tags,
     status,
     is_featured,
-    category_id,
     updated_by,
   } = data;
 
@@ -71,10 +68,9 @@ const editArticle = async (id, data) => {
       tags = $8,
       status = $9,
       is_featured = $10,
-      category_id = $11,
-      updated_by = $12,
+      updated_by = $11,
       updated_at = NOW()
-    WHERE id = $13
+    WHERE id = $12
     RETURNING *`,
     [
       title,
@@ -87,7 +83,6 @@ const editArticle = async (id, data) => {
       tags,
       status,
       is_featured,
-      category_id,
       updated_by,
       id,
     ]
