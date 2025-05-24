@@ -8,10 +8,38 @@ const {
   getAnnouncementsByCategory,
 } = require("../models/announceModel.js");
 
+// enum for categories
+//     'EVENTS',
+//     'FIESTA',
+//     'CULTURAL_TOURISM',
+//     'ENVIRONMENTAL_COASTAL',
+//     'HOLIDAY_SEASONAL',
+//     'GOVERNMENT_PUBLIC_SERVICE',
+//     'STORM_SURGE',
+//     'TSUNAMI',
+//     'GALE_WARNING',
+//     'MONSOON_LOW_PRESSURE',
+//     'RED_TIDE',
+//     'JELLYFISH_BLOOM',
+//     'FISH_KILL',
+//     'PROTECTED_WILDLIFE',
+//     'OIL_SPILL',
+//     'COASTAL_EROSION',
+//     'CORAL_BLEACHING',
+//     'HEAT_WAVE',
+//     'FLOOD_LANDSLIDE',
+//     'DENGUE_WATERBORNE',
+//     'POWER_INTERRUPTION'
+
 const createAnnouncementController = async (req, res) => {
   try {
-    const { title, description, date_posted, location, image_url, category } =
+    let { title, description, date_posted, location, image_url, category } =
       req.body;
+
+    title = title.toUpperCase();
+    description = description.toUpperCase();
+    location = location.toUpperCase();
+    category = category.toUpperCase();
 
     const announcement = await createAnnouncement({
       title: title.toUpperCase(),
@@ -34,6 +62,13 @@ const editAnnouncementController = async (req, res) => {
     const { announcementId } = req.params;
     const { title, description, date_posted, location, image_url, category } =
       req.body;
+    let { title, description, date_posted, location, image_url, category } =
+      req.body;
+
+    title = title.toUpperCase();
+    description = description.toUpperCase();
+    location = location.toUpperCase();
+    category = category.toUpperCase();
 
     // Edit the announcement in the database
     const announcement = await editAnnouncement(announcementId, {

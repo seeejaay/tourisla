@@ -22,6 +22,7 @@ const {
   authenticateUser,
   authenticateAdmin,
   authenticateTourGuide,
+  authenticateTourOperator,
 } = require("../middleware/middleware.js");
 
 const {
@@ -37,6 +38,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://192.168.0.130:3000",
+      "http://192.168.0.135:3000",
       "http://192.168.0.130", // change this to your local IP address
       process.env.CLIENT_URL, // Add this if you want to support env config too
     ],
@@ -65,6 +67,39 @@ const {
   editGuideUploadDocuController,
   getGuideUploadDocuByIdController,
 } = require("../controllers/guideUploadDocuController.js");
+
+const {
+  createOperatorRegisController,
+  editOperatorRegisController,
+  deleteOperatorRegisController,
+  viewAllOperatorRegisController,
+  viewOperatorRegisByIdController,
+} = require("../controllers/operatorRegisController.js");
+
+const {
+  createOperatorUploadDocuController,
+  editOperatorUploadDocuController,
+  getOperatorUploadDocuByIdController,
+} = require("../controllers/operatorUploadDocuController.js");
+
+const {
+    viewTourGuideApplicantsController,
+    viewTourGuideApplicantDetailsController,
+    approveTourGuideApplicantController,
+    rejectTourGuideApplicantController,
+    viewTourOperatorApplicantsController,
+    viewTourOperatorApplicantDetailsController,
+    approveTourOperatorApplicantController,
+    rejectTourOperatorApplicantController
+} = require("../controllers/applicantsController.js");
+
+const {
+  applyToTourOperatorController,
+  getApplicationsForTourOperatorController,
+  approveTourGuideApplicationController,
+  rejectTourGuideApplicationController,
+} = require("../controllers/guideApplyToOperatorController.js");
+
 
 app.use(
   session({
@@ -194,4 +229,112 @@ app.get(
   "/api/v1/guideUploadDocu/:docuId",
   authenticateTourGuide,
   getGuideUploadDocuByIdController
+);
+
+// Routes for Tour Operator Registration
+app.post(
+  "/api/v1/operatorRegis",
+  authenticateTourOperator,
+  createOperatorRegisController
+);
+app.put(
+  "/api/v1/operatorRegis/:operatorId",
+  authenticateTourOperator,
+  editOperatorRegisController
+);
+app.delete(
+  "/api/v1/operatorRegis/:operatorId",
+  authenticateTourOperator,
+  deleteOperatorRegisController
+);
+app.get(
+  "/api/v1/operatorRegis",
+  authenticateTourOperator,
+  viewAllOperatorRegisController
+);
+app.get(
+  "/api/v1/operatorRegis/:operatorId",
+  authenticateTourOperator,
+  viewOperatorRegisByIdController
+);
+
+// Routes for Tour Operator Document Upload
+app.post(
+  "/api/v1/operatorUploadDocu/:operatorId",
+  authenticateTourOperator,
+  createOperatorUploadDocuController
+);
+app.put(
+  "/api/v1/operatorUploadDocu/:documentId",
+  authenticateTourOperator,
+  editOperatorUploadDocuController
+);
+app.get(
+  "/api/v1/operatorUploadDocu/:documentId",
+  authenticateTourOperator,
+  getOperatorUploadDocuByIdController
+);
+
+// Routes for Admin verifying applicants
+app.get(
+  "/api/v1/guideApplicants",
+  authenticateAdmin,
+  viewTourGuideApplicantsController
+);
+app.get(
+  "/api/v1/guideApplicants/:applicantId",
+  authenticateAdmin,
+  viewTourGuideApplicantDetailsController
+);
+app.put(
+  "/api/v1/guideApplicants/:applicantId/approve",
+  authenticateAdmin,
+  approveTourGuideApplicantController
+);
+app.put(
+  "/api/v1/guideApplicants/:applicantId/reject",
+  authenticateAdmin,
+  rejectTourGuideApplicantController
+);
+app.get(
+  "/api/v1/operatorApplicants",
+  authenticateAdmin,
+  viewTourOperatorApplicantsController
+);
+app.get(
+  "/api/v1/operatorApplicants/:applicantId",
+  authenticateAdmin,
+  viewTourOperatorApplicantDetailsController
+);
+app.put(
+  "/api/v1/operatorApplicants/:applicantId/approve",
+  authenticateAdmin,
+  approveTourOperatorApplicantController
+);
+app.put(
+  "/api/v1/operatorApplicants/:applicantId/reject",
+  authenticateAdmin,
+  rejectTourOperatorApplicantController
+);
+
+// Routes for Tour Guides applying to Tour Operators
+app.post(
+  "/api/v1/applyToOperator",
+  authenticateTourGuide,
+  applyToTourOperatorController
+);
+app.get(
+  "/api/v1/applications/:operatorId",
+  authenticateTourOperator,
+  getApplicationsForTourOperatorController
+);
+app.put(
+  "/api/v1/applications/:applicationId/approve",
+  authenticateTourOperator,
+  approveTourGuideApplicationController
+);
+app.put(
+  "/api/v1/applications/:applicationId/reject",
+  authenticateTourOperator,
+  rejectTourGuideApplicationController
 );
