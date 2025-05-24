@@ -91,6 +91,14 @@ const {
     rejectTourOperatorApplicantController
 } = require("../controllers/applicantsController.js");
 
+const {
+  applyToTourOperatorController,
+  getApplicationsForTourOperatorController,
+  approveTourGuideApplicationController,
+  rejectTourGuideApplicationController,
+} = require("../controllers/guideApplyToOperatorController.js");
+
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -302,4 +310,26 @@ app.put(
   "/api/v1/operatorApplicants/:applicantId/reject",
   authenticateAdmin,
   rejectTourOperatorApplicantController
+);
+
+// Routes for Tour Guides applying to Tour Operators
+app.post(
+  "/api/v1/applyToOperator",
+  authenticateTourGuide,
+  applyToTourOperatorController
+);
+app.get(
+  "/api/v1/applications/:operatorId",
+  authenticateTourOperator,
+  getApplicationsForTourOperatorController
+);
+app.put(
+  "/api/v1/applications/:applicationId/approve",
+  authenticateTourOperator,
+  approveTourGuideApplicationController
+);
+app.put(
+  "/api/v1/applications/:applicationId/reject",
+  authenticateTourOperator,
+  rejectTourGuideApplicationController
 );
