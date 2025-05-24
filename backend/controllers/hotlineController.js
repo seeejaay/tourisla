@@ -7,9 +7,26 @@ const {
   getHotlineById,
 } = require("../models/hotlineModel.js");
 
+// enum for hotline types
+//   'MEDICAL',
+//   'POLICE',
+//   'BFP',
+//   'NDRRMO',
+//   'COAST_GUARD'
+
+// enum for municipality types
+//   'BANTAYAN',
+//   'SANTA_FE',
+//   'MADRIDEJOS'
+
 const createHotlineController = async (req, res) => {
     try {
-        const { municipality, type, contact_number, address } = req.body;
+        let { municipality, type, contact_number, address } = req.body;
+
+        municipality = municipality.toUpperCase();
+        type = type.toUpperCase();
+        contact_number = contact_number.toUpperCase();
+        address = address.toUpperCase();
         
         const hotline = await createHotline({
             municipality,
@@ -28,7 +45,12 @@ const createHotlineController = async (req, res) => {
 const editHotlineController = async (req, res) => {
     try {
         const { hotlineId } = req.params;
-        const { municipality, type, contact_number, address } = req.body;
+        let { municipality, type, contact_number, address } = req.body;
+
+        municipality = municipality.toUpperCase();
+        type = type.toUpperCase();
+        contact_number = contact_number.toUpperCase();
+        address = address.toUpperCase();
         
         const hotline = await editHotline(hotlineId, {
             municipality,
