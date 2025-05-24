@@ -80,6 +80,17 @@ const {
   getOperatorUploadDocuByIdController,
 } = require("../controllers/operatorUploadDocuController.js");
 
+const {
+    viewTourGuideApplicantsController,
+    viewTourGuideApplicantDetailsController,
+    approveTourGuideApplicantController,
+    rejectTourGuideApplicantController,
+    viewTourOperatorApplicantsController,
+    viewTourOperatorApplicantDetailsController,
+    approveTourOperatorApplicantController,
+    rejectTourOperatorApplicantController
+} = require("../controllers/applicantsController.js");
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -249,4 +260,46 @@ app.get(
   "/api/v1/operatorUploadDocu/:documentId",
   authenticateTourOperator,
   getOperatorUploadDocuByIdController
+);
+
+// Routes for Admin verifying applicants
+app.get(
+  "/api/v1/guideApplicants",
+  authenticateAdmin,
+  viewTourGuideApplicantsController
+);
+app.get(
+  "/api/v1/guideApplicants/:applicantId",
+  authenticateAdmin,
+  viewTourGuideApplicantDetailsController
+);
+app.put(
+  "/api/v1/guideApplicants/:applicantId/approve",
+  authenticateAdmin,
+  approveTourGuideApplicantController
+);
+app.put(
+  "/api/v1/guideApplicants/:applicantId/reject",
+  authenticateAdmin,
+  rejectTourGuideApplicantController
+);
+app.get(
+  "/api/v1/operatorApplicants",
+  authenticateAdmin,
+  viewTourOperatorApplicantsController
+);
+app.get(
+  "/api/v1/operatorApplicants/:applicantId",
+  authenticateAdmin,
+  viewTourOperatorApplicantDetailsController
+);
+app.put(
+  "/api/v1/operatorApplicants/:applicantId/approve",
+  authenticateAdmin,
+  approveTourOperatorApplicantController
+);
+app.put(
+  "/api/v1/operatorApplicants/:applicantId/reject",
+  authenticateAdmin,
+  rejectTourOperatorApplicantController
 );
