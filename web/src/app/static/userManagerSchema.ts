@@ -1,26 +1,36 @@
 import { z } from "zod";
 import countries from "@/app/static/countries.json";
 
+function sanitizePHPhoneNumber(phoneNumber: string): string {
+  // Remove any non-digit characters
+  const sanitized = phoneNumber.replace(/\D/g, "");
+  // Check if the number starts with "0" and remove it
+  return sanitized.startsWith("0") ? sanitized.slice(1) : sanitized;
+}
+
 {
   /*Code for Validation */
 }
-const formSchema = z
+const signupSchema = z
   .object({
     first_name: z
       .string()
       .min(3, { message: "First name is required" })
+      .toUpperCase()
       .regex(/^[A-Za-z\s]+$/, {
         message: "First name must contain only letters and spaces",
       }),
     last_name: z
       .string()
       .min(3, { message: "Last name is required" })
+      .toUpperCase()
       .regex(/^[A-Za-z\s]+$/, {
         message: "Last name must contain only letters and spaces",
       }),
     email: z
       .string()
       .min(4, { message: "Email is required" })
+      .toUpperCase()
       .email("Invalid email address")
       .regex(/@/, { message: "Invalid email Address" }),
     password: z
@@ -32,18 +42,15 @@ const formSchema = z
         /[@$!%*?&]/,
         "Password must contain at least one special character"
       ),
-    confirm_password: z
-      .string()
-      .min(1, { message: "Confirm password is required" }),
+    confirm_password: z.string().min(1, "Confirm password is required"),
     phone_number: z
       .string()
-      .min(11, { message: "Phone number is required" })
+      .min(11, "Phone number is required")
       .regex(
-        /^\+?[0-9]{1,3}[-. ]?\(?[0-9]{1,4}?\)?[-. ]?[0-9]{1,4}[-. ]?[0-9]{1,9}$/,
-        {
-          message: "Invalid phone number format",
-        }
-      ),
+        /^\+639\d{9}$/,
+        "Phone number must be in Philippine format: +639XXXXXXXXX"
+      )
+      .transform(sanitizePHPhoneNumber),
     role: z.literal("Tourist"),
     nationality: z
       .string()
@@ -66,5 +73,5 @@ const formSchema = z
     path: ["confirm_password"],
   });
 
-export type FormSchema = z.infer<typeof formSchema>;
-export default formSchema;
+export type signupSchema = z.infer<typeof signupSchema>;
+export default signupSchema;

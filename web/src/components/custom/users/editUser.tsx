@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User } from "./columns";
+import { User } from "../users/columns";
 
 import { Button } from "@/components/ui/button";
 
