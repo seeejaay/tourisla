@@ -16,7 +16,7 @@ export default function LoginScreen() {
     setError(""); // Clear previous errors
     try {
       await login({ email, password }); // Use the login function
-      router.push('/users/users_home');
+      router.push('/users_dashboard');
       // Redirect to the dashboard or home page
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -57,7 +57,7 @@ export default function LoginScreen() {
 
       <Button
         title="Login"
-        color="#00ADEF" // Replace with the desired color for the button
+        color="#007dab" // Replace with the desired color for the button
         onPress={handleLogin}
       />
 

@@ -2,6 +2,11 @@ import axios from "axios";
 
 const API_URL = "http://192.168.0.135:3005/api/v1/"; // Base URL for the API
 
+const axiosInstance = axios.create({
+  baseURL: API_URL,
+  withCredentials: true,
+});
+
 export const login = async (userData) => {
     try {
       const response = await axios.post(`${API_URL}login`, userData, {
@@ -20,9 +25,9 @@ export const login = async (userData) => {
       console.error("Error during login:", error.response?.data || error.message);
       throw error; // Re-throw the error for handling in the calling code
     }
-  };
+};
 
-  export const currentUser = async () => {
+export const currentUser = async () => {
     try {
       const response = await axios.get(`${API_URL}user`, {
         withCredentials: true, // Include cookies in the request
@@ -40,4 +45,20 @@ export const login = async (userData) => {
       );
       throw err; // Re-throw the error for handling in the calling code
     }
-  };
+};
+
+export const getAnnouncements = async () => {
+  try {
+    const response = await axios.get(`${API_URL}announcements`);
+    return response.data; // Expected: array of announcements
+  } catch (err) {
+    console.error("Error fetching announcements:", err.response?.data || err.message);
+    return [];
+  }
+};
+
+
+// Call logout endpoint
+export const logoutUser = async () => {
+  return axiosInstance.post('logout');
+};
