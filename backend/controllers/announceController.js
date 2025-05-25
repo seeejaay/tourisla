@@ -8,6 +8,8 @@ const {
   getAnnouncementsByCategory,
 } = require("../models/announceModel.js");
 
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+
 // enum for categories
 //     'EVENTS',
 //     'FIESTA',
@@ -31,10 +33,32 @@ const {
 //     'DENGUE_WATERBORNE',
 //     'POWER_INTERRUPTION'
 
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
+
 const createAnnouncementController = async (req, res) => {
   try {
-    let { title, description, date_posted, location, image_url, category } =
-      req.body;
+    let { title, description, date_posted, location, category } = req.body;
+    let image_url = null;
+
+    // Handle image upload
+    if (req.file) {
+      const file = req.file;
+      const s3Key = `announcements/${Date.now()}_${file.originalname}`;
+      const uploadParams = {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: s3Key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      };
+      await s3Client.send(new PutObjectCommand(uploadParams));
+      image_url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+    }
 
     title = title.toUpperCase();
     description = description.toUpperCase();
@@ -42,18 +66,18 @@ const createAnnouncementController = async (req, res) => {
     category = category.toUpperCase();
 
     const announcement = await createAnnouncement({
-      title: title.toUpperCase(),
+      title,
       description,
       date_posted,
-      location: location.toUpperCase(),
+      location,
       image_url,
-      category: category.toUpperCase(),
+      category,
     });
 
     res.json(announcement);
   } catch (err) {
     console.log(err.message);
-    res.send(err.message);
+    res.status(500).send(err.message);
   }
 };
 

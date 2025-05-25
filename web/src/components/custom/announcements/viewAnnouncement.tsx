@@ -1,6 +1,7 @@
 import { Announcement } from "./columns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import Image from "next/image";
 
 export default function ViewAnnouncement({
   announcement,
@@ -59,8 +60,10 @@ export default function ViewAnnouncement({
             <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
               Image
             </Label>
-            <img
+            <Image
               src={announcement.image_url}
+              width={500}
+              height={300}
               alt="Announcement"
               className="rounded-lg max-h-64 object-contain border"
             />
