@@ -8,8 +8,7 @@ const {
   getAnnouncementsByCategory,
 } = require("../models/announceModel.js");
 
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
-
+const { s3Client, PutObjectCommand } = require("../utils/s3.js"); // Adjust the path as necessary
 // enum for categories
 //     'EVENTS',
 //     'FIESTA',
@@ -33,17 +32,19 @@ const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 //     'DENGUE_WATERBORNE',
 //     'POWER_INTERRUPTION'
 
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  },
-});
-
 const createAnnouncementController = async (req, res) => {
   try {
     let { title, description, date_posted, location, category } = req.body;
+
+    // Validate required fields
+    if (!title || !description || !date_posted || !location || !category) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    title = title.toUpperCase();
+    description = description.toUpperCase();
+    location = location.toUpperCase();
+    category = category.toUpperCase();
     let image_url = null;
 
     // Handle image upload
@@ -59,11 +60,6 @@ const createAnnouncementController = async (req, res) => {
       await s3Client.send(new PutObjectCommand(uploadParams));
       image_url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
     }
-
-    title = title.toUpperCase();
-    description = description.toUpperCase();
-    location = location.toUpperCase();
-    category = category.toUpperCase();
 
     const announcement = await createAnnouncement({
       title,
