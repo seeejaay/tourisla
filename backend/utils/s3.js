@@ -25,4 +25,4 @@ async function getPresignedUrl(key, contentType) {
   }
 }
 
-module.exports = { getPresignedUrl };
+module.exports = { getPresignedUrl, s3Client, PutObjectCommand };
