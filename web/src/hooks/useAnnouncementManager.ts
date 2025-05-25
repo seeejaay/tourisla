@@ -34,12 +34,12 @@ export const useAnnouncementManager = () => {
 
   // Create a new announcement and update state
   const createAnnouncement = useCallback(
-    async (data: AnnouncementSchema): Promise<Announcement | null> => {
+    async (announcementData: FormData): Promise<Announcement | null> => {
       setLoading(true);
       setError("");
       try {
         const response: Announcement & { error?: string } =
-          await apiCreateAnnouncement(data);
+          await apiCreateAnnouncement(announcementData);
         if (response.error) {
           setError(response.error);
           return null;

@@ -37,7 +37,6 @@ const announcementSchema = z.object({
   image_url: z
     .string()
     .max(200, { message: "Image URL must be less than 200 characters." })
-    .url({ message: "Image URL must be a valid URL." })
     .optional(),
 });
 

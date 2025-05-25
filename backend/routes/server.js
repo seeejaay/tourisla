@@ -1,12 +1,29 @@
 require("dotenv").config();
 const express = require("express");
 const session = require("express-session");
+const { getPresignedUrl } = require("../utils/s3.js");
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() });
+
 const db = require("../db/index.js");
 const app = express();
 const cors = require("cors");
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "http://192.168.0.130:3000",
+      "http://192.168.0.135:3000",
+      "http://192.168.0.130", // change this to your local IP address
+      process.env.CLIENT_URL, // Add this if you want to support env config too
+    ],
+    credentials: true,
+  })
+);
 // Controllers
 const { loginUser, logoutUser } = require("../controllers/authController.js");
 const {
@@ -33,18 +50,6 @@ const {
   viewAnnouncementByIdController,
   getByCategoryController,
 } = require("../controllers/announceController.js");
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "http://192.168.0.130:3000",
-      "http://192.168.0.135:3000",
-      "http://192.168.0.130", // change this to your local IP address
-      process.env.CLIENT_URL, // Add this if you want to support env config too
-    ],
-    credentials: true,
-  })
-);
 
 const {
   createHotlineController,
@@ -83,14 +88,14 @@ const {
 } = require("../controllers/operatorUploadDocuController.js");
 
 const {
-    viewTourGuideApplicantsController,
-    viewTourGuideApplicantDetailsController,
-    approveTourGuideApplicantController,
-    rejectTourGuideApplicantController,
-    viewTourOperatorApplicantsController,
-    viewTourOperatorApplicantDetailsController,
-    approveTourOperatorApplicantController,
-    rejectTourOperatorApplicantController
+  viewTourGuideApplicantsController,
+  viewTourGuideApplicantDetailsController,
+  approveTourGuideApplicantController,
+  rejectTourGuideApplicantController,
+  viewTourOperatorApplicantsController,
+  viewTourOperatorApplicantDetailsController,
+  approveTourOperatorApplicantController,
+  rejectTourOperatorApplicantController,
 } = require("../controllers/applicantsController.js");
 
 const {
@@ -99,7 +104,6 @@ const {
   approveTourGuideApplicationController,
   rejectTourGuideApplicationController,
 } = require("../controllers/guideApplyToOperatorController.js");
-
 
 app.use(
   session({
@@ -126,6 +130,20 @@ app.get("/api/v1/users", async (req, res) => {
     res.status(200).json(result.rows);
   } catch (error) {
     console.error("Error fetching users:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/api/v1/s3-presigned-url", async (req, res) => {
+  const { key, contentType } = req.query;
+  if (!key || !contentType) {
+    return res.status(400).json({ error: "Missing key or contentType" });
+  }
+  try {
+    const url = await getPresignedUrl(key, contentType);
+    res.status(200).json({ url });
+  } catch (error) {
+    console.error("Error generating presigned URL:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -162,6 +180,7 @@ app.get(
 );
 app.post(
   "/api/v1/announcements",
+  upload.single("image"),
   createAnnouncementController,
   authenticateAdmin
 );
