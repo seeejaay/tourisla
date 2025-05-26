@@ -50,23 +50,19 @@ export const createAnnouncement = async (announcementData) => {
       `${API_URL}announcements`,
       announcementData,
       {
-        withCredentials: true, // Include cookies in the request
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
       }
     );
-
-    if (response.status !== 200) {
-      throw new Error(
-        `Failed to create announcement. Server responded with status: ${response.status}`
-      );
-    }
-
-    return response.data; // Return response data
+    if (response.status !== 200)
+      throw new Error("Failed to create announcement");
+    return response.data;
   } catch (error) {
     console.error(
       "Error adding announcement:",
       error.response?.data || error.message
     );
-    throw error; // Re-throw the error for handling in the calling code
+    throw error;
   }
 };
 

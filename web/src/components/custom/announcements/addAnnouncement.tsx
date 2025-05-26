@@ -22,13 +22,17 @@ export default function AddAnnouncement({
     description: "",
     date_posted: today,
     location: "",
-    image_url: "",
     category: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const { createAnnouncement } = useAnnouncementManager();
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setImageFile(file || null);
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -42,8 +46,8 @@ export default function AddAnnouncement({
     setLoading(true);
     setError(null);
 
-    // Validate with Zod schema
-    const result = announcementSchema.safeParse(form);
+    // Validate with Zod schema (skip image_url, backend will set it)
+    const result = announcementSchema.safeParse({ ...form, image_url: "" });
     if (!result.success) {
       setError(result.error.errors[0].message);
       setLoading(false);
@@ -51,7 +55,16 @@ export default function AddAnnouncement({
     }
 
     try {
-      const created = await createAnnouncement(form);
+      const formData = new FormData();
+      Object.entries(form).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
+
+      // Pass FormData to createAnnouncement (your API must support FormData)
+      const created = await createAnnouncement(formData);
       if (!created) {
         setError("Failed to create announcement.");
         return;
@@ -61,12 +74,12 @@ export default function AddAnnouncement({
         description: "",
         date_posted: today,
         location: "",
-        image_url: "",
         category: "",
       });
+      setImageFile(null);
       if (onSuccess) onSuccess();
     } catch (err) {
-      setError("Failed to create announcement." + err);
+      setError("Failed to create announcement. " + err);
     } finally {
       setLoading(false);
     }
@@ -125,12 +138,12 @@ export default function AddAnnouncement({
         />
       </div>
       <div>
-        <label className="block text-xs font-semibold mb-1">Image URL</label>
+        <label className="block text-xs font-semibold mb-1">Image</label>
         <Input
-          name="image_url"
-          value={form.image_url}
-          onChange={handleChange}
-          placeholder="Image URL"
+          type="file"
+          name="image"
+          accept="image/*"
+          onChange={handleImageChange}
         />
       </div>
       {error && <div className="text-red-500 text-sm">{error}</div>}
