@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, LogIn, LogOut, Settings } from "lucide-react";
 
 interface PillProps {
@@ -23,7 +22,6 @@ export default function Pill({ className }: PillProps) {
   const [user, setUser] = useState<{
     name: string;
     email: string;
-    avatar?: string;
   } | null>(null);
 
   useEffect(() => {
@@ -48,14 +46,6 @@ export default function Pill({ className }: PillProps) {
     }
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
   return (
     <div className={className}>
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
@@ -65,16 +55,7 @@ export default function Pill({ className }: PillProps) {
             className="rounded-full h-10 w-10 p-0 relative hover:bg-gray-100 transition-colors group"
             aria-label="Account menu"
           >
-            {user?.avatar ? (
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-              </Avatar>
-            ) : (
-              <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 border border-gray-300 group-hover:border-gray-400 transition-colors">
-                {user ? getInitials(user.name) : <User className="w-4 h-4" />}
-              </div>
-            )}
+            <User className="w-5 h-5" />
           </Button>
         </DropdownMenuTrigger>
 
@@ -86,23 +67,10 @@ export default function Pill({ className }: PillProps) {
           {user ? (
             <>
               <DropdownMenuLabel className="px-4 py-2 flex items-center gap-3">
-                <div className="flex-shrink-0">
-                  {user.avatar ? (
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                    </Avatar>
-                  ) : (
-                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 border border-gray-300">
-                      {getInitials(user.name)}
-                    </div>
-                  )}
-                </div>
-                <div className="overflow-hidden">
-                  <p className="font-medium text-gray-900 truncate">
-                    {user.name}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                <User className="w-6 h-6 text-gray-500" />
+                <div>
+                  <div className="font-medium">{user.name}</div>
+                  <div className="text-xs text-gray-500">{user.email}</div>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="my-1 bg-gray-100" />
