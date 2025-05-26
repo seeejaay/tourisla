@@ -7,6 +7,16 @@ const nextConfig: NextConfig = {
     "http://192.168.0.130:3000",
     "http://192.168.0.130",
   ],
+
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "tourislabuckets.s3.ap-southeast-1.amazonaws.com",
+        pathname: "/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

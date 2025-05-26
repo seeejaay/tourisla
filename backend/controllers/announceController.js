@@ -8,6 +8,7 @@ const {
   getAnnouncementsByCategory,
 } = require("../models/announceModel.js");
 
+const { s3Client, PutObjectCommand } = require("../utils/s3.js"); // Adjust the path as necessary
 // enum for categories
 //     'EVENTS',
 //     'FIESTA',
@@ -33,27 +34,46 @@ const {
 
 const createAnnouncementController = async (req, res) => {
   try {
-    let { title, description, date_posted, location, image_url, category } =
-      req.body;
+    let { title, description, date_posted, location, category } = req.body;
+
+    // Validate required fields
+    if (!title || !description || !date_posted || !location || !category) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
 
     title = title.toUpperCase();
     description = description.toUpperCase();
     location = location.toUpperCase();
     category = category.toUpperCase();
+    let image_url = null;
+
+    // Handle image upload
+    if (req.file) {
+      const file = req.file;
+      const s3Key = `announcements/${Date.now()}_${file.originalname}`;
+      const uploadParams = {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: s3Key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      };
+      await s3Client.send(new PutObjectCommand(uploadParams));
+      image_url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+    }
 
     const announcement = await createAnnouncement({
-      title: title.toUpperCase(),
+      title,
       description,
       date_posted,
-      location: location.toUpperCase(),
+      location,
       image_url,
-      category: category.toUpperCase(),
+      category,
     });
 
     res.json(announcement);
   } catch (err) {
     console.log(err.message);
-    res.send(err.message);
+    res.status(500).send(err.message);
   }
 };
 
