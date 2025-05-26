@@ -26,9 +26,9 @@ const Sidebar = () => {
     }
   };
   return (
-    <aside
+    <nav
       className={`fixed bg-gray-800 backdrop-blur-xl border-r border-gray-100/20 
-        text-gray-100 h-full flex flex-col transition-all duration-300 ease-in-out 
+        text-gray-100 h-full flex flex-col transition-all duration-300 ease-in-out z-10
         ${isCollapsed ? "w-20" : "w-64"}`}
     >
       {/* Sidebar Header */}
@@ -121,7 +121,7 @@ const Sidebar = () => {
           )}
         </div>
       </div>
-    </aside>
+    </nav>
   );
 };
 
