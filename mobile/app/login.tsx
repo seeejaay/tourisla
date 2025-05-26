@@ -1,82 +1,181 @@
 import { login } from '@/lib/api';
-import { View, Text, TextInput, TouchableOpacity, Button } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Image } from 'react-native';
-
-
 
 export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+
   const handleLogin = async () => {
-    setError(""); // Clear previous errors
+    setError('');
+    const trimmedEmail = email.trim().toUpperCase();
+    const trimmedPassword = password.trim();
+
+    console.log('Logging in with:', {
+      email: trimmedEmail,
+      password: trimmedPassword,
+    });
+
     try {
-      await login({ email, password }); // Use the login function
-      router.push('/users/users_home');
-      // Redirect to the dashboard or home page
-    } catch (err: unknown) {
+      const res = await login({ email: trimmedEmail, password: trimmedPassword });
+      console.log('Login Response:', res);
+
+      const { role, ...userData } = res.user;
+
+      if (!role) {
+        setError('No role returned. Cannot proceed.');
+        return;
+      }
+
+      await AsyncStorage.setItem('userData', JSON.stringify(userData));
+      await AsyncStorage.setItem('role', role);
+
+      switch (role) {
+        case 'Admin':
+          router.replace('/admin_dashboard');
+          break;
+        case 'tourist':
+          router.replace('/tourist_home');
+          break;
+        case 'tour_guide':
+          router.replace('/guide_home');
+          break;
+        case 'tour_operator':
+          router.replace('/operator_home');
+          break;
+        default:
+          setError('Unknown role.');
+      }
+    } catch (err) {
       if (err instanceof Error) {
-        setError(err.message || "An error occurred during login.");
+        setError(err.message || 'An error occurred during login.');
       } else {
-        setError("An error occurred during login.");
+        setError('An error occurred during login.');
       }
     }
   };
+
   return (
-    <View className="flex-1 justify-center px-6 bg-ghost">
-      <Text className="text-4xl font-black mb-6 text-center text-water">Login</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Login</Text>
 
       <TextInput
         placeholder="Email"
-        onChange={(e) => setEmail(e.nativeEvent.text)}
-        className="border border-gray-300 rounded-md p-3 mb-4"
+        value={email}
+        onChangeText={setEmail}
+        style={styles.input}
+        keyboardType="email-address"
+        autoCapitalize="none"
       />
-      <View className="relative mb-1">
+
+      <View style={styles.passwordContainer}>
         <TextInput
-            placeholder="Password"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChange={(e) => setPassword(e.nativeEvent.text)}
-            className="border border-gray-300 rounded-md p-3 pr-12"
+          placeholder="Password"
+          secureTextEntry={!showPassword}
+          value={password}
+          onChangeText={setPassword}
+          style={styles.passwordInput}
         />
         <TouchableOpacity
-            onPress={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-3.5"
+          onPress={() => setShowPassword(!showPassword)}
+          style={styles.eyeIcon}
         >
-            <Feather name={showPassword ? 'eye' : 'eye-off'} size={22} color="gray" />
+          <Feather name={showPassword ? 'eye' : 'eye-off'} size={22} color="gray" />
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity onPress={() => router.push('/forgot-password')} className="mb-6">
-        <Text className="text-water text-right text-xs">Forgot Password?</Text>
+      <TouchableOpacity onPress={() => router.push('/forgot-password')} style={{ marginBottom: 24 }}>
+        <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
       </TouchableOpacity>
 
-      <Button
-        title="Login"
-        color="#00ADEF" // Replace with the desired color for the button
-        onPress={handleLogin}
-      />
-
-      {/* <TouchableOpacity
-      className="flex-row items-center justify-center border border-gray-300 rounded-md p-3 mb-6"
-      onPress={() => {
-        console.log('Continue with Google pressed');
-      }}
-      >
-        <Image
-            source={require('../assets/images/google-icon.png')}
-            style={{ width: 20, height: 20 }}
-        />
-        <Text className="ml-2 text-gray-700 font-semibold">Continue with Google</Text>
-      </TouchableOpacity> */}
+      <TouchableOpacity onPress={handleLogin} style={styles.loginButton}>
+        <Text style={styles.loginButtonText}>LOGIN</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push('/signup')}>
-        <Text className="text-water text-center">Don’t have an account? Sign up</Text>
+        <Text style={styles.signupRedirectText}>Don’t have an account? Sign up</Text>
       </TouchableOpacity>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fb', // ghost
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 36,
+    fontWeight: '900',
+    textAlign: 'center',
+    color: '#007dab', // water
+    marginBottom: 24,
+  },
+  input: {
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    backgroundColor: '#fff',
+  },
+  passwordContainer: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  passwordInput: {
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    paddingRight: 40,
+    backgroundColor: '#fff',
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 12,
+    top: 12,
+  },
+  forgotPasswordText: {
+    textAlign: 'right',
+    color: '#007dab',
+    fontSize: 12,
+  },
+  loginButton: {
+    backgroundColor: '#007dab',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  loginButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  signupRedirectText: {
+    textAlign: 'center',
+    color: '#007dab',
+    fontWeight: '500',
+  },
+});
+
