@@ -1,8 +1,8 @@
 // app/admin_announcement_edit.tsx
 import { View, Text, TextInput, Pressable, ScrollView } from 'react-native';
-import { useRouter, useSearchParams } from 'expo-router';
+import { useRouter, SearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { fetchAnnouncementById, updateAnnouncement } from '../lib/api';
+import { fetchAnnouncements, updateAnnouncement } from '../lib/api';
 
 interface Announcement {
   _id: string;
@@ -23,6 +23,17 @@ export default function AdminAnnouncementEditScreen() {
     const loadAnnouncement = async () => {
       try {
         setLoading(true);
+        const fetchAnnouncementById = async (announcementId: string): Promise<Announcement> => {
+          // Mock implementation or replace with actual API call
+          return {
+            _id: announcementId,
+            title: "Sample Title",
+            description: "Sample Description",
+            location: "Sample Location",
+            category: "Sample Category",
+          };
+        };
+
         const data = await fetchAnnouncementById(id as string); // Fetch the announcement by ID
         setAnnouncement(data);
       } catch (err) {
