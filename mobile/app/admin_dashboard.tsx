@@ -1,13 +1,13 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import UsersHomeScreen from './users_home';
-import UsersProfileScreen from './users_profile';
-import UsersAnnouncementsScreen from './users_announcements';
+import AdminHomeScreen from './admin_home';
+import AdminProfileScreen from './admin_profile';
+import AdminAnnouncementsScreen from './admin_announcements';
 import { FontAwesome } from '@expo/vector-icons';
 
 
 const Tab = createBottomTabNavigator();
 
-export default function UsersDashboard() {
+export default function AdminDashboard() {
   return (
     <Tab.Navigator
       screenOptions={{
@@ -17,7 +17,7 @@ export default function UsersDashboard() {
     >
       <Tab.Screen
         name="Home"
-        component={UsersHomeScreen}
+        component={AdminHomeScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
             <FontAwesome name="home" size={size} color={color} />
@@ -26,7 +26,7 @@ export default function UsersDashboard() {
       />
       <Tab.Screen
         name="Announcements"
-        component={UsersAnnouncementsScreen}
+        component={AdminAnnouncementsScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
             <FontAwesome name="bullhorn" size={size} color={color} />
@@ -35,7 +35,7 @@ export default function UsersDashboard() {
       />
       <Tab.Screen
         name="Profile"
-        component={UsersProfileScreen}
+        component={AdminProfileScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
             <FontAwesome name="user" size={size} color={color} />
