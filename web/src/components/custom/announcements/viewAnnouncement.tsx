@@ -60,7 +60,7 @@ export default function ViewAnnouncement({
             <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
               Image
             </Label>
-            <Image
+            <img
               src={announcement.image_url}
               width={500}
               height={300}
