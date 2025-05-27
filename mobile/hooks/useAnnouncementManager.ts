@@ -10,7 +10,7 @@ import {
 
 // Define the Announcement type
 interface Announcement {
-  _id: string;
+  id: string;
   title: string;
   description: string;
   location: string;
@@ -25,7 +25,9 @@ export const useAnnouncementManager = () => {
   const [error, setError] = useState<string>("");
 
   // Fetch all announcements and update state
-  const fetchAnnouncements = useCallback(async (): Promise<Announcement[] | null> => {
+  const fetchAnnouncements = useCallback(async (): Promise<
+    Announcement[] | null
+  > => {
     setLoading(true);
     setError("");
     try {
@@ -93,20 +95,22 @@ export const useAnnouncementManager = () => {
 
   // Update an announcement and update state
   const updateAnnouncement = useCallback(
-    async (data: AnnouncementSchema & { _id: string }): Promise<Announcement | null> => {
+    async (
+      data: AnnouncementSchema & { id: string }
+    ): Promise<Announcement | null> => {
       setLoading(true);
       setError("");
       try {
         // FIX: Pass id and data separately
         const response: Announcement & { error?: string } =
-        await apiUpdateAnnouncement(data._id, data);
+          await apiUpdateAnnouncement(data.id, data);
         if (response.error) {
           setError(response.error);
           return null;
         }
         setAnnouncements((prev) =>
           prev.map((announcement) =>
-            announcement._id === data._id ? response : announcement
+            announcement.id === data.id ? response : announcement
           )
         );
         return response;
@@ -124,29 +128,26 @@ export const useAnnouncementManager = () => {
   );
 
   // Delete an announcement and update state
-  const deleteAnnouncement = useCallback(
-    async (id: string): Promise<void> => {
-      setLoading(true);
-      setError("");
-      try {
-        const response = await apiDeleteAnnouncement(id);
-        if ("error" in response && response.error) {
-          setError(response.error);
-          return;
-        }
-        setAnnouncements((prev) =>
-          prev.filter((announcement) => announcement._id !== id)
-        );
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : String(err);
-        console.error("Error deleting announcement:", errorMessage);
-        setError("Failed to delete announcement. " + errorMessage);
-      } finally {
-        setLoading(false);
+  const deleteAnnouncement = useCallback(async (id: string): Promise<void> => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await apiDeleteAnnouncement(id);
+      if ("error" in response && response.error) {
+        setError(response.error);
+        return;
       }
-    },
-    []
-  );
+      setAnnouncements((prev) =>
+        prev.filter((announcement) => announcement.id !== id)
+      );
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error("Error deleting announcement:", errorMessage);
+      setError("Failed to delete announcement. " + errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   return {
     announcements,

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://192.168.0.135:3005/api/v1/";
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
@@ -14,13 +14,18 @@ export const login = async (userData) => {
     });
 
     if (response.status !== 200) {
-      throw new Error(`Failed to login. Server responded with status: ${response.status}`);
+      throw new Error(
+        `Failed to login. Server responded with status: ${response.status}`
+      );
     }
 
     return response.data;
   } catch (error) {
     console.error("Error during login full response:", error.response);
-    console.error("Error during login message/data:", error.response?.data || error.message);
+    console.error(
+      "Error during login message/data:",
+      error.response?.data || error.message
+    );
     throw error;
   }
 };
@@ -37,7 +42,10 @@ export const currentUser = async () => {
 
     return response.data;
   } catch (err) {
-    console.error("Error fetching user data:", err.response?.data || err.message);
+    console.error(
+      "Error fetching user data:",
+      err.response?.data || err.message
+    );
     throw err;
   }
 };
