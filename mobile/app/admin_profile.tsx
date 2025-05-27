@@ -1,15 +1,21 @@
-import { View, Text, ActivityIndicator, TouchableOpacity, Image, StyleSheet, ScrollView, Platform, StatusBar } from 'react-native';
+import { View, Text, ActivityIndicator, TouchableOpacity, Image, ScrollView, Platform, StatusBar } from 'react-native';
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { currentUser, logoutUser as logout } from '@/lib/api';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
 
 export default function AdminProfileScreen() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<{
+    avatar?: string;
+    first_name?: string;
+    last_name?: string;
+    email: string;
+    role: string;
+    phone_number?: string;
+  } | null>(null);
   const [error, setError] = useState("");
   const [showMenu, setShowMenu] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -45,7 +51,7 @@ export default function AdminProfileScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered]}>
         <ActivityIndicator size="large" color="#007AFF" />
       </View>
     );
@@ -62,21 +68,21 @@ export default function AdminProfileScreen() {
   return (
     <View style={styles.container}>
       {/* Header with menu */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Profile</Text>
+      <View style={[styles.header]}>
+        <Text style={[styles.headerTitle]}>My Profile</Text>
         <TouchableOpacity onPress={handleMenuToggle} style={styles.menuButton}>
           <FontAwesome name="bars" size={28} color="#ecf0f1" />
         </TouchableOpacity>
       </View>
 
       {showMenu && (
-        <View style={styles.dropdownMenu}>
-          <TouchableOpacity style={styles.menuItem} onPress={handleEditProfile}>
+        <View style={[styles.dropdownMenu]}>
+          <TouchableOpacity style={[styles.menuItem]} onPress={handleEditProfile}>
             <FontAwesome name="cog" size={20} color="#555" />
             <Text style={styles.menuText}>Settings</Text>
           </TouchableOpacity>
           <View style={styles.menuDivider} />
-          <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+          <TouchableOpacity style={[styles.menuItem]} onPress={handleLogout}>
             <FontAwesome name="sign-out" size={20} color="#d9534f" />
             <Text style={[styles.menuText, { color: '#d9534f' }]}>Log Out</Text>
           </TouchableOpacity>
@@ -91,11 +97,11 @@ export default function AdminProfileScreen() {
       >
       {/* Profile Card */}
       {user && (
-        <View style={styles.profileCard}>
+        <View style={[styles.profileCard]}>
           {/* Profile Image */}
-          <View style={styles.avatarContainer}>
+          <View style={[styles.avatarContainer]}>
             {/* Use user's avatar if available; fallback to icon */}
-            {user.avatar ? (
+            {user?.avatar ? (
               <Image source={{ uri: user.avatar }} style={styles.avatar} />
             ) : (
               <FontAwesome name="user-circle-o" size={100} color="#bbb" />
@@ -104,45 +110,48 @@ export default function AdminProfileScreen() {
 
           {/* Name & Email */}
           <Text style={styles.name}>
-            {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+            {`${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.email}
           </Text>
-          <Text style={styles.email}>{user.email}</Text>
+          <Text style={styles.email}>{user?.email}</Text>
 
           {/* Role Badge */}
-          <View style={[styles.roleBadge, user.role === 'admin' ? styles.adminBadge : styles.userBadge]}>
-            <Text style={styles.roleText}>{user.role?.toUpperCase()}</Text>
+          <View style={[styles.roleBadge, user?.role === 'admin' ? styles.adminBadge : styles.userBadge]}>
+            <Text style={styles.roleText}>{user?.role?.toUpperCase()}</Text>
           </View>
         </View>
       )}
 
       {/* User Info Section */}
-      {user && (
-        <View style={styles.infoSection}>
-          <TouchableOpacity style={styles.editProfileButton} onPress={handleEditProfile}>
-            <Text style={styles.editProfileButtonText}>Edit Profile</Text>
-          </TouchableOpacity>
+{/* User Info Section */}
+{user && (
+  <>
+    <Text style={styles.sectionTitle}>User Information</Text>
+    <View style={styles.infoSection}>
+      <TouchableOpacity style={[styles.editProfileButton]} onPress={handleEditProfile}>
+        <Text style={styles.editProfileButtonText}>Edit Profile</Text>
+      </TouchableOpacity>
 
-          <Text style={styles.sectionTitle}>User Information</Text>
-
-          <View style={styles.infoRow}>
-            <MaterialIcons name="phone" size={24} color="#3e979f" />
-            <View style={styles.infoTextGroup}>
-              <Text style={styles.infoValue}>{user.phone_number || "N/A"}</Text>
-              <Text style={styles.infoLabel}>Phone Number</Text>
-            </View>
-          </View>
-
-          <View style={styles.infoRow}>
-            <MaterialIcons name="security" size={24} color="#3e979f" />
-            <View style={styles.infoTextGroup}>
-              <Text style={styles.infoValue}>{user.role}</Text>
-              <Text style={styles.infoLabel}>Role</Text>
-            </View>
-          </View>
-
-          {/* Add other info fields here if needed */}
+      <View style={styles.infoRow}>
+        <MaterialIcons name="phone" size={24} color="#007dab" />
+        <View style={styles.infoTextGroup}>
+          <Text style={styles.infoValue}>{user?.phone_number || "N/A"}</Text>
+          <Text style={styles.infoLabel}>Phone Number</Text>
         </View>
-      )}
+      </View>
+
+      <View style={styles.infoRow}>
+        <MaterialIcons name="security" size={24} color="#007dab" />
+        <View style={styles.infoTextGroup}>
+          <Text style={styles.infoValue}>{user?.role}</Text>
+          <Text style={styles.infoLabel}>Role</Text>
+        </View>
+      </View>
+
+      {/* Add other info fields here if needed */}
+    </View>
+  </>
+)}
+
       </ScrollView>
     </View>
   );
@@ -153,7 +162,7 @@ const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight ||
 const styles = {
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb', // very light grey, almost white
+    backgroundColor: 'linear-gradient(180deg, #ffffff, #c4deff)',
     paddingTop: 20,
   },
 
@@ -161,7 +170,7 @@ const styles = {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#ffffff', // keep white for contrast
+    backgroundColor: 'linear-gradient(180deg, #ffffff, #c4deff)',
   },
 
   errorText: {
@@ -174,7 +183,7 @@ const styles = {
     top: 0,
     left: 0,
     right: 0,
-    height: 60 + STATUS_BAR_HEIGHT,
+    height: 50 + STATUS_BAR_HEIGHT,
     backgroundColor: '#007dab', // dark slate blue/navy
     borderBottomColor: 'rgba(0, 0, 0, 0.2)',
     borderBottomWidth: 1,
@@ -189,12 +198,17 @@ const styles = {
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 },
     elevation: 6,
+    borderBottomLeftRadius: 15, // Rounded bottom corners
+  borderBottomRightRadius: 15,
   },
 
   headerTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '900',
     color: '#ecf0f1',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)', // Text shadow for better visibility
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
 
   menuButton: {
@@ -205,27 +219,31 @@ const styles = {
     position: 'absolute',
     top: 60 + STATUS_BAR_HEIGHT,
     right: 20,
-    width: 180,
+    width: 200,
     backgroundColor: '#fff',
     borderRadius: 12,
     elevation: 7,
     shadowColor: '#000',
     shadowOpacity: 0.12,
     shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
     paddingVertical: 10,
     zIndex: 100,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
   },
 
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
     gap: 12,
   },
 
   menuText: {
     fontSize: 15,
+    fontWeight: '500',
     color: '#34495e',
   },
 
@@ -233,11 +251,12 @@ const styles = {
     height: 1,
     backgroundColor: '#ecf0f1',
     marginHorizontal: 14,
+    opacity: 0.8,
   },
 
   profileCard: {
     marginHorizontal: 16,
-    marginTop: 20,
+    marginTop: 60,
     backgroundColor: '#ffffff', // white card background for crispness
     borderRadius: 20,
     paddingVertical: 30,
@@ -307,12 +326,12 @@ const styles = {
 
   infoSection: {
     marginHorizontal: 16,
-    marginTop: 20,
+    marginTop: 5,
     backgroundColor: '#ffffff', // clean white background
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 16,
-    elevation: 4,
+    elevation: 2,
     shadowColor: '#000',
     shadowOpacity: 0.06,
     shadowRadius: 10,
@@ -340,17 +359,19 @@ const styles = {
   },
   
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 25,
+    fontWeight: '800',
     color: '#2c3e50', // dark slate gray, less bold but clear
-    marginBottom: 18,
-    letterSpacing: 0.6,
+    marginBottom: 0,
+    letterSpacing: 0,
+    marginTop: 30, // add some space above the section title
+    marginLeft: 16, // slight left margin for alignment
   },
   
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 6,
     backgroundColor: '#fefefe', // very subtle off-white to distinguish rows
     paddingVertical: 12,
     paddingHorizontal: 16,

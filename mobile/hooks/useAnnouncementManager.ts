@@ -6,14 +6,16 @@ import {
   viewAnnouncement as apiViewAnnouncement,
   updateAnnouncement as apiUpdateAnnouncement,
   deleteAnnouncement as apiDeleteAnnouncement,
-} from "@/lib/api";
+} from "@/lib/api/announcement";
 
 // Define the Announcement type
 interface Announcement {
   id: string;
   title: string;
-  content: string;
-  createdAt: string;
+  description: string;
+  location: string;
+  category: string;
+  createdAt?: string;
   updatedAt?: string;
 }
 
@@ -23,7 +25,9 @@ export const useAnnouncementManager = () => {
   const [error, setError] = useState<string>("");
 
   // Fetch all announcements and update state
-  const fetchAnnouncements = useCallback(async (): Promise<Announcement[] | null> => {
+  const fetchAnnouncements = useCallback(async (): Promise<
+    Announcement[] | null
+  > => {
     setLoading(true);
     setError("");
     try {
@@ -91,12 +95,16 @@ export const useAnnouncementManager = () => {
 
   // Update an announcement and update state
   const updateAnnouncement = useCallback(
-    async (data: AnnouncementSchema): Promise<Announcement | null> => {
+    async (
+      data: AnnouncementSchema & { id: string }
+    ): Promise<Announcement | null> => {
       setLoading(true);
       setError("");
       try {
-        const response = await apiUpdateAnnouncement(data.id, data);
-        if ("error" in response && response.error) {
+        // FIX: Pass id and data separately
+        const response: Announcement & { error?: string } =
+          await apiUpdateAnnouncement(data.id, data);
+        if (response.error) {
           setError(response.error);
           return null;
         }
@@ -106,10 +114,11 @@ export const useAnnouncementManager = () => {
           )
         );
         return response;
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : String(err);
-        console.error("Error updating announcement:", errorMessage);
-        setError("Failed to update announcement. " + errorMessage);
+      } catch (error) {
+        setError(
+          "An error occurred while updating the announcement." +
+            (error instanceof Error ? error.message : String(error))
+        );
         return null;
       } finally {
         setLoading(false);
@@ -119,29 +128,26 @@ export const useAnnouncementManager = () => {
   );
 
   // Delete an announcement and update state
-  const deleteAnnouncement = useCallback(
-    async (id: string): Promise<void> => {
-      setLoading(true);
-      setError("");
-      try {
-        const response = await apiDeleteAnnouncement(id);
-        if ("error" in response && response.error) {
-          setError(response.error);
-          return;
-        }
-        setAnnouncements((prev) =>
-          prev.filter((announcement) => announcement.id !== id)
-        );
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : String(err);
-        console.error("Error deleting announcement:", errorMessage);
-        setError("Failed to delete announcement. " + errorMessage);
-      } finally {
-        setLoading(false);
+  const deleteAnnouncement = useCallback(async (id: string): Promise<void> => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await apiDeleteAnnouncement(id);
+      if ("error" in response && response.error) {
+        setError(response.error);
+        return;
       }
-    },
-    []
-  );
+      setAnnouncements((prev) =>
+        prev.filter((announcement) => announcement.id !== id)
+      );
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error("Error deleting announcement:", errorMessage);
+      setError("Failed to delete announcement. " + errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   return {
     announcements,
