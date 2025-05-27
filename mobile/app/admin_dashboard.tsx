@@ -64,30 +64,27 @@ export default function AdminDashboard() {
         },
       })}
     >
-      <Tab.Screen
-        name="Home"
-        component={(props: any) => (
+      <Tab.Screen name="Home">
+        {() => (
           <GradientWrapper>
-            <AdminHomeScreen {...props} />
+            <AdminHomeScreen />
           </GradientWrapper>
         )}
-      />
-      <Tab.Screen
-        name="Announcements"
-        component={(props: any) => (
+      </Tab.Screen>
+      <Tab.Screen name="Announcements">
+        {() => (
           <GradientWrapper>
-            <AdminAnnouncementsScreen {...props} />
+            <AdminAnnouncementsScreen />
           </GradientWrapper>
         )}
-      />
-      <Tab.Screen
-        name="Profile"
-        component={(props: any) => (
+      </Tab.Screen>
+      <Tab.Screen name="Profile">
+        {() => (
           <GradientWrapper>
-            <AdminProfileScreen {...props} />
+            <AdminProfileScreen />
           </GradientWrapper>
         )}
-      />
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }

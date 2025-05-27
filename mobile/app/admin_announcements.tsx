@@ -2,8 +2,7 @@ import { View, Text, ScrollView, Pressable, StyleSheet, StatusBar } from 'react-
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import Icon from 'react-native-vector-icons/Feather';
-
-import { fetchAnnouncements } from '../lib/api';
+import { fetchAnnouncements} from '../lib/api/announcement';
 
 interface Announcement {
     _id: string;
@@ -11,6 +10,7 @@ interface Announcement {
     description: string;
     location: string;
     category: string;
+    date_posted: string; // Assuming this is a string in ISO format
 }
 
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
@@ -61,6 +61,7 @@ export default function AdminAnnouncementsScreen() {
                         </Text>
                     </View>
                 ))}
+
             </ScrollView>
 
             <Pressable

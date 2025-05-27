@@ -1,8 +1,8 @@
 // app/admin_announcement_edit.tsx
-import { View, Text, TextInput, Pressable, ScrollView } from 'react-native';
-import { useRouter, SearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { fetchAnnouncements, updateAnnouncement } from '../lib/api';
+import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { useAnnouncementManager } from "@/hooks/useAnnouncementManager";
 
 interface Announcement {
   _id: string;
@@ -14,54 +14,64 @@ interface Announcement {
 
 export default function AdminAnnouncementEditScreen() {
   const router = useRouter();
-  const { id } = useSearchParams(); // Get the announcement ID from the route params
+  const params = useLocalSearchParams(); // Use this if you're not using dynamic routing
+  const { id } = params;
+
+  const {
+    viewAnnouncement,
+    updateAnnouncement,
+    loading,
+    error,
+    setError,
+  } = useAnnouncementManager();
+
   const [announcement, setAnnouncement] = useState<Announcement | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+
+  const loadAnnouncement = async () => {
+    if (!id || typeof id !== "string") {
+      setError("Invalid announcement ID.");
+      return;
+    }
+
+    try {
+      const data = await viewAnnouncement(id);
+      if (!data) throw new Error("Invalid data");
+
+      setAnnouncement({
+        _id: data._id || "",
+        title: data.title || "",
+        description: data.description || "",
+        location: data.location || "",
+        category: data.category || "",
+      });
+    } catch (err) {
+      setError("Failed to load announcement.");
+    }
+  };
 
   useEffect(() => {
-    const loadAnnouncement = async () => {
-      try {
-        setLoading(true);
-        const fetchAnnouncementById = async (announcementId: string): Promise<Announcement> => {
-          // Mock implementation or replace with actual API call
-          return {
-            _id: announcementId,
-            title: "Sample Title",
-            description: "Sample Description",
-            location: "Sample Location",
-            category: "Sample Category",
-          };
-        };
-
-        const data = await fetchAnnouncementById(id as string); // Fetch the announcement by ID
-        setAnnouncement(data);
-      } catch (err) {
-        console.error("Failed to fetch announcement", err);
-        setError("Failed to load announcement.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) {
-      loadAnnouncement();
-    }
+    loadAnnouncement();
   }, [id]);
 
   const handleUpdate = async () => {
     if (!announcement) return;
 
     try {
-      setLoading(true);
-      await updateAnnouncement(announcement._id, announcement); // Update the announcement
-      alert("Announcement updated successfully!");
-      router.push('/admin_announcements'); // Navigate back to the announcements list
+      const updated = await updateAnnouncement({
+        id: announcement._id,
+        title: announcement.title,
+        description: announcement.description,
+        location: announcement.location,
+        category: announcement.category,
+        date_posted: new Date().toISOString(),
+      });
+
+      if (updated) {
+        alert("Announcement updated successfully!");
+        router.push("/admin_announcements");
+      }
     } catch (err) {
-      console.error("Failed to update announcement", err);
       setError("Failed to update announcement.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -77,22 +87,26 @@ export default function AdminAnnouncementEditScreen() {
     return (
       <View className="flex-1 justify-center items-center bg-white">
         <Text className="text-red-500">{error}</Text>
+        <Pressable onPress={loadAnnouncement} className="bg-blue-500 p-3 rounded mt-4">
+          <Text className="text-white text-center font-bold">Retry</Text>
+        </Pressable>
       </View>
     );
   }
 
   return (
     <ScrollView className="flex-1 bg-white p-4">
-      <Text className="text-2xl font-bold mb-4">Edit Announcement</Text>
-
       {announcement && (
         <>
+          <Text className="text-2xl font-bold mb-4">Edit Announcement</Text>
+
           <Text className="font-bold mb-2">Title</Text>
           <TextInput
             value={announcement.title}
             onChangeText={(text) =>
-              setAnnouncement((prev) => prev && { ...prev, title: text })
+              setAnnouncement((prev) => (prev ? { ...prev, title: text } : null))
             }
+            editable={!loading}
             className="border border-gray-300 rounded p-2 mb-4"
           />
 
@@ -100,8 +114,9 @@ export default function AdminAnnouncementEditScreen() {
           <TextInput
             value={announcement.description}
             onChangeText={(text) =>
-              setAnnouncement((prev) => prev && { ...prev, description: text })
+              setAnnouncement((prev) => (prev ? { ...prev, description: text } : null))
             }
+            editable={!loading}
             className="border border-gray-300 rounded p-2 mb-4"
             multiline
           />
@@ -110,8 +125,9 @@ export default function AdminAnnouncementEditScreen() {
           <TextInput
             value={announcement.location}
             onChangeText={(text) =>
-              setAnnouncement((prev) => prev && { ...prev, location: text })
+              setAnnouncement((prev) => (prev ? { ...prev, location: text } : null))
             }
+            editable={!loading}
             className="border border-gray-300 rounded p-2 mb-4"
           />
 
@@ -119,20 +135,18 @@ export default function AdminAnnouncementEditScreen() {
           <TextInput
             value={announcement.category}
             onChangeText={(text) =>
-              setAnnouncement((prev) => prev && { ...prev, category: text })
+              setAnnouncement((prev) => (prev ? { ...prev, category: text } : null))
             }
+            editable={!loading}
             className="border border-gray-300 rounded p-2 mb-4"
           />
 
-          <Pressable
-            onPress={handleUpdate}
-            className="bg-blue-500 p-3 rounded"
-          >
+          <Pressable onPress={handleUpdate} className="bg-blue-500 p-3 rounded">
             <Text className="text-white text-center font-bold">Save Changes</Text>
           </Pressable>
 
           <Pressable
-            onPress={() => router.push('/admin_announcements')}
+            onPress={() => router.push("/admin_announcements")}
             className="bg-gray-500 p-3 rounded mt-4"
           >
             <Text className="text-white text-center font-bold">Cancel</Text>
