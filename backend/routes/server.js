@@ -105,6 +105,31 @@ const {
   rejectTourGuideApplicationController,
 } = require("../controllers/guideApplyToOperatorController.js");
 
+const {
+  createTouristSpotController,
+  editTouristSpotController,
+  deleteTouristSpotController,
+  viewTouristSpotsController,
+  viewTouristSpotByIdController,
+} = require('../controllers/touristSpotController');
+
+const {
+  createRuleController,
+  editRuleController,
+  deleteRuleController,
+  viewRulesController,
+  viewRuleByIdController,
+} = require('../controllers/rulesRegulationController.js');
+
+const {
+  createArticleController,
+  editArticleController,
+  deleteArticleController,
+  viewArticlesController,
+  viewArticleByIdController,
+} = require("../controllers/articleController");
+
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -196,7 +221,11 @@ app.get(
 );
 
 // Routes for Hotlines
-app.post("/api/v1/hotlines", authenticateAdmin, createHotlineController);
+app.post(
+  "/api/v1/hotlines", 
+  authenticateAdmin, 
+  createHotlineController
+);
 app.put(
   "/api/v1/hotlines/:hotlineId",
   authenticateAdmin,
@@ -357,3 +386,37 @@ app.put(
   authenticateTourOperator,
   rejectTourGuideApplicationController
 );
+
+// Routes for Tourist Spots
+app.post(
+  "/api/v1/tourist-spots",
+  authenticateAdmin,
+  createTouristSpotController
+);
+app.put(
+  "/api/v1/tourist-spots/:touristSpotId",
+  authenticateAdmin,
+  editTouristSpotController
+);
+app.delete(
+  "/api/v1/tourist-spots/:touristSpotId",
+  authenticateAdmin,
+  deleteTouristSpotController
+);
+app.get("/api/v1/tourist-spots", viewTouristSpotsController);
+app.get("/api/v1/tourist-spots/:touristSpotId", viewTouristSpotByIdController);
+
+// Rules & Regulations Routes
+app.post("/api/v1/rules", authenticateAdmin, createRuleController);
+app.put("/api/v1/rules/:ruleId", authenticateAdmin, editRuleController);
+app.delete("/api/v1/rules/:ruleId", authenticateAdmin, deleteRuleController);
+app.get("/api/v1/rules", viewRulesController);
+app.get("/api/v1/rules/:ruleId", viewRuleByIdController);
+
+// Routes — Articles
+app.post("/api/v1/articles", authenticateAdmin, createArticleController);
+app.put("/api/v1/articles/:articleId", authenticateAdmin, editArticleController);
+app.delete("/api/v1/articles/:articleId", authenticateAdmin, deleteArticleController);
+app.get("/api/v1/articles", viewArticlesController);
+app.get("/api/v1/articles/:articleId", viewArticleByIdController);
+
