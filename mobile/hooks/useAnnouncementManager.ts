@@ -6,14 +6,16 @@ import {
   viewAnnouncement as apiViewAnnouncement,
   updateAnnouncement as apiUpdateAnnouncement,
   deleteAnnouncement as apiDeleteAnnouncement,
-} from "@/lib/api";
+} from "@/lib/api/announcement";
 
 // Define the Announcement type
 interface Announcement {
-  id: string;
+  _id: string;
   title: string;
-  content: string;
-  createdAt: string;
+  description: string;
+  location: string;
+  category: string;
+  createdAt?: string;
   updatedAt?: string;
 }
 
@@ -91,25 +93,28 @@ export const useAnnouncementManager = () => {
 
   // Update an announcement and update state
   const updateAnnouncement = useCallback(
-    async (data: AnnouncementSchema): Promise<Announcement | null> => {
+    async (data: AnnouncementSchema & { _id: string }): Promise<Announcement | null> => {
       setLoading(true);
       setError("");
       try {
-        const response = await apiUpdateAnnouncement(data.id, data);
-        if ("error" in response && response.error) {
+        // FIX: Pass id and data separately
+        const response: Announcement & { error?: string } =
+        await apiUpdateAnnouncement(data._id, data);
+        if (response.error) {
           setError(response.error);
           return null;
         }
         setAnnouncements((prev) =>
           prev.map((announcement) =>
-            announcement.id === data.id ? response : announcement
+            announcement._id === data._id ? response : announcement
           )
         );
         return response;
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : String(err);
-        console.error("Error updating announcement:", errorMessage);
-        setError("Failed to update announcement. " + errorMessage);
+      } catch (error) {
+        setError(
+          "An error occurred while updating the announcement." +
+            (error instanceof Error ? error.message : String(error))
+        );
         return null;
       } finally {
         setLoading(false);
@@ -130,7 +135,7 @@ export const useAnnouncementManager = () => {
           return;
         }
         setAnnouncements((prev) =>
-          prev.filter((announcement) => announcement.id !== id)
+          prev.filter((announcement) => announcement._id !== id)
         );
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : String(err);
