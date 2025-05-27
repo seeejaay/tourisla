@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useAnnouncementManager } from "@/hooks/useAnnouncementManager";
 
 interface Announcement {
-  _id: string;
+  id: string;
   title: string;
   description: string;
   location: string;
@@ -17,13 +17,8 @@ export default function AdminAnnouncementEditScreen() {
   const params = useLocalSearchParams(); // Use this if you're not using dynamic routing
   const { id } = params;
 
-  const {
-    viewAnnouncement,
-    updateAnnouncement,
-    loading,
-    error,
-    setError,
-  } = useAnnouncementManager();
+  const { viewAnnouncement, updateAnnouncement, loading, error, setError } =
+    useAnnouncementManager();
 
   const [announcement, setAnnouncement] = useState<Announcement | null>(null);
 
@@ -38,7 +33,7 @@ export default function AdminAnnouncementEditScreen() {
       if (!data) throw new Error("Invalid data");
 
       setAnnouncement({
-        _id: data._id || "",
+        id: data.id || "",
         title: data.title || "",
         description: data.description || "",
         location: data.location || "",
@@ -58,7 +53,7 @@ export default function AdminAnnouncementEditScreen() {
 
     try {
       const updated = await updateAnnouncement({
-        id: announcement._id,
+        id: announcement.id,
         title: announcement.title,
         description: announcement.description,
         location: announcement.location,
@@ -87,7 +82,10 @@ export default function AdminAnnouncementEditScreen() {
     return (
       <View className="flex-1 justify-center items-center bg-white">
         <Text className="text-red-500">{error}</Text>
-        <Pressable onPress={loadAnnouncement} className="bg-blue-500 p-3 rounded mt-4">
+        <Pressable
+          onPress={loadAnnouncement}
+          className="bg-blue-500 p-3 rounded mt-4"
+        >
           <Text className="text-white text-center font-bold">Retry</Text>
         </Pressable>
       </View>
@@ -104,7 +102,9 @@ export default function AdminAnnouncementEditScreen() {
           <TextInput
             value={announcement.title}
             onChangeText={(text) =>
-              setAnnouncement((prev) => (prev ? { ...prev, title: text } : null))
+              setAnnouncement((prev) =>
+                prev ? { ...prev, title: text } : null
+              )
             }
             editable={!loading}
             className="border border-gray-300 rounded p-2 mb-4"
@@ -114,7 +114,9 @@ export default function AdminAnnouncementEditScreen() {
           <TextInput
             value={announcement.description}
             onChangeText={(text) =>
-              setAnnouncement((prev) => (prev ? { ...prev, description: text } : null))
+              setAnnouncement((prev) =>
+                prev ? { ...prev, description: text } : null
+              )
             }
             editable={!loading}
             className="border border-gray-300 rounded p-2 mb-4"
@@ -125,7 +127,9 @@ export default function AdminAnnouncementEditScreen() {
           <TextInput
             value={announcement.location}
             onChangeText={(text) =>
-              setAnnouncement((prev) => (prev ? { ...prev, location: text } : null))
+              setAnnouncement((prev) =>
+                prev ? { ...prev, location: text } : null
+              )
             }
             editable={!loading}
             className="border border-gray-300 rounded p-2 mb-4"
@@ -135,14 +139,18 @@ export default function AdminAnnouncementEditScreen() {
           <TextInput
             value={announcement.category}
             onChangeText={(text) =>
-              setAnnouncement((prev) => (prev ? { ...prev, category: text } : null))
+              setAnnouncement((prev) =>
+                prev ? { ...prev, category: text } : null
+              )
             }
             editable={!loading}
             className="border border-gray-300 rounded p-2 mb-4"
           />
 
           <Pressable onPress={handleUpdate} className="bg-blue-500 p-3 rounded">
-            <Text className="text-white text-center font-bold">Save Changes</Text>
+            <Text className="text-white text-center font-bold">
+              Save Changes
+            </Text>
           </Pressable>
 
           <Pressable
