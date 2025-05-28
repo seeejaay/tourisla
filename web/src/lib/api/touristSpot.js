@@ -2,11 +2,33 @@ import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export const fetchHotlines = async () => {
+export const fetchTouristSpots = async () => {
   try {
-    const response = await axios.get(`${API_URL}hotlines`, {
+    const response = await axios.get(`${API_URL}tourist-spots`, {
       withCredentials: true,
     });
+
+    if (response.status !== 200) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Fetching Tourist Spots: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const viewTouristSpots = async (touristSpotId) => {
+  try {
+    const response = await axios.get(
+      `${API_URL}tourist-spots/${touristSpotId}`,
+      {
+        withCredentials: true,
+      }
+    );
 
     if (response.status !== 200) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
@@ -15,18 +37,22 @@ export const fetchHotlines = async () => {
     return response.data;
   } catch (error) {
     console.error(
-      "Error Fetching Hotlines: ",
+      "Error Fetching Tourist Spot: ",
       error.response?.data || error.message
     );
     throw error;
   }
 };
 
-export const viewHotlines = async (hotlineId) => {
+export const createTouristSpot = async (touristSpotData) => {
   try {
-    const response = await axios.get(`${API_URL}hotlines/${hotlineId}`, {
-      withCredentials: true,
-    });
+    const response = await axios.post(
+      `${API_URL}tourist-spits`,
+      touristSpotData,
+      {
+        withCredentials: true,
+      }
+    );
 
     if (response.status !== 200) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
@@ -35,39 +61,21 @@ export const viewHotlines = async (hotlineId) => {
     return response.data;
   } catch (error) {
     console.error(
-      "Error Fetching Hotlines: ",
+      "Error Creating Tourist Spot: ",
       error.response?.data || error.message
     );
     throw error;
   }
 };
 
-export const createHotline = async (hotlineData) => {
-  try {
-    const response = await axios.post(`${API_URL}hotlines`, hotlineData, {
-      withCredentials: true,
-    });
-
-    if (response.status !== 200) {
-      throw new Error(`HTTP Error! Status: ${response.status}`);
-    }
-
-    return response.data;
-  } catch (error) {
-    console.error(
-      "Error Creating Hotlines: ",
-      error.response?.data || error.message
-    );
-    throw error;
-  }
-};
-
-export const updateHotline = async (hotlineId, hotlineData) => {
+export const updateTouristSpot = async (touristSpotId, touristSpotData) => {
   try {
     const response = await axios.put(
-      `${API_URL}hotlines/${hotlineId}`,
-      hotlineData,
-      { withCredentials: true }
+      `${API_URL}tourist-spots/${touristSpotId}`,
+      touristSpotData,
+      {
+        withCredentials: true,
+      }
     );
 
     if (response.status !== 200) {
@@ -77,18 +85,21 @@ export const updateHotline = async (hotlineId, hotlineData) => {
     return response.data;
   } catch (error) {
     console.error(
-      "Error Updating Hotlines: ",
+      "Error Updating Tourist Spot: ",
       error.response?.data || error.message
     );
     throw error;
   }
 };
 
-export const deleteHotline = async (hotlineId) => {
+export const deleteTouristSpot = async (touristSpotId) => {
   try {
-    const response = await axios.delete(`${API_URL}hotlines/${hotlineId}`, {
-      withCredentials: true,
-    });
+    const response = await axios.delete(
+      `${API_URL}tourist-spots/${touristSpotId}`,
+      {
+        withCredentials: true,
+      }
+    );
 
     if (response.status !== 200) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
@@ -97,7 +108,7 @@ export const deleteHotline = async (hotlineId) => {
     return response.data;
   } catch (error) {
     console.error(
-      "Error Deleting Hotlines: ",
+      "Error Deleting Tourist Spot: ",
       error.response?.data || error.message
     );
     throw error;

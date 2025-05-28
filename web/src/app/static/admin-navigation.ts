@@ -21,7 +21,7 @@ const adminNavigation = [
   },
   {
     name: "Tourist Spots",
-    href: "/admin/tourist-spots",
+    href: "/admin/tourist-spot",
     title: "Tourist Spots",
     icon: TreePalm,
   },
