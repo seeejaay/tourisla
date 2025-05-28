@@ -44,7 +44,7 @@ export default function AdminAnnouncementCreateScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <View style={{ flex: 1, backgroundColor: '#f3f4f6', padding: 24 }}>
+      <View style={{ flex: 1, backgroundColor: '#f3f4f6', padding: 16 }}>
         {/* Back Button */}
         <Pressable
           onPress={() => router.back()}
@@ -67,18 +67,18 @@ export default function AdminAnnouncementCreateScreen() {
         </Pressable>
 
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <View style={{ backgroundColor: 'white', borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5, padding: 24, width: '100%', maxWidth: 400 }}>
+          <View style={{ backgroundColor: 'white', borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5, padding: 16, width: '100%', maxWidth: 400 }}>
             <Text style={{ fontSize: 24, fontWeight: '900', color: '#1f2937', marginBottom: 24, textAlign: 'center' }}>Create Announcement</Text>
 
             <TextInput
               placeholder="Title"
-              style={{ borderWidth: 1, borderColor: '#d1d5db', padding: 16, marginBottom: 16, borderRadius: 10, color: '#374151' }}
+              style={{ borderWidth: 1, borderColor: '#d1d5db', padding: 12, marginBottom: 10, borderRadius: 10, color: '#374151' }}
               value={form.title}
               onChangeText={(text) => handleChange('title', text)}
             />
             <TextInput
               placeholder="Description"
-              style={{ borderWidth: 1, borderColor: '#d1d5db', padding: 16, marginBottom: 16, borderRadius: 10, color: '#374151' }}
+              style={{ borderWidth: 1, borderColor: '#d1d5db', padding: 12, marginBottom: 10, borderRadius: 10, color: '#374151', height: 120, textAlignVertical: 'top' }}
               value={form.description}
               onChangeText={(text) => handleChange('description', text)}
               multiline
@@ -86,13 +86,13 @@ export default function AdminAnnouncementCreateScreen() {
             />
             <TextInput
               placeholder="Location"
-              style={{ borderWidth: 1, borderColor: '#d1d5db', padding: 16, marginBottom: 16, borderRadius: 10, color: '#374151' }}
+              style={{ borderWidth: 1, borderColor: '#d1d5db', padding: 12, marginBottom: 10, borderRadius: 10, color: '#374151' }}
               value={form.location}
               onChangeText={(text) => handleChange('location', text)}
             />
             <TextInput
               placeholder="Category"
-              style={{ borderWidth: 1, borderColor: '#d1d5db', padding: 16, marginBottom: 16, borderRadius: 10, color: '#374151' }}
+              style={{ borderWidth: 1, borderColor: '#d1d5db', padding: 12, marginBottom: 10, borderRadius: 10, color: '#374151' }}
               value={form.category}
               onChangeText={(text) => handleChange('category', text)}
             />

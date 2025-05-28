@@ -1,8 +1,17 @@
-// app/admin_announcement_edit.tsx
-import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useAnnouncementManager } from "@/hooks/useAnnouncementManager";
+import { Ionicons } from "@expo/vector-icons";
 
 interface Announcement {
   id: string;
@@ -14,7 +23,7 @@ interface Announcement {
 
 export default function AdminAnnouncementEditScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams(); // Use this if you're not using dynamic routing
+  const params = useLocalSearchParams();
   const { id } = params;
 
   const { viewAnnouncement, updateAnnouncement, loading, error, setError } =
@@ -62,7 +71,7 @@ export default function AdminAnnouncementEditScreen() {
       });
 
       if (updated) {
-        alert("Announcement updated successfully!");
+        Alert.alert("Success", "Announcement updated successfully!");
         router.push("/admin_announcements");
       }
     } catch (err) {
@@ -72,95 +81,198 @@ export default function AdminAnnouncementEditScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <Text>Loading...</Text>
+      <View style={styles.centeredContainer}>
+        <ActivityIndicator size="large" color="#007dab" />
+        <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <Text className="text-red-500">{error}</Text>
-        <Pressable
-          onPress={loadAnnouncement}
-          className="bg-blue-500 p-3 rounded mt-4"
-        >
-          <Text className="text-white text-center font-bold">Retry</Text>
+      <View style={styles.centeredContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <Pressable onPress={loadAnnouncement} style={styles.retryButton}>
+          <Text style={styles.retryButtonText}>Retry</Text>
         </Pressable>
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-white p-4">
-      {announcement && (
-        <>
-          <Text className="text-2xl font-bold mb-4">Edit Announcement</Text>
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <View style={styles.container}>
+        {/* Back Button */}
+        <Pressable onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="white" />
+        </Pressable>
 
-          <Text className="font-bold mb-2">Title</Text>
+        <View style={styles.formContainer}>
+          <Text style={styles.heading}>Edit Announcement</Text>
+
           <TextInput
-            value={announcement.title}
+            placeholder="Title"
+            style={styles.input}
+            value={announcement?.title}
             onChangeText={(text) =>
               setAnnouncement((prev) =>
                 prev ? { ...prev, title: text } : null
               )
             }
-            editable={!loading}
-            className="border border-gray-300 rounded p-2 mb-4"
           />
-
-          <Text className="font-bold mb-2">Description</Text>
           <TextInput
-            value={announcement.description}
+            placeholder="Description"
+            style={[styles.input, styles.textArea]}
+            value={announcement?.description}
             onChangeText={(text) =>
               setAnnouncement((prev) =>
                 prev ? { ...prev, description: text } : null
               )
             }
-            editable={!loading}
-            className="border border-gray-300 rounded p-2 mb-4"
             multiline
+            numberOfLines={4}
           />
-
-          <Text className="font-bold mb-2">Location</Text>
           <TextInput
-            value={announcement.location}
+            placeholder="Location"
+            style={styles.input}
+            value={announcement?.location}
             onChangeText={(text) =>
               setAnnouncement((prev) =>
                 prev ? { ...prev, location: text } : null
               )
             }
-            editable={!loading}
-            className="border border-gray-300 rounded p-2 mb-4"
           />
-
-          <Text className="font-bold mb-2">Category</Text>
           <TextInput
-            value={announcement.category}
+            placeholder="Category"
+            style={styles.input}
+            value={announcement?.category}
             onChangeText={(text) =>
               setAnnouncement((prev) =>
                 prev ? { ...prev, category: text } : null
               )
             }
-            editable={!loading}
-            className="border border-gray-300 rounded p-2 mb-4"
           />
 
-          <Pressable onPress={handleUpdate} className="bg-blue-500 p-3 rounded">
-            <Text className="text-white text-center font-bold">
-              Save Changes
-            </Text>
+          <Pressable style={styles.submitButton} onPress={handleUpdate}>
+            <Text style={styles.submitButtonText}>Save Changes</Text>
           </Pressable>
 
           <Pressable
-            onPress={() => router.push("/admin_announcements")}
-            className="bg-gray-500 p-3 rounded mt-4"
+            onPress={() => router.back()}
+            style={styles.cancelButton}
           >
-            <Text className="text-white text-center font-bold">Cancel</Text>
+            <Text style={styles.cancelButtonText}>Cancel</Text>
           </Pressable>
-        </>
-      )}
+        </View>
+      </View>
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f3f4f6",
+    padding: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  backButton: {
+    position: "absolute",
+    top: 40,
+    left: 20,
+    zIndex: 10,
+    backgroundColor: "#007dab",
+    borderRadius: 50,
+    padding: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  formContainer: {
+    backgroundColor: "white",
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    padding: 16,
+    width: "100%",
+    maxWidth: 400,
+    alignSelf: "center",
+  },
+  heading: {
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#1f2937",
+    marginBottom: 24,
+    textAlign: "center",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    padding: 12,
+    marginBottom: 10,
+    borderRadius: 10,
+    color: "#374151",
+    fontSize: 12,
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: "top",
+  },
+  submitButton: {
+    backgroundColor: "#007dab",
+    padding: 16,
+    borderRadius: 10,
+    marginTop: 16,
+  },
+  submitButtonText: {
+    color: "white",
+    textAlign: "center",
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  cancelButton: {
+    backgroundColor: "#6b7280",
+    padding: 16,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  cancelButtonText: {
+    color: "white",
+    textAlign: "center",
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  centeredContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f3f4f6",
+  },
+  loadingText: {
+    marginTop: 8,
+    fontSize: 16,
+    color: "#007dab",
+  },
+  errorText: {
+    fontSize: 16,
+    color: "#dc3545",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: "#007dab",
+    padding: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: "#ffffff",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+});

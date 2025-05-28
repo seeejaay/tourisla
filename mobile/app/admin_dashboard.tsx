@@ -1,7 +1,8 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AdminHomeScreen from './admin_home';
-import AdminProfileScreen from './admin_profile';
 import AdminAnnouncementsScreen from './admin_announcements';
+import AdminHotlinesScreen from './admin_hotlines';
+import AdminProfileScreen from './admin_profile';
 import { FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet } from 'react-native';
@@ -34,8 +35,8 @@ export default function AdminDashboard() {
         },
         tabBarStyle: {
           backgroundColor: '#1d2937',
-          borderTopRightRadius: 20,
-          borderTopLeftRadius: 20,
+          borderTopRightRadius: 15,
+          borderTopLeftRadius: 15,
           position: 'absolute', // makes sure it's overlayed
           borderTopWidth: 0,
         },
@@ -50,6 +51,8 @@ export default function AdminDashboard() {
             iconName = 'home';
           } else if (route.name === 'Announcements') {
             iconName = 'bullhorn';
+          } else if (route.name === 'Hotlines') {
+            iconName = 'phone';
           } else {
             iconName = 'user';
           }
@@ -75,6 +78,13 @@ export default function AdminDashboard() {
         {() => (
           <GradientWrapper>
             <AdminAnnouncementsScreen />
+          </GradientWrapper>
+        )}
+      </Tab.Screen>
+      <Tab.Screen name="Hotlines">
+        {() => (
+          <GradientWrapper>
+            <AdminHotlinesScreen />
           </GradientWrapper>
         )}
       </Tab.Screen>

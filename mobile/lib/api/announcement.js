@@ -1,9 +1,6 @@
 import axios from "axios";
-
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
-// Update with your actual API URL
 
-// ANNOUNCEMENTS
 export const fetchAnnouncements = async () => {
   try {
     const response = await axios.get(`${API_URL}announcements`, {
