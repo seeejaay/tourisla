@@ -47,10 +47,13 @@ export const viewTouristSpots = async (touristSpotId) => {
 export const createTouristSpot = async (touristSpotData) => {
   try {
     const response = await axios.post(
-      `${API_URL}tourist-spits`,
+      `${API_URL}tourist-spots`, // fixed typo here
       touristSpotData,
       {
         withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       }
     );
 
