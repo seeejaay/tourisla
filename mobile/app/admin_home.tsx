@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useEffect, useState } from 'react';
 import { currentUser } from '@/lib/api';
 
@@ -9,7 +9,7 @@ export default function AdminHomeScreen() {
     const fetchUser = async () => {
       try {
         const data = await currentUser();
-        console.log("Fetched user data:", data); // <--- Add this
+        console.log("Fetched user data:", data);
         setUser(data);
       } catch (error) {
         console.error("Failed to load user", error);
@@ -19,17 +19,70 @@ export default function AdminHomeScreen() {
   }, []);
 
   if (!user) {
-    return <Text>Loading user...</Text>;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+        <Text style={styles.loadingText}>Loading user...</Text>
+      </View>
+    );
   }
 
   return (
-    <View className="flex-1 bg-white p-6 justify-center items-center">
-      <Text className="text-2xl font-bold text-gray-800 mb-4">
-        Welcome, {user.first_name}!
-      </Text>
-      <Text className="text-base text-gray-600">
-        This is your home screen. You can show app summaries, stats, or recent activity here.
-      </Text>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Welcome, {user.first_name}!</Text>
+      </View>
+      <View style={styles.content}>
+        <Text style={styles.description}>
+          This is your home screen. You can show app summaries, stats, or recent activity here.
+        </Text>
+      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    padding: 16,
+  },
+  header: {
+    backgroundColor: '#4CAF50',
+    padding: 20,
+    borderRadius: 10,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  content: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  description: {
+    fontSize: 16,
+    color: '#333333',
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#333333',
+  },
+});

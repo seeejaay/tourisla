@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { AnnouncementSchema } from "@/static/useAnnouncementManagerSchema.js";
+import type { AnnouncementSchema } from "@/static/announcement/useAnnouncementManagerSchema.js";
 import {
   createAnnouncement as apiCreateAnnouncement,
   fetchAnnouncements as apiFetchAnnouncements,
