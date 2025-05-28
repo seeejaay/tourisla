@@ -8,28 +8,33 @@ const createTouristSpot = async (data) => {
     barangay,
     municipality,
     province,
-    location,
-    opening_time,
-    closing_time,
-    days_open,
-    entrance_fee,
-    other_fees,
-    contact_number,
+    longitude,
+    latitude,
+    social_link,
     email,
-    facebook_page,
-    rules,
+    contact_number,
+    days_open, // should be an array or object, will be stored as JSON
   } = data;
 
   const result = await db.query(
     `INSERT INTO tourist_spots 
-    (name, type, description, barangay, municipality, province, location, opening_time, closing_time, days_open, entrance_fee, other_fees, contact_number, email, facebook_page, rules)
+    (name, type, description, barangay, municipality, province, longitude, latitude, social_link, email, contact_number, days_open)
     VALUES 
-    ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+    ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
     RETURNING *`,
     [
-      name, type, description, barangay, municipality, province,
-      location, opening_time, closing_time, days_open, entrance_fee,
-      other_fees, contact_number, email, facebook_page, rules
+      name,
+      type,
+      description,
+      barangay,
+      municipality,
+      province,
+      longitude,
+      latitude,
+      social_link,
+      email,
+      contact_number,
+      days_open,
     ]
   );
 
@@ -48,7 +53,9 @@ const uploadTouristSpotImages = async (touristSpotId, imageUrls) => {
 };
 
 const deleteTouristSpotImages = async (touristSpotId) => {
-  await db.query(`DELETE FROM tourist_spot_images WHERE tourist_spot_id = $1`, [touristSpotId]);
+  await db.query(`DELETE FROM tourist_spot_images WHERE tourist_spot_id = $1`, [
+    touristSpotId,
+  ]);
 };
 
 const editTouristSpot = async (id, data) => {
@@ -59,16 +66,12 @@ const editTouristSpot = async (id, data) => {
     barangay,
     municipality,
     province,
-    location,
-    opening_time,
-    closing_time,
-    days_open,
-    entrance_fee,
-    other_fees,
-    contact_number,
+    longitude,
+    latitude,
+    social_link,
     email,
-    facebook_page,
-    rules,
+    contact_number,
+    days_open,
   } = data;
 
   const result = await db.query(
@@ -79,23 +82,29 @@ const editTouristSpot = async (id, data) => {
       barangay = $4,
       municipality = $5,
       province = $6,
-      location = $7,
-      opening_time = $8,
-      closing_time = $9,
-      days_open = $10,
-      entrance_fee = $11,
-      other_fees = $12,
-      contact_number = $13,
-      email = $14,
-      facebook_page = $15,
-      rules = $16,
+      longitude = $7,
+      latitude = $8,
+      social_link = $9,
+      email = $10,
+      contact_number = $11,
+      days_open = $12,
       updated_at = CURRENT_TIMESTAMP
-    WHERE id = $17
+    WHERE id = $13
     RETURNING *`,
     [
-      name, type, description, barangay, municipality, province,
-      location, opening_time, closing_time, days_open, entrance_fee,
-      other_fees, contact_number, email, facebook_page, rules, id
+      name,
+      type,
+      description,
+      barangay,
+      municipality,
+      province,
+      longitude,
+      latitude,
+      social_link,
+      email,
+      contact_number,
+      days_open,
+      id,
     ]
   );
 
@@ -123,14 +132,17 @@ const getAllTouristSpots = async () => {
 };
 
 const getTouristSpotById = async (id) => {
-  const result = await db.query(`
+  const result = await db.query(
+    `
     SELECT ts.*, 
       COALESCE(json_agg(ti.*) FILTER (WHERE ti.id IS NOT NULL), '[]') AS images 
     FROM tourist_spots ts
     LEFT JOIN tourist_spot_images ti ON ts.id = ti.tourist_spot_id
     WHERE ts.id = $1
     GROUP BY ts.id
-  `, [id]);
+  `,
+    [id]
+  );
   return result.rows[0];
 };
 
