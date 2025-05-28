@@ -6,6 +6,7 @@ const {
   getTouristSpotById,
   uploadTouristSpotImages,
   deleteTouristSpotImages,
+  getTouristSpotImages,
 } = require("../models/touristSpotModel");
 
 const { s3Client, PutObjectCommand } = require("../utils/s3.js");
@@ -19,7 +20,8 @@ const createTouristSpotController = async (req, res) => {
       barangay,
       municipality,
       province,
-      location,
+      longitude,
+      latitude,
       opening_time,
       closing_time,
       days_open,
@@ -38,7 +40,8 @@ const createTouristSpotController = async (req, res) => {
       barangay: barangay?.toUpperCase(),
       municipality: municipality?.toUpperCase(),
       province: province?.toUpperCase(),
-      location,
+      longitude,
+      latitude,
       opening_time,
       closing_time,
       days_open: days_open?.toUpperCase(),
@@ -47,7 +50,7 @@ const createTouristSpotController = async (req, res) => {
       contact_number,
       email,
       facebook_page,
-      rules: rules?.toUpperCase()
+      rules: rules?.toUpperCase(),
     });
 
     // Upload images to S3
@@ -62,7 +65,8 @@ const createTouristSpotController = async (req, res) => {
           ContentType: file.mimetype,
         };
         await s3Client.send(new PutObjectCommand(uploadParams));
-        const imageUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+        const imageUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazona
+ ws.com/${s3Key}`;
         imageUrls.push(imageUrl);
       }
       await uploadTouristSpotImages(spot.id, imageUrls);
@@ -85,7 +89,8 @@ const editTouristSpotController = async (req, res) => {
       barangay,
       municipality,
       province,
-      location,
+      longitude,
+      latitude,
       opening_time,
       closing_time,
       days_open,
@@ -104,7 +109,8 @@ const editTouristSpotController = async (req, res) => {
       barangay: barangay?.toUpperCase(),
       municipality: municipality?.toUpperCase(),
       province: province?.toUpperCase(),
-      location,
+      longitude,
+      latitude,
       opening_time,
       closing_time,
       days_open: days_open?.toUpperCase(),
@@ -113,7 +119,7 @@ const editTouristSpotController = async (req, res) => {
       contact_number,
       email,
       facebook_page,
-      rules: rules?.toUpperCase()
+      rules: rules?.toUpperCase(),
     });
 
     res.json(spot);
@@ -137,10 +143,17 @@ const deleteTouristSpotController = async (req, res) => {
     res.status(500).send(err.message);
   }
 };
-
 const viewTouristSpotsController = async (req, res) => {
   try {
     const spots = await getAllTouristSpots();
+
+    // Attach main image to each spot
+    for (const spot of spots) {
+      const images = await getTouristSpotImages(spot.id);
+      spot.image = images.length > 0 ? images[0].image_url : "";
+      // Optionally: spot.images = images;
+    }
+
     res.json(spots);
   } catch (err) {
     console.log(err.message);
@@ -152,10 +165,17 @@ const viewTouristSpotByIdController = async (req, res) => {
   try {
     const { touristSpotId } = req.params;
     const spot = await getTouristSpotById(touristSpotId);
+    const images = await getTouristSpotImages(touristSpotId);
+
+    // Set the main image property for frontend compatibility
+    spot.image = images.length > 0 ? images[0].image_url : "";
+
+    // Optionally, include all images if you want
+    // spot.images = images;
+
     res.json(spot);
   } catch (err) {
-    console.log(err.message);
-    res.status(500).send(err.message);
+    res.status(500).json({ error: "Failed to fetch tourist spot" });
   }
 };
 

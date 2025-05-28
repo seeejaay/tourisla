@@ -2,8 +2,7 @@
 
 import React from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
-import { MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,167 +12,118 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { TouristSpot } from "@/app/static/tourist-spot/useTouristSpotManagerSchema";
+// Define the TouristSpot type (adjust as needed or import from your schema)
 
-import { z } from "zod";
-
-// Define the Zod schema for user data
-export const UserSchema = z.object({
-  user_id: z.string(),
-  first_name: z.string(),
-  last_name: z.string(),
-  email: z.string().email(),
-  role: z.enum([
-    "Tourist",
-    "Tour Guide",
-    "Tour Operator",
-    "Admin",
-    "Cultural Director",
-    "Tourism Officer",
-    "Tourism Staff",
-  ]),
-  last_login_at: z.string().nullable(),
-  status: z.enum(["Active", "Inactive"]),
-});
-
-// Infer the TypeScript type from the Zod schema
-export type User = z.infer<typeof UserSchema>;
-// Define the columns using the schema
 export function columns(
-  setDialogUser: (user: User | null) => void,
-  setEditDialogUser: (user: User | null) => void,
-  setDeleteDialogUser: (user: User | null) => void
-): ColumnDef<User>[] {
+  setDialogTouristSpot: (spot: TouristSpot | null) => void,
+  setEditDialogTouristSpot: (spot: TouristSpot | null) => void,
+  setDeleteDialogTouristSpot: (spot: TouristSpot | null) => void
+): ColumnDef<TouristSpot>[] {
   return [
     {
-      accessorFn: (row) => `${row.first_name} ${row.last_name}`,
-      id: "name",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            className="w-32 p-0 font-bold text-left flex justify-start"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Name (A-Z)
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        const fullName = row.original.first_name + " " + row.original.last_name;
-        return <span>{fullName}</span>;
-      },
-      enableSorting: true,
-    },
-    {
-      accessorKey: "email",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            className=" w-32 font-bold text-left flex justify-start"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Email
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => <span>{row.original.email}</span>,
-      enableSorting: true,
-    },
-    {
-      accessorKey: "role",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            className=" w-32 font-bold text-left flex justify-start"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Role
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => <span>{row.original.role}</span>,
-      enableSorting: true,
-    },
-    {
-      accessorKey: "last_login_at",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            className=" w-32 font-bold text-left flex justify-start"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Last Login
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => (
-        <span>{row.original.last_login_at || "Never logged in"}</span>
-      ),
-      enableSorting: true,
-    },
-    {
-      accessorKey: "status",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            className=" w-32 font-bold text-left flex justify-start"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Status
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => (
-        <span
-          className={`${
-            row.original.status === "Active" ? "text-green-500" : "text-red-500"
-          }`}
+      accessorKey: "name",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="w-40 p-0 font-bold text-left flex justify-start"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          {row.original.status}
-        </span>
+          Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
       ),
+      cell: ({ row }) => <span>{row.original.name}</span>,
       enableSorting: true,
+    },
+    {
+      accessorKey: "type",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="w-32 font-bold text-left flex justify-start"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Type
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => <span>{row.original.type}</span>,
+      enableSorting: true,
+    },
+    {
+      id: "address",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="w-56 font-bold text-left flex justify-start"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Address
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const { barangay, municipality, province } = row.original;
+        return (
+          <span>
+            {[barangay, municipality, province].filter(Boolean).join(", ")}
+          </span>
+        );
+      },
+      enableSorting: false,
+    },
+    {
+      id: "location",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="w-40 font-bold text-left flex justify-start"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Location
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const { latitude, longitude } = row.original;
+        return (
+          <span>
+            {latitude && longitude ? `${latitude}, ${longitude}` : "N/A"}
+          </span>
+        );
+      },
+      enableSorting: false,
     },
     {
       accessorKey: "actions",
       header: () => <span className="font-bold">Actions</span>,
       cell: ({ row }) => {
-        const user = row.original;
+        const spot = row.original;
         return (
-          <>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="p-0 w-8 h-8">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setDialogUser(user)}>
-                  View
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setEditDialogUser(user)}>
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setDeleteDialogUser(user)}
-                  className="text-red-500"
-                >
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="p-0 w-8 h-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setDialogTouristSpot(spot)}>
+                View
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setEditDialogTouristSpot(spot)}>
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setDeleteDialogTouristSpot(spot)}
+                className="text-red-500"
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         );
       },
     },
