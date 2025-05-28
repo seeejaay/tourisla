@@ -125,10 +125,10 @@ export default function AdminProfileScreen() {
 {/* User Info Section */}
 {user && (
   <>
-    <Text style={styles.sectionTitle}>User Information</Text>
     <View style={styles.infoSection}>
+      <Text style={styles.sectionTitle}>User Information</Text>
       <TouchableOpacity style={[styles.editProfileButton]} onPress={handleEditProfile}>
-        <Text style={styles.editProfileButtonText}>Edit Profile</Text>
+        <MaterialIcons name="edit" size={24} color="#007dab" />
       </TouchableOpacity>
 
       <View style={styles.infoRow}>
@@ -256,17 +256,17 @@ const styles = {
 
   profileCard: {
     marginHorizontal: 16,
-    marginTop: 60,
+    marginTop: 56,
     backgroundColor: '#ffffff', // white card background for crispness
     borderRadius: 20,
     paddingVertical: 30,
     paddingHorizontal: 25,
     alignItems: 'center',
-    elevation: 8,
+    elevation: 2,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 15,
-    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
 
   avatarContainer: {
@@ -326,7 +326,7 @@ const styles = {
 
   infoSection: {
     marginHorizontal: 16,
-    marginTop: 5,
+    marginTop: 10,
     backgroundColor: '#ffffff', // clean white background
     borderRadius: 16,
     paddingVertical: 16,
@@ -342,7 +342,7 @@ const styles = {
     alignSelf: 'flex-end',
     marginBottom: 14,
     paddingVertical: 10,
-    paddingHorizontal: 22,
+    paddingHorizontal: 10,
     borderRadius: 12,
     borderColor: '#007dab', // fixed spelling (capital C)
     borderWidth: 2,  
@@ -359,13 +359,13 @@ const styles = {
   },
   
   sectionTitle: {
-    fontSize: 25,
+    fontSize: 20,
     fontWeight: '800',
     color: '#2c3e50', // dark slate gray, less bold but clear
-    marginBottom: 0,
+    marginBottom: 16,
     letterSpacing: 0,
-    marginTop: 30, // add some space above the section title
-    marginLeft: 16, // slight left margin for alignment
+    marginTop: 0, // add some space above the section title
+    textAlign: 'center',
   },
   
   infoRow: {
