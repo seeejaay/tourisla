@@ -150,7 +150,7 @@ const viewTouristSpotsController = async (req, res) => {
     // Attach main image to each spot
     for (const spot of spots) {
       const images = await getTouristSpotImages(spot.id);
-      spot.image = images.length > 0 ? images[0].image_url : "";
+      spot.image = images[0];
       // Optionally: spot.images = images;
     }
 
@@ -168,11 +168,10 @@ const viewTouristSpotByIdController = async (req, res) => {
     const images = await getTouristSpotImages(touristSpotId);
 
     // Set the main image property for frontend compatibility
-    spot.image = images.length > 0 ? images[0].image_url : "";
 
     // Optionally, include all images if you want
     // spot.images = images;
-
+    console.log(spot);
     res.json(spot);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch tourist spot" });

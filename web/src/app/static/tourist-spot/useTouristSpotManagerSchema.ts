@@ -103,6 +103,13 @@ const touristSpotSchema = z.object({
     .optional(),
 });
 
-export type TouristSpot = z.infer<typeof touristSpotSchema>;
+export type TouristSpotImage = {
+  id: number;
+  tourist_spot_id: number;
+  image_url: string;
+};
+export type TouristSpot = z.infer<typeof touristSpotSchema> & {
+  images: TouristSpotImage[];
+};
 export type TouristSpotSchema = z.infer<typeof touristSpotSchema>;
 export { touristSpotSchema };
