@@ -33,7 +33,7 @@ export const viewTouristSpots = async (touristSpotId) => {
     if (response.status !== 200) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
     }
-
+    console.log("Tourist Spot Data: ", response.data);
     return response.data;
   } catch (error) {
     console.error(

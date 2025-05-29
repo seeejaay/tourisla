@@ -119,13 +119,13 @@ export default function ViewTouristSpot({
             )}
           </span>
         </div>
-        {touristSpot.image && (
+        {touristSpot.images && touristSpot.images.length > 0 && (
           <div className="flex flex-col gap-1">
             <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
               Image
             </Label>
             <img
-              src={touristSpot.image}
+              src={touristSpot.images[0].image_url.replace(/\s/g, "")}
               width={500}
               height={300}
               alt="Tourist Spot"

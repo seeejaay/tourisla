@@ -70,13 +70,13 @@ export const touristSpotFields = [
     placeholder: "12.345678",
   },
   {
-    name: "opening_hours",
+    name: "opening_time",
     label: "Opening Hours",
     type: "text",
     placeholder: "e.g., 8:00 AM",
   },
   {
-    name: "closing_hours",
+    name: "closing_time",
     label: "Closing Hours",
     type: "text",
     placeholder: "e.g., 5:00 PM",
@@ -100,7 +100,7 @@ export const touristSpotFields = [
     placeholder: "List of rules or guidelines for visitors",
   },
   {
-    name: "image",
+    name: "images",
     label: "Image",
     type: "file",
     accept: "image/*",
