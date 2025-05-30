@@ -8,7 +8,8 @@ import {
     Modal, SafeAreaView
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useFocusEffect } from '@react-navigation/native';
 import Icon from "react-native-vector-icons/Feather";
 import { fetchAnnouncements, deleteAnnouncement } from "../lib/api/announcement";
 
@@ -31,21 +32,24 @@ export default function AdminAnnouncementsScreen() {
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedAnnouncementId, setSelectedAnnouncementId] = useState<string | null>(null);
 
-    useEffect(() => {
-        const loadData = async () => {
+    useFocusEffect(
+        useCallback(() => {
+          const loadData = async () => {
             setLoading(true);
             try {
-                const data = await fetchAnnouncements();
-                setAnnouncements(data);
+              const data = await fetchAnnouncements();
+              setAnnouncements(data);
             } catch (err) {
-                console.error("Failed to fetch announcements", err);
-                setError("Failed to load announcements.");
+              console.error("Failed to fetch announcements", err);
+              setError("Failed to load announcements.");
             } finally {
-                setLoading(false);
+              setLoading(false);
             }
-        };
-        loadData();
-    }, []);
+          };
+      
+          loadData();
+        }, [])
+      );
 
     const handleDelete = async () => {
         if (!selectedAnnouncementId) return;

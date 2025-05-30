@@ -1,5 +1,5 @@
 import { View, Text, TextInput, Pressable, ScrollView, Alert } from 'react-native';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { useAnnouncementManager } from "@/hooks/useAnnouncementManager";
 import { Ionicons } from '@expo/vector-icons'; // Importing icons from expo/vector-icons
@@ -24,17 +24,25 @@ export default function AdminAnnouncementCreateScreen() {
       return;
     }
   
-    console.log('Form data being submitted:', form);
-  
     try {
       const announcementData = {
-        ...form,
-        date_posted: new Date().toISOString(), // Add the required date_posted field
+        title: form.title,
+        description: form.description,
+        location: form.location,
+        category: form.category,
+        date_posted: new Date().toISOString().slice(0, 10),
       };
   
-      await createAnnouncement(announcementData); // Use the hook's method
-      Alert.alert('Success', 'Announcement created!');
-      router.push('/admin_announcements');
+      const result = await createAnnouncement(announcementData);
+      if (result) {
+        Alert.alert('Success', 'Announcement created!');
+        router.replace({
+          pathname: "/admin_dashboard",
+          params: { tab: "Announcements" }, // Make sure this matches your tab logic
+        });
+      } else {
+        Alert.alert('Error', 'Failed to create announcement.');
+      }
     } catch (err) {
       console.error('Error creating announcement:', err);
       Alert.alert('Error', 'Failed to create announcement.');

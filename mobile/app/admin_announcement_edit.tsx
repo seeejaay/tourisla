@@ -72,7 +72,10 @@ export default function AdminAnnouncementEditScreen() {
 
       if (updated) {
         Alert.alert("Success", "Announcement updated successfully!");
-        router.push("/admin_announcements");
+        router.replace({
+          pathname: "/admin_dashboard", 
+          params: { tab: "Announcements" },
+        });
       }
     } catch (err) {
       setError("Failed to update announcement.");
