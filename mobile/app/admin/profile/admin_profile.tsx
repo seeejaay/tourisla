@@ -1,7 +1,7 @@
 import { View, Text, ActivityIndicator, TouchableOpacity, Image, ScrollView, Platform, StatusBar } from 'react-native';
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import { currentUser, logoutUser as logout } from '@/lib/api';
+import { currentUser, logoutUser as logout } from '@/lib/api/auth.js';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 
 export default function AdminProfileScreen() {

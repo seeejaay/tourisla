@@ -37,7 +37,7 @@ export default function AdminAnnouncementCreateScreen() {
       if (result) {
         Alert.alert('Success', 'Announcement created!');
         router.replace({
-          pathname: "/admin_dashboard",
+          pathname: "/admin/admin_dashboard",
           params: { tab: "Announcements" }, // Make sure this matches your tab logic
         });
       } else {

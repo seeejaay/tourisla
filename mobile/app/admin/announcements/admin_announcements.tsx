@@ -5,13 +5,16 @@ import {
     Pressable,
     StyleSheet,
     StatusBar,
-    Modal, SafeAreaView
+    Modal, 
+    SafeAreaView,
+    TextInput,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useEffect, useState, useCallback } from "react";
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from "react-native-vector-icons/Feather";
-import { fetchAnnouncements, deleteAnnouncement } from "../lib/api/announcement";
+import SortButton from "../../../components/SortButton";
+import { fetchAnnouncements, deleteAnnouncement } from "../../../lib/api/announcement";
 
 interface Announcement {
     id: string;
@@ -32,6 +35,11 @@ export default function AdminAnnouncementsScreen() {
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedAnnouncementId, setSelectedAnnouncementId] = useState<string | null>(null);
 
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [sortOption, setSortOption] = useState<"recent" | "newest">("recent");
+    const [searchQuery, setSearchQuery] = useState("");
+
+
     useFocusEffect(
         useCallback(() => {
           const loadData = async () => {
@@ -49,7 +57,24 @@ export default function AdminAnnouncementsScreen() {
       
           loadData();
         }, [])
-      );
+    );
+
+    const filteredAnnouncements = announcements
+    .filter((item) => {
+        const matchesCategory = !selectedCategory || item.category === selectedCategory;
+        const matchesSearch =
+          item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.description.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCategory && matchesSearch;
+      })
+    .sort((a, b) => {
+        if (sortOption === "recent") {
+          return new Date(b.date_posted).getTime() - new Date(a.date_posted).getTime(); // Most recently updated first
+        } else if (sortOption === "newest") {
+          return new Date(a.date_posted).getTime() - new Date(b.date_posted).getTime(); // Newest last
+        }
+        return 0;
+    });
 
     const handleDelete = async () => {
         if (!selectedAnnouncementId) return;
@@ -73,56 +98,122 @@ export default function AdminAnnouncementsScreen() {
         <View style={styles.container}>
 
             {/* Header */}
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Announcements</Text>
-            </View>
+            <View style={styles.header}><Text style={styles.headerTitle}>Announcements</Text></View>
 
             <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.contentContainer}
+            style={styles.scrollView}
+            contentContainerStyle={{ paddingBottom: 20 }}
             >
-                {loading ? (
-                    <Text style={styles.message}>Loading...</Text>
-                ) : error ? (
-                    <Text style={styles.error}>{error}</Text>
-                ) : announcements.length === 0 ? (
-                    <Text style={styles.message}>No announcements found.</Text>
-                ) : (
-                    announcements.map((item) => (
-                        <View key={item.id} style={styles.card}>
-                            <View style={styles.cardHeader}>
-                                <Text style={styles.cardTitle}>{item.title}</Text>
-                                <View style={styles.actionButtons}>
-                                    <Pressable
-                                        onPress={() =>
-                                            router.push(`/admin_announcement_edit?id=${item.id}`)
-                                        }
-                                        style={styles.editButton}
-                                    >
-                                        <Icon name="edit-3" size={18} color="#ffffff" />
-                                    </Pressable>
-                                    <Pressable
-                                        onPress={() => openDeleteModal(item.id)}
-                                        style={styles.deleteButton}
-                                    >
-                                        <Icon name="trash-2" size={18} color="#ffffff" />
-                                    </Pressable>
-                                </View>
-                            </View>
 
-                            <Text style={styles.cardDescription}>{item.description}</Text>
-
-                            <Text style={styles.cardFooter}>
-                                {item.location} | {item.category}
+            {/* Filter + Sort Options */}
+            <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <View style={{ flexDirection: "row", gap: 8 }}>
+                        {[
+                        'EVENTS',
+                        'FIESTA',
+                        'CULTURAL_TOURISM',
+                        'ENVIRONMENTAL_COASTAL',
+                        'HOLIDAY_SEASONAL',
+                        'GOVERNMENT_PUBLIC_SERVICE',
+                        'STORM_SURGE',
+                        'TSUNAMI',
+                        'GALE_WARNING',
+                        'MONSOON_LOW_PRESSURE',
+                        'RED_TIDE',
+                        'JELLYFISH_BLOOM',
+                        'FISH_KILL',
+                        'PROTECTED_WILDLIFE',
+                        'OIL_SPILL',
+                        'COASTAL_EROSION',
+                        'CORAL_BLEACHING',
+                        'HEAT_WAVE',
+                        'FLOOD_LANDSLIDE',
+                        'DENGUE_WATERBORNE',
+                        'POWER_INTERRUPTION',
+                        ].map((category) => (
+                        <Pressable
+                            key={category}
+                            style={{
+                            backgroundColor: selectedCategory === category ? "#007dab" : "#d1d5db",
+                            paddingVertical: 6,
+                            paddingHorizontal: 12,
+                            borderRadius: 20,
+                            }}
+                            onPress={() => setSelectedCategory((prev) => (prev === category ? null : category))}
+                        >
+                            <Text style={{ fontSize: 10, color: selectedCategory === category ? "#fff" : "#374151" }}>
+                            {category.replace(/_/g, " ")}
                             </Text>
+                        </Pressable>
+                        ))}
+                    </View>
+                </ScrollView>
+                
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8}}>
+                    <View style={[styles.searchContainer, { flex: 1 }]}>
+                        <Icon name="search" size={16} color="#6b7280" style={{ marginRight: 8 }} />
+                        <TextInput
+                        style={styles.searchInput}
+                        placeholder="Search announcements..."
+                        placeholderTextColor="#9ca3af"
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                        />
+                    </View>
+                    {/* Sorting Options */}
+                    <SortButton sortOption={sortOption || "recent"} setSortOption={setSortOption} style={{ marginLeft: 8 }} />
+                </View>
+
+            </View>
+
+            {/* Announcement Cards */}
+            <View style={styles.contentContainer}>
+                {loading ? (
+                <Text style={styles.message}>Loading...</Text>
+                ) : error ? (
+                <Text style={styles.error}>{error}</Text>
+                ) : filteredAnnouncements.length === 0 ? (
+                <Text style={styles.message}>No announcements found.</Text>
+                ) : (
+                filteredAnnouncements.map((item) => (
+                    <View key={item.id} style={styles.card}>
+                        <View style={styles.cardHeader}>
+                            <Text style={styles.cardTitle}>{item.title}</Text>
+                            <View style={styles.actionButtons}>
+                            <Pressable
+                                onPress={() => router.push(`/admin/announcements/admin_announcement_edit?id=${item.id}`)}
+                                style={styles.editButton}
+                            >
+                                <Icon name="edit-3" size={18} color="#ffffff" />
+                            </Pressable>
+                            <Pressable
+                                onPress={() => openDeleteModal(item.id)}
+                                style={styles.deleteButton}
+                            >
+                                <Icon name="trash-2" size={18} color="#ffffff" />
+                            </Pressable>
+                            </View>
                         </View>
-                    ))
+                        <Text style={styles.cardDescription}>{item.description}</Text>
+                        <Text style={styles.cardFooter}>
+                            {item.location} | {item.category.replace(/_/g, " ")} | {
+                            new Date(item.date_posted).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric"
+                            })
+                            }
+                        </Text>
+                    </View>
+                ))
                 )}
+            </View>
             </ScrollView>
 
             <Pressable
                 style={styles.fab}
-                onPress={() => router.push("/admin_announcement_create")}
+                onPress={() => router.push("/admin/announcements/admin_announcement_create")}
             >
                 <Icon name="plus" size={24} color="#007dab" />
             </Pressable>
@@ -344,5 +435,20 @@ const styles = StyleSheet.create({
     modalDeleteButtonText: {
         color: "#ffffff",
         fontWeight: "bold",
+    },
+    searchContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#e5e7eb",
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        marginBottom: 10,
+        marginTop: 8,
+        height: 40,
+    },
+      searchInput: {
+        flex: 1,
+        fontSize: 14,
+        color: "#111827",
     },
 });

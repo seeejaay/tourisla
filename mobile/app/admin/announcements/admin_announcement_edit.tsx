@@ -73,7 +73,7 @@ export default function AdminAnnouncementEditScreen() {
       if (updated) {
         Alert.alert("Success", "Announcement updated successfully!");
         router.replace({
-          pathname: "/admin_dashboard", 
+          pathname: "/admin/admin_dashboard", 
           params: { tab: "Announcements" },
         });
       }

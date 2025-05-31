@@ -1,9 +1,14 @@
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useEffect, useState } from 'react';
-import { currentUser } from '@/lib/api';
+import { currentUser } from '@/lib/api/auth.js';
+
+type User = {
+  first_name: string;
+  // Add other properties of the user object if needed
+};
 
 export default function AdminHomeScreen() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
