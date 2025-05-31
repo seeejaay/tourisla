@@ -32,7 +32,11 @@ export default function AdminHotlineViewScreen() {
     const loadHotline = async (hotlineId: number) => {
         const data = await viewHotline(hotlineId); // Use the viewHotline function from the hook
         if (data) {
-            setHotline(data); // Set the hotline data
+            if (data.id !== undefined) {
+                setHotline(data as { id: number; municipality: string; type: string; contact_number: string; address?: string });
+            } else {
+                console.error("Hotline data is missing the required 'id' property.");
+            }
         }
     };
 

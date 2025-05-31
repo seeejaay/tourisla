@@ -1,4 +1,4 @@
-import { login } from '@/lib/api';
+import { login } from '@/lib/api/auth.js';
 import {
   View,
   Text,
@@ -44,7 +44,7 @@ export default function LoginScreen() {
 
       switch (role) {
         case 'Admin':
-          router.replace('/admin_dashboard');
+          router.replace('/admin/admin_dashboard');
           break;
         case 'tourist':
           router.replace('/tourist_home');

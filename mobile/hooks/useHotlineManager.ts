@@ -1,12 +1,20 @@
-import { useState, useEffect } from "react";
-import type { Hotline } from "@/static/hotline/useHotlineManagerSchema.js";
+import { useState, useEffect, useCallback } from "react";
+import type { HotlineSchema } from "@/static/hotline/useHotlineManagerSchema.js";
 import {
   createHotline as apiCreateHotline,
   fetchHotlines as apiFetchHotlines,
   viewHotlines as apiViewHotline,
   updateHotline as apiUpdateHotline,
   deleteHotline as apiDeleteHotline,
-} from "@/lib/api/hotline.js";
+} from "@/lib/api/hotline";
+
+interface Hotline {
+  id: number;
+  municipality: string;
+  type: string;
+  contact_number: string;
+  address?: string;
+}
 
 export const useHotlineManager = () => {
   const [hotlines, setHotlines] = useState<Hotline[]>([]);
@@ -30,31 +38,32 @@ export const useHotlineManager = () => {
   };
 
   // Create a new hotline and update state
-  const createHotline = async (
-    hotlineData: HotlineSchema
-  ): Promise<Hotline | null> => {
-    setLoading(true);
-    setError("");
-    try {
-      const response: Hotline & { error?: string } = await apiCreateHotline(
-        hotlineData
-      );
-      if (response.error) {
-        setError(response.error);
+  const createHotline = useCallback(
+    async (data: HotlineSchema): Promise<Hotline | null> => {
+      setLoading(true);
+      setError("");
+      try {
+        const response: Hotline & { error?: string } = await apiCreateHotline(
+          data
+        );
+        if (response.error) {
+          setError(response.error);
+          return null;
+        }
+        setHotlines((prev) => [...prev, response]);
+        return response;
+      } catch (error) {
+        setError(
+          "An error occurred while creating the hotline." +
+            (error instanceof Error ? error.message : String(error))
+        );
         return null;
+      } finally {
+        setLoading(false);
       }
-      setHotlines((prev) => [...prev, response]);
-      return response;
-    } catch (error) {
-      setError(
-        "An error occurred while creating the hotline." +
-          (error instanceof Error ? error.message : String(error))
-      );
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [setHotlines]
+  );
 
   // View a specific hotline by ID
   const viewHotline = async (id: number): Promise<Hotline | null> => {
@@ -76,15 +85,15 @@ export const useHotlineManager = () => {
 
   // Update an existing hotline
   const updateHotline = async (
-    hotlineData: HotlineSchema
+    data: HotlineSchema
   ): Promise<Hotline | null> => {
     setLoading(true);
     setError("");
     try {
       // Pass both id and data to the API
       const response: Hotline & { error?: string } = await apiUpdateHotline(
-        hotlineData.id,
-        hotlineData
+        data.id,
+        data
       );
       if (response.error) {
         setError(response.error);
@@ -104,6 +113,7 @@ export const useHotlineManager = () => {
       setLoading(false);
     }
   };
+
   // Delete a hotline
   const deleteHotline = async (id: number): Promise<boolean> => {
     setLoading(true);
@@ -112,7 +122,7 @@ export const useHotlineManager = () => {
       const response = await apiDeleteHotline(id);
       if (response) {
         setHotlines((prev) =>
-          prev.filter((hotline) => Number(hotline.id) !== id)
+          prev.filter((hotline) => hotline.id !== id)
         );
         return true;
       }
@@ -127,6 +137,7 @@ export const useHotlineManager = () => {
       setLoading(false);
     }
   };
+
   // Initial fetch of hotlines on mount
   useEffect(() => {
     fetchHotlines();

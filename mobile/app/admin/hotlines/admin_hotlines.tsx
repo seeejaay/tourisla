@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router"; // Ensure useRouter is used correctly
 import { useEffect, useState } from "react";
-import { fetchHotlines, deleteHotline } from "../lib/api/hotline";
+import { fetchHotlines, deleteHotline } from "../../../lib/api/hotline";
 import Icon from "react-native-vector-icons/Ionicons"; 
 
 interface Hotline {
@@ -108,7 +108,7 @@ export default function AdminHotlinesScreen() {
     
                     {/* More Info Button */}
                     <Pressable
-                        onPress={() => router.push({ pathname: "/admin_hotline_view", params: { id: name } })}
+                        onPress={() => router.push({ pathname: "/admin/hotlines/admin_hotline_view", params: { id: name } })}
                         style={styles.moreInfoButton}
                     >
                         <Icon name="chevron-forward-outline" size={20} color="#2563EB" />

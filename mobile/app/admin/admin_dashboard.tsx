@@ -1,8 +1,8 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import AdminHomeScreen from './admin_home';
-import AdminAnnouncementsScreen from './admin_announcements';
-import AdminHotlinesScreen from './admin_hotlines';
-import AdminProfileScreen from './admin_profile';
+import AdminHomeScreen from './home/admin_home';
+import AdminAnnouncementsScreen from './announcements/admin_announcements';
+import AdminHotlinesScreen from './hotlines/admin_hotlines';
+import AdminProfileScreen from './profile/admin_profile';
 import { FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet } from 'react-native';
