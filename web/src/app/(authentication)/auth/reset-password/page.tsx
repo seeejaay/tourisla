@@ -35,7 +35,7 @@ export default function ResetPassword() {
     );
     if (resResetPassword) {
       setMessage("Password reset successful! You can now log in.");
-      setTimeout(() => router.push("/login"), 2000);
+      setTimeout(() => router.push("/auth/login"), 2000);
     } else {
       setMessage(error || "Reset failed. The link may be invalid or expired.");
     }
