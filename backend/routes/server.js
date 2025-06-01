@@ -399,6 +399,7 @@ app.put(
 app.post(
   "/api/v1/tourist-spots",
   authenticateAdmin,
+  upload.array("images", 5),
   createTouristSpotController
 );
 app.put(

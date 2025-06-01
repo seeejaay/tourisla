@@ -20,7 +20,7 @@ const Sidebar = () => {
   const handleLogout = async () => {
     try {
       await logout(); // Ensure logout is completed before refreshing
-      router.replace("/login"); // Redirect to the login page
+      router.replace("/auth/login"); // Redirect to the login page
     } catch (err) {
       console.error("Error during logout:", err);
     }

@@ -1,4 +1,8 @@
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const s3Client = new S3Client({
@@ -14,6 +18,10 @@ async function getPresignedUrl(key, contentType) {
     Bucket: process.env.AWS_S3_BUCKET,
     Key: key,
     ContentType: contentType,
+    ContentDisposition: "inline",
+    Metadata: {
+      "x-amz-meta-created-at": new Date().toISOString(),
+    },
   });
 
   try {
@@ -25,4 +33,23 @@ async function getPresignedUrl(key, contentType) {
   }
 }
 
-module.exports = { getPresignedUrl, s3Client, PutObjectCommand };
+async function deleteS3Object(key) {
+  const command = new DeleteObjectCommand({
+    Bucket: process.env.AWS_S3_BUCKET,
+    Key: key,
+  });
+
+  try {
+    await s3Client.send(command);
+  } catch (error) {
+    console.error("Error deleting S3 object:", error);
+    throw error;
+  }
+}
+
+module.exports = {
+  getPresignedUrl,
+  s3Client,
+  PutObjectCommand,
+  deleteS3Object,
+};
