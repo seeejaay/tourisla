@@ -9,7 +9,11 @@ const {
   getTouristSpotImages,
 } = require("../models/touristSpotModel");
 
-const { s3Client, PutObjectCommand } = require("../utils/s3.js");
+const {
+  s3Client,
+  PutObjectCommand,
+  deleteS3Object,
+} = require("../utils/s3.js");
 
 const createTouristSpotController = async (req, res) => {
   try {
@@ -44,7 +48,7 @@ const createTouristSpotController = async (req, res) => {
       latitude,
       opening_time,
       closing_time,
-      days_open: days_open?.toUpperCase(),
+      days_open,
       entrance_fee,
       other_fees: other_fees?.toUpperCase(),
       contact_number,
@@ -65,8 +69,7 @@ const createTouristSpotController = async (req, res) => {
           ContentType: file.mimetype,
         };
         await s3Client.send(new PutObjectCommand(uploadParams));
-        const imageUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazona
- ws.com/${s3Key}`;
+        const imageUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
         imageUrls.push(imageUrl);
       }
       await uploadTouristSpotImages(spot.id, imageUrls);
@@ -113,7 +116,7 @@ const editTouristSpotController = async (req, res) => {
       latitude,
       opening_time,
       closing_time,
-      days_open: days_open?.toUpperCase(),
+      days_open,
       entrance_fee,
       other_fees: other_fees?.toUpperCase(),
       contact_number,
@@ -133,7 +136,22 @@ const deleteTouristSpotController = async (req, res) => {
   try {
     const { touristSpotId } = req.params;
 
-    // Delete associated images
+    const images = await getTouristSpotImages(touristSpotId);
+
+    for (const image of images) {
+      if (image.image_url) {
+        const url = new URL(image.image_url);
+        const s3Key = url.pathname.startsWith("/")
+          ? url.pathname.slice(1)
+          : url.pathname;
+
+        try {
+          await deleteS3Object(s3Key);
+        } catch (error) {
+          console.error(`Failed to delete image from S3: ${error.message}`);
+        }
+      }
+    }
     await deleteTouristSpotImages(touristSpotId);
 
     const result = await deleteTouristSpot(touristSpotId);

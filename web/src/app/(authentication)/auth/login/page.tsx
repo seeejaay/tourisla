@@ -115,7 +115,7 @@ export default function Login() {
                   <button
                     type="button"
                     className="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
-                    onClick={() => router.push("/forgot-password")}
+                    onClick={() => router.push("/auth/forgot-password")}
                   >
                     Forgot password?
                   </button>
@@ -191,7 +191,7 @@ export default function Login() {
               <div className="text-center text-sm text-gray-600">
                 Do&apos;t have an account?{" "}
                 <button
-                  onClick={() => router.push("/signup")}
+                  onClick={() => router.push("/auth/signup")}
                   className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
                 >
                   Sign up

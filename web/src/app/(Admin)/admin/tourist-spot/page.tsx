@@ -66,8 +66,8 @@ export default function TouristSpotPage() {
   return (
     <>
       <Sidebar />
-      <main className="flex flex-col items-center justify-start min-h-screen gap-12 w-full bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4">
-        <div className="flex max-w-[100rem] w-full flex-col items-center justify-start gap-4 px-4 py-2 lg:pl-0">
+      <main className="flex flex-col items-center justify-start min-h-screen gap-12  bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4">
+        <div className="flex  w-full flex-col items-center justify-start gap-4 px-4 py-2 lg:pl-0">
           <h1 className="text-4xl font-extrabold text-center text-blue-700 tracking-tight">
             Tourist Spots
           </h1>
@@ -91,92 +91,94 @@ export default function TouristSpotPage() {
               searchPlaceholder="Search tourist spots..."
               searchColumn="name"
             />
-            {/* View Dialog */}
-            <Dialog
-              open={!!dialogTouristSpot}
-              onOpenChange={() => setDialogTouristSpot(null)}
-            >
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Tourist Spot Details</DialogTitle>
-                  <DialogDescription>
-                    Here are the details of the tourist spot.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="mt-4">
-                  {dialogTouristSpot && (
-                    <ViewTouristSpot touristSpot={dialogTouristSpot} />
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            {/* Edit Dialog */}
-            <Dialog
-              open={!!editDialogTouristSpot}
-              onOpenChange={() => setEditDialogTouristSpot(null)}
-            >
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Edit Tourist Spot</DialogTitle>
-                  <DialogDescription>
-                    Edit the details of the tourist spot.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="mt-4">
-                  {editDialogTouristSpot && (
-                    <EditTouristSpot
-                      touristSpot={editDialogTouristSpot}
-                      onSave={async (updatedTouristSpot) => {
-                        // Support FormData or object
-                        let id: number | undefined;
-                        if (updatedTouristSpot instanceof FormData) {
-                          id = editDialogTouristSpot?.id;
-                        } else {
-                          id = updatedTouristSpot.id;
-                        }
-                        if (typeof id !== "number") return;
-                        await updateTouristSpot(id, updatedTouristSpot);
-                        await refreshTouristSpots();
-                        setEditDialogTouristSpot(null);
-                      }}
-                      onCancel={() => setEditDialogTouristSpot(null)}
-                    />
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            {/* Delete Dialog */}
-            <Dialog
-              open={!!deleteDialogTouristSpot}
-              onOpenChange={() => setDeleteDialogTouristSpot(null)}
-            >
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Delete Tourist Spot</DialogTitle>
-                  <DialogDescription>
-                    Are you sure you want to delete this tourist spot? This
-                    action cannot be undone.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="mt-4">
-                  {deleteDialogTouristSpot && (
-                    <DeleteTouristSpot
-                      touristSpot={deleteDialogTouristSpot}
-                      onDelete={async (touristSpotId) => {
-                        if (!touristSpotId) return;
-                        await deleteTouristSpot(Number(touristSpotId));
-                        await refreshTouristSpots();
-                        setDeleteDialogTouristSpot(null);
-                      }}
-                      onCancel={() => setDeleteDialogTouristSpot(null)}
-                    />
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
           </div>
+          {/* View Dialog */}
+          <Dialog
+            open={!!dialogTouristSpot}
+            onOpenChange={() => setDialogTouristSpot(null)}
+          >
+            <DialogContent className="min-w-[300px] md:max-w-4xl lg:max-w-5xl">
+              <DialogHeader>
+                <DialogTitle className="text-2xl">
+                  Tourist Spot Details
+                </DialogTitle>
+                <DialogDescription>
+                  Detailed information about the tourist spot
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-4 overflow-y-auto max-h-[80vh]">
+                {dialogTouristSpot && (
+                  <ViewTouristSpot touristSpot={dialogTouristSpot} />
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Edit Dialog */}
+          <Dialog
+            open={!!editDialogTouristSpot}
+            onOpenChange={() => setEditDialogTouristSpot(null)}
+          >
+            <DialogContent className=" min-w-[300px] md:max-w-3xl lg:max-w-4xl">
+              <DialogHeader>
+                <DialogTitle>Edit Tourist Spot</DialogTitle>
+                <DialogDescription>
+                  Edit the details of the tourist spot.
+                </DialogDescription>
+              </DialogHeader>
+              <div className=" overflow-y-auto max-h-[80vh]">
+                {editDialogTouristSpot && (
+                  <EditTouristSpot
+                    touristSpot={editDialogTouristSpot}
+                    onSave={async (updatedTouristSpot) => {
+                      // Support FormData or object
+                      let id: number | undefined;
+                      if (updatedTouristSpot instanceof FormData) {
+                        id = editDialogTouristSpot?.id;
+                      } else {
+                        id = updatedTouristSpot.id;
+                      }
+                      if (typeof id !== "number") return;
+                      await updateTouristSpot(id, updatedTouristSpot);
+                      await refreshTouristSpots();
+                      setEditDialogTouristSpot(null);
+                    }}
+                    onCancel={() => setEditDialogTouristSpot(null)}
+                  />
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Delete Dialog */}
+          <Dialog
+            open={!!deleteDialogTouristSpot}
+            onOpenChange={() => setDeleteDialogTouristSpot(null)}
+          >
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Tourist Spot</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete this tourist spot? This action
+                  cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-4">
+                {deleteDialogTouristSpot && (
+                  <DeleteTouristSpot
+                    touristSpot={deleteDialogTouristSpot}
+                    onDelete={async (touristSpotId) => {
+                      if (!touristSpotId) return;
+                      await deleteTouristSpot(Number(touristSpotId));
+                      await refreshTouristSpots();
+                      setDeleteDialogTouristSpot(null);
+                    }}
+                    onCancel={() => setDeleteDialogTouristSpot(null)}
+                  />
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </main>
     </>
