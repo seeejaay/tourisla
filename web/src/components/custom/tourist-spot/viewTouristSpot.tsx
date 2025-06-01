@@ -1,7 +1,6 @@
 import { TouristSpot } from "@/app/static/tourist-spot/useTouristSpotManagerSchema";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-
 export default function ViewTouristSpot({
   touristSpot,
 }: {
@@ -9,128 +8,193 @@ export default function ViewTouristSpot({
 }) {
   if (!touristSpot) return null;
   return (
-    <Card className="max-w-lg mx-auto">
-      <CardHeader>
-        <CardTitle>Tourist Spot Details</CardTitle>
-      </CardHeader>
+    <Card className="w-full">
       <CardContent className="space-y-6">
+        {/* Name (full width) */}
         <div className="flex flex-col gap-1">
-          <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground">
             Name
           </Label>
-          <span className="text-2xl font-bold">{touristSpot.name}</span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-            Type
-          </Label>
-          <span>{touristSpot.type}</span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-            Description
-          </Label>
-          <span className="text-base break-words">
-            {touristSpot.description}
+          <span className="text-3xl font-bold text-blue-800">
+            {touristSpot.name}
           </span>
         </div>
-        <div className="flex flex-col gap-1">
-          <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-            Address
-          </Label>
-          <span>
-            {[
-              touristSpot.barangay,
-              touristSpot.municipality,
-              touristSpot.province,
-            ]
-              .filter(Boolean)
-              .join(", ")}
-          </span>
+
+        {/* Three-column layout for most fields on large screens */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {/* Column 1 */}
+          <div className="space-y-4">
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                Type
+              </Label>
+              <span className="font-medium">
+                {touristSpot.type || (
+                  <span className="italic text-muted-foreground">N/A</span>
+                )}
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                Opening Hours
+              </Label>
+              <span>
+                {touristSpot.opening_time || (
+                  <span className="italic text-muted-foreground">N/A</span>
+                )}
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                Closing Hours
+              </Label>
+              <span>
+                {touristSpot.closing_time || (
+                  <span className="italic text-muted-foreground">N/A</span>
+                )}
+              </span>
+            </div>
+          </div>
+
+          {/* Column 2 */}
+          <div className="space-y-4">
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                Entrance Fee
+              </Label>
+              <span>
+                {touristSpot.entrance_fee || (
+                  <span className="italic text-muted-foreground">N/A</span>
+                )}
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                Contact Number
+              </Label>
+              <span>
+                {touristSpot.contact_number || (
+                  <span className="italic text-muted-foreground">N/A</span>
+                )}
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                Other Fees
+              </Label>
+              <span>
+                {touristSpot.other_fees || (
+                  <span className="italic text-muted-foreground">N/A</span>
+                )}
+              </span>
+            </div>
+          </div>
+
+          {/* Column 3 */}
+          <div className="space-y-4">
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                Address
+              </Label>
+              <span>
+                {[
+                  touristSpot.barangay,
+                  touristSpot.municipality,
+                  touristSpot.province,
+                ]
+                  .filter(Boolean)
+                  .join(", ") || (
+                  <span className="italic text-muted-foreground">N/A</span>
+                )}
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                Location (Lat, Long)
+              </Label>
+              <span>
+                {touristSpot.latitude && touristSpot.longitude ? (
+                  `${touristSpot.latitude}, ${touristSpot.longitude}`
+                ) : (
+                  <span className="italic text-muted-foreground">N/A</span>
+                )}
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                Facebook Page
+              </Label>
+              {touristSpot.facebook_page ? (
+                <a
+                  href={touristSpot.facebook_page}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline break-all"
+                >
+                  {touristSpot.facebook_page}
+                </a>
+              ) : (
+                <span className="italic text-muted-foreground">N/A</span>
+              )}
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-1">
-          <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-            Location (Lat, Long)
-          </Label>
-          <span>
-            {touristSpot.latitude && touristSpot.longitude ? (
-              `${touristSpot.latitude}, ${touristSpot.longitude}`
-            ) : (
-              <span className="italic text-muted-foreground">N/A</span>
-            )}
-          </span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-            Opening Hours
-          </Label>
-          <span>
-            {touristSpot.opening_hours || (
-              <span className="italic text-muted-foreground">N/A</span>
-            )}
-          </span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-            Closing Hours
-          </Label>
-          <span>
-            {touristSpot.closing_hours || (
-              <span className="italic text-muted-foreground">N/A</span>
-            )}
-          </span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-            Contact Number
-          </Label>
-          <span>
-            {touristSpot.contact_number || (
-              <span className="italic text-muted-foreground">N/A</span>
-            )}
-          </span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-            Facebook Page
-          </Label>
-          <span>
-            {touristSpot.facebook_page ? (
-              <a
-                href={touristSpot.facebook_page}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline"
-              >
-                {touristSpot.facebook_page}
-              </a>
-            ) : (
-              <span className="italic text-muted-foreground">N/A</span>
-            )}
-          </span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-            Rules
-          </Label>
-          <span>
-            {touristSpot.rules || (
-              <span className="italic text-muted-foreground">N/A</span>
-            )}
-          </span>
-        </div>
-        {touristSpot.images && touristSpot.images.length > 0 && (
+
+        {/* Full-width fields below the columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="flex flex-col gap-1">
-            <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-              Image
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+              Description
             </Label>
-            <img
-              src={touristSpot.images[0].image_url.replace(/\s/g, "")}
-              width={500}
-              height={300}
-              alt="Tourist Spot"
-              className="rounded-lg max-h-64 object-contain border"
-            />
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <p className="text-base text-gray-700 whitespace-pre-line">
+                {touristSpot.description || (
+                  <span className="italic text-muted-foreground">N/A</span>
+                )}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+              Rules
+            </Label>
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="text-base text-gray-700 whitespace-pre-line">
+                {touristSpot.rules || (
+                  <span className="italic text-muted-foreground">N/A</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Images Section */}
+        {touristSpot.images && touristSpot.images.length > 0 && (
+          <div className="mt-6">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground block mb-4">
+              Images
+            </Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {touristSpot.images.map((image, index) => (
+                <div
+                  key={index}
+                  className="relative aspect-video rounded-lg overflow-hidden border border-gray-200"
+                >
+                  <img
+                    src={image.image_url.replace(/\s/g, "")}
+                    alt={`Tourist Spot Image ${index + 1}`}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </CardContent>

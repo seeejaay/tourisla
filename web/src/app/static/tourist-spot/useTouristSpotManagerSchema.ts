@@ -55,7 +55,7 @@ const touristSpotSchema = z.object({
     .regex(/^-?\d+(\.\d+)?$/, {
       message: "Latitude must be a valid number.",
     }),
-  opening_hours: z
+  opening_time: z
     .string()
     .min(5, { message: "Opening hours are required." })
     .max(100, { message: "Opening hours must be less than 100 characters." })
@@ -63,7 +63,7 @@ const touristSpotSchema = z.object({
       message:
         "Only A, P, M, numbers, colon (:), dot (.), and spaces are allowed.",
     }),
-  closing_hours: z
+  closing_time: z
     .string()
     .min(5, { message: "Closing hours are required." })
     .max(100, { message: "Closing hours must be less than 100 characters." })
@@ -71,6 +71,38 @@ const touristSpotSchema = z.object({
       message:
         "Only A, P, M, numbers, colon (:), dot (.), and spaces are allowed.",
     }),
+  days_open: z
+    .array(
+      z.enum([
+        "MONDAY",
+        "TUESDAY",
+        "WEDNESDAY",
+        "THURSDAY",
+        "FRIDAY",
+        "SATURDAY",
+        "SUNDAY",
+      ])
+    )
+    .min(1, { message: "At least one day must be selected." })
+    .max(7, { message: "Days open must be less than 8 days." }),
+
+  entrance_fee: z
+    .string()
+    .min(2, { message: "Entrance fee is required." })
+    .max(20, { message: "Entrance fee must be less than 20 characters." })
+    .regex(/^\d+(\.\d{1,2})?$/, {
+      message:
+        "Entrance fee must be a valid number with up to 2 decimal places.",
+    })
+    .or(z.literal("N/A")),
+  other_fees: z
+    .string()
+    .max(100, { message: "Other fees must be less than 100 characters." })
+    .regex(/^[a-zA-Z0-9\s,.'-]+$/, {
+      message:
+        "Other fees can only contain letters, numbers, spaces, commas, periods, apostrophes, and hyphens.",
+    })
+    .or(z.literal("N/A")),
   contact_number: z
     .string()
     .min(12, { message: "Contact number is required." })
@@ -92,7 +124,7 @@ const touristSpotSchema = z.object({
       message:
         "Rules can only contain letters, numbers, spaces, commas, periods, apostrophes, and hyphens.",
     }),
-  image: z
+  images: z
     .instanceof(File, { message: "Image is required." })
     .refine((file) => file.size <= 5 * 1024 * 1024, {
       message: "Image must be less than 5MB.",

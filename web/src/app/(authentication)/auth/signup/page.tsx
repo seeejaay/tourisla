@@ -51,7 +51,7 @@ export default function SignUp() {
   const onSubmit = async (data: z.infer<typeof signupSchema>) => {
     const response = await registerUser(data);
     if (response) {
-      router.replace("/login");
+      router.replace("/auth/login");
       form.reset();
     }
   };

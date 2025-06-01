@@ -1,6 +1,16 @@
 import barangays from "@/app/static/barangay.json";
+import type { TouristSpot } from "./useTouristSpotManagerSchema";
 
-export const touristSpotFields = [
+type TouristSpotField = {
+  name: keyof TouristSpot;
+  label: string;
+  type: string;
+  placeholder?: string;
+  options?: { value: string; label: string }[];
+  accept?: string;
+};
+
+export const touristSpotFields: TouristSpotField[] = [
   {
     name: "name",
     label: "Tourist Spot Name",
@@ -58,7 +68,7 @@ export const touristSpotFields = [
     placeholder: "Cebu",
   },
   {
-    name: "longitude", // Note: typo in your schema, should be "longitude"
+    name: "longitude",
     label: "Longitude",
     type: "text",
     placeholder: "123.456789",
@@ -80,6 +90,33 @@ export const touristSpotFields = [
     label: "Closing Hours",
     type: "text",
     placeholder: "e.g., 5:00 PM",
+  },
+  {
+    name: "days_open",
+    label: "Days Open",
+    type: "select",
+    placeholder: "Select days open",
+    options: [
+      { value: "MONDAY", label: "M" },
+      { value: "TUESDAY", label: "T" },
+      { value: "WEDNESDAY", label: "W" },
+      { value: "THURSDAY", label: "Th" },
+      { value: "FRIDAY", label: "F" },
+      { value: "SATURDAY", label: "S" },
+      { value: "SUNDAY", label: "S" },
+    ],
+  },
+  {
+    name: "entrance_fee",
+    label: "Entrance Fee (N/A if none)",
+    type: "text",
+    placeholder: "e.g., 50.00",
+  },
+  {
+    name: "other_fees",
+    label: "Other Fees (N/A if none)",
+    type: "text",
+    placeholder: "e.g., Parking fee, Guide fee",
   },
   {
     name: "contact_number",

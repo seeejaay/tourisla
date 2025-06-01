@@ -1,5 +1,5 @@
 [
-  { "name": "ATOP-ATOP", "code": "ATOP_ATOP" },
+  { "name": "ATOP_ATOP", "code": "ATOP_ATOP" },
   { "name": "BAIGAD", "code": "BAIGAD" },
   { "name": "BANTIGUE", "code": "BANTIGUE" },
   { "name": "BAOD", "code": "BAOD" },
@@ -13,9 +13,9 @@
   { "name": "KAMPINGGANON", "code": "KAMPINGGANON" },
   { "name": "KANGKAIBE", "code": "KANGKAIBE" },
   { "name": "LIPAYRAN", "code": "LIPAYRAN" },
-  { "name": "LUYONG BAYBAY", "code": "LUYONG_BAYBAY" },
+  { "name": "LUYONG_BAYBAY", "code": "LUYONG_BAYBAY" },
   { "name": "MOJON", "code": "MOJON" },
-  { "name": "OBO-OB", "code": "OBO_OB" },
+  { "name": "OBO_OB", "code": "OBO_OB" },
   { "name": "PATAO", "code": "PATAO" },
   { "name": "PUTIAN", "code": "PUTIAN" },
   { "name": "SILLON", "code": "SILLON" },
