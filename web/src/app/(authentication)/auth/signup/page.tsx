@@ -1,5 +1,9 @@
 "use client";
 
+//google captcha
+import ReCAPTCHA from "react-google-recaptcha";
+import { useRef, useState } from "react";
+
 import { useUserManager } from "@/hooks/useUserManager";
 import signUpForm from "@/app/static/signupForm";
 import selectFields from "@/app/static/selectFields";
@@ -29,6 +33,10 @@ import signupSchema from "@/app/static/userManagerSchema";
 
 export default function SignUp() {
   const router = useRouter();
+  // ReCAPTCHA state
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
+
   const { registerUser, error, loading } = useUserManager();
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
@@ -49,10 +57,13 @@ export default function SignUp() {
   const selectField = selectFields();
 
   const onSubmit = async (data: z.infer<typeof signupSchema>) => {
-    const response = await registerUser(data);
+    if (!captchaToken) return; // Prevent submit if no token
+    const response = await registerUser(data, captchaToken);
     if (response) {
       router.replace("/auth/login");
       form.reset();
+      setCaptchaToken(null);
+      recaptchaRef.current?.reset();
     }
   };
 
@@ -237,10 +248,17 @@ export default function SignUp() {
                 </FormItem>
               )}
             />
+
+            <ReCAPTCHA
+              ref={recaptchaRef}
+              sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+              onChange={setCaptchaToken}
+            />
+
             <Button
               type="submit"
               className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-md shadow-md hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition text-lg"
-              disabled={loading}
+              disabled={loading || !captchaToken}
             >
               {loading ? "Signing Up..." : "Sign Up"}
             </Button>
