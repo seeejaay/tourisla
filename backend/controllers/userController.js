@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
+const axios = require("axios");
 const {
   createUser,
   editUser,
@@ -25,12 +26,31 @@ const createUserController = async (req, res) => {
       nationality,
     } = req.body;
 
+    const captchaToken = req.body.captchaToken;
+    if (!captchaToken) {
+      return res.status(400).json({ error: "Captcha token is required" });
+    }
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    console.log("Secret Key:", secretKey);
+    console.log("Captcha Token:", captchaToken);
+    console.log;
+    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
+
+    const captchaRes = await axios.post(verifyUrl);
+    if (!captchaRes.data.success) {
+      console.log("Captcha verification failed:", captchaRes.data);
+      return res.status(400).json({ error: "Captcha verification failed" });
+    } else {
+      console.log("Captcha verification successful");
+    }
+
     // Default role for new users
     let assignedRole = "Tourist";
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return res.status(409).json({ error: "Email already exists" });
     }
+
     // Check if the authenticated user is an admin
     if (req.session && req.session.user && req.session.user.role === "Admin") {
       const allowedRoles = [
