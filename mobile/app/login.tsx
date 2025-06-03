@@ -29,6 +29,7 @@ export default function LoginScreen() {
     });
 
     try {
+      console.log('Sending login payload:', { email: trimmedEmail, password: trimmedPassword });
       const res = await login({ email: trimmedEmail, password: trimmedPassword });
       console.log('Login Response:', res);
 
@@ -46,8 +47,8 @@ export default function LoginScreen() {
         case 'Admin':
           router.replace('/admin/admin_dashboard');
           break;
-        case 'tourist':
-          router.replace('/tourist_home');
+        case 'Tourist':
+          router.replace('/tourist/tourist_dashboard');
           break;
         case 'tour_guide':
           router.replace('/guide_home');
@@ -58,12 +59,9 @@ export default function LoginScreen() {
         default:
           setError('Unknown role.');
       }
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message || 'An error occurred during login.');
-      } else {
-        setError('An error occurred during login.');
-      }
+    } catch (err: any) {
+      console.error('Login Error:', err.response?.data || err.message);
+      setError(err.response?.data?.message || err.message || 'An error occurred during login.');
     }
   };
 

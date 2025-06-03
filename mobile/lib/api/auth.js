@@ -10,7 +10,7 @@ const axiosInstance = axios.create({
 export const login = async (userData) => {
   try {
     const response = await axios.post(`${API_URL}login`, userData, {
-      withCredentials: true,
+      withCredentials: true, // Include cookies in the request
     });
 
     if (response.status !== 200) {
@@ -19,11 +19,72 @@ export const login = async (userData) => {
       );
     }
 
+    return response.data; // Return response data
+  } catch (error) {
+    console.error("Error during login:", error.response?.data || error.message);
+    throw error; // Re-throw the error for handling in the calling code
+  }
+};
+
+export const logout = async () => {
+  try {
+    const response = await axios.post(`${API_URL}logout`, null, {
+      withCredentials: true, // Include cookies in the request
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Failed to logout. Server responded with status: ${response.status}`
+      );
+    }
+    console.log("Logout Successful"); // Log the API response
+
+    return response.data; // Return response data
+  } catch (error) {
+    console.error(
+      "Error during logout:",
+      error.response?.data || error.message
+    );
+    throw error; // Re-throw the error for handling in the calling code
+  }
+};
+
+export const forgotPassword = async (email) => {
+  try {
+    const response = await axios.post(`${API_URL}forgot-password`, { email });
+    if (response.status !== 200) {
+      throw new Error(
+        `Failed to send reset link. Server responded with status: ${response.status}`
+      );
+    }
+    console.log("Forgot password email sent successfully"); // Log the API response
     return response.data;
   } catch (error) {
-    console.error("Error during login full response:", error.response);
     console.error(
-      "Error during login message/data:",
+      "Error sending forgot password email:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const resetPassword = async (token, password, confirm) => {
+  try {
+    const response = await axios.post(`${API_URL}reset-password`, {
+      token,
+      password,
+      confirm,
+    });
+    if (response.status !== 200) {
+      throw new Error(
+        `Failed to reset password. Server responded with status: ${response.status}`
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    console.log(
+      "Error resetting password:",
       error.response?.data || error.message
     );
     throw error;
@@ -35,7 +96,6 @@ export const currentUser = async () => {
     const response = await axios.get(`${API_URL}user`, {
       withCredentials: true,
     });
-
     if (response.status !== 200) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -48,8 +108,4 @@ export const currentUser = async () => {
     );
     throw err;
   }
-};
-
-export const logoutUser = async () => {
-  return axiosInstance.post("logout");
 };
