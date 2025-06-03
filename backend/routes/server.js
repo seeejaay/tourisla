@@ -129,6 +129,14 @@ const {
   viewArticleByIdController,
 } = require("../controllers/articleController");
 
+const {
+  createTourPackageController,
+  updateTourPackageController,
+  deleteTourPackageController,
+  viewTourPackagesController,
+  viewTourPackageByIdController,
+} = require("../controllers/tourPackagesController.js");
+
 
 app.use(
   session({
@@ -391,6 +399,7 @@ app.put(
 app.post(
   "/api/v1/tourist-spots",
   authenticateAdmin,
+  upload.array("images", 5),
   createTouristSpotController
 );
 app.put(
@@ -420,3 +429,28 @@ app.delete("/api/v1/articles/:articleId", authenticateAdmin, deleteArticleContro
 app.get("/api/v1/articles", viewArticlesController);
 app.get("/api/v1/articles/:articleId", viewArticleByIdController);
 
+// Routes — Tour Packages
+app.post(
+  "/api/v1/tour-packages",
+  createTourPackageController
+);
+app.put(
+  "/api/v1/tour-packages/:id",
+  authenticateTourOperator,
+  updateTourPackageController
+);
+app.delete(
+  "/api/v1/tour-packages/:id",
+  authenticateTourOperator,
+  deleteTourPackageController
+);
+app.get(
+  "/api/v1/tour-packages",
+  authenticateTourOperator,
+  viewTourPackagesController
+);
+app.get(
+  "/api/v1/tour-packages/:id",
+  authenticateTourOperator,
+  viewTourPackageByIdController
+);
