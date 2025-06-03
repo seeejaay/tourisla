@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { navigation } from "@/app/static/navigation";
 import { Menu, X } from "lucide-react";
@@ -12,33 +12,18 @@ export default function Header() {
   const pathName = usePathname();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   return (
     <>
-      <nav
-        className={`fixed w-full z-50 transition-all duration-300 ${
-          scrolled
-            ? "bg-white/95 backdrop-blur-md shadow-sm py-2"
-            : "bg-transparent py-4"
-        }`}
-      >
+      <nav className="fixed w-full z-50 transition-all duration-300 py-4 bg-white">
         <div className="container mx-auto px-4 flex justify-between items-center">
           {/* Logo */}
           <div className="flex items-center">
             <Image
-              src="/images/header-3-logo.webp"
+              src="/images/TourISLA_Logo.png"
               alt="Tourisla Logo"
-              width={64}
-              height={64}
+              width={128}
+              height={128}
               className="hover:scale-105 transition-transform duration-300 cursor-pointer"
               onClick={() => router.push("/")}
             />
