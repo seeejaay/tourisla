@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import * as auth from '@/lib/api/auth.js';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 
-export default function AdminProfileScreen() {
+export default function TouristProfileScreen() {
   const [user, setUser] = useState<{
     avatar?: string;
     first_name?: string;
@@ -41,7 +41,6 @@ export default function AdminProfileScreen() {
       setShowMenu(false);
       router.replace('/login');
     } catch {
-      console.error("Logout error:", error);
       alert("Failed to log out");
     }
   };
@@ -117,7 +116,7 @@ export default function AdminProfileScreen() {
           <Text style={styles.email}>{user?.email}</Text>
 
           {/* Role Badge */}
-          <View style={[styles.roleBadge, user?.role === 'admin' ? styles.adminBadge : styles.userBadge]}>
+          <View style={[styles.roleBadge, user?.role === 'tourist' ? styles.touristBadge : styles.userBadge]}>
             <Text style={styles.roleText}>{user?.role?.toUpperCase()}</Text>
           </View>
         </View>
@@ -309,8 +308,8 @@ const styles = {
     borderRadius: 15,
   },
 
-  adminBadge: {
-    backgroundColor: '#e67e22', // warm orange for admin — professional and noticeable but not harsh
+ touristBadge: {
+    backgroundColor: '#e67e22', // warm orange for tourist — professional and noticeable but not harsh
   },
 
   userBadge: {

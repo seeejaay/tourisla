@@ -22,6 +22,7 @@ interface Hotline {
 }
 
 interface HotlineCardProps {
+    id: number; 
     name: string;
     location: string;
     contactNumber: string;
@@ -73,6 +74,7 @@ export default function AdminHotlinesScreen() {
     };
 
     const HotlineCard = ({
+        id,
         name,
         location,
         contactNumber,
@@ -108,7 +110,7 @@ export default function AdminHotlinesScreen() {
     
                     {/* More Info Button */}
                     <Pressable
-                        onPress={() => router.push({ pathname: "/admin/hotlines/admin_hotline_view", params: { id: name } })}
+                        onPress={() => router.push({ pathname: "/admin/hotlines/admin_hotline_view", params: { id } })}
                         style={styles.moreInfoButton}
                     >
                         <Icon name="chevron-forward-outline" size={20} color="#2563EB" />
@@ -136,15 +138,16 @@ export default function AdminHotlinesScreen() {
             ) : hotlines.length === 0 ? (
                 <Text style={styles.message}>No hotlines available.</Text>
             ) : (
-                    hotlines.map((hotline) => (
-                        <HotlineCard
-                            key={hotline.id}
-                            name={hotline.type}
-                            location={hotline.municipality}
-                            contactNumber={hotline.contact_number}
-                            onDelete={() => handleDelete(hotline.id)}
-                        />
-                    ))
+                hotlines.map((hotline) => (
+                    <HotlineCard
+                        key={hotline.id}
+                        id={hotline.id} // Pass the id here
+                        name={hotline.type}
+                        location={hotline.municipality}
+                        contactNumber={hotline.contact_number}
+                        onDelete={() => handleDelete(hotline.id)}
+                    />
+                ))
             )}
             </ScrollView>
         </View>
