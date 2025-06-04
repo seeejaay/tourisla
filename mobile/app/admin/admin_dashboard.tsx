@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AdminHomeScreen from './home/admin_home';
 import AdminAnnouncementsScreen from './announcements/admin_announcements';
 import AdminHotlinesScreen from './hotlines/admin_hotlines';
+import AdminUsersScreen from './users/admin_users';
 import AdminProfileScreen from './profile/admin_profile';
 import { FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -54,6 +55,8 @@ export default function AdminDashboard() {
             iconName = 'bullhorn';
           } else if (route.name === 'Hotlines') {
             iconName = 'phone';
+          } else if (route.name === 'Users') {
+            iconName = 'users'; 
           } else {
             iconName = 'user';
           }
@@ -79,6 +82,13 @@ export default function AdminDashboard() {
         {() => (
           <GradientWrapper>
             <AdminAnnouncementsScreen />
+          </GradientWrapper>
+        )}
+      </Tab.Screen>
+      <Tab.Screen name="Users">
+        {() => (
+          <GradientWrapper>
+            <AdminUsersScreen />
           </GradientWrapper>
         )}
       </Tab.Screen>

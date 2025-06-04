@@ -222,7 +222,7 @@ export default function AdminAnnouncementsScreen() {
             <Modal
                 visible={modalVisible}
                 transparent={true}
-                animationType="slide"
+                animationType="fade"
                 onRequestClose={() => setModalVisible(false)}
             >
                 <View style={styles.modalOverlay}>

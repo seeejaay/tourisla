@@ -55,6 +55,7 @@ export const viewOneUser = async (userId) => {
 
 export const editUser = async (userData) => {
   try {
+    console.log("Payload sent to API:", userData); // Debug log
     const response = await axios.put(
       `${API_URL}users/${userData.user_id}`,
       userData,
@@ -62,6 +63,7 @@ export const editUser = async (userData) => {
         withCredentials: true,
       }
     );
+    console.log("API response:", response.data); // Debug log
     if (response.status !== 200) {
       throw new Error(
         `Failed to edit user. Server responded with status: ${response.status}`
@@ -69,7 +71,7 @@ export const editUser = async (userData) => {
     }
     return response.data;
   } catch (error) {
-    console.error("Error editing user:", error.response?.data || error.message);
+    console.error("Error editing user:", error.response?.data || error.message); // Debug log
     throw error;
   }
 };

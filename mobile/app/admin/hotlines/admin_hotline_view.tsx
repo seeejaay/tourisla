@@ -5,16 +5,17 @@ import {
     StatusBar,
     Pressable,
     ActivityIndicator,
+    ScrollView,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { useHotlineManager } from "@/hooks/useHotlineManager"; // Import the useHotlineManager hook
+import { useHotlineManager } from "@/hooks/useHotlineManager";
 import Icon from "react-native-vector-icons/Ionicons";
 
 export default function AdminHotlineViewScreen() {
     const router = useRouter();
-    const { id } = useLocalSearchParams<{ id: string }>(); // Get the hotline ID from the URL params
-    const { viewHotline, loading, error } = useHotlineManager(); // Use the hook
+    const { id } = useLocalSearchParams<{ id: string }>();
+    const { viewHotline, loading, error } = useHotlineManager();
     const [hotline, setHotline] = useState<null | {
         id: number;
         municipality: string;
@@ -25,19 +26,17 @@ export default function AdminHotlineViewScreen() {
 
     useEffect(() => {
         if (id) {
-            loadHotline(Number(id)); // Convert ID to number and fetch hotline details
+            loadHotline(Number(id));
         }
     }, [id]);
 
     const loadHotline = async (hotlineId: number) => {
         try {
-            const data = await viewHotline(hotlineId); // Use the viewHotline function from the hook
-            console.log("Hotline data:", data); // Debug log
+            const data = await viewHotline(hotlineId);
             if (data && data.id !== undefined) {
                 setHotline(data as { id: number; municipality: string; type: string; contact_number: string; address?: string });
             } else {
-                setHotline(null); // Clear the hotline state if data is invalid
-                console.error("Hotline data is missing the required 'id' property.");
+                setHotline(null);
             }
         } catch (error) {
             console.error("Failed to load hotline:", error);
@@ -82,12 +81,26 @@ export default function AdminHotlineViewScreen() {
                 <Text style={styles.headerTitle}>Hotline Details</Text>
             </View>
 
-            <View style={styles.content}>
-                <Text style={styles.title}>{hotline.type}</Text>
-                <Text style={styles.subtitle}>{hotline.municipality}</Text>
-                <Text style={styles.info}>📞 {hotline.contact_number}</Text>
-                {hotline.address && <Text style={styles.info}>🏠 {hotline.address}</Text>}
-            </View>
+            <ScrollView contentContainerStyle={styles.content}>
+                <View style={styles.infoSection}>
+                    <Text style={styles.label}>Type</Text>
+                    <Text style={styles.value}>{hotline.type}</Text>
+                </View>
+                <View style={styles.infoSection}>
+                    <Text style={styles.label}>Municipality</Text>
+                    <Text style={styles.value}>{hotline.municipality}</Text>
+                </View>
+                <View style={styles.infoSection}>
+                    <Text style={styles.label}>Contact Number</Text>
+                    <Text style={styles.value}>{hotline.contact_number}</Text>
+                </View>
+                {hotline.address && (
+                    <View style={styles.infoSection}>
+                        <Text style={styles.label}>Address</Text>
+                        <Text style={styles.value}>{hotline.address}</Text>
+                    </View>
+                )}
+            </ScrollView>
         </View>
     );
 }
@@ -95,7 +108,7 @@ export default function AdminHotlineViewScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f1f1f1",
+        backgroundColor: "#f9f9f9",
     },
     header: {
         position: "absolute",
@@ -119,24 +132,24 @@ const styles = StyleSheet.create({
         color: "#fff",
     },
     content: {
-        marginTop: 100,
+        paddingTop: 100,
         paddingHorizontal: 20,
     },
-    title: {
-        fontSize: 24,
+    infoSection: {
+        marginBottom: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: "#e5e5e5",
+        paddingBottom: 10,
+    },
+    label: {
+        fontSize: 14,
+        color: "#6B7280",
+        marginBottom: 5,
+    },
+    value: {
+        fontSize: 18,
         fontWeight: "bold",
         color: "#2c3e50",
-        marginBottom: 10,
-    },
-    subtitle: {
-        fontSize: 18,
-        color: "#6B7280",
-        marginBottom: 20,
-    },
-    info: {
-        fontSize: 16,
-        color: "#34495e",
-        marginBottom: 10,
     },
     centered: {
         flex: 1,
