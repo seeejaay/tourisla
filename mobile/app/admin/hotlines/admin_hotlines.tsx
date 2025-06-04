@@ -84,20 +84,7 @@ export default function AdminHotlinesScreen() {
             <View style={styles.card}>
                 {/* Title */}
                 <View style={styles.cardRow}>
-                    <Icon name="call-outline" size={24} color="#2563EB" style={styles.icon} />
                     <Text style={styles.cardTitle}>{name}</Text>
-                </View>
-    
-                {/* Location */}
-                <View style={styles.cardRow}>
-                    <Icon name="location-outline" size={20} color="#6B7280" style={styles.icon} />
-                    <Text style={styles.cardText}>{location}</Text>
-                </View>
-    
-                {/* Contact Number */}
-                <View style={styles.cardRow}>
-                    <Icon name="phone-portrait-outline" size={20} color="#6B7280" style={styles.icon} />
-                    <Text style={styles.cardText}>{contactNumber}</Text>
                 </View>
     
                 {/* Actions */}
@@ -113,7 +100,7 @@ export default function AdminHotlinesScreen() {
                         onPress={() => router.push({ pathname: "/admin/hotlines/admin_hotline_view", params: { id } })}
                         style={styles.moreInfoButton}
                     >
-                        <Icon name="chevron-forward-outline" size={20} color="#2563EB" />
+                        <Icon name="chevron-forward-outline" size={20} color="#1fd8d6" />
                     </Pressable>
                 </View>
             </View>

@@ -1,11 +1,11 @@
 import { z } from "zod";
 import countries from "@/static/countries.json";
 
-function sanitizePHPhoneNumber(phoneNumber: string): string {
+export function sanitizePHPhoneNumber(phoneNumber: string): string {
   // Remove any non-digit characters
   const sanitized = phoneNumber.replace(/\D/g, "");
   // Check if the number starts with "0" and remove it
-  return sanitized.startsWith("0") ? sanitized.slice(1) : sanitized;
+  return sanitized.startsWith("0") ? `+63${sanitized.slice(1)}` : `+63${sanitized}`;
 }
 
 {
@@ -67,6 +67,7 @@ const signupSchema = z
       message: "You must accept the terms and conditions",
     }),
     status: z.literal("Active"),
+    user_id: z.string(),
   })
   .refine((data) => data.password === data.confirm_password, {
     message: "Passwords must match",
