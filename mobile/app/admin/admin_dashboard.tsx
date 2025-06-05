@@ -2,120 +2,128 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AdminHomeScreen from './home/admin_home';
 import AdminAnnouncementsScreen from './announcements/admin_announcements';
 import AdminHotlinesScreen from './hotlines/admin_hotlines';
-import AdminUsersScreen from './users/admin_users';
 import AdminProfileScreen from './profile/admin_profile';
-import { FontAwesome } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { FontAwesome5 } from '@expo/vector-icons';
+import { StyleSheet, View, Platform } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 
 const Tab = createBottomTabNavigator();
-
-function GradientWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <LinearGradient colors={['#f1f1f1', '#bedcfe']} style={styles.gradient}>
-      <SafeAreaView style={styles.safeArea} edges={['bottom']}>
-        {children}
-      </SafeAreaView>
-    </LinearGradient>
-  );
-}
 
 export default function AdminDashboard() {
   const { tab } = useLocalSearchParams();
 
   return (
     <Tab.Navigator
-      initialRouteName={tab as string} // Dynamically set the initial tab
+      initialRouteName={tab as string}
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: '#007dab',
-        tabBarInactiveTintColor: '#6e7d90',
+        tabBarActiveTintColor: '#38bdf8',
+        tabBarInactiveTintColor: 'rgba(148, 163, 184, 0.9)',
         sceneContainerStyle: {
-          backgroundColor: 'transparent',
+          backgroundColor: '#f8fafc',
         },
         tabBarStyle: {
-          backgroundColor: '#1d2937',
-          borderTopRightRadius: 15,
-          borderTopLeftRadius: 15,
-          position: 'absolute',
+          backgroundColor: '#0f172a',
           borderTopWidth: 0,
+          height: 100,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          paddingTop: 10,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 10,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: 'bold',
+          fontSize: 11,
+          fontWeight: '500',
+          marginBottom: Platform.OS === 'ios' ? 0 : 4,
         },
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof FontAwesome.glyphMap;
+          let iconName: string;
 
           if (route.name === 'Home') {
             iconName = 'home';
           } else if (route.name === 'Announcements') {
             iconName = 'bullhorn';
           } else if (route.name === 'Hotlines') {
-            iconName = 'phone';
-          } else if (route.name === 'Users') {
-            iconName = 'users'; 
+            iconName = 'phone-alt';
           } else {
             iconName = 'user';
           }
 
           return (
-            <FontAwesome
-              name={iconName}
-              size={focused ? size + 4 : size}
-              color={color}
-            />
+            <View style={styles.iconWrapper}>
+              {focused && (
+                <>
+                  <View style={[styles.activeIndicator, { backgroundColor: '#38bdf8' }]} />
+                  <View style={styles.activeIconBackground} />
+                </>
+              )}
+              <FontAwesome5
+                name={iconName}
+                size={focused ? size + 4 : size}
+                color={color}
+                style={[
+                  focused ? styles.activeIcon : styles.icon,
+                  { transform: [{ translateY: focused ? -3 : 0 }] }
+                ]}
+              />
+            </View>
           );
         },
       })}
     >
-      <Tab.Screen name="Home">
-        {() => (
-          <GradientWrapper>
-            <AdminHomeScreen />
-          </GradientWrapper>
-        )}
+      <Tab.Screen 
+        name="Home"
+        options={{
+          tabBarLabel: 'Dashboard'
+        }}
+      >
+        {() => <AdminHomeScreen />}
       </Tab.Screen>
       <Tab.Screen name="Announcements">
-        {() => (
-          <GradientWrapper>
-            <AdminAnnouncementsScreen />
-          </GradientWrapper>
-        )}
-      </Tab.Screen>
-      <Tab.Screen name="Users">
-        {() => (
-          <GradientWrapper>
-            <AdminUsersScreen />
-          </GradientWrapper>
-        )}
+        {() => <AdminAnnouncementsScreen />}
       </Tab.Screen>
       <Tab.Screen name="Hotlines">
-        {() => (
-          <GradientWrapper>
-            <AdminHotlinesScreen />
-          </GradientWrapper>
-        )}
+        {() => <AdminHotlinesScreen />}
       </Tab.Screen>
       <Tab.Screen name="Profile">
-        {() => (
-          <GradientWrapper>
-            <AdminProfileScreen />
-          </GradientWrapper>
-        )}
+        {() => <AdminProfileScreen />}
       </Tab.Screen>
     </Tab.Navigator>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-    paddingBottom: 40,
+  iconWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 50,
+    height: 40,
+    position: 'relative',
+    marginTop: 10,
   },
-  safeArea: {
-    flex: 1,
+  activeIndicator: {
+    position: 'absolute',
+    top: -15,
+    width: 25,
+    height: 3,
+    borderRadius: 1.5,
+  },
+  activeIconBackground: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    top: -8,
+  },
+  icon: {
+    opacity: 0.9,
+  },
+  activeIcon: {
+    opacity: 1,
+    textShadowColor: 'rgba(56, 189, 248, 0.5)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
   },
 });
+

@@ -52,7 +52,7 @@ export default function AdminAnnouncementCreateScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <View style={{ flex: 1, backgroundColor: '#f3f4f6', padding: 16 }}>
+      <View style={{ flex: 1, backgroundColor: '#f8fafc', padding: 16 }}>
         {/* Back Button */}
         <Pressable
           onPress={() => router.back()}
@@ -61,7 +61,7 @@ export default function AdminAnnouncementCreateScreen() {
             top: 40,
             left: 20,
             zIndex: 10,
-            backgroundColor: '#007dab',
+            backgroundColor: '#0f172a',
             borderRadius: 50,
             padding: 10,
             shadowColor: '#000',
@@ -106,7 +106,7 @@ export default function AdminAnnouncementCreateScreen() {
             />
 
             <Pressable
-              style={{ backgroundColor: '#007dab', padding: 16, borderRadius: 10 }}
+              style={{ backgroundColor: '#38bdf8', padding: 16, borderRadius: 10 }}
               onPress={handleSubmit}
             >
               <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 18 }}>Submit</Text>
