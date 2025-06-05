@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: '900',
     textAlign: 'center',
-    color: '#007dab', // water
+    color: '#0f172a', // water
     marginBottom: 24,
   },
   input: {
@@ -150,11 +150,11 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     textAlign: 'right',
-    color: '#007dab',
+    color: '#0f172a',
     fontSize: 12,
   },
   loginButton: {
-    backgroundColor: '#007dab',
+    backgroundColor: '#0f172a',
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   },
   signupRedirectText: {
     textAlign: 'center',
-    color: '#007dab',
+    color: '#0f172a',
     fontWeight: '500',
   },
 });

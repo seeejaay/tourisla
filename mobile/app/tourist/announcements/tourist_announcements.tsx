@@ -256,11 +256,11 @@ export default function TouristAnnouncementsScreen() {
 const styles = StyleSheet.create({
     safeContainer: {
         flex: 1,
-        backgroundColor: "#f1f1f1",
+        backgroundColor: '#f8fafc',
     },
     container: {
         flex: 1,
-        backgroundColor: "#f1f1f1",
+        backgroundColor: '#f8fafc',
     },
     header: {
         position: "absolute",
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         height: 50 + STATUS_BAR_HEIGHT,
-        backgroundColor: "#007dab",
+        backgroundColor: "#0f172a",
         borderBottomColor: "rgba(0, 0, 0, 0.1)",
         borderBottomWidth: 1,
         flexDirection: "row",
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     },
     scrollView: {
         flex: 1,
-        marginTop: 50 + STATUS_BAR_HEIGHT, // Adjust for header height
+        marginTop: 50 + STATUS_BAR_HEIGHT,
     },
     contentContainer: {
         padding: 16,
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
         marginLeft: 16,
     },
     editButton: {
-        backgroundColor: "#007dab",
+        backgroundColor: "#38bdf8",
         padding: 10,
         borderRadius: 6,
     },
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: 16,
         right: 16,
-        backgroundColor: "#1c2b38",
+        backgroundColor: "#0f172a",
         width: 56,
         height: 56,
         borderRadius: 28,

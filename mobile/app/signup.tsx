@@ -141,7 +141,7 @@ export default function SignUpScreen() {
         <CheckBox
           value={form.terms}
           onValueChange={(val) => handleChange('terms', val)}
-          color={form.terms ? '#007dab' : undefined}
+          color={form.terms ? '#0f172a' : undefined}
         />
         <Text style={styles.checkboxLabel}>I agree to the terms and conditions</Text>
       </View>
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: '900',
     textAlign: 'center',
-    color: '#007dab',
+    color: '#0f172a',
     marginBottom: 24,
   },
   input: {
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   signupButton: {
-    backgroundColor: '#007dab',
+    backgroundColor: '#0f172a',
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   },
   loginRedirectText: {
     textAlign: 'center',
-    color: '#007dab',
+    color: '#0f172a',
     fontWeight: '500',
   },
 });
