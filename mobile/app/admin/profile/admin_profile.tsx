@@ -1,8 +1,10 @@
-import { View, Text, ActivityIndicator, TouchableOpacity, Image, ScrollView, Platform, StatusBar } from 'react-native';
-import { useEffect, useState } from 'react';
+import { View, Text, ActivityIndicator, TouchableOpacity, Image, ScrollView, Platform, StatusBar, Animated } from 'react-native';
+import { useEffect, useState, useRef } from 'react';
 import { router } from 'expo-router';
 import * as auth from '@/lib/api/auth.js';
-import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome, MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Background } from '@react-navigation/elements';
 
 export default function AdminProfileScreen() {
   const [user, setUser] = useState<{
@@ -16,6 +18,7 @@ export default function AdminProfileScreen() {
   const [error, setError] = useState("");
   const [showMenu, setShowMenu] = useState(false);
   const [loading, setLoading] = useState(true);
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -54,7 +57,7 @@ export default function AdminProfileScreen() {
   if (loading) {
     return (
       <View style={[styles.centered]}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color="#38bdf8" />
       </View>
     );
   }
@@ -67,15 +70,40 @@ export default function AdminProfileScreen() {
     );
   }
 
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [1, 0.9],
+    extrapolate: 'clamp',
+  });
+
+  const headerElevation = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [1, 8],
+    extrapolate: 'clamp',
+  });
+
   return (
     <View style={styles.container}>
-      {/* Header with menu */}
-      <View style={[styles.header]}>
+      {/* Animated Header with menu */}
+      <Animated.View 
+        style={[
+          styles.header, 
+          { 
+            opacity: headerOpacity,
+            elevation: headerElevation,
+            shadowOpacity: scrollY.interpolate({
+              inputRange: [0, 100],
+              outputRange: [0.08, 0.16],
+              extrapolate: 'clamp',
+            })
+          }
+        ]}
+      >
         <Text style={[styles.headerTitle]}>My Profile</Text>
         <TouchableOpacity onPress={handleMenuToggle} style={styles.menuButton}>
           <FontAwesome name="bars" size={28} color="#ecf0f1" />
         </TouchableOpacity>
-      </View>
+      </Animated.View>
 
       {showMenu && (
         <View style={[styles.dropdownMenu]}>
@@ -91,70 +119,106 @@ export default function AdminProfileScreen() {
         </View>
       )}
 
-
       {/* Scrollable Content */}
-      <ScrollView
+      <Animated.ScrollView
         contentContainerStyle={{ paddingTop: 30, paddingBottom: 30 }} 
         showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
       >
-      {/* Profile Card */}
-      {user && (
-        <View style={[styles.profileCard]}>
-          {/* Profile Image */}
-          <View style={[styles.avatarContainer]}>
-            {/* Use user's avatar if available; fallback to icon */}
-            {user?.avatar ? (
-              <Image source={{ uri: user.avatar }} style={styles.avatar} />
-            ) : (
-              <FontAwesome name="user-circle-o" size={100} color="#bbb" />
-            )}
+        {/* Profile Card */}
+        {user && (
+          <View style={styles.profileCard}>
+            <LinearGradient
+              colors={['rgba(56, 189, 248, 0.25)', 'rgba(15, 23, 42, 0.15)']}
+              style={styles.cardGradient}
+            />
+            
+            {/* Profile Image */}
+            <View style={styles.avatarContainer}>
+              {user?.avatar ? (
+                <Image source={{ uri: user.avatar }} style={styles.avatar} />
+              ) : (
+                <LinearGradient
+                  colors={['#38bdf8', '#0284c7']}
+                  style={styles.avatarGradient}
+                >
+                  <FontAwesome name="user" size={70} color="#fff" />
+                </LinearGradient>
+              )}
+              <TouchableOpacity style={styles.editAvatarButton}>
+                <FontAwesome name="camera" size={14} color="#fff" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Name & Email */}
+            <Text style={styles.name}>
+              {`${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.email}
+            </Text>
+            <Text style={styles.email}>{user?.email}</Text>
+
+            {/* Role Badge */}
+            <View style={[styles.roleBadge, user?.role === 'Admin' ? styles.adminBadge : styles.userBadge]}>
+              <Text style={[styles.roleText, user?.role !== 'Admin' && styles.userRoleText]}>
+                {user?.role?.toUpperCase()}
+              </Text>
+            </View>
           </View>
+        )}
 
-          {/* Name & Email */}
-          <Text style={styles.name}>
-            {`${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.email}
-          </Text>
-          <Text style={styles.email}>{user?.email}</Text>
+        {/* User Info Section */}
+        {user && (
+          <>
+            <View style={styles.infoSection}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>User Information</Text>
+                <TouchableOpacity style={[styles.editProfileButton]} onPress={handleEditProfile}>
+                  <MaterialIcons name="edit" size={24} color="#38bdf8" />
+                </TouchableOpacity>
+              </View>
 
-          {/* Role Badge */}
-          <View style={[styles.roleBadge, user?.role === 'admin' ? styles.adminBadge : styles.userBadge]}>
-            <Text style={styles.roleText}>{user?.role?.toUpperCase()}</Text>
-          </View>
-        </View>
-      )}
+              <View style={styles.infoRow}>
+                <View style={styles.iconContainer}>
+                  <MaterialIcons name="phone" size={24} color="#38bdf8" />
+                </View>
+                <View style={styles.infoTextGroup}>
+                  <Text style={styles.infoValue}>{user?.phone_number || "N/A"}</Text>
+                  <Text style={styles.infoLabel}>Phone Number</Text>
+                </View>
+                <TouchableOpacity style={styles.actionButton}>
+                  <Ionicons name="call-outline" size={20} color="#38bdf8" />
+                </TouchableOpacity>
+              </View>
 
-      {/* User Info Section */}
-{/* User Info Section */}
-{user && (
-  <>
-    <View style={styles.infoSection}>
-      <Text style={styles.sectionTitle}>User Information</Text>
-      <TouchableOpacity style={[styles.editProfileButton]} onPress={handleEditProfile}>
-        <MaterialIcons name="edit" size={24} color="#007dab" />
-      </TouchableOpacity>
+              <View style={styles.infoRow}>
+                <View style={styles.iconContainer}>
+                  <MaterialIcons name="security" size={24} color="#38bdf8" />
+                </View>
+                <View style={styles.infoTextGroup}>
+                  <Text style={styles.infoValue}>{user?.role}</Text>
+                  <Text style={styles.infoLabel}>Role</Text>
+                </View>
+              </View>
 
-      <View style={styles.infoRow}>
-        <MaterialIcons name="phone" size={24} color="#007dab" />
-        <View style={styles.infoTextGroup}>
-          <Text style={styles.infoValue}>{user?.phone_number || "N/A"}</Text>
-          <Text style={styles.infoLabel}>Phone Number</Text>
-        </View>
-      </View>
-
-      <View style={styles.infoRow}>
-        <MaterialIcons name="security" size={24} color="#007dab" />
-        <View style={styles.infoTextGroup}>
-          <Text style={styles.infoValue}>{user?.role}</Text>
-          <Text style={styles.infoLabel}>Role</Text>
-        </View>
-      </View>
-
-      {/* Add other info fields here if needed */}
-    </View>
-  </>
-)}
-
-      </ScrollView>
+              <View style={styles.infoRow}>
+                <View style={styles.iconContainer}>
+                  <MaterialIcons name="email" size={24} color="#38bdf8" />
+                </View>
+                <View style={styles.infoTextGroup}>
+                  <Text style={styles.infoValue}>{user?.email}</Text>
+                  <Text style={styles.infoLabel}>Email Address</Text>
+                </View>
+                <TouchableOpacity style={styles.actionButton}>
+                  <MaterialIcons name="content-copy" size={20} color="#38bdf8" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </>
+        )}
+      </Animated.ScrollView>
     </View>
   );
 }
@@ -164,7 +228,7 @@ const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight ||
 const styles = {
   container: {
     flex: 1,
-    backgroundColor: 'linear-gradient(180deg, #ffffff, #c4deff)',
+    backgroundColor: '#f8fafc',
     paddingTop: 20,
   },
 
@@ -172,11 +236,11 @@ const styles = {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'linear-gradient(180deg, #ffffff, #c4deff)',
+    backgroundColor: '#f8fafc',
   },
 
   errorText: {
-    color: '#e03e3e', // soft red for errors
+    color: '#e03e3e',
     fontSize: 16,
   },
 
@@ -186,7 +250,7 @@ const styles = {
     left: 0,
     right: 0,
     height: 50 + STATUS_BAR_HEIGHT,
-    backgroundColor: '#007dab', // dark slate blue/navy
+    backgroundColor: '#0f172a',
     borderBottomColor: 'rgba(0, 0, 0, 0.2)',
     borderBottomWidth: 1,
     flexDirection: 'row',
@@ -200,15 +264,15 @@ const styles = {
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 },
     elevation: 6,
-    borderBottomLeftRadius: 15, // Rounded bottom corners
-  borderBottomRightRadius: 15,
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
   },
 
   headerTitle: {
     fontSize: 20,
     fontWeight: '900',
     color: '#ecf0f1',
-    textShadowColor: 'rgba(0, 0, 0, 0.2)', // Text shadow for better visibility
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
@@ -257,48 +321,84 @@ const styles = {
   },
 
   profileCard: {
+    marginTop: 16 + STATUS_BAR_HEIGHT, // Adjust for header height
     marginHorizontal: 16,
-    marginTop: 56,
-    backgroundColor: '#ffffff', // white card background for crispness
+    backgroundColor: '#ffffff', 
     borderRadius: 20,
     paddingVertical: 30,
     paddingHorizontal: 25,
     alignItems: 'center',
-    elevation: 2,
+    elevation: 3,
     shadowColor: '#000',
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.08,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
+    position: 'relative',
+    overflow: 'hidden',
+  },
+
+  cardGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    borderRadius: 20,
+    // Make gradient more prominent with stronger colors
+    colors: ['rgba(56, 189, 248, 0.25)', 'rgba(15, 23, 42, 0.15)'],
   },
 
   avatarContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    overflow: 'visible', 
     marginBottom: 15,
-    borderRadius: 70,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#bdc3c7', // light grey border, subtle
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-
   avatar: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
+    width: '100%',
+    height: '100%',
+    borderRadius: 60,
+    resizeMode: 'cover',
+  },
+  
+  avatarGradient: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 60,
+  },
+  
+
+  editAvatarButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#38bdf8',
+    borderRadius: 20,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+    zIndex: 10,
+    elevation: 5, // For Android
   },
 
   name: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#2c3e50', // dark slate for strong but soft heading
+    color: '#2c3e50',
   },
 
   email: {
     fontSize: 14,
-    color: '#7f8c8d', // medium grey for secondary text
+    color: '#7f8c8d',
     marginTop: 4,
   },
 
@@ -309,27 +409,31 @@ const styles = {
     borderRadius: 15,
   },
 
-  adminBadge: {
-    backgroundColor: '#e67e22', // warm orange for admin — professional and noticeable but not harsh
-  },
-
   userBadge: {
-    borderColor: '#007dab', // fixed spelling (capital C)
-    borderWidth: 2,         // add border width to make border visible
-    borderRadius: 9999,     // make it fully round (circle/ellipse)
+    borderColor: '#38bdf8',
+    borderWidth: 2,
+    borderRadius: 9999,
+    backgroundColor: 'transparent',
   },
-
+  adminBadge: {
+    backgroundColor: '#38bdf8',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+  },
   roleText: {
-    color: '#007dab', // white text on badges
-    fontWeight: '700',
+    color: 'white',
     fontSize: 12,
+    fontWeight: 'bold',
     letterSpacing: 1,
   },
-
+  userRoleText: {
+    color: '#38bdf8',
+  },
   infoSection: {
     marginHorizontal: 16,
-    marginTop: 10,
-    backgroundColor: '#ffffff', // clean white background
+    marginTop: 16,
+    backgroundColor: '#ffffff',
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 16,
@@ -340,66 +444,66 @@ const styles = {
     shadowOffset: { width: 0, height: 4 },
   },
   
-  editProfileButton: {
-    alignSelf: 'flex-end',
-    marginBottom: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    borderColor: '#007dab', // fixed spelling (capital C)
-    borderWidth: 2,  
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   
-  editProfileButtonText: {
-    color: '#007dab', // off-white, easy on the eyes
-    fontWeight: '600',
-    fontSize: 15,
+  editProfileButton: {
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: 'rgba(56, 189, 248, 0.1)',
   },
   
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '800',
-    color: '#2c3e50', // dark slate gray, less bold but clear
-    marginBottom: 16,
+    color: '#2c3e50',
     letterSpacing: 0,
-    marginTop: 0, // add some space above the section title
-    textAlign: 'center',
   },
   
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
-    backgroundColor: '#fefefe', // very subtle off-white to distinguish rows
-    paddingVertical: 12,
+    marginBottom: 12,
+    backgroundColor: '#fefefe',
+    paddingVertical: 16,
     paddingHorizontal: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#007dab', // subtle light border to separate info rows nicely
+    borderColor: 'rgba(56, 189, 248, 0.2)',
     shadowColor: '#000',
     shadowOpacity: 0.02,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 1 },
   },
   
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
   infoTextGroup: {
     marginLeft: 12,
+    flex: 1,
   },
   
   infoValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#34495e', // consistent dark blue-gray for text emphasis
+    color: '#34495e',
   },
   
   infoLabel: {
     fontSize: 12,
-    color: '#7f8c8d', // soft grey with good readability
+    color: '#7f8c8d',
     marginTop: 2,
     letterSpacing: 0.4,
-  },  
+  },
 };

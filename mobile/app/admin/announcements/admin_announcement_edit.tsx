@@ -175,7 +175,7 @@ export default function AdminAnnouncementEditScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: '#f8fafc',
     padding: 16,
     justifyContent: "center",
     alignItems: "center",
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     top: 40,
     left: 20,
     zIndex: 10,
-    backgroundColor: "#007dab",
+    backgroundColor: "#0f172a",
     borderRadius: 50,
     padding: 10,
     shadowColor: "#000",
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   submitButton: {
-    backgroundColor: "#007dab",
+    backgroundColor: "#38bdf8",
     padding: 16,
     borderRadius: 10,
     marginTop: 16,
@@ -255,12 +255,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#f8fafc",
   },
   loadingText: {
     marginTop: 8,
     fontSize: 16,
-    color: "#007dab",
+    color: "#38bdf8",
   },
   errorText: {
     fontSize: 16,

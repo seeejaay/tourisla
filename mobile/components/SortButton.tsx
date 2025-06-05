@@ -57,7 +57,7 @@ export default function SortButton({ sortOption, setSortOption }: SortButtonProp
 
 const styles = StyleSheet.create({
   sortButton: {
-    backgroundColor: "#007dab",
+    backgroundColor: "#38bdf8",
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 14,
@@ -89,6 +89,6 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   selectedOption: {
-    backgroundColor: "#007dab",
+    backgroundColor: "#38bdf8",
   },
 });
