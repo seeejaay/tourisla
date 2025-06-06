@@ -7,6 +7,8 @@ const {
   getGuideRegisById,
 } = require("../models/guideRegisModel.js");
 
+const { s3Client, PutObjectCommand } = require("../utils/s3.js"); // Adjust the path as necessary
+
 // enum for sex types: 'MALE', 'FEMALE'
 // enum for application status types: 'PENDING', 'APPROVED', 'REJECTED'
 
@@ -29,6 +31,21 @@ const createGuideRegisController = async (req, res) => {
     email = email.toUpperCase();
     reason_for_applying = reason_for_applying.toUpperCase();
     application_status = application_status.toUpperCase();
+
+    // Handle profile picture upload
+    let profile_picture = null;
+    if (req.file) {
+      const file = req.file;
+      const s3Key = `tour-guides/${Date.now()}_${file.originalname}`;
+      const uploadParams = {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: s3Key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      };
+      await s3Client.send(new PutObjectCommand(uploadParams));
+      profile_picture = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+    }
 
     const guideRegis = await createGuideRegis({
       first_name,
