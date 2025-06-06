@@ -27,7 +27,7 @@ interface Announcement {
 
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
 
-export default function AdminAnnouncementsScreen() {
+export default function TouristAnnouncementsScreen() {
     const router = useRouter();
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(false);
@@ -177,33 +177,23 @@ export default function AdminAnnouncementsScreen() {
                 <Text style={styles.message}>No announcements found.</Text>
                 ) : (
                 filteredAnnouncements.map((item) => (
-                    <Pressable 
-                        key={item.id} 
-                        style={styles.card}
-                        onPress={() => router.push(`/admin/announcements/admin_announcement_view?id=${item.id}`)}
-                    >
+                    <View key={item.id} style={styles.card}>
                         <View style={styles.cardHeader}>
                             <Text style={styles.cardTitle}>{item.title}</Text>
-                            <View style={styles.actionButtons}>
+                            {/* <View style={styles.actionButtons}>
                             <Pressable
-                                onPress={(e) => {
-                                    e.stopPropagation(); // Prevent triggering the card's onPress
-                                    router.push(`/admin/announcements/admin_announcement_edit?id=${item.id}`);
-                                }}
+                                onPress={() => router.push(`/tourist/announcements/tourist_announcement_edit?id=${item.id}`)}
                                 style={styles.editButton}
                             >
                                 <Icon name="edit-3" size={18} color="#ffffff" />
                             </Pressable>
                             <Pressable
-                                onPress={(e) => {
-                                    e.stopPropagation(); // Prevent triggering the card's onPress
-                                    openDeleteModal(item.id);
-                                }}
+                                onPress={() => openDeleteModal(item.id)}
                                 style={styles.deleteButton}
                             >
                                 <Icon name="trash-2" size={18} color="#ffffff" />
                             </Pressable>
-                            </View>
+                            </View> */}
                         </View>
                         <Text style={styles.cardDescription}>{item.description}</Text>
                         <Text style={styles.cardFooter}>
@@ -215,24 +205,24 @@ export default function AdminAnnouncementsScreen() {
                             })
                             }
                         </Text>
-                    </Pressable>
+                    </View>
                 ))
                 )}
             </View>
             </ScrollView>
 
-            <Pressable
+            {/* <Pressable
                 style={styles.fab}
-                onPress={() => router.push("/admin/announcements/admin_announcement_create")}
+                onPress={() => router.push("/tourist/announcements/tourist_announcement_create")}
             >
                 <Icon name="plus" size={24} color="#007dab" />
-            </Pressable>
+            </Pressable> */}
 
             {/* Delete Modal */}
             <Modal
                 visible={modalVisible}
                 transparent={true}
-                animationType="fade"
+                animationType="slide"
                 onRequestClose={() => setModalVisible(false)}
             >
                 <View style={styles.modalOverlay}>

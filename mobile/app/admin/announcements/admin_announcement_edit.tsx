@@ -12,6 +12,32 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useAnnouncementManager } from "@/hooks/useAnnouncementManager";
 import { Ionicons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker"; // Import Picker
+
+// Announcement categories from backend
+const ANNOUNCEMENT_CATEGORIES = [
+  'EVENTS',
+  'FIESTA',
+  'CULTURAL_TOURISM',
+  'ENVIRONMENTAL_COASTAL',
+  'HOLIDAY_SEASONAL',
+  'GOVERNMENT_PUBLIC_SERVICE',
+  'STORM_SURGE',
+  'TSUNAMI',
+  'GALE_WARNING',
+  'MONSOON_LOW_PRESSURE',
+  'RED_TIDE',
+  'JELLYFISH_BLOOM',
+  'FISH_KILL',
+  'PROTECTED_WILDLIFE',
+  'OIL_SPILL',
+  'COASTAL_EROSION',
+  'CORAL_BLEACHING',
+  'HEAT_WAVE',
+  'FLOOD_LANDSLIDE',
+  'DENGUE_WATERBORNE',
+  'POWER_INTERRUPTION',
+];
 
 interface Announcement {
   id: string;
@@ -145,16 +171,27 @@ export default function AdminAnnouncementEditScreen() {
               )
             }
           />
-          <TextInput
-            placeholder="Category"
-            style={styles.input}
-            value={announcement?.category}
-            onChangeText={(text) =>
-              setAnnouncement((prev) =>
-                prev ? { ...prev, category: text } : null
-              )
-            }
-          />
+          
+          {/* Category Dropdown */}
+          <View style={[styles.input, { padding: 0 }]}>
+            <Picker
+              selectedValue={announcement?.category}
+              onValueChange={(value) =>
+                setAnnouncement((prev) =>
+                  prev ? { ...prev, category: value } : null
+                )
+              }
+              style={{ color: "#374151" }}
+            >
+              {ANNOUNCEMENT_CATEGORIES.map((category) => (
+                <Picker.Item 
+                  key={category} 
+                  label={category.replace(/_/g, " ")} 
+                  value={category} 
+                />
+              ))}
+            </Picker>
+          </View>
 
           <Pressable style={styles.submitButton} onPress={handleUpdate}>
             <Text style={styles.submitButtonText}>Save Changes</Text>
@@ -175,7 +212,7 @@ export default function AdminAnnouncementEditScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: '#f8fafc',
     padding: 16,
     justifyContent: "center",
     alignItems: "center",
@@ -185,7 +222,7 @@ const styles = StyleSheet.create({
     top: 40,
     left: 20,
     zIndex: 10,
-    backgroundColor: "#007dab",
+    backgroundColor: "#0f172a",
     borderRadius: 50,
     padding: 10,
     shadowColor: "#000",
@@ -228,7 +265,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   submitButton: {
-    backgroundColor: "#007dab",
+    backgroundColor: "#38bdf8",
     padding: 16,
     borderRadius: 10,
     marginTop: 16,
@@ -255,12 +292,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#f8fafc",
   },
   loadingText: {
     marginTop: 8,
     fontSize: 16,
-    color: "#007dab",
+    color: "#38bdf8",
   },
   errorText: {
     fontSize: 16,

@@ -29,6 +29,7 @@ export default function LoginScreen() {
     });
 
     try {
+      console.log('Sending login payload:', { email: trimmedEmail, password: trimmedPassword });
       const res = await login({ email: trimmedEmail, password: trimmedPassword });
       console.log('Login Response:', res);
 
@@ -46,8 +47,8 @@ export default function LoginScreen() {
         case 'Admin':
           router.replace('/admin/admin_dashboard');
           break;
-        case 'tourist':
-          router.replace('/tourist_home');
+        case 'Tourist':
+          router.replace('/tourist/tourist_dashboard');
           break;
         case 'tour_guide':
           router.replace('/guide_home');
@@ -58,14 +59,13 @@ export default function LoginScreen() {
         default:
           setError('Unknown role.');
       }
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message || 'An error occurred during login.');
-      } else {
-        setError('An error occurred during login.');
-      }
+    } catch (err: any) {
+      console.error('Login Error:', err.response?.data || err.message);
+      setError(err.response?.data?.message || err.message || 'An error occurred during login.');
     }
   };
+
+  // Debug API URL function removed
 
   return (
     <View style={styles.container}>
@@ -107,6 +107,8 @@ export default function LoginScreen() {
       <TouchableOpacity onPress={() => router.push('/signup')}>
         <Text style={styles.signupRedirectText}>Don’t have an account? Sign up</Text>
       </TouchableOpacity>
+
+      // Debug button removed
     </View>
   );
 }
@@ -122,7 +124,7 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: '900',
     textAlign: 'center',
-    color: '#007dab', // water
+    color: '#0f172a', // water
     marginBottom: 24,
   },
   input: {
@@ -152,11 +154,11 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     textAlign: 'right',
-    color: '#007dab',
+    color: '#0f172a',
     fontSize: 12,
   },
   loginButton: {
-    backgroundColor: '#007dab',
+    backgroundColor: '#0f172a',
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
@@ -174,8 +176,8 @@ const styles = StyleSheet.create({
   },
   signupRedirectText: {
     textAlign: 'center',
-    color: '#007dab',
+    color: '#0f172a',
     fontWeight: '500',
   },
+  // helpButton and helpButtonText styles removed
 });
-
