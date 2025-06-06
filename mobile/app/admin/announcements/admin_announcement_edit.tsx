@@ -523,6 +523,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    marginTop: 50 + STATUS_BAR_HEIGHT,
   },
   formGroup: {
     marginBottom: 16,
