@@ -3,7 +3,9 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const fetchUsers = async () => {
   try {
-    const response = await axios.get(`${API_URL}users`, {
+    // Ensure the URL has the correct format with a trailing slash
+    const baseUrl = API_URL.endsWith('/') ? API_URL : `${API_URL}/`;
+    const response = await axios.get(`${baseUrl}users`, {
       withCredentials: true,
     });
     if (response.status !== 200) {

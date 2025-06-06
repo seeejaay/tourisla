@@ -22,10 +22,38 @@ export default function TouristProfileScreen() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await auth.currentUser();
-        setUser(res.data.user);
-      } catch {
-        setError("Failed to fetch user data.");
+        console.log("Fetching user data...");
+        setLoading(true);
+        const response = await auth.currentUser();
+        console.log("User data response:", JSON.stringify(response));
+        
+        // Handle different response formats
+        let userData = null;
+        
+        if (response.data && response.data.user) {
+          // Format: { data: { user: {...} } }
+          userData = response.data.user;
+        } else if (response.user) {
+          // Format: { user: {...} }
+          userData = response.user;
+        } else if (response.data) {
+          // Format: { data: {...} }
+          userData = response.data;
+        } else if (typeof response === 'object' && response !== null) {
+          // Format: {...} (user object directly)
+          userData = response;
+        }
+        
+        if (userData) {
+          console.log("Extracted user data:", userData);
+          setUser(userData);
+        } else {
+          console.error("Could not extract user data from response:", response);
+          setError("Invalid user data format received from server.");
+        }
+      } catch (err) {
+        console.error("Failed to fetch user data:", err);
+        setError("Failed to fetch user data. " + (err.message || "Unknown error"));
       } finally {
         setLoading(false);
       }
