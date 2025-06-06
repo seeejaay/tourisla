@@ -65,17 +65,7 @@ export default function LoginScreen() {
     }
   };
 
-  const debugApiUrl = () => {
-    const API_URL = process.env.EXPO_PUBLIC_API_URL;
-    const baseUrl = API_URL.endsWith('/') ? API_URL : `${API_URL}/`;
-    const loginUrl = `${baseUrl}login`;
-    
-    Alert.alert(
-      'API URL Debug',
-      `Environment variable: ${API_URL}\n\nFormatted URL: ${loginUrl}`,
-      [{ text: 'OK' }]
-    );
-  };
+  // Debug API URL function removed
 
   return (
     <View style={styles.container}>
@@ -118,12 +108,7 @@ export default function LoginScreen() {
         <Text style={styles.signupRedirectText}>Don’t have an account? Sign up</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity 
-        onPress={debugApiUrl}
-        style={styles.helpButton}
-      >
-        <Text style={styles.helpButtonText}>Debug API URL</Text>
-      </TouchableOpacity>
+      // Debug button removed
     </View>
   );
 }
@@ -194,22 +179,5 @@ const styles = StyleSheet.create({
     color: '#0f172a',
     fontWeight: '500',
   },
-  helpButton: {
-    backgroundColor: '#0f172a',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  helpButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 16,
-  },
+  // helpButton and helpButtonText styles removed
 });
-
