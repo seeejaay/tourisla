@@ -7,12 +7,14 @@ const {
   getGuideRegisById,
 } = require("../models/guideRegisModel.js");
 
+const { s3Client, PutObjectCommand } = require("../utils/s3.js"); // Adjust the path as necessary
+
 // enum for sex types: 'MALE', 'FEMALE'
 // enum for application status types: 'PENDING', 'APPROVED', 'REJECTED'
 
 const createGuideRegisController = async (req, res) => {
   try {
-    let { first_name, last_name, birth_date, sex, mobile_number, email, profile_picture, reason_for_applying, application_status } = req.body;
+    let { first_name, last_name, birth_date, sex, mobile_number, email, reason_for_applying, application_status } = req.body;
 
     first_name = first_name.toUpperCase();
     last_name = last_name.toUpperCase();
@@ -22,16 +24,31 @@ const createGuideRegisController = async (req, res) => {
     reason_for_applying = reason_for_applying.toUpperCase();
     application_status = application_status.toUpperCase();
 
+    // Handle profile picture upload
+    let profile_picture = null;
+    if (req.file) {
+      const file = req.file;
+      const s3Key = `tour-guides/${Date.now()}_${file.originalname}`;
+      const uploadParams = {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: s3Key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      };
+      await s3Client.send(new PutObjectCommand(uploadParams));
+      profile_picture = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+    }
+
     const guideRegis = await createGuideRegis({
       first_name,
       last_name,
       birth_date,
-      sex, 
+      sex,
       mobile_number,
       email,
       profile_picture,
       reason_for_applying,
-      application_status
+      application_status,
     });
 
     res.json(guideRegis);
@@ -43,30 +60,45 @@ const createGuideRegisController = async (req, res) => {
 
 const editGuideRegisController = async (req, res) => {
     try {
-        const { guideId } = req.params;
-        let { first_name, last_name, birth_date, sex, mobile_number, email, profile_picture, reason_for_applying, application_status } = req.body;
+      const { guideId } = req.params;
+      let { first_name, last_name, birth_date, sex, mobile_number, email, reason_for_applying, application_status } = req.body;
 
-        first_name = first_name.toUpperCase();
-        last_name = last_name.toUpperCase();
-        birth_date = birth_date.toUpperCase();
-        sex = sex.toUpperCase();
-        email = email.toUpperCase();
-        reason_for_applying = reason_for_applying.toUpperCase();
-        application_status = application_status.toUpperCase();
-        
-        const guideRegis = await editGuideRegis(guideId, {
-            first_name,
-            last_name,
-            birth_date,
-            sex, 
-            mobile_number,
-            email,
-            profile_picture,
-            reason_for_applying,
-            application_status
-            });
+      first_name = first_name.toUpperCase();
+      last_name = last_name.toUpperCase();
+      birth_date = birth_date.toUpperCase();
+      sex = sex.toUpperCase();
+      email = email.toUpperCase();
+      reason_for_applying = reason_for_applying.toUpperCase();
+      application_status = application_status.toUpperCase();
+      
+      // Handle profile picture update
+      let profile_picture = req.body.profile_picture || null;
+      if (req.file) {
+        const file = req.file;
+        const s3Key = `tour-guides/${Date.now()}_${file.originalname}`;
+        const uploadParams = {
+          Bucket: process.env.AWS_S3_BUCKET,
+          Key: s3Key,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        };
+        await s3Client.send(new PutObjectCommand(uploadParams));
+        profile_picture = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+      }
 
-        res.json(guideRegis);
+      const guideRegis = await editGuideRegis(guideId, {
+        first_name,
+        last_name,
+        birth_date,
+        sex,
+        mobile_number,
+        email,
+        profile_picture,
+        reason_for_applying,
+        application_status,
+      });
+
+      res.json(guideRegis);
     } catch (err) {
     console.log(err.message);
     res.send(err.message);
