@@ -27,6 +27,7 @@ export default function Pill({ className }: PillProps) {
     id: string | number;
     name: string;
     email: string;
+    nationality: string;
   } | null>(null);
 
   useEffect(() => {
@@ -38,6 +39,7 @@ export default function Pill({ className }: PillProps) {
           id: u.id ?? u.user_id,
           name: u.first_name + " " + u.last_name,
           email: u.email,
+          nationality: u.nationality,
         });
       } else {
         setUser(null);
