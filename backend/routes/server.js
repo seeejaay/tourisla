@@ -217,7 +217,11 @@ app.post(
   createAnnouncementController,
   authenticateAdmin
 );
-app.put("/api/v1/announcements/:announcementId", editAnnouncementController);
+app.put(
+  "/api/v1/announcements/:announcementId", 
+  upload.single("image"),
+  editAnnouncementController
+);
 app.delete(
   "/api/v1/announcements/:announcementId",
   deleteAnnouncementController,
