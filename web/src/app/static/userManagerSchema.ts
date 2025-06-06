@@ -51,7 +51,20 @@ const signupSchema = z
         "Phone number must be in Philippine format: +639XXXXXXXXX"
       )
       .transform(sanitizePHPhoneNumber),
-    role: z.literal("Tourist"),
+    role: z.enum(
+      [
+        "Tourist",
+        "Tour Guide",
+        "Tour Operator",
+        "Admin",
+        "Cultural Director",
+        "Tourism Officer",
+        "Tourism Staff",
+      ],
+      {
+        message: "Role is required",
+      }
+    ),
     nationality: z
       .string()
       .refine((val: string) => val !== "Select Your Nationality", {
