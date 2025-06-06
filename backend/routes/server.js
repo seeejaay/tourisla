@@ -254,11 +254,13 @@ app.get("/api/v1/hotlines/:hotlineId", viewHotlineByIdController);
 // Routes for Tour Guide Registration
 app.post(
   "/api/v1/guideRegis",
+  upload.single("profile_picture"),
   authenticateTourGuide,
   createGuideRegisController
 );
 app.put(
   "/api/v1/guideRegis/:guideId",
+  upload.single("profile_picture"),
   authenticateTourGuide,
   editGuideRegisController
 );
@@ -277,11 +279,13 @@ app.get(
 // Routes for Tour Guide Document Upload
 app.post(
   "/api/v1/guideUploadDocu/:guideId",
+  upload.single("document"),
   authenticateTourGuide,
   createGuideUploadDocuController
 );
 app.put(
   "/api/v1/guideUploadDocu/:docuId",
+  upload.single("document"),
   authenticateTourGuide,
   editGuideUploadDocuController
 );
@@ -321,11 +325,13 @@ app.get(
 // Routes for Tour Operator Document Upload
 app.post(
   "/api/v1/operatorUploadDocu/:operatorId",
+  upload.single("document"),
   authenticateTourOperator,
   createOperatorUploadDocuController
 );
 app.put(
   "/api/v1/operatorUploadDocu/:documentId",
+  upload.single("document"),
   authenticateTourOperator,
   editOperatorUploadDocuController
 );
