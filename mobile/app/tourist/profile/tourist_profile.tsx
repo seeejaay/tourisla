@@ -1,4 +1,4 @@
-import { View, Text, ActivityIndicator, TouchableOpacity, Image, ScrollView, Platform, StatusBar, Animated } from 'react-native';
+import { View, Text, ActivityIndicator, TouchableOpacity, StyleSheet, Image, ScrollView, Platform, StatusBar, Animated } from 'react-native';
 import { useEffect, useState, useRef } from 'react';
 import { router } from 'expo-router';
 import * as auth from '@/lib/api/auth.js';
@@ -252,7 +252,7 @@ export default function TouristProfileScreen() {
 
 const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 44;
 
-const styles = {
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
@@ -533,4 +533,13 @@ const styles = {
     marginTop: 2,
     letterSpacing: 0.4,
   },
-};
+  
+  actionButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
