@@ -192,6 +192,7 @@ export default function AdminAnnouncementCreateScreen() {
                 selectedValue={form.category}
                 onValueChange={(value) => handleChange('category', value)}
                 style={styles.picker}
+                itemStyle={styles.pickerItem}
               >
                 {ANNOUNCEMENT_CATEGORIES.map((category) => (
                   <Picker.Item 
@@ -263,7 +264,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "rgba(0, 0, 0, 0.1)",
     borderBottomWidth: 1,
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     alignItems: "center",
     paddingTop: STATUS_BAR_HEIGHT,
     paddingHorizontal: 20,
@@ -327,10 +328,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#f9fafb',
     overflow: 'hidden',
+    width: '100%',
   },
   picker: {
-    height: 45,
+    width: '100%',
     fontSize: 14,
+  },
+  pickerItem: {
+    fontSize: 14,
+    textAlign: 'center',
   },
   imagePicker: {
     flexDirection: 'row',
