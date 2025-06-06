@@ -4,7 +4,9 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const fetchHotlines = async () => {
   try {
-    const response = await axios.get(`${API_URL}hotlines`, {
+    // Ensure the URL has the correct format with a trailing slash
+    const baseUrl = API_URL.endsWith('/') ? API_URL : `${API_URL}/`;
+    const response = await axios.get(`${baseUrl}hotlines`, {
       withCredentials: true,
     });
 
@@ -24,7 +26,9 @@ export const fetchHotlines = async () => {
 
 export const viewHotlines = async (hotlineId) => {
   try {
-    const response = await axios.get(`${API_URL}hotlines/${hotlineId}`, {
+    // Ensure the URL has the correct format with a trailing slash
+    const baseUrl = API_URL.endsWith('/') ? API_URL : `${API_URL}/`;
+    const response = await axios.get(`${baseUrl}hotlines/${hotlineId}`, {
       withCredentials: true,
     });
 
@@ -44,7 +48,9 @@ export const viewHotlines = async (hotlineId) => {
 
 export const createHotline = async (hotlineData) => {
   try {
-    const response = await axios.post(`${API_URL}hotlines`, hotlineData, {
+    // Ensure the URL has the correct format with a trailing slash
+    const baseUrl = API_URL.endsWith('/') ? API_URL : `${API_URL}/`;
+    const response = await axios.post(`${baseUrl}hotlines`, hotlineData, {
       withCredentials: true,
     });
 
@@ -55,7 +61,7 @@ export const createHotline = async (hotlineData) => {
     return response.data;
   } catch (error) {
     console.error(
-      "Error Fetching Hotlines: ",
+      "Error Creating Hotlines: ",
       error.response?.data || error.message
     );
     throw error;

@@ -3,6 +3,32 @@ import { useState, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { useAnnouncementManager } from "@/hooks/useAnnouncementManager";
 import { Ionicons } from '@expo/vector-icons'; // Importing icons from expo/vector-icons
+import { Picker } from '@react-native-picker/picker'; // Import Picker
+
+// Announcement categories from backend
+const ANNOUNCEMENT_CATEGORIES = [
+  'EVENTS',
+  'FIESTA',
+  'CULTURAL_TOURISM',
+  'ENVIRONMENTAL_COASTAL',
+  'HOLIDAY_SEASONAL',
+  'GOVERNMENT_PUBLIC_SERVICE',
+  'STORM_SURGE',
+  'TSUNAMI',
+  'GALE_WARNING',
+  'MONSOON_LOW_PRESSURE',
+  'RED_TIDE',
+  'JELLYFISH_BLOOM',
+  'FISH_KILL',
+  'PROTECTED_WILDLIFE',
+  'OIL_SPILL',
+  'COASTAL_EROSION',
+  'CORAL_BLEACHING',
+  'HEAT_WAVE',
+  'FLOOD_LANDSLIDE',
+  'DENGUE_WATERBORNE',
+  'POWER_INTERRUPTION',
+];
 
 export default function AdminAnnouncementCreateScreen() {
   const router = useRouter();
@@ -11,7 +37,7 @@ export default function AdminAnnouncementCreateScreen() {
     title: '',
     description: '',
     location: '',
-    category: '',
+    category: ANNOUNCEMENT_CATEGORIES[0], // Default to first category
   });
 
   const handleChange = (key: string, value: string) => {
@@ -52,7 +78,7 @@ export default function AdminAnnouncementCreateScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <View style={{ flex: 1, backgroundColor: '#f3f4f6', padding: 16 }}>
+      <View style={{ flex: 1, backgroundColor: '#f8fafc', padding: 16 }}>
         {/* Back Button */}
         <Pressable
           onPress={() => router.back()}
@@ -61,7 +87,7 @@ export default function AdminAnnouncementCreateScreen() {
             top: 40,
             left: 20,
             zIndex: 10,
-            backgroundColor: '#007dab',
+            backgroundColor: '#0f172a',
             borderRadius: 50,
             padding: 10,
             shadowColor: '#000',
@@ -98,15 +124,26 @@ export default function AdminAnnouncementCreateScreen() {
               value={form.location}
               onChangeText={(text) => handleChange('location', text)}
             />
-            <TextInput
-              placeholder="Category"
-              style={{ borderWidth: 1, borderColor: '#d1d5db', padding: 12, marginBottom: 10, borderRadius: 10, color: '#374151' }}
-              value={form.category}
-              onChangeText={(text) => handleChange('category', text)}
-            />
+            
+            {/* Category Dropdown */}
+            <View style={{ borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10, marginBottom: 10, overflow: 'hidden' }}>
+              <Picker
+                selectedValue={form.category}
+                onValueChange={(value) => handleChange('category', value)}
+                style={{ color: '#374151' }}
+              >
+                {ANNOUNCEMENT_CATEGORIES.map((category) => (
+                  <Picker.Item 
+                    key={category} 
+                    label={category.replace(/_/g, " ")} 
+                    value={category} 
+                  />
+                ))}
+              </Picker>
+            </View>
 
             <Pressable
-              style={{ backgroundColor: '#007dab', padding: 16, borderRadius: 10 }}
+              style={{ backgroundColor: '#38bdf8', padding: 16, borderRadius: 10 }}
               onPress={handleSubmit}
             >
               <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold', fontSize: 18 }}>Submit</Text>

@@ -4,9 +4,8 @@ import { router } from 'expo-router';
 import * as auth from '@/lib/api/auth.js';
 import { FontAwesome, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Background } from '@react-navigation/elements';
 
-export default function AdminProfileScreen() {
+export default function TouristProfileScreen() {
   const [user, setUser] = useState<{
     avatar?: string;
     first_name?: string;
@@ -23,10 +22,38 @@ export default function AdminProfileScreen() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await auth.currentUser();
-        setUser(res.data.user);
-      } catch {
-        setError("Failed to fetch user data.");
+        console.log("Fetching user data...");
+        setLoading(true);
+        const response = await auth.currentUser();
+        console.log("User data response:", JSON.stringify(response));
+        
+        // Handle different response formats
+        let userData = null;
+        
+        if (response.data && response.data.user) {
+          // Format: { data: { user: {...} } }
+          userData = response.data.user;
+        } else if (response.user) {
+          // Format: { user: {...} }
+          userData = response.user;
+        } else if (response.data) {
+          // Format: { data: {...} }
+          userData = response.data;
+        } else if (typeof response === 'object' && response !== null) {
+          // Format: {...} (user object directly)
+          userData = response;
+        }
+        
+        if (userData) {
+          console.log("Extracted user data:", userData);
+          setUser(userData);
+        } else {
+          console.error("Could not extract user data from response:", response);
+          setError("Invalid user data format received from server.");
+        }
+      } catch (err) {
+        console.error("Failed to fetch user data:", err);
+        setError("Failed to fetch user data. " + (err.message || "Unknown error"));
       } finally {
         setLoading(false);
       }
@@ -43,7 +70,7 @@ export default function AdminProfileScreen() {
       alert("Logged out successfully");
       setShowMenu(false);
       router.replace('/login');
-    } catch {
+    } catch (error) {
       console.error("Logout error:", error);
       alert("Failed to log out");
     }
@@ -133,7 +160,7 @@ export default function AdminProfileScreen() {
         {user && (
           <View style={styles.profileCard}>
             <LinearGradient
-              colors={['rgba(56, 189, 248, 0.25)', 'rgba(15, 23, 42, 0.15)']}
+              colors={['rgba(0, 125, 171, 0.25)', 'rgba(15, 23, 42, 0.15)']}
               style={styles.cardGradient}
             />
             
@@ -143,7 +170,7 @@ export default function AdminProfileScreen() {
                 <Image source={{ uri: user.avatar }} style={styles.avatar} />
               ) : (
                 <LinearGradient
-                  colors={['#38bdf8', '#0284c7']}
+                  colors={['#38bdf8', '#005d7f']}
                   style={styles.avatarGradient}
                 >
                   <FontAwesome name="user" size={70} color="#fff" />
@@ -161,8 +188,8 @@ export default function AdminProfileScreen() {
             <Text style={styles.email}>{user?.email}</Text>
 
             {/* Role Badge */}
-            <View style={[styles.roleBadge, user?.role === 'Admin' ? styles.adminBadge : styles.userBadge]}>
-              <Text style={[styles.roleText, user?.role !== 'Admin' && styles.userRoleText]}>
+            <View style={[styles.roleBadge, user?.role === 'tourist' ? styles.touristBadge : styles.userBadge]}>
+              <Text style={[styles.roleText, user?.role !== 'tourist' && styles.userRoleText]}>
                 {user?.role?.toUpperCase()}
               </Text>
             </View>
@@ -514,9 +541,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(56, 189, 248, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  
-  touristBadge: {
-    backgroundColor: '#38bdf8',
   },
 });
