@@ -84,17 +84,18 @@ const editAnnouncementController = async (req, res) => {
     console.log("Edit announcement request file:", req.file);
 
     // Extract fields from request body
-    let { title, description, date_posted, location, image_url, category } = req.body;
+    let { title, description, date_posted, location, image_url, category } =
+      req.body;
 
     // Validate required fields
     if (!title) {
       return res.status(400).json({ error: "Title is required" });
     }
-    
+
     if (!description) {
       return res.status(400).json({ error: "Description is required" });
     }
-    
+
     if (!category) {
       return res.status(400).json({ error: "Category is required" });
     }
@@ -117,27 +118,30 @@ const editAnnouncementController = async (req, res) => {
           Body: file.buffer,
           ContentType: file.mimetype,
         };
-        
+
         // Add timeout and retry logic for S3 upload
         let s3Retries = 0;
         const maxS3Retries = 2;
         let s3Success = false;
-        
+
         while (s3Retries <= maxS3Retries && !s3Success) {
           try {
             await s3Client.send(new PutObjectCommand(uploadParams));
             s3Success = true;
           } catch (s3Error) {
-            console.error(`S3 upload attempt ${s3Retries + 1} failed:`, s3Error);
+            console.error(
+              `S3 upload attempt ${s3Retries + 1} failed:`,
+              s3Error
+            );
             if (s3Retries === maxS3Retries) {
               throw s3Error;
             }
             s3Retries++;
             // Wait before retrying
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
           }
         }
-        
+
         image_url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
         console.log("New image uploaded to:", image_url);
       } catch (imageError) {
@@ -151,10 +155,10 @@ const editAnnouncementController = async (req, res) => {
     const updateData = {
       title,
       description,
-      date_posted: date_posted || new Date().toISOString().split('T')[0],
+      date_posted: date_posted || new Date().toISOString().split("T")[0],
       location: location || "GENERAL",
       image_url,
-      category
+      category,
     };
 
     console.log("Updating announcement with data:", updateData);

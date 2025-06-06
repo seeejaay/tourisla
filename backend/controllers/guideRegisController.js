@@ -13,13 +13,24 @@ const { s3Client, PutObjectCommand } = require("../utils/s3.js"); // Adjust the 
 // enum for application status types: 'PENDING', 'APPROVED', 'REJECTED'
 
 const createGuideRegisController = async (req, res) => {
+  console.log("Creating Tour Guide Application");
+  console.log(req.body);
   try {
-    let { first_name, last_name, birth_date, sex, mobile_number, email, reason_for_applying, application_status } = req.body;
-
+    let {
+      first_name,
+      last_name,
+      birth_date,
+      sex,
+      mobile_number,
+      email,
+      reason_for_applying,
+      application_status,
+    } = req.body;
+    console.log(req.body);
     first_name = first_name.toUpperCase();
     last_name = last_name.toUpperCase();
-    birth_date = birth_date.toUpperCase();
     sex = sex.toUpperCase();
+    birth_date = new Date(birth_date).toISOString();
     email = email.toUpperCase();
     reason_for_applying = reason_for_applying.toUpperCase();
     application_status = application_status.toUpperCase();
@@ -50,56 +61,50 @@ const createGuideRegisController = async (req, res) => {
       reason_for_applying,
       application_status,
     });
-
+    console.log("Tour Guide Application Created Successfully");
     res.json(guideRegis);
-  } catch (err) {
-    console.log(err.message);
-    res.send(err.message);
+  } catch (error) {
+    console.log(error);
+    res.send(error);
   }
 };
 
 const editGuideRegisController = async (req, res) => {
-    try {
-      const { guideId } = req.params;
-      let { first_name, last_name, birth_date, sex, mobile_number, email, reason_for_applying, application_status } = req.body;
+  try {
+    const { guideId } = req.params;
+    let {
+      first_name,
+      last_name,
+      birth_date,
+      sex,
+      mobile_number,
+      email,
+      profile_picture,
+      reason_for_applying,
+      application_status,
+    } = req.body;
 
-      first_name = first_name.toUpperCase();
-      last_name = last_name.toUpperCase();
-      birth_date = birth_date.toUpperCase();
-      sex = sex.toUpperCase();
-      email = email.toUpperCase();
-      reason_for_applying = reason_for_applying.toUpperCase();
-      application_status = application_status.toUpperCase();
-      
-      // Handle profile picture update
-      let profile_picture = req.body.profile_picture || null;
-      if (req.file) {
-        const file = req.file;
-        const s3Key = `tour-guides/${Date.now()}_${file.originalname}`;
-        const uploadParams = {
-          Bucket: process.env.AWS_S3_BUCKET,
-          Key: s3Key,
-          Body: file.buffer,
-          ContentType: file.mimetype,
-        };
-        await s3Client.send(new PutObjectCommand(uploadParams));
-        profile_picture = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
-      }
+    first_name = first_name.toUpperCase();
+    last_name = last_name.toUpperCase();
+    sex = sex.toUpperCase();
+    email = email.toUpperCase();
+    reason_for_applying = reason_for_applying.toUpperCase();
+    application_status = application_status.toUpperCase();
 
-      const guideRegis = await editGuideRegis(guideId, {
-        first_name,
-        last_name,
-        birth_date,
-        sex,
-        mobile_number,
-        email,
-        profile_picture,
-        reason_for_applying,
-        application_status,
-      });
+    const guideRegis = await editGuideRegis(guideId, {
+      first_name,
+      last_name,
+      birth_date,
+      sex,
+      mobile_number,
+      email,
+      profile_picture,
+      reason_for_applying,
+      application_status,
+    });
 
-      res.json(guideRegis);
-    } catch (err) {
+    res.json(guideRegis);
+  } catch (err) {
     console.log(err.message);
     res.send(err.message);
   }

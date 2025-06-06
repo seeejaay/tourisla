@@ -111,7 +111,7 @@ const {
   deleteTouristSpotController,
   viewTouristSpotsController,
   viewTouristSpotByIdController,
-} = require('../controllers/touristSpotController');
+} = require("../controllers/touristSpotController");
 
 const {
   createRuleController,
@@ -119,7 +119,7 @@ const {
   deleteRuleController,
   viewRulesController,
   viewRuleByIdController,
-} = require('../controllers/rulesRegulationController.js');
+} = require("../controllers/rulesRegulationController.js");
 
 const {
   createArticleController,
@@ -136,7 +136,6 @@ const {
   viewTourPackagesController,
   viewTourPackageByIdController,
 } = require("../controllers/tourPackagesController.js");
-
 
 app.use(
   session({
@@ -218,7 +217,7 @@ app.post(
   authenticateAdmin
 );
 app.put(
-  "/api/v1/announcements/:announcementId", 
+  "/api/v1/announcements/:announcementId",
   upload.single("image"),
   editAnnouncementController
 );
@@ -233,11 +232,7 @@ app.get(
 );
 
 // Routes for Hotlines
-app.post(
-  "/api/v1/hotlines", 
-  authenticateAdmin, 
-  createHotlineController
-);
+app.post("/api/v1/hotlines", authenticateAdmin, createHotlineController);
 app.put(
   "/api/v1/hotlines/:hotlineId",
   authenticateAdmin,
@@ -255,7 +250,6 @@ app.get("/api/v1/hotlines/:hotlineId", viewHotlineByIdController);
 app.post(
   "/api/v1/guideRegis",
   upload.single("profile_picture"),
-  authenticateTourGuide,
   createGuideRegisController
 );
 app.put(
@@ -434,16 +428,21 @@ app.get("/api/v1/rules/:ruleId", viewRuleByIdController);
 
 // Routes — Articles
 app.post("/api/v1/articles", authenticateAdmin, createArticleController);
-app.put("/api/v1/articles/:articleId", authenticateAdmin, editArticleController);
-app.delete("/api/v1/articles/:articleId", authenticateAdmin, deleteArticleController);
+app.put(
+  "/api/v1/articles/:articleId",
+  authenticateAdmin,
+  editArticleController
+);
+app.delete(
+  "/api/v1/articles/:articleId",
+  authenticateAdmin,
+  deleteArticleController
+);
 app.get("/api/v1/articles", viewArticlesController);
 app.get("/api/v1/articles/:articleId", viewArticleByIdController);
 
 // Routes — Tour Packages
-app.post(
-  "/api/v1/tour-packages",
-  createTourPackageController
-);
+app.post("/api/v1/tour-packages", createTourPackageController);
 app.put(
   "/api/v1/tour-packages/:id",
   authenticateTourOperator,
