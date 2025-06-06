@@ -177,18 +177,28 @@ export default function AdminAnnouncementsScreen() {
                 <Text style={styles.message}>No announcements found.</Text>
                 ) : (
                 filteredAnnouncements.map((item) => (
-                    <View key={item.id} style={styles.card}>
+                    <Pressable 
+                        key={item.id} 
+                        style={styles.card}
+                        onPress={() => router.push(`/admin/announcements/admin_announcement_view?id=${item.id}`)}
+                    >
                         <View style={styles.cardHeader}>
                             <Text style={styles.cardTitle}>{item.title}</Text>
                             <View style={styles.actionButtons}>
                             <Pressable
-                                onPress={() => router.push(`/admin/announcements/admin_announcement_edit?id=${item.id}`)}
+                                onPress={(e) => {
+                                    e.stopPropagation(); // Prevent triggering the card's onPress
+                                    router.push(`/admin/announcements/admin_announcement_edit?id=${item.id}`);
+                                }}
                                 style={styles.editButton}
                             >
                                 <Icon name="edit-3" size={18} color="#ffffff" />
                             </Pressable>
                             <Pressable
-                                onPress={() => openDeleteModal(item.id)}
+                                onPress={(e) => {
+                                    e.stopPropagation(); // Prevent triggering the card's onPress
+                                    openDeleteModal(item.id);
+                                }}
                                 style={styles.deleteButton}
                             >
                                 <Icon name="trash-2" size={18} color="#ffffff" />
@@ -205,7 +215,7 @@ export default function AdminAnnouncementsScreen() {
                             })
                             }
                         </Text>
-                    </View>
+                    </Pressable>
                 ))
                 )}
             </View>

@@ -12,6 +12,32 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useAnnouncementManager } from "@/hooks/useAnnouncementManager";
 import { Ionicons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker"; // Import Picker
+
+// Announcement categories from backend
+const ANNOUNCEMENT_CATEGORIES = [
+  'EVENTS',
+  'FIESTA',
+  'CULTURAL_TOURISM',
+  'ENVIRONMENTAL_COASTAL',
+  'HOLIDAY_SEASONAL',
+  'GOVERNMENT_PUBLIC_SERVICE',
+  'STORM_SURGE',
+  'TSUNAMI',
+  'GALE_WARNING',
+  'MONSOON_LOW_PRESSURE',
+  'RED_TIDE',
+  'JELLYFISH_BLOOM',
+  'FISH_KILL',
+  'PROTECTED_WILDLIFE',
+  'OIL_SPILL',
+  'COASTAL_EROSION',
+  'CORAL_BLEACHING',
+  'HEAT_WAVE',
+  'FLOOD_LANDSLIDE',
+  'DENGUE_WATERBORNE',
+  'POWER_INTERRUPTION',
+];
 
 interface Announcement {
   id: string;
@@ -145,16 +171,27 @@ export default function AdminAnnouncementEditScreen() {
               )
             }
           />
-          <TextInput
-            placeholder="Category"
-            style={styles.input}
-            value={announcement?.category}
-            onChangeText={(text) =>
-              setAnnouncement((prev) =>
-                prev ? { ...prev, category: text } : null
-              )
-            }
-          />
+          
+          {/* Category Dropdown */}
+          <View style={[styles.input, { padding: 0 }]}>
+            <Picker
+              selectedValue={announcement?.category}
+              onValueChange={(value) =>
+                setAnnouncement((prev) =>
+                  prev ? { ...prev, category: value } : null
+                )
+              }
+              style={{ color: "#374151" }}
+            >
+              {ANNOUNCEMENT_CATEGORIES.map((category) => (
+                <Picker.Item 
+                  key={category} 
+                  label={category.replace(/_/g, " ")} 
+                  value={category} 
+                />
+              ))}
+            </Picker>
+          </View>
 
           <Pressable style={styles.submitButton} onPress={handleUpdate}>
             <Text style={styles.submitButtonText}>Save Changes</Text>
