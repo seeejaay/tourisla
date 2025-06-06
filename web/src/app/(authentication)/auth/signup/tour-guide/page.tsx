@@ -322,7 +322,7 @@ export default function TourGuideRegister() {
                 Profile Picture
               </label>
               <input
-                type="url"
+                type="file"
                 name="profile_picture"
                 accept="image/*"
                 onChange={handleFileChange}

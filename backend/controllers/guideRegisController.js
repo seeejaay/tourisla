@@ -13,6 +13,8 @@ const { s3Client, PutObjectCommand } = require("../utils/s3.js"); // Adjust the 
 // enum for application status types: 'PENDING', 'APPROVED', 'REJECTED'
 
 const createGuideRegisController = async (req, res) => {
+  console.log("Creating Tour Guide Application");
+  console.log(req.body);
   try {
     let {
       first_name,
@@ -21,13 +23,14 @@ const createGuideRegisController = async (req, res) => {
       sex,
       mobile_number,
       email,
-      profile_picture,
       reason_for_applying,
       application_status,
     } = req.body;
+    console.log(req.body);
     first_name = first_name.toUpperCase();
     last_name = last_name.toUpperCase();
     sex = sex.toUpperCase();
+    birth_date = new Date(birth_date).toISOString();
     email = email.toUpperCase();
     reason_for_applying = reason_for_applying.toUpperCase();
     application_status = application_status.toUpperCase();
@@ -60,9 +63,9 @@ const createGuideRegisController = async (req, res) => {
     });
     console.log("Tour Guide Application Created Successfully");
     res.json(guideRegis);
-  } catch (err) {
+  } catch (error) {
     console.log(error);
-    res.send(errror);
+    res.send(error);
   }
 };
 
@@ -83,7 +86,6 @@ const editGuideRegisController = async (req, res) => {
 
     first_name = first_name.toUpperCase();
     last_name = last_name.toUpperCase();
-    birth_date = birth_date.toUpperCase();
     sex = sex.toUpperCase();
     email = email.toUpperCase();
     reason_for_applying = reason_for_applying.toUpperCase();
