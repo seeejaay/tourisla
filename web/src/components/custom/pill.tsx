@@ -1,4 +1,3 @@
-import { logout, currentUser } from "@/lib/api/auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +11,8 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { User, LogIn, LogOut, Settings } from "lucide-react";
 
+import { useAuth } from "@/hooks/useAuth";
+
 interface PillProps {
   className?: string;
 }
@@ -19,25 +20,40 @@ interface PillProps {
 export default function Pill({ className }: PillProps) {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Use useAuth to get the logged-in user (with id)
+  const { loggedInUser, logout } = useAuth();
   const [user, setUser] = useState<{
+    id: string | number;
     name: string;
     email: string;
+    nationality: string;
   } | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
-      const userData = await currentUser();
-      setUser(userData);
+      const res = await loggedInUser(router);
+      if (res && res.data && res.data.user) {
+        const u = res.data.user;
+        setUser({
+          id: u.id ?? u.user_id,
+          name: u.first_name + " " + u.last_name,
+          email: u.email,
+          nationality: u.nationality,
+        });
+      } else {
+        setUser(null);
+      }
     };
     fetchUser();
     const handleResize = () => setDropdownOpen(false);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [loggedInUser]);
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await logout(router);
       setUser(null);
       await router.push("/auth/login");
     } catch (err) {
@@ -77,7 +93,7 @@ export default function Pill({ className }: PillProps) {
 
               <DropdownMenuItem
                 className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer flex items-center gap-3"
-                onClick={() => router.push("/profile")}
+                onClick={() => router.push(`/profile/${user.id}`)}
               >
                 <User className="w-4 h-4 text-gray-500" />
                 Profile

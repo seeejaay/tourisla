@@ -33,11 +33,11 @@ export function useUserManager() {
   }, []);
 
   // Register a new user and update users state
-  const registerUser = async (data: signupSchema) => {
+  const registerUser = async (data: signupSchema, captchaToken?: string) => {
     setLoading(true);
     setError("");
     try {
-      const response = await createUser(data);
+      const response = await createUser({ ...data, captchaToken });
       await viewAllUsers();
       return response;
     } catch (error) {
