@@ -23,13 +23,12 @@ const createGuideRegisController = async (req, res) => {
       reason_for_applying,
       application_status,
     } = req.body;
-    console.log("CREATING TOUR GUIDE IN REGISTRATION");
-    first_name = (first_name || "").toUpperCase();
-    last_name = (last_name || "").toUpperCase();
-    sex = (sex || "").toUpperCase();
-    email = (email || "").toUpperCase();
-    reason_for_applying = (reason_for_applying || "").toUpperCase();
-    application_status = (application_status || "").toUpperCase();
+    first_name = first_name.toUpperCase();
+    last_name = last_name.toUpperCase();
+    sex = sex.toUpperCase();
+    email = email.toUpperCase();
+    reason_for_applying = reason_for_applying.toUpperCase();
+    application_status = application_status.toUpperCase();
 
     const guideRegis = await createGuideRegis({
       first_name,
