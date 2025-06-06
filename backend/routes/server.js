@@ -216,7 +216,11 @@ app.post(
   createAnnouncementController,
   authenticateAdmin
 );
-app.put("/api/v1/announcements/:announcementId", editAnnouncementController);
+app.put(
+  "/api/v1/announcements/:announcementId", 
+  upload.single("image"),
+  editAnnouncementController
+);
 app.delete(
   "/api/v1/announcements/:announcementId",
   deleteAnnouncementController,
@@ -246,6 +250,7 @@ app.get("/api/v1/hotlines/:hotlineId", viewHotlineByIdController);
 app.post("/api/v1/guideRegis", createGuideRegisController);
 app.put(
   "/api/v1/guideRegis/:guideId",
+  upload.single("profile_picture"),
   authenticateTourGuide,
   editGuideRegisController
 );
@@ -264,11 +269,13 @@ app.get(
 // Routes for Tour Guide Document Upload
 app.post(
   "/api/v1/guideUploadDocu/:guideId",
+  upload.single("document"),
   authenticateTourGuide,
   createGuideUploadDocuController
 );
 app.put(
   "/api/v1/guideUploadDocu/:docuId",
+  upload.single("document"),
   authenticateTourGuide,
   editGuideUploadDocuController
 );
@@ -308,11 +315,13 @@ app.get(
 // Routes for Tour Operator Document Upload
 app.post(
   "/api/v1/operatorUploadDocu/:operatorId",
+  upload.single("document"),
   authenticateTourOperator,
   createOperatorUploadDocuController
 );
 app.put(
   "/api/v1/operatorUploadDocu/:documentId",
+  upload.single("document"),
   authenticateTourOperator,
   editOperatorUploadDocuController
 );
