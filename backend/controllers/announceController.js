@@ -80,29 +80,96 @@ const createAnnouncementController = async (req, res) => {
 const editAnnouncementController = async (req, res) => {
   try {
     const { announcementId } = req.params;
+    console.log("Edit announcement request body:", req.body);
+    console.log("Edit announcement request file:", req.file);
 
-    let { title, description, date_posted, location, image_url, category } =
-      req.body;
+    // Extract fields from request body
+    let { title, description, date_posted, location, image_url, category } = req.body;
 
+    // Validate required fields
+    if (!title) {
+      return res.status(400).json({ error: "Title is required" });
+    }
+    
+    if (!description) {
+      return res.status(400).json({ error: "Description is required" });
+    }
+    
+    if (!category) {
+      return res.status(400).json({ error: "Category is required" });
+    }
+
+    // Convert fields to uppercase
     title = title.toUpperCase();
     description = description.toUpperCase();
-    location = location.toUpperCase();
+    location = location ? location.toUpperCase() : "GENERAL";
     category = category.toUpperCase();
 
-    // Edit the announcement in the database
-    const announcement = await editAnnouncement(announcementId, {
-      title: title.toUpperCase(),
+    // Handle image upload if there's a new image
+    if (req.file) {
+      try {
+        console.log("New image file detected in update request");
+        const file = req.file;
+        const s3Key = `announcements/${Date.now()}_${file.originalname}`;
+        const uploadParams = {
+          Bucket: process.env.AWS_S3_BUCKET,
+          Key: s3Key,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        };
+        
+        // Add timeout and retry logic for S3 upload
+        let s3Retries = 0;
+        const maxS3Retries = 2;
+        let s3Success = false;
+        
+        while (s3Retries <= maxS3Retries && !s3Success) {
+          try {
+            await s3Client.send(new PutObjectCommand(uploadParams));
+            s3Success = true;
+          } catch (s3Error) {
+            console.error(`S3 upload attempt ${s3Retries + 1} failed:`, s3Error);
+            if (s3Retries === maxS3Retries) {
+              throw s3Error;
+            }
+            s3Retries++;
+            // Wait before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
+        
+        image_url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+        console.log("New image uploaded to:", image_url);
+      } catch (imageError) {
+        console.error("Error uploading image to S3:", imageError);
+        // Continue without updating the image
+        console.log("Continuing with update without changing the image");
+      }
+    }
+
+    // Prepare update data with all required fields
+    const updateData = {
+      title,
       description,
-      date_posted,
-      location: location.toUpperCase(),
+      date_posted: date_posted || new Date().toISOString().split('T')[0],
+      location: location || "GENERAL",
       image_url,
-      category: category.toUpperCase(),
-    });
+      category
+    };
+
+    console.log("Updating announcement with data:", updateData);
+
+    // Edit the announcement in the database
+    const announcement = await editAnnouncement(announcementId, updateData);
+
+    if (!announcement) {
+      return res.status(404).json({ error: "Announcement not found" });
+    }
 
     res.json(announcement);
   } catch (err) {
-    console.log(err.message);
-    res.send(err.message);
+    console.log("Error in editAnnouncementController:", err.message);
+    res.status(500).json({ error: err.message });
   }
 };
 

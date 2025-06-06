@@ -46,15 +46,23 @@ export const useAnnouncementManager = () => {
 
   // Create a new announcement and update state
   const createAnnouncement = useCallback(
-    async (data: AnnouncementSchema): Promise<Announcement | null> => {
+    async (data: FormData | AnnouncementSchema): Promise<Announcement | null> => {
       setLoading(true);
       setError("");
       try {
+        console.log("Creating announcement with data:", 
+          data instanceof FormData 
+            ? "FormData object" 
+            : JSON.stringify(data)
+        );
+        
         const response = await apiCreateAnnouncement(data);
         if ("error" in response && response.error) {
           setError(response.error);
           return null;
         }
+        
+        console.log("Announcement created successfully:", response);
         setAnnouncements((prev) => [...prev, response]);
         return response;
       } catch (err) {
@@ -93,32 +101,64 @@ export const useAnnouncementManager = () => {
     []
   );
 
-  // Update an announcement and update state
+  // Update an announcement
   const updateAnnouncement = useCallback(
-    async (
-      data: AnnouncementSchema & { id: string }
-    ): Promise<Announcement | null> => {
+    async (id: string, data: FormData | Partial<AnnouncementSchema>): Promise<Announcement | null> => {
       setLoading(true);
       setError("");
       try {
-        // FIX: Pass id and data separately
-        const response: Announcement & { error?: string } =
-          await apiUpdateAnnouncement(data.id, data);
-        if (response.error) {
-          setError(response.error);
-          return null;
+        console.log("Updating announcement with ID:", id);
+        console.log("Data type:", data instanceof FormData ? "FormData with image" : "JSON data");
+        
+        // Add more detailed logging
+        if (data instanceof FormData) {
+          // Log FormData contents
+          for (let pair of (data as any).entries()) {
+            console.log(`FormData field: ${pair[0]}, value: ${typeof pair[1] === 'object' ? 'File object' : pair[1]}`);
+          }
+        } else {
+          console.log("JSON data:", JSON.stringify(data));
         }
+        
+        // Add retry logic
+        let retries = 0;
+        const maxRetries = 2;
+        let response = null;
+        
+        while (retries <= maxRetries && !response) {
+          try {
+            if (retries > 0) {
+              console.log(`Retry attempt ${retries}...`);
+            }
+            
+            response = await apiUpdateAnnouncement(id, data);
+            
+            if (!response) {
+              throw new Error("Server returned null response");
+            }
+          } catch (retryError) {
+            console.error(`Attempt ${retries + 1} failed:`, retryError);
+            if (retries === maxRetries) {
+              throw retryError;
+            }
+            // Wait before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            retries++;
+          }
+        }
+        
+        console.log("API Response:", JSON.stringify(response));
+        
+        // Update the announcements state
         setAnnouncements((prev) =>
-          prev.map((announcement) =>
-            announcement.id === data.id ? response : announcement
-          )
+          prev.map((item) => (item.id === id ? response : item))
         );
+        
         return response;
-      } catch (error) {
-        setError(
-          "An error occurred while updating the announcement." +
-            (error instanceof Error ? error.message : String(error))
-        );
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        console.error("Error updating announcement:", errorMessage);
+        setError("Failed to update announcement. " + errorMessage);
         return null;
       } finally {
         setLoading(false);
