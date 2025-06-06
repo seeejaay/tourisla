@@ -217,7 +217,7 @@ app.post(
   authenticateAdmin
 );
 app.put(
-  "/api/v1/announcements/:announcementId", 
+  "/api/v1/announcements/:announcementId",
   upload.single("image"),
   editAnnouncementController
 );
@@ -247,7 +247,11 @@ app.get("/api/v1/hotlines", viewHotlinesController);
 app.get("/api/v1/hotlines/:hotlineId", viewHotlineByIdController);
 
 // Routes for Tour Guide Registration
-app.post("/api/v1/guideRegis", createGuideRegisController);
+app.post(
+  "/api/v1/guideRegis",
+  upload.single("profile_picture"),
+  createGuideRegisController
+);
 app.put(
   "/api/v1/guideRegis/:guideId",
   upload.single("profile_picture"),

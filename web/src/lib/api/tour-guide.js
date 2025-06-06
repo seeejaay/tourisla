@@ -44,7 +44,21 @@ export const fetchTourGuideApplicant = async (guideId) => {
 
 export const createTourGuideApplicant = async (guideData) => {
   try {
-    const response = await axios.post(`${API_URL}guideRegis`, guideData, {
+    const formData = new FormData();
+    for (const key in guideData) {
+      if (guideData[key] !== undefined && guideData[key] !== null) {
+        // If it's a file, append as file, else as string
+        if (key === "profile_picture" && guideData[key] instanceof File) {
+          formData.append(key, guideData[key]);
+        } else {
+          formData.append(key, guideData[key]);
+        }
+      }
+    }
+    const response = await axios.post(`${API_URL}guideRegis`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
       withCredentials: true,
     });
     if (response.status !== 200) {
