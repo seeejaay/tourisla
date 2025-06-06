@@ -41,7 +41,7 @@ export default function ForgotPassword() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1"
+            className="mt-1 uppercase"
           />
         </div>
         <Button type="submit" className="w-full" disabled={loading}>

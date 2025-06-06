@@ -100,7 +100,18 @@ const currentUserController = async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const user = req.session.user; // Assuming user info is stored in session
+    // Get the user ID from the session
+    const userId = req.session.user.user_id ?? req.session.user.id;
+    if (!userId) {
+      return res.status(400).json({ error: "User ID missing in session" });
+    }
+
+    // Fetch the latest user data from the database
+    const user = await findUserById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
     res.status(200).json({
       status: "success",
       data: { user },
@@ -127,9 +138,9 @@ const editUserController = async (req, res) => {
     } = req.body;
 
     let updatedFields = {
-      first_name,
-      last_name,
-      email,
+      first_name: first_name.toUpperCase(),
+      last_name: last_name.toUpperCase(),
+      email: email.toUpperCase(),
       phone_number,
       nationality,
       role,
@@ -209,7 +220,7 @@ const forgotPasswordController = async (req, res) => {
     await setResetPasswordToken(email, token, expires);
 
     //on production, use the actual URL of your frontend
-    const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+    const resetLink = `http://localhost:3000/auth/reset-password?token=${token}`;
     await sendResetPasswordEmail(email, resetLink);
 
     res.status(200).json({

@@ -31,6 +31,7 @@ const loginUser = async (req, res) => {
       email: user.email,
       phone_number: user.phone_number,
       role: user.role,
+      nationality: user.nationality,
     };
     await loginDate(email, ipAddress);
     res.status(200).json({
@@ -42,6 +43,7 @@ const loginUser = async (req, res) => {
         email: user.email,
         phone_number: user.phone_number,
         role: user.role,
+        nationality: user.nationality,
       },
     });
   } catch (error) {

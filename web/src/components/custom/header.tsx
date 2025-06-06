@@ -15,7 +15,7 @@ export default function Header() {
 
   return (
     <>
-      <nav className="fixed w-full z-50 transition-all duration-300 py-4 bg-white">
+      <nav className="fixed w-full z-50 transition-all duration-300 py-4 bg-white  h-[6rem]">
         <div className="container mx-auto px-4 flex justify-between items-center">
           {/* Logo */}
           <div className="flex items-center">
