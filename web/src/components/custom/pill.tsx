@@ -29,6 +29,9 @@ export default function Pill({ className }: PillProps) {
     email: string;
     nationality: string;
   } | null>(null);
+  const handleLowercase = (str: string) => {
+    return str.toLowerCase();
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -37,7 +40,7 @@ export default function Pill({ className }: PillProps) {
         const u = res.data.user;
         setUser({
           id: u.id ?? u.user_id,
-          name: u.first_name + " " + u.last_name,
+          name: handleLowercase(u.first_name + " " + u.last_name),
           email: u.email,
           nationality: u.nationality,
         });
@@ -49,7 +52,7 @@ export default function Pill({ className }: PillProps) {
     const handleResize = () => setDropdownOpen(false);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [loggedInUser]);
+  }, [loggedInUser, router]);
 
   const handleLogout = async () => {
     try {
@@ -76,17 +79,18 @@ export default function Pill({ className }: PillProps) {
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
-          className="w-56 rounded-lg shadow-lg border border-gray-200 bg-white p-2"
+          className="w-60 rounded-lg shadow-lg border border-gray-200 bg-white p-2"
           align="end"
           sideOffset={8}
         >
           {user ? (
             <>
               <DropdownMenuLabel className="px-4 py-2 flex items-center gap-3">
-                <User className="w-6 h-6 text-gray-500" />
                 <div>
-                  <div className="font-medium">{user.name}</div>
-                  <div className="text-xs text-gray-500">{user.email}</div>
+                  <div className="font-medium capitalize">{user.name}</div>
+                  <div className="text-xs text-gray-500 lowercase">
+                    {user.email}
+                  </div>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="my-1 bg-gray-100" />
@@ -138,6 +142,21 @@ export default function Pill({ className }: PillProps) {
               >
                 <User className="w-4 h-4 text-gray-500" />
                 Sign Up
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer flex items-center gap-3"
+                onClick={() => router.push("/auth/signup/tour-guide")}
+              >
+                <User className="w-4 h-4 text-gray-500" />
+                Sign Up as Tour Guide
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer flex items-center gap-3"
+                onClick={() => router.push("/auth/signup/tour-operator")}
+              >
+                <User className="w-4 h-4 text-gray-500" />
+                Sign Up as Tour Operator
               </DropdownMenuItem>
             </>
           )}
