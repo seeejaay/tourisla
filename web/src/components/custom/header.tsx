@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { navigation } from "@/app/static/navigation";
 import { Menu, X } from "lucide-react";
 import Pill from "@/components/custom/pill";
@@ -12,10 +13,26 @@ export default function Header() {
   const pathName = usePathname();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <>
-      <nav className="fixed w-full z-50 transition-all duration-300 py-4 bg-white  h-[6rem]">
+      <nav
+        className={`fixed w-full z-50 transition-all duration-300 ${
+          scrolled
+            ? "bg-white/95 backdrop-blur-md shadow-sm py-2"
+            : "bg-transparent py-4"
+        }`}
+      >
         <div className="container mx-auto px-4 flex justify-between items-center">
           {/* Logo */}
           <div className="flex items-center">
@@ -32,20 +49,37 @@ export default function Header() {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
             <div className="flex space-x-6">
-              {navigation.map((item) => (
-                <Button
-                  key={item.href}
-                  onClick={() => router.push(item.href)}
-                  variant={"ghost"}
-                  className={`font-medium text-base px-3 py-2 rounded-lg hover:bg-gray-100/50 transition-colors duration-200 ${
-                    pathName === item.href
-                      ? "text-blue-600 font-semibold"
-                      : "text-gray-700 hover:text-gray-900"
-                  }`}
-                >
-                  {item.title}
-                </Button>
-              ))}
+              {navigation.map((item) =>
+                item.dropdown ? (
+                  <div key={item.tag} className="relative group">
+                    <Link
+                      href={item.href}
+                      className="font-semibold text-blue-600"
+                    >
+                      {item.title}
+                    </Link>
+                    <div className="absolute left-0 mt-2 w-40 bg-white rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                      {item.dropdown.map((sub) => (
+                        <Link
+                          key={sub.tag}
+                          href={sub.href}
+                          className="block px-4 py-2 hover:bg-indigo-50"
+                        >
+                          {sub.title}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <Link
+                    key={item.tag}
+                    href={item.href}
+                    className="font-semibold text-blue-600"
+                  >
+                    {item.title}
+                  </Link>
+                )
+              )}
             </div>
             <div className="ml-6">
               <Pill />
@@ -71,41 +105,72 @@ export default function Header() {
         </div>
 
         {/* Mobile Menu */}
-        <div
-          className={`lg:hidden fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ${
-            isMobileMenuOpen
-              ? "opacity-100 pointer-events-auto"
-              : "opacity-0 pointer-events-none"
-          }`}
-          onClick={() => setIsMobileMenuOpen(false)}
-        >
+        {isMobileMenuOpen && (
           <div
-            className={`absolute top-20 right-4 w-64 bg-white rounded-xl shadow-xl p-4 transition-all duration-300 transform ${
-              isMobileMenuOpen ? "translate-y-0" : "-translate-y-4"
-            }`}
-            onClick={(e) => e.stopPropagation()}
+            className="lg:hidden fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 opacity-100 pointer-events-auto"
+            onClick={() => setIsMobileMenuOpen(false)}
           >
-            <div className="flex flex-col space-y-2">
-              {navigation.map((item) => (
-                <Button
-                  key={item.href}
-                  onClick={() => {
-                    router.push(item.href);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  variant={"ghost"}
-                  className={`w-full justify-start px-4 py-3 rounded-lg text-left ${
-                    pathName === item.href
-                      ? "bg-blue-50 text-blue-600 font-medium"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
-                >
-                  {item.title}
-                </Button>
-              ))}
+            <div
+              className="absolute top-20 right-4 w-64 bg-white rounded-xl shadow-xl p-4 transition-all duration-300 transform translate-y-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex flex-col space-y-2">
+                {navigation.map((item) =>
+                  item.dropdown ? (
+                    <div key={item.tag} className="flex flex-col">
+                      <Button
+                        onClick={() =>
+                          setOpenDropdown(
+                            openDropdown === item.tag ? null : item.tag
+                          )
+                        }
+                        variant={"ghost"}
+                        className={`w-full justify-start px-4 py-3 rounded-lg text-left text-gray-700 hover:bg-gray-100`}
+                      >
+                        {item.title}
+                      </Button>
+                      {openDropdown === item.tag && (
+                        <div className="pl-4 flex flex-col">
+                          {item.dropdown.map((sub) => (
+                            <Button
+                              key={sub.tag}
+                              onClick={() => {
+                                router.push(sub.href);
+                                setIsMobileMenuOpen(false);
+                                setOpenDropdown(null);
+                              }}
+                              variant={"ghost"}
+                              className="w-full justify-start px-4 py-2 rounded-lg text-left text-gray-600 hover:bg-indigo-50"
+                            >
+                              {sub.title}
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <Button
+                      key={item.tag}
+                      onClick={() => {
+                        router.push(item.href);
+                        setIsMobileMenuOpen(false);
+                        setOpenDropdown(null);
+                      }}
+                      variant={"ghost"}
+                      className={`w-full justify-start px-4 py-3 rounded-lg text-left ${
+                        pathName === item.href
+                          ? "bg-blue-50 text-blue-600 font-medium"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      {item.title}
+                    </Button>
+                  )
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </nav>
       {/* Spacer to account for fixed header */}
       <div className="h-20 lg:h-24"></div>

@@ -26,6 +26,10 @@ const createUserController = async (req, res) => {
       nationality,
     } = req.body;
 
+    const formatedFirstName = first_name.toUpperCase();
+    const formatedLastName = last_name.toUpperCase();
+    const formatedEmail = email.toUpperCase();
+
     const captchaToken = req.body.captchaToken;
     if (!captchaToken) {
       return res.status(400).json({ error: "Captcha token is required" });
@@ -45,7 +49,6 @@ const createUserController = async (req, res) => {
     }
 
     // Default role for new users
-    let assignedRole = "Tourist";
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return res.status(409).json({ error: "Email already exists" });
@@ -74,12 +77,12 @@ const createUserController = async (req, res) => {
 
     // Create the user in the database
     const user = await createUser({
-      first_name,
-      last_name,
-      email,
+      first_name: formatedFirstName,
+      last_name: formatedLastName,
+      email: formatedEmail,
       hashedPassword,
       phone_number,
-      role: assignedRole, // Use the assigned role
+      role, // Use the assigned role
       nationality,
     });
 
@@ -88,6 +91,7 @@ const createUserController = async (req, res) => {
       status: "success",
       data: { user },
     });
+    console.log("Account created successfully");
   } catch (error) {
     console.error("Error adding user:", error);
     res.status(500).json({ error: "Internal server error" });

@@ -2,11 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
 import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+
+import { Eye, EyeOff, Mail, LogIn } from "lucide-react"; // Import icons for showing/hiding password
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // <-- Add this line
   const router = useRouter();
   const { loginUser, error, setError, loading } = useAuth();
 
@@ -91,89 +96,73 @@ export default function Login() {
                     placeholder="you@email.com"
                     className="w-full px-4 py-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 transition-all"
                   />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <svg
-                      className="w-5 h-5 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                    </svg>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
+                    <Mail className="w-5 h-5 " />
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label
-                    htmlFor="password"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Password
-                  </label>
-                  <button
-                    type="button"
-                    className="text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
-                    onClick={() => router.push("/auth/forgot-password")}
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-                <div className="relative">
-                  <input
-                    type="password"
-                    id="password"
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    placeholder="••••••••"
-                    className="w-full px-4 py-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 transition-all"
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <svg
-                      className="w-5 h-5 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                </div>
+              <div className="relative">
+                <label
+                  htmlFor="password"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Password
+                </label>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 transition-all"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 top-6 hover:bg-transparent hover:text-gray-800 flex items-center pr-3 text-gray-400"
+                  tabIndex={-1}
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
               </div>
 
-              <button
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  variant={"ghost"}
+                  aria-label="Forgot password"
+                  className="text-xs text-indigo-600 hover:underline hover:text-indigo-800 font-medium transition-colors hover:bg-transparent cursor-pointer"
+                  onClick={() => router.push("/auth/forgot-password")}
+                >
+                  Forgot password?
+                </Button>
+              </div>
+
+              <Button
                 type="submit"
                 className="w-full px-4 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-50 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                 disabled={loading}
+                variant={"default"}
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     Signing in...
+                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-2">
-                    <svg
-                      className="w-5 h-5"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
                     Sign in
+                    <LogIn className="w-5 h-5" />
                   </span>
                 )}
-              </button>
+              </Button>
             </form>
 
             <div className="mt-8">
@@ -189,13 +178,15 @@ export default function Login() {
               </div>
 
               <div className="text-center text-sm text-gray-600">
-                Do&apos;t have an account?{" "}
-                <button
+                Don&apos;t have an account?{" "}
+                <Button
+                  type="button"
+                  variant={"ghost"}
                   onClick={() => router.push("/auth/signup")}
-                  className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+                  className="text-indigo-600 hover:text-indigo-700 cursor-pointer font-medium transition-colors"
                 >
                   Sign up
-                </button>
+                </Button>
               </div>
             </div>
           </div>
