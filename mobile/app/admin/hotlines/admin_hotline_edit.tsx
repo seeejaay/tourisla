@@ -197,12 +197,15 @@ export default function AdminHotlineEditScreen() {
       </View>
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+        style={{ flex: 1 }}
       >
         <ScrollView
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
         >
           {/* Type Preview */}
           <View style={styles.previewSection}>
@@ -282,12 +285,12 @@ export default function AdminHotlineEditScreen() {
               <View style={styles.inputContainer}>
                 <MaterialCommunityIcons name="map-marker" size={20} color="#64748b" style={styles.inputIcon} />
                 <TextInput
-                  style={[styles.input, styles.textArea]}
+                  style={styles.input}
                   value={form.address}
                   onChangeText={(value) => handleChange("address", value)}
                   placeholder="Enter address"
                   multiline
-                  numberOfLines={3}
+                  numberOfLines={1}
                 />
               </View>
               {errors.address && (
@@ -462,4 +465,6 @@ const styles = StyleSheet.create({
     color: "#64748b",
   },
 });
+
+
 
