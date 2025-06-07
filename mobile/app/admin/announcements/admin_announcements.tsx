@@ -15,6 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Icon from "react-native-vector-icons/Feather";
 import SortButton from "../../../components/SortButton";
 import { fetchAnnouncements, deleteAnnouncement } from "../../../lib/api/announcement";
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface Announcement {
     id: string;
@@ -26,6 +27,35 @@ interface Announcement {
 }
 
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
+
+// Add this function at the top of your component or in a utility file
+const getCategoryColor = (category: string) => {
+  const colors: Record<string, string> = {
+    EVENTS: "#4f46e5",
+    FIESTA: "#f59e0b",
+    CULTURAL_TOURISM: "#10b981",
+    ENVIRONMENTAL_COASTAL: "#059669",
+    HOLIDAY_SEASONAL: "#f97316",
+    GOVERNMENT_PUBLIC_SERVICE: "#6366f1",
+    STORM_SURGE: "#dc2626",
+    TSUNAMI: "#b91c1c",
+    GALE_WARNING: "#ef4444",
+    MONSOON_LOW_PRESSURE: "#7c3aed",
+    RED_TIDE: "#c026d3",
+    JELLYFISH_BLOOM: "#8b5cf6",
+    FISH_KILL: "#ec4899",
+    PROTECTED_WILDLIFE: "#14b8a6",
+    OIL_SPILL: "#4b5563",
+    COASTAL_EROSION: "#78716c",
+    CORAL_BLEACHING: "#f43f5e",
+    HEAT_WAVE: "#f97316",
+    FLOOD_LANDSLIDE: "#0ea5e9",
+    DENGUE_WATERBORNE: "#84cc16",
+    POWER_INTERRUPTION: "#64748b",
+  };
+  
+  return colors[category] || "#6b7280";
+};
 
 export default function AdminAnnouncementsScreen() {
     const router = useRouter();
@@ -182,39 +212,61 @@ export default function AdminAnnouncementsScreen() {
                         style={styles.card}
                         onPress={() => router.push(`/admin/announcements/admin_announcement_view?id=${item.id}`)}
                     >
-                        <View style={styles.cardHeader}>
-                            <Text style={styles.cardTitle}>{item.title}</Text>
-                            <View style={styles.actionButtons}>
-                            <Pressable
-                                onPress={(e) => {
-                                    e.stopPropagation(); // Prevent triggering the card's onPress
-                                    router.push(`/admin/announcements/admin_announcement_edit?id=${item.id}`);
-                                }}
-                                style={styles.editButton}
-                            >
-                                <Icon name="edit-3" size={18} color="#ffffff" />
-                            </Pressable>
-                            <Pressable
-                                onPress={(e) => {
-                                    e.stopPropagation(); // Prevent triggering the card's onPress
-                                    openDeleteModal(item.id);
-                                }}
-                                style={styles.deleteButton}
-                            >
-                                <Icon name="trash-2" size={18} color="#ffffff" />
-                            </Pressable>
+                        <LinearGradient
+                            colors={['#1e2a4a', '#172440']}
+                            style={styles.cardGradient}
+                        />
+                        <View style={styles.cardContent}>
+                            {/* Left side: Category indicator */}
+                            <View style={[styles.categoryIndicator, { backgroundColor: getCategoryColor(item.category) }]} />
+                            
+                            {/* Main content */}
+                            <View style={styles.mainContent}>
+                                {/* Title */}
+                                <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">
+                                    {item.title}
+                                </Text>
+                                
+                                {/* Category */}
+                                <Text style={styles.categoryText}>
+                                    {item.category.replace(/_/g, " ")}
+                                </Text>
+                            </View>
+                            
+                            {/* Right side: Action buttons and date */}
+                            <View style={styles.rightSection}>
+                                {/* Action buttons */}
+                                <View style={styles.actionButtons}>
+                                    <Pressable
+                                        onPress={(e) => {
+                                            e.stopPropagation();
+                                            router.push(`/admin/announcements/admin_announcement_edit?id=${item.id}`);
+                                        }}
+                                        style={styles.editButton}
+                                    >
+                                        <Icon name="edit-3" size={16} color="#ffffff" />
+                                    </Pressable>
+                                    <Pressable
+                                        onPress={(e) => {
+                                            e.stopPropagation();
+                                            openDeleteModal(item.id);
+                                        }}
+                                        style={styles.deleteButton}
+                                    >
+                                        <Icon name="trash-2" size={16} color="#ffffff" />
+                                    </Pressable>
+                                </View>
+                                
+                                {/* Date at bottom right */}
+                                <Text style={styles.dateText} numberOfLines={1} ellipsizeMode="tail">
+                                    {new Date(item.date_posted).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "short",
+                                        day: "numeric"
+                                    })}
+                                </Text>
                             </View>
                         </View>
-                        <Text style={styles.cardDescription}>{item.description}</Text>
-                        <Text style={styles.cardFooter}>
-                            {item.location} | {item.category.replace(/_/g, " ")} | {
-                            new Date(item.date_posted).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric"
-                            })
-                            }
-                        </Text>
                     </Pressable>
                 ))
                 )}
@@ -311,54 +363,86 @@ const styles = StyleSheet.create({
         padding: 16,
     },
     card: {
-        backgroundColor: "#ffffff",
         borderRadius: 12,
-        paddingTop: 16,
-        paddingRight: 16,
-        paddingLeft: 16,
-        paddingBottom: 4,
-        marginBottom: 10,
+        marginBottom: 12,
         shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowOpacity: 0.15,
+        shadowRadius: 5,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 3,
+        overflow: 'hidden',
+        position: 'relative',
     },
-    cardHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginBottom: 8,
+    cardGradient: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+    },
+    cardContent: {
+        flexDirection: 'row',
+        height: 84,
+    },
+    categoryIndicator: {
+        width: 5,
+        height: '70%',
+        borderTopRightRadius: 3,
+        borderBottomRightRadius: 3,
+        alignSelf: 'center',
+    },
+    mainContent: {
+        flex: 1,
+        paddingVertical: 16,
+        paddingHorizontal: 16,
+        justifyContent: 'center',
     },
     cardTitle: {
-        fontSize: 14,
-        fontWeight: "bold",
-        flex: 1,
+        fontSize: 16,
+        fontWeight: "600",
+        color: "#4cc9f0",
+        marginBottom: 6,
+    },
+    categoryText: {
+        fontSize: 13,
+        color: '#8ecae6',
+        fontWeight: '500',
+    },
+    rightSection: {
+        width: 90,
+        height: '100%',
+        paddingRight: 16,
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        paddingVertical: 12,
     },
     actionButtons: {
-        flexDirection: "row",
-        alignItems: "flex-start",
-        gap: 4,
-        marginLeft: 16,
+        flexDirection: 'row',
+        gap: 8,
+    },
+    dateText: {
+        position: 'absolute',
+        bottom: 12,
+        right: 16,
+        fontSize: 11,
+        color: '#a8dadc',
+        fontWeight: '400',
+        maxWidth: 90,
     },
     editButton: {
-        backgroundColor: "#38bdf8",
-        padding: 10,
-        borderRadius: 6,
-    },
-    cardDescription: {
-        fontSize: 10,
-        color: "#374151",
-        marginBottom: 12,
-    },
-    cardFooter: {
-        fontSize: 8,
-        color: "#6b7280",
-        fontStyle: "italic",
-        textAlign: "right",
+        backgroundColor: "#4cc9f0",
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        justifyContent: "center",
+        alignItems: "center",
     },
     deleteButton: {
-        backgroundColor: "#dc3545",
-        padding: 10,
-        borderRadius: 6,
+        backgroundColor: "#ef4444",
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        justifyContent: "center",
         alignItems: "center",
     },
     deleteButtonText: {
@@ -456,7 +540,7 @@ const styles = StyleSheet.create({
         marginTop: 8,
         height: 40,
     },
-      searchInput: {
+    searchInput: {
         flex: 1,
         fontSize: 14,
         color: "#111827",
