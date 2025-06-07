@@ -190,6 +190,17 @@ export default function AdminHotlinesScreen() {
                             </TouchableOpacity>
                             
                             <TouchableOpacity 
+                                style={[styles.actionButton, styles.editButton]}
+                                onPress={() => router.push({ 
+                                    pathname: "/admin/hotlines/admin_hotline_edit", 
+                                    params: { id: id } 
+                                })}
+                            >
+                                <MaterialCommunityIcons name="pencil-outline" size={16} color="#3b82f6" />
+                                <Text style={[styles.actionButtonText, styles.editButtonText]}>Edit</Text>
+                            </TouchableOpacity>
+                            
+                            <TouchableOpacity 
                                 style={[styles.actionButton, styles.deleteButton]}
                                 onPress={onDelete}
                             >
@@ -489,6 +500,12 @@ const styles = StyleSheet.create({
     },
     deleteButtonText: {
         color: '#ef4444',
+    },
+    editButton: {
+        borderColor: "#3b82f6",
+    },
+    editButtonText: {
+        color: "#3b82f6",
     },
     fab: {
         position: "absolute",
