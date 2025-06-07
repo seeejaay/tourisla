@@ -17,6 +17,7 @@ import { fetchHotlines, deleteHotline } from "../../../lib/api/hotline";
 import Icon from "react-native-vector-icons/Ionicons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useIsFocused } from '@react-navigation/native';
 
 interface Hotline {
     id: number;
@@ -66,20 +67,25 @@ export default function AdminHotlinesScreen() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const scrollY = useRef(new Animated.Value(0)).current;
+    const isFocused = useIsFocused();
 
+    // Load hotlines when screen comes into focus
     useEffect(() => {
-        loadHotlines();
-    }, []);
+        if (isFocused) {
+            loadHotlines();
+        }
+    }, [isFocused]);
 
     const loadHotlines = async () => {
         try {
             setLoading(true);
             const data = await fetchHotlines();
+            console.log("Fetched hotlines:", data); // Add logging to debug
             setHotlines(data);
             setError("");
         } catch (err) {
+            console.error("Error loading hotlines:", err);
             setError("Failed to load emergency contacts. Please try again.");
-            console.error(err);
         } finally {
             setLoading(false);
         }
