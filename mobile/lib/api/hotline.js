@@ -14,6 +14,7 @@ export const fetchHotlines = async () => {
       throw new Error(`HTTP Error! Status: ${response.status}`);
     }
 
+    console.log("API response data:", response.data); // Add logging to debug
     return response.data;
   } catch (error) {
     console.error(

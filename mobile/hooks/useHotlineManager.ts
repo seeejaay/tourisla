@@ -22,20 +22,23 @@ export const useHotlineManager = () => {
   const [error, setError] = useState<string>("");
 
   // Fetch all hotlines and update state
-  const fetchHotlines = async (): Promise<Hotline[] | null> => {
+  const fetchHotlines = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
       const data = await apiFetchHotlines();
       setHotlines(data);
       return data;
-    } catch (err) {
-      setError("Error: " + (err instanceof Error ? err.message : String(err)));
-      return null;
+    } catch (error) {
+      setError(
+        "An error occurred while fetching hotlines." +
+          (error instanceof Error ? error.message : String(error))
+      );
+      return [];
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Create a new hotline and update state
   const createHotline = useCallback(
@@ -50,7 +53,9 @@ export const useHotlineManager = () => {
           setError(response.error);
           return null;
         }
-        setHotlines((prev) => [...prev, response]);
+        
+        // Force a refresh of hotlines after creating a new one
+        await fetchHotlines();
         return response;
       } catch (error) {
         setError(
@@ -62,7 +67,7 @@ export const useHotlineManager = () => {
         setLoading(false);
       }
     },
-    [setHotlines]
+    [fetchHotlines]
   );
 
   // View a specific hotline by ID

@@ -86,10 +86,14 @@ export default function AdminHotlineAddScreen() {
             {
               text: "OK",
               onPress: () => {
-                // Navigate back to the hotlines list instead of replacing the route
+                // Navigate back to the hotlines list
                 router.back();
-                // Alternative approach if back() doesn't work properly:
-                // router.push("/admin/hotlines/admin_hotlines");
+                // Add a small delay and then refresh the hotlines list
+                setTimeout(() => {
+                  // You can add a global event or use a state management solution
+                  // to trigger a refresh on the hotlines list screen
+                  // For now, we'll rely on the useEffect in the list screen
+                }, 300);
               },
             },
           ]
@@ -411,3 +415,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 });
+
+
+
