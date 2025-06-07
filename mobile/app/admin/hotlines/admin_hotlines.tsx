@@ -157,60 +157,55 @@ export default function AdminHotlinesScreen() {
         const typeColor = getTypeColor();
         
         return (
-            <TouchableOpacity 
-                style={styles.card}
-                onPress={onView}
-                activeOpacity={0.9}
-            >
+            <View style={styles.card}>
                 <View style={styles.cardContent}>
+                    {/* Left side with icon */}
                     <View style={[styles.iconContainer, { backgroundColor: `${typeColor}20` }]}>
                         <MaterialCommunityIcons name={iconName} size={24} color={typeColor} />
                     </View>
                     
+                    {/* Middle content */}
                     <View style={styles.cardDetails}>
-                        <View style={styles.cardHeader}>
-                            <Text style={styles.cardTitle}>{formattedType}</Text>
-                            <View style={[styles.typeBadge, { backgroundColor: typeColor }]}>
-                                <Text style={styles.typeBadgeText}>{formattedMunicipality}</Text>
-                            </View>
-                        </View>
+                        <Text style={styles.cardTitle}>{formattedType}</Text>
                         
                         <View style={styles.contactRow}>
                             <MaterialCommunityIcons name="phone" size={16} color="#64748b" />
                             <Text style={styles.contactNumber}>{contactNumber}</Text>
                         </View>
                         
-                        <View style={styles.cardActions}>
-                            <TouchableOpacity 
-                                style={styles.actionButton}
-                                onPress={onView}
-                            >
-                                <MaterialCommunityIcons name="eye-outline" size={16} color="#0f172a" />
-                                <Text style={styles.actionButtonText}>Details</Text>
-                            </TouchableOpacity>
-                            
-                            <TouchableOpacity 
-                                style={[styles.actionButton, styles.editButton]}
-                                onPress={() => router.push({ 
-                                    pathname: "/admin/hotlines/admin_hotline_edit", 
-                                    params: { id: id } 
-                                })}
-                            >
-                                <MaterialCommunityIcons name="pencil-outline" size={16} color="#3b82f6" />
-                                <Text style={[styles.actionButtonText, styles.editButtonText]}>Edit</Text>
-                            </TouchableOpacity>
-                            
-                            <TouchableOpacity 
-                                style={[styles.actionButton, styles.deleteButton]}
-                                onPress={onDelete}
-                            >
-                                <MaterialCommunityIcons name="delete-outline" size={16} color="#ef4444" />
-                                <Text style={[styles.actionButtonText, styles.deleteButtonText]}>Remove</Text>
-                            </TouchableOpacity>
+                        <View style={[styles.municipalityBadge, { backgroundColor: typeColor }]}>
+                            <Text style={styles.municipalityText}>{formattedMunicipality}</Text>
                         </View>
                     </View>
+                    
+                    {/* Right side with action buttons */}
+                    <View style={styles.cardActions}>
+                        <TouchableOpacity 
+                            style={[styles.iconButton, styles.viewButton]}
+                            onPress={onView}
+                        >
+                            <MaterialCommunityIcons name="eye" size={18} color="#ffffff" />
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity 
+                            style={[styles.iconButton, styles.editButton]}
+                            onPress={() => router.push({ 
+                                pathname: "/admin/hotlines/admin_hotline_edit", 
+                                params: { id: id } 
+                            })}
+                        >
+                            <MaterialCommunityIcons name="pencil" size={18} color="#ffffff" />
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity 
+                            style={[styles.iconButton, styles.deleteButton]}
+                            onPress={onDelete}
+                        >
+                            <MaterialCommunityIcons name="delete" size={18} color="#ffffff" />
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </TouchableOpacity>
+            </View>
         );
     };
 
@@ -435,6 +430,7 @@ const styles = StyleSheet.create({
     cardContent: {
         flexDirection: 'row',
         padding: 16,
+        alignItems: 'center',
     },
     iconContainer: {
         width: 48,
@@ -447,65 +443,56 @@ const styles = StyleSheet.create({
     cardDetails: {
         flex: 1,
     },
-    cardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
     cardTitle: {
-        fontSize: 16,
-        fontWeight: '700',
+        fontSize: 20,
+        fontWeight: '900',
         color: '#0f172a',
-    },
-    typeBadge: {
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 6,
-    },
-    typeBadgeText: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#ffffff',
+        marginBottom: 6,
     },
     contactRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: 8,
     },
     contactNumber: {
-        fontSize: 15,
+        fontSize: 14,
         color: "#334155",
         marginLeft: 8,
         fontWeight: '500',
     },
+    municipalityBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+        alignSelf: 'flex-start',
+    },
+    municipalityText: {
+        color: '#ffffff',
+        fontSize: 12,
+        fontWeight: '600',
+    },
     cardActions: {
-        flexDirection: 'row',
-        justifyContent: 'flex-start',
-        marginTop: 4,
-    },
-    actionButton: {
-        flexDirection: 'row',
+        flexDirection: 'column',
+        justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 16,
+        gap: 8,
+        marginLeft: 12,
     },
-    actionButtonText: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: '#0f172a',
-        marginLeft: 4,
+    iconButton: {
+        width: 32,
+        height: 32,
+        borderRadius: 6,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    deleteButton: {
-        marginLeft: 8,
-    },
-    deleteButtonText: {
-        color: '#ef4444',
+    viewButton: {
+        backgroundColor: '#0f172a',
     },
     editButton: {
-        borderColor: "#3b82f6",
+        backgroundColor: '#3b82f6',
     },
-    editButtonText: {
-        color: "#3b82f6",
+    deleteButton: {
+        backgroundColor: '#ef4444',
     },
     fab: {
         position: "absolute",
