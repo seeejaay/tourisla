@@ -158,12 +158,15 @@ export default function AdminHotlineAddScreen() {
       </View>
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+        style={{ flex: 1 }}
       >
         <ScrollView
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
         >
           {/* Type Preview */}
           <View style={styles.previewSection}>
@@ -415,6 +418,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 });
+
 
 
 
