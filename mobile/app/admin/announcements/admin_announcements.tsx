@@ -100,9 +100,11 @@ export default function AdminAnnouncementsScreen() {
       })
     .sort((a, b) => {
         if (sortOption === "recent") {
-          return new Date(b.date_posted).getTime() - new Date(a.date_posted).getTime(); // Most recently updated first
+          // "Recent" - newest date at the top (most recently created first)
+          return new Date(b.date_posted).getTime() - new Date(a.date_posted).getTime();
         } else if (sortOption === "newest") {
-          return new Date(a.date_posted).getTime() - new Date(b.date_posted).getTime(); // Newest last
+          // "Newest" - oldest date at the top (oldest created first)
+          return new Date(a.date_posted).getTime() - new Date(b.date_posted).getTime();
         }
         return 0;
     });
