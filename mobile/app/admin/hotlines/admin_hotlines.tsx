@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: '#f8fafc',
+        backgroundColor: '#f1f1f1',
     },
     header: {
         position: "absolute",
