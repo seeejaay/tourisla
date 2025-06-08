@@ -14,7 +14,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from "react-native-vector-icons/Feather";
 import SortButton from "../../../components/SortButton";
-import { fetchAnnouncements, deleteAnnouncement } from "../../../lib/api/announcement";
+import { fetchAnnouncements } from "../../../lib/api/announcement";
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface Announcement {
     id: string;
@@ -34,11 +35,11 @@ export default function TouristAnnouncementsScreen() {
     const [error, setError] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedAnnouncementId, setSelectedAnnouncementId] = useState<string | null>(null);
+    const [showFilters, setShowFilters] = useState(false);
 
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [sortOption, setSortOption] = useState<"recent" | "newest">("recent");
     const [searchQuery, setSearchQuery] = useState("");
-
 
     useFocusEffect(
         useCallback(() => {
@@ -69,29 +70,14 @@ export default function TouristAnnouncementsScreen() {
       })
     .sort((a, b) => {
         if (sortOption === "recent") {
-          return new Date(b.date_posted).getTime() - new Date(a.date_posted).getTime(); // Most recently updated first
+          // "Recent" - newest date at the top (most recently created first)
+          return new Date(b.date_posted).getTime() - new Date(a.date_posted).getTime();
         } else if (sortOption === "newest") {
-          return new Date(a.date_posted).getTime() - new Date(b.date_posted).getTime(); // Newest last
+          // "Newest" - oldest date at the top (oldest created first)
+          return new Date(a.date_posted).getTime() - new Date(b.date_posted).getTime();
         }
         return 0;
     });
-
-    const handleDelete = async () => {
-        if (!selectedAnnouncementId) return;
-
-        try {
-            await deleteAnnouncement(selectedAnnouncementId);
-            setAnnouncements((prev) => prev.filter((item) => item.id !== selectedAnnouncementId));
-            setModalVisible(false);
-        } catch (err) {
-            console.error("Failed to delete announcement", err);
-        }
-    };
-
-    const openDeleteModal = (id: string) => {
-        setSelectedAnnouncementId(id);
-        setModalVisible(true);
-    };
 
     return (
         <SafeAreaView style={styles.safeContainer}>
@@ -105,66 +91,103 @@ export default function TouristAnnouncementsScreen() {
             contentContainerStyle={{ paddingBottom: 20 }}
             >
 
-            {/* Filter + Sort Options */}
+            {/* Filter Tags in Grid Layout */}
             <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    <View style={{ flexDirection: "row", gap: 8 }}>
-                        {[
-                        'EVENTS',
-                        'FIESTA',
-                        'CULTURAL_TOURISM',
-                        'ENVIRONMENTAL_COASTAL',
-                        'HOLIDAY_SEASONAL',
-                        'GOVERNMENT_PUBLIC_SERVICE',
-                        'STORM_SURGE',
-                        'TSUNAMI',
-                        'GALE_WARNING',
-                        'MONSOON_LOW_PRESSURE',
-                        'RED_TIDE',
-                        'JELLYFISH_BLOOM',
-                        'FISH_KILL',
-                        'PROTECTED_WILDLIFE',
-                        'OIL_SPILL',
-                        'COASTAL_EROSION',
-                        'CORAL_BLEACHING',
-                        'HEAT_WAVE',
-                        'FLOOD_LANDSLIDE',
-                        'DENGUE_WATERBORNE',
-                        'POWER_INTERRUPTION',
-                        ].map((category) => (
-                        <Pressable
-                            key={category}
-                            style={{
-                            backgroundColor: selectedCategory === category ? "#007dab" : "#d1d5db",
-                            paddingVertical: 6,
-                            paddingHorizontal: 12,
-                            borderRadius: 20,
-                            }}
-                            onPress={() => setSelectedCategory((prev) => (prev === category ? null : category))}
-                        >
-                            <Text style={{ fontSize: 10, color: selectedCategory === category ? "#fff" : "#374151" }}>
-                            {category.replace(/_/g, " ")}
-                            </Text>
-                        </Pressable>
-                        ))}
-                    </View>
-                </ScrollView>
-                
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8}}>
+                {/* Search and Sort Row */}
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
                     <View style={[styles.searchContainer, { flex: 1 }]}>
                         <Icon name="search" size={16} color="#6b7280" style={{ marginRight: 8 }} />
                         <TextInput
-                        style={styles.searchInput}
-                        placeholder="Search announcements..."
-                        placeholderTextColor="#9ca3af"
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
+                            style={styles.searchInput}
+                            placeholder="Search announcements..."
+                            placeholderTextColor="#9ca3af"
+                            value={searchQuery}
+                            onChangeText={setSearchQuery}
                         />
                     </View>
+                    
                     {/* Sorting Options */}
-                    <SortButton sortOption={sortOption || "recent"} setSortOption={setSortOption} style={{ marginLeft: 8 }} />
+                    <SortButton sortOption={sortOption || "recent"} setSortOption={setSortOption} />
                 </View>
-
+                
+                {/* Filter Toggle Button Row */}
+                <View style={styles.filterToggleRow}>
+                    <Pressable 
+                        style={styles.filterToggleButton}
+                        onPress={() => setShowFilters(!showFilters)}
+                    >
+                        <Icon name={showFilters ? "chevron-up" : "chevron-down"} size={16} color="#475569" style={{ marginRight: 4 }} />
+                        <Text style={styles.filterToggleText}>
+                            {showFilters ? "Hide Filters" : "Show Filters"}
+                        </Text>
+                        {selectedCategory && (
+                            <View style={styles.filterBadge}>
+                                <Text style={styles.filterBadgeText}>1</Text>
+                            </View>
+                        )}
+                    </Pressable>
+                </View>
+                
+                {/* Collapsible Filter Section */}
+                {showFilters && (
+                    <View style={styles.filtersSection}>
+                        <View style={styles.filterContainer}>
+                            {[
+                                'EVENTS',
+                                'FIESTA',
+                                'CULTURAL_TOURISM',
+                                'ENVIRONMENTAL_COASTAL',
+                                'HOLIDAY_SEASONAL',
+                                'GOVERNMENT_PUBLIC_SERVICE',
+                                'STORM_SURGE',
+                                'TSUNAMI',
+                                'GALE_WARNING',
+                                'MONSOON_LOW_PRESSURE',
+                                'RED_TIDE',
+                                'JELLYFISH_BLOOM',
+                                'FISH_KILL',
+                                'PROTECTED_WILDLIFE',
+                                'OIL_SPILL',
+                                'COASTAL_EROSION',
+                                'CORAL_BLEACHING',
+                                'HEAT_WAVE',
+                                'FLOOD_LANDSLIDE',
+                                'DENGUE_WATERBORNE',
+                                'POWER_INTERRUPTION',
+                            ].map((category) => (
+                                <Pressable
+                                    key={category}
+                                    style={[
+                                        styles.filterTag,
+                                        selectedCategory === category && styles.filterTagSelected
+                                    ]}
+                                    onPress={() => {
+                                        setSelectedCategory((prev) => (prev === category ? null : category));
+                                    }}
+                                >
+                                    <Text style={[
+                                        styles.filterTagText,
+                                        selectedCategory === category && styles.filterTagTextSelected
+                                    ]}>
+                                        {category.replace(/_/g, " ")}
+                                    </Text>
+                                    {selectedCategory === category && (
+                                        <Icon name="x" size={12} color="#fff" style={styles.filterTagIcon} />
+                                    )}
+                                </Pressable>
+                            ))}
+                        </View>
+                        
+                        {selectedCategory && (
+                            <Pressable 
+                                style={styles.clearFiltersButton}
+                                onPress={() => setSelectedCategory(null)}
+                            >
+                                <Text style={styles.clearFiltersText}>Clear Filter</Text>
+                            </Pressable>
+                        )}
+                    </View>
+                )}
             </View>
 
             {/* Announcement Cards */}
@@ -177,90 +200,91 @@ export default function TouristAnnouncementsScreen() {
                 <Text style={styles.message}>No announcements found.</Text>
                 ) : (
                 filteredAnnouncements.map((item) => (
-                    <View key={item.id} style={styles.card}>
-                        <View style={styles.cardHeader}>
-                            <Text style={styles.cardTitle}>{item.title}</Text>
-                            {/* <View style={styles.actionButtons}>
-                            <Pressable
-                                onPress={() => router.push(`/tourist/announcements/tourist_announcement_edit?id=${item.id}`)}
-                                style={styles.editButton}
-                            >
-                                <Icon name="edit-3" size={18} color="#ffffff" />
-                            </Pressable>
-                            <Pressable
-                                onPress={() => openDeleteModal(item.id)}
-                                style={styles.deleteButton}
-                            >
-                                <Icon name="trash-2" size={18} color="#ffffff" />
-                            </Pressable>
-                            </View> */}
+                    <Pressable 
+                        key={item.id} 
+                        style={styles.card}
+                        onPress={() => router.push(`/tourist/announcements/tourist_announcement_view?id=${item.id}`)}
+                    >
+                        <LinearGradient
+                            colors={['#0f172a', '#1e293b']}
+                            style={styles.cardGradient}
+                        />
+                        
+                        <View style={styles.cardContent}>
+                            <View style={[
+                                styles.categoryIndicator, 
+                                getCategoryColor(item.category)
+                            ]} />
+                            
+                            {/* Main content section */}
+                            <View style={styles.mainContent}>
+                                <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">
+                                    {item.title}
+                                </Text>
+                                <Text style={styles.categoryText}>
+                                    {item.category.replace(/_/g, " ")}
+                                </Text>
+                            </View>
+                            
+                            {/* Right section with date */}
+                            <View style={styles.rightSection}>
+                                {/* Date at bottom right */}
+                                <Text style={styles.dateText} numberOfLines={1} ellipsizeMode="tail">
+                                    {new Date(item.date_posted).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "short",
+                                        day: "numeric"
+                                    })}
+                                </Text>
+                            </View>
                         </View>
-                        <Text style={styles.cardDescription}>{item.description}</Text>
-                        <Text style={styles.cardFooter}>
-                            {item.location} | {item.category.replace(/_/g, " ")} | {
-                            new Date(item.date_posted).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric"
-                            })
-                            }
-                        </Text>
-                    </View>
+                    </Pressable>
                 ))
                 )}
             </View>
             </ScrollView>
-
-            {/* <Pressable
-                style={styles.fab}
-                onPress={() => router.push("/tourist/announcements/tourist_announcement_create")}
-            >
-                <Icon name="plus" size={24} color="#007dab" />
-            </Pressable> */}
-
-            {/* Delete Modal */}
-            <Modal
-                visible={modalVisible}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContainer}>
-                        <Text style={styles.modalTitle}>Confirm Delete</Text>
-                        <Text style={styles.modalMessage}>
-                            Are you sure you want to delete this announcement?
-                        </Text>
-                        <View style={styles.modalActions}>
-                            <Pressable
-                                style={styles.modalCancelButton}
-                                onPress={() => setModalVisible(false)}
-                            >
-                                <Text style={styles.modalCancelButtonText}>Cancel</Text>
-                            </Pressable>
-                            <Pressable
-                                style={styles.modalDeleteButton}
-                                onPress={handleDelete}
-                            >
-                                <Text style={styles.modalDeleteButtonText}>Delete</Text>
-                            </Pressable>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
         </View>
         </SafeAreaView>
     );
 }
 
+// Function to get category color
+const getCategoryColor = (category: string) => {
+    const colors: Record<string, object> = {
+        EVENTS: { backgroundColor: '#4f46e5' },
+        FIESTA: { backgroundColor: '#f59e0b' },
+        CULTURAL_TOURISM: { backgroundColor: '#10b981' },
+        ENVIRONMENTAL_COASTAL: { backgroundColor: '#059669' },
+        HOLIDAY_SEASONAL: { backgroundColor: '#f97316' },
+        GOVERNMENT_PUBLIC_SERVICE: { backgroundColor: '#6366f1' },
+        STORM_SURGE: { backgroundColor: '#dc2626' },
+        TSUNAMI: { backgroundColor: '#b91c1c' },
+        GALE_WARNING: { backgroundColor: '#ef4444' },
+        MONSOON_LOW_PRESSURE: { backgroundColor: '#7c3aed' },
+        RED_TIDE: { backgroundColor: '#c026d3' },
+        JELLYFISH_BLOOM: { backgroundColor: '#8b5cf6' },
+        FISH_KILL: { backgroundColor: '#ec4899' },
+        PROTECTED_WILDLIFE: { backgroundColor: '#14b8a6' },
+        OIL_SPILL: { backgroundColor: '#4b5563' },
+        COASTAL_EROSION: { backgroundColor: '#78716c' },
+        CORAL_BLEACHING: { backgroundColor: '#f43f5e' },
+        HEAT_WAVE: { backgroundColor: '#f97316' },
+        FLOOD_LANDSLIDE: { backgroundColor: '#0ea5e9' },
+        DENGUE_WATERBORNE: { backgroundColor: '#84cc16' },
+        POWER_INTERRUPTION: { backgroundColor: '#64748b' },
+    };
+    
+    return colors[category] || { backgroundColor: '#6b7280' };
+};
+
 const styles = StyleSheet.create({
     safeContainer: {
         flex: 1,
-        backgroundColor: '#f8fafc',
+        backgroundColor: "#f3f4f6",
     },
     container: {
         flex: 1,
-        backgroundColor: '#f8fafc',
+        backgroundColor: "#f3f4f6",
     },
     header: {
         position: "absolute",
@@ -301,74 +325,79 @@ const styles = StyleSheet.create({
         padding: 16,
     },
     card: {
-        backgroundColor: "#ffffff",
         borderRadius: 12,
-        paddingTop: 16,
-        paddingRight: 16,
-        paddingLeft: 16,
-        paddingBottom: 4,
-        marginBottom: 10,
+        marginBottom: 12,
         shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowOpacity: 0.15,
+        shadowRadius: 5,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 3,
+        overflow: 'hidden',
+        position: 'relative',
     },
-    cardHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginBottom: 8,
+    cardGradient: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+    },
+    cardContent: {
+        flexDirection: 'row',
+        height: 84,
+    },
+    categoryIndicator: {
+        width: 5,
+        height: '70%',
+        borderTopRightRadius: 3,
+        borderBottomRightRadius: 3,
+        alignSelf: 'center',
+    },
+    mainContent: {
+        flex: 1,
+        paddingVertical: 16,
+        paddingHorizontal: 16,
+        justifyContent: 'center',
     },
     cardTitle: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: "bold",
-        flex: 1,
-    },
-    actionButtons: {
-        flexDirection: "row",
-        alignItems: "flex-start",
-        gap: 4,
-        marginLeft: 16,
-    },
-    editButton: {
-        backgroundColor: "#38bdf8",
-        padding: 10,
-        borderRadius: 6,
-    },
-    cardDescription: {
-        fontSize: 10,
-        color: "#374151",
-        marginBottom: 12,
-    },
-    cardFooter: {
-        fontSize: 8,
-        color: "#6b7280",
-        fontStyle: "italic",
-        textAlign: "right",
-    },
-    deleteButton: {
-        backgroundColor: "#dc3545",
-        padding: 10,
-        borderRadius: 6,
-        alignItems: "center",
-    },
-    deleteButtonText: {
         color: "#ffffff",
-        fontWeight: "bold",
+        marginBottom: 4,
     },
-    fab: {
-        position: "absolute",
-        bottom: 16,
-        right: 16,
-        backgroundColor: "#0f172a",
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        justifyContent: "center",
+    categoryText: {
+        fontSize: 12,
+        color: '#8ecae6',
+        fontWeight: '500',
+    },
+    rightSection: {
+        width: 90,
+        height: '100%',
+        paddingRight: 16,
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        paddingVertical: 12,
+    },
+    dateText: {
+        fontSize: 11,
+        color: '#a8dadc',
+        fontWeight: '400',
+        maxWidth: 90,
+    },
+    searchContainer: {
+        flexDirection: "row",
         alignItems: "center",
-        elevation: 4,
-        shadowColor: "#000",
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
+        backgroundColor: "#e5e7eb",
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        marginBottom: 10,
+        marginTop: 8,
+        height: 40,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 14,
+        color: "#111827",
     },
     message: {
         textAlign: "center",
@@ -382,73 +411,96 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "red",
     },
-    modalOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
+    filterContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
+        marginBottom: 12,
     },
-    modalContainer: {
-        width: "80%",
-        backgroundColor: "#ffffff",
-        borderRadius: 12,
-        padding: 20,
-        alignItems: "center",
-        elevation: 5,
+    filterTag: {
+        backgroundColor: '#d1d5db',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
     },
-    modalTitle: {
-        fontSize: 18,
-        fontWeight: "bold",
-        marginBottom: 10,
+    filterTagSelected: {
+        backgroundColor: '#1194fe',
     },
-    modalMessage: {
-        fontSize: 14,
-        color: "#374151",
-        textAlign: "center",
-        marginBottom: 20,
+    filterTagText: {
+        fontSize: 10,
+        color: '#374151',
     },
-    modalActions: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        width: "100%",
+    filterTagTextSelected: {
+        color: '#fff',
     },
-    modalCancelButton: {
-        flex: 1,
-        backgroundColor: "#6c757d",
-        padding: 10,
-        borderRadius: 6,
-        marginRight: 5,
-        alignItems: "center",
+    filterTagIcon: {
+        marginLeft: 4,
     },
-    modalCancelButtonText: {
-        color: "#ffffff",
-        fontWeight: "bold",
+    clearFiltersButton: {
+        backgroundColor: '#6c757d',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 12,
     },
-    modalDeleteButton: {
-        flex: 1,
-        backgroundColor: "#dc3545",
-        padding: 10,
-        borderRadius: 6,
-        marginLeft: 5,
-        alignItems: "center",
+    clearFiltersText: {
+        color: '#fff',
+        fontWeight: 'bold',
     },
-    modalDeleteButtonText: {
-        color: "#ffffff",
-        fontWeight: "bold",
+    filterToggleRow: {
+        marginBottom: 12,
     },
-    searchContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#e5e7eb",
-        borderRadius: 12,
+    filterToggleButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f1f5f9',
+        paddingVertical: 8,
         paddingHorizontal: 12,
-        marginBottom: 10,
-        marginTop: 8,
-        height: 40,
+        borderRadius: 8,
+        alignSelf: 'flex-start',
+        position: 'relative',
+        // Shadow for Android
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 2 },
     },
-      searchInput: {
-        flex: 1,
+    filterToggleText: {
+        color: '#475569',
         fontSize: 14,
-        color: "#111827",
+        fontWeight: '900',
+    },
+    filterBadge: {
+        position: 'absolute',
+        top: -6,
+        right: -6,
+        backgroundColor: '#ef4444',
+        width: 18,
+        height: 18,
+        borderRadius: 9,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    filterBadgeText: {
+        color: '#ffffff',
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
+    filtersSection: {
+        backgroundColor: '#f8fafc',
+        borderRadius: 8,
+        padding: 12,
+        marginBottom: 12,
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 2 },
     },
 });
