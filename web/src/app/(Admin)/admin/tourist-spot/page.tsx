@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useTouristSpotManager } from "@/hooks/useTouristSpotManager";
 
-import Sidebar from "@/components/custom/sidebar";
 import { TouristSpot } from "@/app/static/tourist-spot/useTouristSpotManagerSchema";
 import { columns as touristSpotColumns } from "@/components/custom/tourist-spot/columns";
 import DataTable from "@/components/custom/data-table";
@@ -65,7 +64,6 @@ export default function TouristSpotPage() {
 
   return (
     <>
-      <Sidebar />
       <main className="flex flex-col items-center justify-start min-h-screen gap-12  bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4">
         <div className="flex  w-full flex-col items-center justify-start gap-4 px-4 py-2 lg:pl-0">
           <h1 className="text-4xl font-extrabold text-center text-blue-700 tracking-tight">
