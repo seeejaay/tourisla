@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: '#f8fafc',
+        backgroundColor: '#f1f1f1',
     },
     header: {
         position: "absolute",
@@ -638,11 +638,17 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         alignSelf: 'flex-start',
         position: 'relative',
+        // Shadow for Android
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 2 },
     },
     filterToggleText: {
         color: '#475569',
         fontSize: 14,
-        fontWeight: '500',
+        fontWeight: '900',
     },
     filterBadge: {
         position: 'absolute',
@@ -665,7 +671,10 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         padding: 12,
         marginBottom: 12,
-        borderWidth: 1,
-        borderColor: '#2accde',
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 2 },
     },
 });

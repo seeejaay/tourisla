@@ -9,6 +9,7 @@ import {
   Dimensions,
   Image,
   TouchableOpacity,
+  Share,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
@@ -29,7 +30,7 @@ interface Announcement {
   image_url?: string;
 }
 
-export default function AdminAnnouncementViewScreen() {
+export default function TouristAnnouncementViewScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { viewAnnouncement, loading, error } = useAnnouncementManager();
@@ -51,6 +52,19 @@ export default function AdminAnnouncementViewScreen() {
       }
     } catch (error) {
       console.error("Failed to load announcement:", error);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!announcement) return;
+    
+    try {
+      await Share.share({
+        message: `${announcement.title}\n\n${announcement.description}\n\nLocation: ${announcement.location}`,
+        title: announcement.title,
+      });
+    } catch (error) {
+      console.error("Error sharing announcement:", error);
     }
   };
 
@@ -140,6 +154,13 @@ export default function AdminAnnouncementViewScreen() {
           onPress={() => router.back()}
         >
           <FontAwesome5 name="arrow-left" size={18} color="#fff" />
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.navButton}
+          onPress={handleShare}
+        >
+          <FontAwesome5 name="share-alt" size={18} color="#fff" />
         </TouchableOpacity>
       </View>
       
@@ -311,7 +332,7 @@ const styles = StyleSheet.create({
   descriptionContainer: {
     backgroundColor: '#1e293b',
     borderRadius: 16,
-    padding: 16,
+    padding: 20,
     marginBottom: 16,
   },
   descriptionLabel: {
