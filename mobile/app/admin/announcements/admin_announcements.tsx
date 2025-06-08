@@ -64,6 +64,7 @@ export default function AdminAnnouncementsScreen() {
     const [error, setError] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedAnnouncementId, setSelectedAnnouncementId] = useState<string | null>(null);
+    const [showFilters, setShowFilters] = useState(false);
 
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [sortOption, setSortOption] = useState<"recent" | "newest">("recent");
@@ -135,66 +136,103 @@ export default function AdminAnnouncementsScreen() {
             contentContainerStyle={{ paddingBottom: 20 }}
             >
 
-            {/* Filter + Sort Options */}
+            {/* Filter Tags in Grid Layout */}
             <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    <View style={{ flexDirection: "row", gap: 8 }}>
-                        {[
-                        'EVENTS',
-                        'FIESTA',
-                        'CULTURAL_TOURISM',
-                        'ENVIRONMENTAL_COASTAL',
-                        'HOLIDAY_SEASONAL',
-                        'GOVERNMENT_PUBLIC_SERVICE',
-                        'STORM_SURGE',
-                        'TSUNAMI',
-                        'GALE_WARNING',
-                        'MONSOON_LOW_PRESSURE',
-                        'RED_TIDE',
-                        'JELLYFISH_BLOOM',
-                        'FISH_KILL',
-                        'PROTECTED_WILDLIFE',
-                        'OIL_SPILL',
-                        'COASTAL_EROSION',
-                        'CORAL_BLEACHING',
-                        'HEAT_WAVE',
-                        'FLOOD_LANDSLIDE',
-                        'DENGUE_WATERBORNE',
-                        'POWER_INTERRUPTION',
-                        ].map((category) => (
-                        <Pressable
-                            key={category}
-                            style={{
-                            backgroundColor: selectedCategory === category ? "#007dab" : "#d1d5db",
-                            paddingVertical: 6,
-                            paddingHorizontal: 12,
-                            borderRadius: 20,
-                            }}
-                            onPress={() => setSelectedCategory((prev) => (prev === category ? null : category))}
-                        >
-                            <Text style={{ fontSize: 10, color: selectedCategory === category ? "#fff" : "#374151" }}>
-                            {category.replace(/_/g, " ")}
-                            </Text>
-                        </Pressable>
-                        ))}
-                    </View>
-                </ScrollView>
-                
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8}}>
+                {/* Search and Sort Row */}
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
                     <View style={[styles.searchContainer, { flex: 1 }]}>
                         <Icon name="search" size={16} color="#6b7280" style={{ marginRight: 8 }} />
                         <TextInput
-                        style={styles.searchInput}
-                        placeholder="Search announcements..."
-                        placeholderTextColor="#9ca3af"
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
+                            style={styles.searchInput}
+                            placeholder="Search announcements..."
+                            placeholderTextColor="#9ca3af"
+                            value={searchQuery}
+                            onChangeText={setSearchQuery}
                         />
                     </View>
+                    
                     {/* Sorting Options */}
-                    <SortButton sortOption={sortOption || "recent"} setSortOption={setSortOption} style={{ marginLeft: 8 }} />
+                    <SortButton sortOption={sortOption || "recent"} setSortOption={setSortOption} />
                 </View>
-
+                
+                {/* Filter Toggle Button Row */}
+                <View style={styles.filterToggleRow}>
+                    <Pressable 
+                        style={styles.filterToggleButton}
+                        onPress={() => setShowFilters(!showFilters)}
+                    >
+                        <Icon name={showFilters ? "chevron-up" : "chevron-down"} size={16} color="#475569" style={{ marginRight: 4 }} />
+                        <Text style={styles.filterToggleText}>
+                            {showFilters ? "Hide Filters" : "Show Filters"}
+                        </Text>
+                        {selectedCategory && (
+                            <View style={styles.filterBadge}>
+                                <Text style={styles.filterBadgeText}>1</Text>
+                            </View>
+                        )}
+                    </Pressable>
+                </View>
+                
+                {/* Collapsible Filter Section */}
+                {showFilters && (
+                    <View style={styles.filtersSection}>
+                        <View style={styles.filterContainer}>
+                            {[
+                                'EVENTS',
+                                'FIESTA',
+                                'CULTURAL_TOURISM',
+                                'ENVIRONMENTAL_COASTAL',
+                                'HOLIDAY_SEASONAL',
+                                'GOVERNMENT_PUBLIC_SERVICE',
+                                'STORM_SURGE',
+                                'TSUNAMI',
+                                'GALE_WARNING',
+                                'MONSOON_LOW_PRESSURE',
+                                'RED_TIDE',
+                                'JELLYFISH_BLOOM',
+                                'FISH_KILL',
+                                'PROTECTED_WILDLIFE',
+                                'OIL_SPILL',
+                                'COASTAL_EROSION',
+                                'CORAL_BLEACHING',
+                                'HEAT_WAVE',
+                                'FLOOD_LANDSLIDE',
+                                'DENGUE_WATERBORNE',
+                                'POWER_INTERRUPTION',
+                            ].map((category) => (
+                                <Pressable
+                                    key={category}
+                                    style={[
+                                        styles.filterTag,
+                                        selectedCategory === category && styles.filterTagSelected
+                                    ]}
+                                    onPress={() => {
+                                        setSelectedCategory((prev) => (prev === category ? null : category));
+                                    }}
+                                >
+                                    <Text style={[
+                                        styles.filterTagText,
+                                        selectedCategory === category && styles.filterTagTextSelected
+                                    ]}>
+                                        {category.replace(/_/g, " ")}
+                                    </Text>
+                                    {selectedCategory === category && (
+                                        <Icon name="x" size={12} color="#fff" style={styles.filterTagIcon} />
+                                    )}
+                                </Pressable>
+                            ))}
+                        </View>
+                        
+                        {selectedCategory && (
+                            <Pressable 
+                                style={styles.clearFiltersButton}
+                                onPress={() => setSelectedCategory(null)}
+                            >
+                                <Text style={styles.clearFiltersText}>Clear Filter</Text>
+                            </Pressable>
+                        )}
+                    </View>
+                )}
             </View>
 
             {/* Announcement Cards */}
@@ -213,27 +251,30 @@ export default function AdminAnnouncementsScreen() {
                         onPress={() => router.push(`/admin/announcements/admin_announcement_view?id=${item.id}`)}
                     >
                         <LinearGradient
-                            colors={['#1e2a4a', '#172440']}
+                            colors={['#0f172a', '#1e293b']}
                             style={styles.cardGradient}
                         />
+                        
                         <View style={styles.cardContent}>
-                            {/* Left side: Category indicator */}
-                            <View style={[styles.categoryIndicator, { backgroundColor: getCategoryColor(item.category) }]} />
+                            {/* Left color indicator */}
+                            <View 
+                                style={[
+                                    styles.categoryIndicator, 
+                                    { backgroundColor: getCategoryColor(item.category) }
+                                ]} 
+                            />
                             
                             {/* Main content */}
                             <View style={styles.mainContent}>
-                                {/* Title */}
                                 <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">
                                     {item.title}
                                 </Text>
-                                
-                                {/* Category */}
                                 <Text style={styles.categoryText}>
                                     {item.category.replace(/_/g, " ")}
                                 </Text>
                             </View>
                             
-                            {/* Right side: Action buttons and date */}
+                            {/* Right section with actions */}
                             <View style={styles.rightSection}>
                                 {/* Action buttons */}
                                 <View style={styles.actionButtons}>
@@ -277,7 +318,7 @@ export default function AdminAnnouncementsScreen() {
                 style={styles.fab}
                 onPress={() => router.push("/admin/announcements/admin_announcement_create")}
             >
-                <Icon name="plus" size={24} color="#007dab" />
+                <Icon name="plus" size={24} color="#1fd8d6" />
             </Pressable>
 
             {/* Delete Modal */}
@@ -399,12 +440,12 @@ const styles = StyleSheet.create({
     },
     cardTitle: {
         fontSize: 16,
-        fontWeight: "600",
-        color: "#4cc9f0",
-        marginBottom: 6,
+        fontWeight: "bold",
+        color: "#ffffff",
+        marginBottom: 4,
     },
     categoryText: {
-        fontSize: 13,
+        fontSize: 12,
         color: '#8ecae6',
         fontWeight: '500',
     },
@@ -421,9 +462,6 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     dateText: {
-        position: 'absolute',
-        bottom: 12,
-        right: 16,
         fontSize: 11,
         color: '#a8dadc',
         fontWeight: '400',
@@ -460,7 +498,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         elevation: 4,
-        shadowColor: "#000",
+        shadowColor: "#1fd8d6",
         shadowOpacity: 0.2,
         shadowRadius: 4,
     },
@@ -544,5 +582,88 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 14,
         color: "#111827",
+    },
+    filterContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
+        marginBottom: 12,
+    },
+    filterTag: {
+        backgroundColor: '#d1d5db',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+    },
+    filterTagSelected: {
+        backgroundColor: '#1194fe',
+    },
+    filterTagText: {
+        fontSize: 10,
+        color: '#374151',
+    },
+    filterTagTextSelected: {
+        color: '#fff',
+    },
+    filterTagIcon: {
+        marginLeft: 4,
+    },
+    clearFiltersButton: {
+        backgroundColor: '#6c757d',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    clearFiltersText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+    filterToggleRow: {
+        marginBottom: 12,
+    },
+    filterToggleButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f1f5f9',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        alignSelf: 'flex-start',
+        position: 'relative',
+    },
+    filterToggleText: {
+        color: '#475569',
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    filterBadge: {
+        position: 'absolute',
+        top: -6,
+        right: -6,
+        backgroundColor: '#ef4444',
+        width: 18,
+        height: 18,
+        borderRadius: 9,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    filterBadgeText: {
+        color: '#ffffff',
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
+    filtersSection: {
+        backgroundColor: '#f8fafc',
+        borderRadius: 8,
+        padding: 12,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: '#2accde',
     },
 });
