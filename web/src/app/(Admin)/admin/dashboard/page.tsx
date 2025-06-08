@@ -1,7 +1,5 @@
 "use client";
 
-import Sidebar from "@/components/custom/sidebar";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -39,7 +37,6 @@ export default function DashboardPage() {
 
   return (
     <>
-      <Sidebar />
       {/* Main content */}
       <div className="flex flex-col items-center justify-center bg-gray-200 min-h-screen py-2 lg:pl-0 pl-16">
         {loading ? (
