@@ -137,6 +137,12 @@ const {
   viewTourPackageByIdController,
 } = require("../controllers/tourPackagesController.js");
 
+const {
+  authorizeGoogleCalendarController,
+  googleCalendarCallbackController,
+  syncBookingToCalendarController,
+} = require("../controllers/calendarController.js");
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -462,4 +468,21 @@ app.get(
   "/api/v1/tour-packages/:id",
   authenticateTourOperator,
   viewTourPackageByIdController
+);
+
+// Routes for Google Calendar integration
+app.get(
+  "/api/v1/calendar/authorize",
+  authenticateTourGuide,
+  authorizeGoogleCalendarController
+);
+app.get(
+  "/api/v1/calendar/callback",
+  authenticateTourGuide,
+  googleCalendarCallbackController
+);
+app.post(
+  "/api/v1/calendar/sync-booking",
+  authenticateTourGuide,
+  syncBookingToCalendarController
 );
