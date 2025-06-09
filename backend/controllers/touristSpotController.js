@@ -124,7 +124,23 @@ const editTouristSpotController = async (req, res) => {
       facebook_page,
       rules: rules?.toUpperCase(),
     });
-
+    // Upload images to S3
+    if (req.files && req.files.length > 0) {
+      const imageUrls = [];
+      for (const file of req.files.slice(0, 5)) {
+        const s3Key = `tourist_spots/${Date.now()}_${file.originalname}`;
+        const uploadParams = {
+          Bucket: process.env.AWS_S3_BUCKET,
+          Key: s3Key,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        };
+        await s3Client.send(new PutObjectCommand(uploadParams));
+        const imageUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+        imageUrls.push(imageUrl);
+      }
+      await uploadTouristSpotImages(spot.id, imageUrls);
+    }
     res.json(spot);
   } catch (err) {
     console.log(err.message);

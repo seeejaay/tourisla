@@ -38,23 +38,17 @@ const touristSpotSchema = z.object({
   municipality: z.enum(["SANTA_FE", "BANTAYAN", "MADRIDEJOS"], {
     message: "Invalid municipality selected.",
   }),
-  province: z.literal("Cebu", {
+  province: z.literal("CEBU", {
     message: "Province must be Cebu.",
   }),
   longitude: z
-    .string()
+    .number()
     .min(1, { message: "Longitude is required." })
-    .max(20, { message: "Longitude must be less than 20 characters." })
-    .regex(/^-?\d+(\.\d+)?$/, {
-      message: "Longitude must be a valid number.",
-    }),
+    .max(180, { message: "Longitude must be less than  100 characters." }),
   latitude: z
-    .string()
+    .number()
     .min(1, { message: "Latitude is required." })
-    .max(20, { message: "Latitude must be less than 20 characters." })
-    .regex(/^-?\d+(\.\d+)?$/, {
-      message: "Latitude must be a valid number.",
-    }),
+    .max(50, { message: "Latitude must be less than 100 characters." }),
   opening_time: z
     .string()
     .min(5, { message: "Opening hours are required." })
@@ -116,6 +110,8 @@ const touristSpotSchema = z.object({
     .regex(/^(https?:\/\/)?(www\.)?facebook\.com\/[a-zA-Z0-9._%+-]+\/?$/, {
       message: "Invalid Facebook page URL.",
     })
+    .or(z.literal("N/A"))
+    .or(z.literal(""))
     .optional(),
   rules: z
     .string()
@@ -125,13 +121,24 @@ const touristSpotSchema = z.object({
         "Rules can only contain letters, numbers, spaces, commas, periods, apostrophes, and hyphens.",
     }),
   images: z
-    .instanceof(File, { message: "Image is required." })
-    .refine((file) => file.size <= 5 * 1024 * 1024, {
-      message: "Image must be less than 5MB.",
-    })
-    .refine((file) => file.type.startsWith("image/"), {
-      message: "File must be an image.",
-    })
+    .union([
+      z
+        .instanceof(File)
+        .refine((file) => file.size <= 5 * 1024 * 1024, {
+          message: "Image must be less than 5MB.",
+        })
+        .refine((file) => file.type.startsWith("image/"), {
+          message: "File must be an image.",
+        }),
+      z.array(
+        z.object({
+          id: z.number(),
+          tourist_spot_id: z.number(),
+          image_url: z.string(),
+        })
+      ),
+      z.undefined(),
+    ])
     .optional(),
 });
 
