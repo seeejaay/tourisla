@@ -4,7 +4,7 @@ import AdminAnnouncementsScreen from './announcements/admin_announcements';
 import AdminHotlinesScreen from './hotlines/admin_hotlines';
 import AdminProfileScreen from './profile/admin_profile';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { StyleSheet, View, Platform } from 'react-native';
+import { StyleSheet, View, Platform, Text, Dimensions } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 
 const Tab = createBottomTabNavigator();
