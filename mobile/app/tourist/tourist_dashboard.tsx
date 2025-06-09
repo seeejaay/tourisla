@@ -4,10 +4,8 @@ import TouristAnnouncementsScreen from './announcements/tourist_announcements';
 import TouristHotlinesScreen from './hotlines/tourist_hotlines';
 import TouristProfileScreen from './profile/tourist_profile';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, View, Platform } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-
 
 const Tab = createBottomTabNavigator();
 
@@ -95,11 +93,36 @@ export default function TouristDashboard() {
 }
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-    paddingBottom: 40,
+  iconWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 50,
+    height: 40,
+    position: 'relative',
+    marginTop: 10,
   },
-  safeArea: {
-    flex: 1,
+  activeIndicator: {
+    position: 'absolute',
+    top: -15,
+    width: 25,
+    height: 3,
+    borderRadius: 1.5,
+  },
+  activeIconBackground: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    top: -8,
+  },
+  icon: {
+    opacity: 0.9,
+  },
+  activeIcon: {
+    opacity: 1,
+    textShadowColor: 'rgba(56, 189, 248, 0.5)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
   },
 });
