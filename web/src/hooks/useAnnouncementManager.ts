@@ -1,5 +1,4 @@
 import { useState, useCallback } from "react";
-import type { AnnouncementSchema } from "@/app/static/announcement/useAnnouncementManagerSchema";
 import type { Announcement } from "@/components/custom/announcements/columns";
 import {
   createAnnouncement as apiCreateAnnouncement,
@@ -87,20 +86,22 @@ export const useAnnouncementManager = () => {
 
   // Update an announcement and update state
   const updateAnnouncement = useCallback(
-    async (data: AnnouncementSchema): Promise<Announcement | null> => {
+    async (
+      id: string,
+      data: Announcement | FormData
+    ): Promise<Announcement | null> => {
       setLoading(true);
       setError("");
       try {
-        // FIX: Pass id and data separately
         const response: Announcement & { error?: string } =
-          await apiUpdateAnnouncement(data.id, data);
+          await apiUpdateAnnouncement(id, data);
         if (response.error) {
           setError(response.error);
           return null;
         }
         setAnnouncements((prev) =>
           prev.map((announcement) =>
-            announcement.id === data.id ? response : announcement
+            announcement.id === id ? response : announcement
           )
         );
         return response;

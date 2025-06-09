@@ -30,22 +30,22 @@ const createUserController = async (req, res) => {
     const formatedLastName = last_name.toUpperCase();
     const formatedEmail = email.toUpperCase();
 
-    const captchaToken = req.body.captchaToken;
-    if (!captchaToken) {
-      return res.status(400).json({ error: "Captcha token is required" });
-    }
-    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
-    console.log("Secret Key:", secretKey);
-    console.log("Captcha Token:", captchaToken);
-    console.log;
-    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
+    // Check if the authenticated user is an admin
+    const isAdmin =
+      req.session && req.session.user && req.session.user.role === "Admin";
 
-    const captchaRes = await axios.post(verifyUrl);
-    if (!captchaRes.data.success) {
-      console.log("Captcha verification failed:", captchaRes.data);
-      return res.status(400).json({ error: "Captcha verification failed" });
-    } else {
-      console.log("Captcha verification successful");
+    // Only require captcha for non-admins
+    if (!isAdmin) {
+      const captchaToken = req.body.captchaToken;
+      if (!captchaToken) {
+        return res.status(400).json({ error: "Captcha token is required" });
+      }
+      const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+      const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
+      const captchaRes = await axios.post(verifyUrl);
+      if (!captchaRes.data.success) {
+        return res.status(400).json({ error: "Captcha verification failed" });
+      }
     }
 
     // Default role for new users
@@ -54,8 +54,9 @@ const createUserController = async (req, res) => {
       return res.status(409).json({ error: "Email already exists" });
     }
 
-    // Check if the authenticated user is an admin
-    if (req.session && req.session.user && req.session.user.role === "Admin") {
+    // Role assignment logic for admins
+    let assignedRole = "Tourist";
+    if (isAdmin) {
       const allowedRoles = [
         "Tourist",
         "Admin",
@@ -70,6 +71,8 @@ const createUserController = async (req, res) => {
       } else if (role) {
         return res.status(403).json({ error: "Invalid role assignment" });
       }
+    } else {
+      assignedRole = "Tourist"; // Default for self-signup
     }
 
     // Hash the password
@@ -82,7 +85,7 @@ const createUserController = async (req, res) => {
       email: formatedEmail,
       hashedPassword,
       phone_number,
-      role, // Use the assigned role
+      role: assignedRole,
       nationality,
     });
 
