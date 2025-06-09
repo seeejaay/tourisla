@@ -7,16 +7,17 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { announcementSchema } from "@/app/static/announcement/useAnnouncementManagerSchema";
 import categories from "@/app/static/announcement/category.json";
-import { useAnnouncementManager } from "@/hooks/useAnnouncementManager";
 
 export default function EditAnnouncement({
   announcement,
+  onSave,
   onCancel,
-  onSuccess,
 }: {
   announcement: Announcement;
+  onSave: (
+    updatedAnnouncement: Announcement | FormData
+  ) => void | Promise<void>;
   onCancel: () => void;
-  onSuccess?: () => void;
 }) {
   const [form, setForm] = useState<Announcement>({
     ...announcement,
@@ -25,8 +26,6 @@ export default function EditAnnouncement({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const { updateAnnouncement, loading } = useAnnouncementManager();
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -57,7 +56,6 @@ export default function EditAnnouncement({
     let updateData: Announcement | FormData;
     if (imageFile) {
       const formData = new FormData();
-      // Do not include id in FormData, backend gets it from URL
       Object.entries(form).forEach(([key, value]) => {
         if (key !== "id") {
           formData.append(key, value ?? "");
@@ -70,10 +68,7 @@ export default function EditAnnouncement({
       updateData = rest as Announcement;
     }
 
-    // Always use the original announcement.id for update
-    const updated = await updateAnnouncement(announcement.id, updateData);
-    if (updated && onSuccess) onSuccess();
-    if (!updated) setError("Failed to update announcement.");
+    await onSave(updateData);
   };
 
   return (
@@ -161,8 +156,8 @@ export default function EditAnnouncement({
           </div>
           {error && <div className="text-red-500 text-sm">{error}</div>}
           <div className="flex gap-4 pt-6 justify-end">
-            <Button type="submit" variant="default" disabled={loading}>
-              {loading ? "Saving..." : "Save"}
+            <Button type="submit" variant="default">
+              Save
             </Button>
             <Button type="button" variant="destructive" onClick={onCancel}>
               Cancel

@@ -132,7 +132,9 @@ export default function AnnouncementsPage() {
                     <EditAnnouncement
                       announcement={editDialogAnnouncement}
                       onSave={async (updatedAnnouncement) => {
-                        await updateAnnouncement(updatedAnnouncement);
+                        // Always use the original announcement's id from the dialog
+                        const id = editDialogAnnouncement.id;
+                        await updateAnnouncement(id, updatedAnnouncement);
                         await refreshAnnouncements();
                         setEditDialogAnnouncement(null);
                       }}
