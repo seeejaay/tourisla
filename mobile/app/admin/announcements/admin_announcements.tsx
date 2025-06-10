@@ -8,6 +8,7 @@ import {
     Modal, 
     SafeAreaView,
     TextInput,
+    Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useEffect, useState, useCallback } from "react";
@@ -23,53 +24,52 @@ interface Announcement {
     description: string;
     location: string;
     category: string;
-    date_posted: string; // Assuming this is a string in ISO format
+    date_posted: string;
 }
 
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
 
-// Add this function at the top of your component or in a utility file
-const getCategoryColor = (category: string) => {
-  const colors: Record<string, string> = {
-    EVENTS: "#4f46e5",
-    FIESTA: "#f59e0b",
-    CULTURAL_TOURISM: "#10b981",
-    ENVIRONMENTAL_COASTAL: "#059669",
-    HOLIDAY_SEASONAL: "#f97316",
-    GOVERNMENT_PUBLIC_SERVICE: "#6366f1",
-    STORM_SURGE: "#dc2626",
-    TSUNAMI: "#b91c1c",
-    GALE_WARNING: "#ef4444",
-    MONSOON_LOW_PRESSURE: "#7c3aed",
-    RED_TIDE: "#c026d3",
-    JELLYFISH_BLOOM: "#8b5cf6",
-    FISH_KILL: "#ec4899",
-    PROTECTED_WILDLIFE: "#14b8a6",
-    OIL_SPILL: "#4b5563",
-    COASTAL_EROSION: "#78716c",
-    CORAL_BLEACHING: "#f43f5e",
-    HEAT_WAVE: "#f97316",
-    FLOOD_LANDSLIDE: "#0ea5e9",
-    DENGUE_WATERBORNE: "#84cc16",
-    POWER_INTERRUPTION: "#64748b",
-  };
-  
-  return colors[category] || "#6b7280";
-};
-
-export default function AdminAnnouncementsScreen() {
+export default function AdminAnnouncementsScreen({ headerHeight }) {
     const router = useRouter();
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [sortOption, setSortOption] = useState("newest");
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedAnnouncementId, setSelectedAnnouncementId] = useState<string | null>(null);
-    const [showFilters, setShowFilters] = useState(false);
 
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    const [sortOption, setSortOption] = useState<"recent" | "newest">("recent");
-    const [searchQuery, setSearchQuery] = useState("");
+    const [showFilters, setShowFilters] = useState(false);
 
+    // Function to get category color
+    const getCategoryColor = (category: string) => {
+        const colors: Record<string, string> = {
+            EVENTS: "#4f46e5",
+            FIESTA: "#f59e0b",
+            CULTURAL_TOURISM: "#10b981",
+            ENVIRONMENTAL_COASTAL: "#059669",
+            HOLIDAY_SEASONAL: "#f97316",
+            GOVERNMENT_PUBLIC_SERVICE: "#6366f1",
+            STORM_SURGE: "#dc2626",
+            TSUNAMI: "#b91c1c",
+            GALE_WARNING: "#ef4444",
+            MONSOON_LOW_PRESSURE: "#7c3aed",
+            RED_TIDE: "#c026d3",
+            JELLYFISH_BLOOM: "#8b5cf6",
+            FISH_KILL: "#ec4899",
+            PROTECTED_WILDLIFE: "#14b8a6",
+            OIL_SPILL: "#4b5563",
+            COASTAL_EROSION: "#78716c",
+            CORAL_BLEACHING: "#f43f5e",
+            HEAT_WAVE: "#f97316",
+            FLOOD_LANDSLIDE: "#0ea5e9",
+            DENGUE_WATERBORNE: "#84cc16",
+            POWER_INTERRUPTION: "#64748b",
+        };
+        
+        return colors[category] || "#6b7280";
+    };
 
     useFocusEffect(
         useCallback(() => {
@@ -130,11 +130,10 @@ export default function AdminAnnouncementsScreen() {
         <SafeAreaView style={styles.safeContainer}>
         <View style={styles.container}>
 
-            {/* Header */}
-            <View style={styles.header}><Text style={styles.headerTitle}>Announcements</Text></View>
+            {/* Header removed */}
 
             <ScrollView
-            style={styles.scrollView}
+            style={[styles.scrollView, { marginTop: headerHeight }]}
             contentContainerStyle={{ paddingBottom: 20 }}
             >
 
@@ -367,40 +366,10 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f1f1f1',
     },
-    header: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 50 + STATUS_BAR_HEIGHT,
-        backgroundColor: "#0f172a",
-        borderBottomColor: "rgba(0, 0, 0, 0.1)",
-        borderBottomWidth: 1,
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        paddingTop: STATUS_BAR_HEIGHT,
-        paddingHorizontal: 20,
-        zIndex: 50,
-        shadowColor: "#000",
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 4 },
-        elevation: 8,
-        borderBottomLeftRadius: 15,
-        borderBottomRightRadius: 15,
-    },
-    headerTitle: {
-        fontSize: 22,
-        fontWeight: "900",
-        color: "#ecf0f1",
-        textShadowColor: "rgba(0, 0, 0, 0.2)",
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
-    },
+    // Header styles removed
     scrollView: {
         flex: 1,
-        marginTop: 50 + STATUS_BAR_HEIGHT,
+        // marginTop will be set dynamically based on headerHeight prop
     },
     contentContainer: {
         padding: 16,
@@ -491,18 +460,20 @@ const styles = StyleSheet.create({
     },
     fab: {
         position: "absolute",
-        bottom: 16,
         right: 16,
+        bottom: Platform.OS === 'ios' ? 140 : 130, 
         backgroundColor: "#0f172a",
         width: 56,
         height: 56,
         borderRadius: 28,
         justifyContent: "center",
         alignItems: "center",
-        elevation: 4,
-        shadowColor: "#1fd8d6",
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
+        elevation: 8,
+        shadowColor: "#000",
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        zIndex: 100, // Higher zIndex than the navbar
     },
     message: {
         textAlign: "center",
