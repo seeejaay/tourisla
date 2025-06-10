@@ -1,73 +1,68 @@
-import React, { useState, useCallback } from 'react';
-import { 
-  View, 
-  Text, 
-  FlatList, 
-  TouchableOpacity, 
-  StyleSheet, 
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
   TextInput,
   ActivityIndicator,
-  Alert,
-  RefreshControl,
+  StatusBar,
+  SafeAreaView,
   Dimensions,
+  ScrollView,
+  Alert
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { useTouristSpotManager } from '../../../hooks/useTouristSpotManager';
-import { useAuth } from '../../../hooks/useAuth';
+
+const { width } = Dimensions.get('window');
+const cardWidth = width * 0.9;
 
 export default function AdminTouristSpotsScreen({ headerHeight }) {
   const router = useRouter();
   const { touristSpots, loading, error, getAllTouristSpots, deleteTouristSpot } = useTouristSpotManager();
-  const { user, token } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [refreshing, setRefreshing] = useState(false);
-  const cardWidth = Dimensions.get('window').width - 32; 
+  const [selectedType, setSelectedType] = useState(null);
 
+  // Fetch tourist spots when screen is focused
   useFocusEffect(
     useCallback(() => {
-      loadTouristSpots();
-    }, [])
+      getAllTouristSpots();
+    }, [getAllTouristSpots])
   );
 
-  const loadTouristSpots = async () => {
-    try {
-      await getAllTouristSpots();
-    } catch (err) {
-      console.error('Failed to load tourist spots:', err);
-      Alert.alert(
-        'Error',
-        'Failed to load tourist spots. Please check your internet connection and try again.'
-      );
-    }
-  };
+  // Filter tourist spots based on search query and selected type
+  const filteredTouristSpots = touristSpots.filter(spot => {
+    const matchesSearch = spot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         spot.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = !selectedType || spot.type === selectedType;
+    return matchesSearch && matchesType;
+  });
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await loadTouristSpots();
-    setRefreshing(false);
-  };
+  // Get unique types from tourist spots
+  const spotTypes = [...new Set(touristSpots.map(spot => spot.type))];
 
-  const handleDeleteTouristSpot = (id) => {
+  // Handle delete tourist spot
+  const handleDelete = (id, name) => {
     Alert.alert(
-      'Confirm Delete',
-      'Are you sure you want to delete this tourist spot? This action cannot be undone.',
+      "Delete Tourist Spot",
+      `Are you sure you want to delete "${name}"?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         { 
-          text: 'Delete', 
-          style: 'destructive',
+          text: "Delete", 
+          style: "destructive",
           onPress: async () => {
             try {
-              const success = await deleteTouristSpot(id, token);
-              if (success) {
-                Alert.alert('Success', 'Tourist spot deleted successfully');
-              }
-            } catch (err) {
-              Alert.alert('Error', 'Failed to delete tourist spot');
+              await deleteTouristSpot(id);
+              getAllTouristSpots(); // Refresh the list
+            } catch (error) {
+              Alert.alert("Error", "Failed to delete tourist spot. Please try again.");
             }
           }
         }
@@ -75,65 +70,116 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
     );
   };
 
-  // Filter tourist spots based on search query
-  const filteredTouristSpots = touristSpots.filter(spot => 
-    spot.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    spot.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    spot.municipality?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    spot.barangay?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Get color based on tourist spot type
+  const getTypeColor = (type) => {
+    const colors = {
+      'ADVENTURE': '#f97316',
+      'BEACH': '#0ea5e9',
+      'CAMPING': '#84cc16',
+      'CULTURAL': '#8b5cf6',
+      'HISTORICAL': '#f59e0b',
+      'NATURAL': '#10b981',
+      'RECREATIONAL': '#ec4899',
+      'RELIGIOUS': '#6366f1',
+      'OTHERS': '#64748b'
+    };
+    return colors[type] || '#64748b';
+  };
 
-  const renderTouristSpotItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.card}
-      onPress={() => router.push(`/admin/tourist_spots/admin_tourist_spot_view?id=${item.id}`)}
-    >
-      <View style={styles.cardContent}>
-        <Text style={styles.cardTitle}>{item.name}</Text>
-        <Text style={styles.cardSubtitle}>{item.type} • {item.municipality}, {item.barangay}</Text>
-        <Text style={styles.cardDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-      </View>
-      
-      <View style={styles.cardActions}>
-        <TouchableOpacity 
-          style={[styles.actionButton, styles.editButton]}
-          onPress={() => router.push(`/admin/tourist_spots/admin_tourist_spot_edit?id=${item.id}`)}
+  // Render tourist spot card
+  const renderTouristSpotCard = ({ item }) => {
+    const typeColor = getTypeColor(item.type);
+    
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardImageContainer}>
+          {item.images && item.images.length > 0 ? (
+            <Image
+              source={{ uri: item.images[0].image_url }}
+              style={styles.cardImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={[styles.noImagePlaceholder, { backgroundColor: `${typeColor}20` }]}>
+              <Ionicons name="image-outline" size={40} color={typeColor} />
+              <Text style={{ color: typeColor, marginTop: 8 }}>No Image</Text>
+            </View>
+          )}
+          <View style={[styles.typeBadge, { backgroundColor: typeColor }]}>
+            <Text style={styles.typeText}>{item.type}</Text>
+          </View>
+        </View>
+        
+        <TouchableOpacity
+          style={styles.cardContent}
+          activeOpacity={0.9}
+          onPress={() => router.push(`/admin/tourist_spots/admin_tourist_spot_view?id=${item.id}`)}
         >
-          <Ionicons name="create-outline" size={18} color="#ffffff" />
-          <Text style={styles.actionButtonText}>Edit</Text>
+          <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
+          
+          <View style={styles.locationRow}>
+            <Ionicons name="location-outline" size={16} color="#64748b" />
+            <Text style={styles.locationText} numberOfLines={1}>
+              {item.barangay}, {item.municipality}
+            </Text>
+          </View>
+          
+          <Text style={styles.cardDescription} numberOfLines={2}>
+            {item.description}
+          </Text>
+          
+          <View style={styles.cardFooter}>
+            {item.entrance_fee ? (
+              <View style={styles.feeContainer}>
+                <Ionicons name="cash-outline" size={14} color="#64748b" />
+                <Text style={styles.feeText}>
+                  {typeof item.entrance_fee === 'number' 
+                    ? `₱${item.entrance_fee.toFixed(2)}` 
+                    : item.entrance_fee}
+                </Text>
+              </View>
+            ) : null}
+            
+            <View style={styles.hoursContainer}>
+              <Ionicons name="time-outline" size={14} color="#64748b" />
+              <Text style={styles.hoursText}>
+                {item.opening_time && item.closing_time 
+                  ? `${item.opening_time} - ${item.closing_time}` 
+                  : 'Hours not specified'}
+              </Text>
+            </View>
+          </View>
         </TouchableOpacity>
         
-        <TouchableOpacity 
-          style={[styles.actionButton, styles.deleteButton]}
-          onPress={() => handleDeleteTouristSpot(item.id)}
-        >
-          <Ionicons name="trash-outline" size={18} color="#ffffff" />
-          <Text style={styles.actionButtonText}>Delete</Text>
-        </TouchableOpacity>
+        {/* Admin Action Buttons */}
+        <View style={styles.adminActions}>
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.editButton]}
+            onPress={() => router.push(`/admin/tourist_spots/admin_tourist_spot_edit?id=${item.id}`)}
+          >
+            <Ionicons name="create-outline" size={18} color="#ffffff" />
+            <Text style={styles.actionButtonText}>Edit</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.deleteButton]}
+            onPress={() => handleDelete(item.id, item.name)}
+          >
+            <Ionicons name="trash-outline" size={18} color="#ffffff" />
+            <Text style={styles.actionButtonText}>Delete</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </TouchableOpacity>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
         
-        {/* Header with Add Button */}
-        <View style={[styles.header, { marginTop: headerHeight }]}>
-          <Text style={styles.headerTitle}>Tourist Spots</Text>
-          <TouchableOpacity 
-            style={styles.addButton}
-            onPress={() => router.push('/admin/tourist_spots/admin_tourist_spot_add')}
-          >
-            <Ionicons name="add" size={24} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
-        
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
+        {/* Search and Filter Section */}
+        <View style={[styles.searchContainer, { marginTop: headerHeight + 10 }]}>
           <View style={styles.searchInputContainer}>
             <Ionicons name="search" size={20} color="#64748b" style={styles.searchIcon} />
             <TextInput
@@ -149,60 +195,100 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
               </TouchableOpacity>
             ) : null}
           </View>
+          
+          {/* Type Filter Chips */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterChipsContainer}
+          >
+            <TouchableOpacity
+              style={[
+                styles.filterChip,
+                !selectedType && styles.activeFilterChip
+              ]}
+              onPress={() => setSelectedType(null)}
+            >
+              <Text style={[
+                styles.filterChipText,
+                !selectedType && styles.activeFilterChipText
+              ]}>All</Text>
+            </TouchableOpacity>
+            
+            {spotTypes.map(type => (
+              <TouchableOpacity
+                key={type}
+                style={[
+                  styles.filterChip,
+                  selectedType === type && styles.activeFilterChip,
+                  selectedType === type && { backgroundColor: `${getTypeColor(type)}20` }
+                ]}
+                onPress={() => setSelectedType(type === selectedType ? null : type)}
+              >
+                <Text style={[
+                  styles.filterChipText,
+                  selectedType === type && styles.activeFilterChipText,
+                  selectedType === type && { color: getTypeColor(type) }
+                ]}>{type}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
         
-        {/* Loading Indicator */}
-        {loading && !refreshing && (
+        {/* Tourist Spots List */}
+        {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#0284c7" />
+            <ActivityIndicator size="large" color="#0ea5e9" />
             <Text style={styles.loadingText}>Loading tourist spots...</Text>
           </View>
-        )}
-        
-        {/* Error Message */}
-        {error && !loading && (
+        ) : error ? (
           <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle" size={48} color="#ef4444" />
+            <Ionicons name="alert-circle-outline" size={48} color="#ef4444" />
             <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={loadTouristSpots}>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => getAllTouristSpots()}
+            >
               <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
           </View>
+        ) : filteredTouristSpots.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="search-outline" size={48} color="#94a3b8" />
+            <Text style={styles.emptyText}>
+              {touristSpots.length === 0
+                ? "No tourist spots found. Add one to get started."
+                : "No tourist spots match your search criteria."}
+            </Text>
+            {touristSpots.length > 0 && (
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={() => {
+                  setSearchQuery('');
+                  setSelectedType(null);
+                }}
+              >
+                <Text style={styles.clearButtonText}>Clear Filters</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : (
+          <FlatList
+            data={filteredTouristSpots}
+            renderItem={renderTouristSpotCard}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={styles.listContainer}
+            showsVerticalScrollIndicator={false}
+          />
         )}
         
-        {/* Tourist Spots List */}
-        {!loading && !error && (
-          <>
-            {filteredTouristSpots.length === 0 ? (
-              <View style={styles.emptyContainer}>
-                <Ionicons name="information-circle" size={48} color="#94a3b8" />
-                <Text style={styles.emptyText}>
-                  {searchQuery ? 'No tourist spots match your search.' : 'No tourist spots found.'}
-                </Text>
-                {searchQuery && (
-                  <TouchableOpacity onPress={() => setSearchQuery('')}>
-                    <Text style={styles.clearSearchText}>Clear search</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            ) : (
-              <FlatList
-                data={filteredTouristSpots}
-                renderItem={renderTouristSpotItem}
-                keyExtractor={item => item.id.toString()}
-                contentContainerStyle={styles.listContainer}
-                showsVerticalScrollIndicator={false}
-                refreshControl={
-                  <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={handleRefresh}
-                    colors={['#0284c7']}
-                  />
-                }
-              />
-            )}
-          </>
-        )}
+        {/* Add FAB */}
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => router.push('/admin/tourist_spots/admin_tourist_spot_add')}
+        >
+          <Ionicons name="add" size={24} color="#ffffff" />
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -217,34 +303,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8fafc',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  addButton: {
-    backgroundColor: '#0ea5e9',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
   searchContainer: {
     paddingHorizontal: 16,
     paddingBottom: 12,
+    backgroundColor: '#f8fafc',
+    zIndex: 10,
   },
   searchInputContainer: {
     flexDirection: 'row',
@@ -253,6 +316,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -267,9 +331,37 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#0f172a',
   },
+  filterChipsContainer: {
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  filterChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    marginRight: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 1,
+  },
+  activeFilterChip: {
+    backgroundColor: '#0ea5e920',
+  },
+  filterChipText: {
+    fontSize: 14,
+    color: '#64748b',
+  },
+  activeFilterChipText: {
+    color: '#0ea5e9',
+    fontWeight: '600',
+  },
   listContainer: {
     padding: 16,
     paddingTop: 8,
+    paddingBottom: 80, // Extra padding for FAB
   },
   card: {
     width: cardWidth,
@@ -336,26 +428,52 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     lineHeight: 20,
   },
-  cardActions: {
+  cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 8,
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    paddingTop: 12,
+  },
+  feeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  feeText: {
+    fontSize: 14,
+    color: '#334155',
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  hoursContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  hoursText: {
+    fontSize: 14,
+    color: '#64748b',
+    marginLeft: 4,
+  },
+  adminActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
+    paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,
     flex: 1,
+    justifyContent: 'center',
     marginHorizontal: 4,
   },
-  viewButton: {
-    backgroundColor: '#0ea5e9',
-  },
   editButton: {
-    backgroundColor: '#f59e0b',
+    backgroundColor: '#0ea5e9',
   },
   deleteButton: {
     backgroundColor: '#ef4444',
@@ -363,61 +481,78 @@ const styles = StyleSheet.create({
   actionButtonText: {
     color: '#ffffff',
     fontWeight: '600',
-    fontSize: 14,
     marginLeft: 4,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 20
   },
   loadingText: {
-    marginTop: 10,
+    marginTop: 12,
     fontSize: 16,
-    color: '#64748b'
+    color: '#64748b',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20
+    paddingHorizontal: 24,
   },
   errorText: {
-    marginTop: 10,
+    marginTop: 12,
     fontSize: 16,
-    color: '#64748b',
+    color: '#ef4444',
     textAlign: 'center',
-    marginBottom: 20
+    marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#0284c7',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#0ea5e9',
+    borderRadius: 8,
   },
   retryButtonText: {
     color: '#ffffff',
-    fontWeight: '600'
+    fontWeight: '600',
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20
+    paddingHorizontal: 24,
   },
   emptyText: {
-    marginTop: 10,
+    marginTop: 12,
     fontSize: 16,
     color: '#64748b',
     textAlign: 'center',
-    marginBottom: 10
+    marginBottom: 16,
   },
-  clearSearchText: {
-    color: '#0284c7',
+  clearButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 8,
+  },
+  clearButtonText: {
+    color: '#0ea5e9',
     fontWeight: '600',
-    fontSize: 16
-  }
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#0ea5e9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
 });
-
-

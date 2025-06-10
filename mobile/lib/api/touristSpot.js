@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://tourisla-api.onrender.com/api/';
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const fetchTouristSpots = async () => {
   try {

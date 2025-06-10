@@ -45,10 +45,10 @@ export default function LoginScreen() {
 
       switch (role) {
         case 'Admin':
-          router.replace('/admin/admin_dashboard');
+          router.replace('/admin/admin_dashboard'); // Keep it simple, match the file structure
           break;
         case 'Tourist':
-          router.replace('/tourist/tourist_dashboard');
+          router.replace('/tourist/tourist_dashboard'); // This one works, keep it
           break;
         case 'tour_guide':
           router.replace('/guide_home');
