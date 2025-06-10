@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Get the API URL from environment variables
-export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://tourisla-api.onrender.com/api/';
+export const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 // Create axios instance with default config
 export const apiClient = axios.create({
