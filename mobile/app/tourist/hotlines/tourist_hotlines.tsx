@@ -36,7 +36,7 @@ interface HotlineCardProps {
     onView: () => void;
 }
 
-const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 0;
+const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
 
 // Helper function to get icon based on hotline type
 const getHotlineIcon = (type: string) => {
@@ -61,11 +61,15 @@ const formatMunicipality = (municipality: string) => {
     return municipality.replace(/_/g, " ");
 };
 
-export default function TouristHotlinesScreen() {
+export default function TouristHotlinesScreen({ headerHeight }) {
     const router = useRouter();
     const [hotlines, setHotlines] = useState<Hotline[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const [error, setError] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedMunicipality, setSelectedMunicipality] = useState<string | null>(null);
+    const [selectedType, setSelectedType] = useState<string | null>(null);
+    const [showFilters, setShowFilters] = useState(false);
     const scrollY = useRef(new Animated.Value(0)).current;
     const isFocused = useIsFocused();
 
@@ -186,12 +190,9 @@ export default function TouristHotlinesScreen() {
         <SafeAreaView style={styles.safeContainer}>
             <View style={styles.container}>
 
-                {/* Header */}
-                <View style={styles.header}><Text style={styles.headerTitle}>Hotlines Directory</Text></View>
-
                 {/* Content */}
                 <Animated.ScrollView 
-                    style={styles.scrollView}
+                    style={[styles.scrollView, { marginTop: headerHeight }]}
                     contentContainerStyle={styles.contentContainer}
                     showsVerticalScrollIndicator={false}
                     onScroll={Animated.event(
@@ -257,45 +258,26 @@ export default function TouristHotlinesScreen() {
 const styles = StyleSheet.create({
     safeContainer: {
         flex: 1,
-        backgroundColor: "#f3f4f6",
+        backgroundColor: '#f8fafc',
     },
     container: {
         flex: 1,
-        backgroundColor: "#f3f4f6",
-    },
-    header: {
-        height: 50 + STATUS_BAR_HEIGHT,
-        backgroundColor: "#0f172a",
-        justifyContent: "flex-end",
-        alignItems: "center",
-        paddingBottom: 10,
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 10,
-    },
-    headerTitle: {
-        fontSize: 22,
-        fontWeight: "900",
-        color: "#ecf0f1",
-        textShadowColor: "rgba(0, 0, 0, 0.2)",
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
+        backgroundColor: '#f8fafc',
     },
     scrollView: {
         flex: 1,
-        marginTop: 50 + STATUS_BAR_HEIGHT,
+        // marginTop will be set dynamically based on headerHeight prop
     },
     contentContainer: {
         padding: 16,
-        paddingBottom: 80,
+        paddingBottom: 120, // Increased bottom padding for tab bar
     },
     centerContainer: {
-        alignItems: 'center',
+        flex: 1,
         justifyContent: 'center',
-        padding: 24,
-        marginTop: 40,
+        alignItems: 'center',
+        padding: 20,
+        minHeight: 300,
     },
     loadingIndicator: {
         marginBottom: 16,

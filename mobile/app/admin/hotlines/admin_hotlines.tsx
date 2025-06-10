@@ -3,6 +3,7 @@ import {
     Text,
     ScrollView,
     TouchableOpacity,
+    Pressable,
     StyleSheet,
     StatusBar,
     Alert,
@@ -14,7 +15,7 @@ import {
 import { useRouter } from "expo-router";
 import { useEffect, useState, useRef } from "react";
 import { fetchHotlines, deleteHotline } from "../../../lib/api/hotline";
-import Icon from "react-native-vector-icons/Ionicons";
+import Icon from "react-native-vector-icons/Feather";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useIsFocused } from '@react-navigation/native';
@@ -61,13 +62,13 @@ const formatMunicipality = (municipality: string) => {
     return municipality.replace(/_/g, " ");
 };
 
-export default function AdminHotlinesScreen() {
+export default function AdminHotlinesScreen({ headerHeight }) {
     const router = useRouter();
+    const isFocused = useIsFocused();
     const [hotlines, setHotlines] = useState<Hotline[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const [error, setError] = useState<string | null>(null);
     const scrollY = useRef(new Animated.Value(0)).current;
-    const isFocused = useIsFocused();
 
     // Load hotlines when screen comes into focus
     useEffect(() => {
@@ -82,7 +83,7 @@ export default function AdminHotlinesScreen() {
             const data = await fetchHotlines();
             console.log("Fetched hotlines:", data); // Add logging to debug
             setHotlines(data);
-            setError("");
+            setError(null);
         } catch (err) {
             console.error("Error loading hotlines:", err);
             setError("Failed to load emergency contacts. Please try again.");
@@ -213,12 +214,11 @@ export default function AdminHotlinesScreen() {
         <SafeAreaView style={styles.safeContainer}>
             <View style={styles.container}>
 
-                {/* Header */}
-                <View style={styles.header}><Text style={styles.headerTitle}>Hotlines Directory</Text></View>
+                {/* Header removed */}
 
                 {/* Content */}
                 <Animated.ScrollView 
-                    style={styles.scrollView}
+                    style={[styles.scrollView, { marginTop: headerHeight }]}
                     contentContainerStyle={styles.contentContainer}
                     showsVerticalScrollIndicator={false}
                     onScroll={Animated.event(
@@ -276,14 +276,14 @@ export default function AdminHotlinesScreen() {
                     )}
                 </Animated.ScrollView>
                 
-                {/* Floating Action Button */}
-                {!loading && hotlines.length > 0 && (
-                    <TouchableOpacity 
-                        style={styles.fab}
+                {/* Add hotline FAB - Adjusted position */}
+                {!loading && !error && (
+                    <Pressable
+                        style={[styles.fab]} // Increased bottom margin
                         onPress={() => router.push("/admin/hotlines/admin_hotline_add")}
                     >
-                        <MaterialCommunityIcons name="plus" size={24} color="#FFFFFF" />
-                    </TouchableOpacity>
+                        <Icon name="plus" size={24} color="#1fd8d6" />
+                    </Pressable>
                 )}
             </View>
         </SafeAreaView>
@@ -297,54 +297,14 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: '#f1f1f1',
-    },
-    header: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 50 + STATUS_BAR_HEIGHT,
-        backgroundColor: "#0f172a",
-        borderBottomColor: "rgba(0, 0, 0, 0.1)",
-        borderBottomWidth: 1,
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        paddingTop: STATUS_BAR_HEIGHT,
-        paddingHorizontal: 20,
-        zIndex: 50,
-        shadowColor: "#000",
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 4 },
-        elevation: 8,
-        borderBottomLeftRadius: 15,
-        borderBottomRightRadius: 15,
-    },
-    headerTitle: {
-        fontSize: 22,
-        fontWeight: "900",
-        color: "#ecf0f1",
-        textShadowColor: "rgba(0, 0, 0, 0.2)",
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
-    },
-    addButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-        justifyContent: 'center',
-        alignItems: 'center',
+        backgroundColor: '#f8fafc',
     },
     scrollView: {
         flex: 1,
-        marginTop: 50 + STATUS_BAR_HEIGHT,
     },
     contentContainer: {
         padding: 16,
-        paddingBottom: 80,
+        paddingBottom: 120, // Increased bottom padding for FAB
     },
     centerContainer: {
         alignItems: 'center',
@@ -496,17 +456,19 @@ const styles = StyleSheet.create({
     },
     fab: {
         position: "absolute",
-        bottom: 16,
         right: 16,
+        bottom: Platform.OS === 'ios' ? 140 : 130, 
         backgroundColor: "#0f172a",
         width: 56,
         height: 56,
         borderRadius: 28,
         justifyContent: "center",
         alignItems: "center",
-        elevation: 4,
+        elevation: 8,
         shadowColor: "#000",
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        zIndex: 100, // Higher zIndex to ensure visibility
     },
 });

@@ -28,18 +28,15 @@ interface Announcement {
 
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
 
-export default function TouristAnnouncementsScreen() {
+export default function TouristAnnouncementsScreen({ headerHeight }) {
     const router = useRouter();
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedAnnouncementId, setSelectedAnnouncementId] = useState<string | null>(null);
-    const [showFilters, setShowFilters] = useState(false);
-
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    const [sortOption, setSortOption] = useState<"recent" | "newest">("recent");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const [sortOption, setSortOption] = useState("newest");
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [showFilters, setShowFilters] = useState(false);
 
     useFocusEffect(
         useCallback(() => {
@@ -83,12 +80,9 @@ export default function TouristAnnouncementsScreen() {
         <SafeAreaView style={styles.safeContainer}>
         <View style={styles.container}>
 
-            {/* Header */}
-            <View style={styles.header}><Text style={styles.headerTitle}>Announcements</Text></View>
-
             <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={{ paddingBottom: 20 }}
+            style={[styles.scrollView, { marginTop: headerHeight }]}
+            contentContainerStyle={{ paddingBottom: 120 }}
             >
 
             {/* Filter Tags in Grid Layout */}
@@ -285,37 +279,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#f3f4f6",
-    },
-    header: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 50 + STATUS_BAR_HEIGHT,
-        backgroundColor: "#0f172a",
-        borderBottomColor: "rgba(0, 0, 0, 0.1)",
-        borderBottomWidth: 1,
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        paddingTop: STATUS_BAR_HEIGHT,
-        paddingHorizontal: 20,
-        zIndex: 50,
-        shadowColor: "#000",
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 4 },
-        elevation: 8,
-        borderBottomLeftRadius: 15,
-        borderBottomRightRadius: 15,
-    },
-    headerTitle: {
-        fontSize: 22,
-        fontWeight: "900",
-        color: "#ecf0f1",
-        textShadowColor: "rgba(0, 0, 0, 0.2)",
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
     },
     scrollView: {
         flex: 1,
