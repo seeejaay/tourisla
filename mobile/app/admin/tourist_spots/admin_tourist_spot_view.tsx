@@ -13,16 +13,31 @@ import {
   Dimensions,
   Share,
   FlatList,
-  Alert
+  Alert,
+  Platform
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useTouristSpotManager } from '../../../hooks/useTouristSpotManager';
 import { useAuth } from '../../../hooks/useAuth';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_MARGIN = 12;
+const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 0;
+const CARD_MARGIN = 16;
 const CARD_WIDTH = SCREEN_WIDTH - (CARD_MARGIN * 2);
+
+// Enhanced helper function to convert text from ALL CAPS to Sentence case
+// and replace underscores with spaces
+const toSentenceCase = (text: string) => {
+  if (!text) return '';
+  // Replace underscores with spaces
+  const withSpaces = text.replace(/_/g, ' ');
+  // Convert to lowercase
+  const lowercase = withSpaces.toLowerCase();
+  // Capitalize the first letter of each sentence
+  return lowercase.replace(/(^\s*\w|[.!?]\s*\w)/g, c => c.toUpperCase());
+};
 
 export default function AdminTouristSpotViewScreen() {
   const router = useRouter();
@@ -55,6 +70,20 @@ export default function AdminTouristSpotViewScreen() {
     fetchTouristSpot();
   }, [id, getTouristSpotById, router]);
 
+  // First, let's add more detailed logging to understand the image data structure
+  useEffect(() => {
+    if (touristSpot && touristSpot.images) {
+      console.log('Tourist spot images data type:', typeof touristSpot.images);
+      console.log('Tourist spot images:', JSON.stringify(touristSpot.images));
+      
+      // Check if images is an array of strings or objects
+      if (Array.isArray(touristSpot.images) && touristSpot.images.length > 0) {
+        console.log('First image type:', typeof touristSpot.images[0]);
+        console.log('First image value:', touristSpot.images[0]);
+      }
+    }
+  }, [touristSpot]);
+
   const handleOpenMap = () => {
     if (!touristSpot?.latitude || !touristSpot?.longitude) {
       Alert.alert('Error', 'Location coordinates not available');
@@ -63,7 +92,6 @@ export default function AdminTouristSpotViewScreen() {
 
     const url = `https://www.google.com/maps/search/?api=1&query=${touristSpot.latitude},${touristSpot.longitude}`;
     Linking.openURL(url).catch(err => {
-      console.error('Error opening map:', err);
       Alert.alert('Error', 'Could not open map application');
     });
   };
@@ -76,26 +104,7 @@ export default function AdminTouristSpotViewScreen() {
 
     const phoneNumber = touristSpot.contact_number.replace(/\s/g, '');
     Linking.openURL(`tel:${phoneNumber}`).catch(err => {
-      console.error('Error making call:', err);
       Alert.alert('Error', 'Could not open phone application');
-    });
-  };
-
-  const handleOpenFacebook = () => {
-    if (!touristSpot?.facebook_page) {
-      Alert.alert('Error', 'Facebook page not available');
-      return;
-    }
-
-    let url = touristSpot.facebook_page;
-    // Ensure URL has proper protocol
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'https://' + url;
-    }
-    
-    Linking.openURL(url).catch(err => {
-      console.error('Error opening Facebook page:', err);
-      Alert.alert('Error', 'Could not open browser');
     });
   };
 
@@ -110,21 +119,43 @@ export default function AdminTouristSpotViewScreen() {
     }
   };
 
-  const renderImageItem = ({ item, index }) => (
-    <TouchableOpacity 
-      activeOpacity={0.9}
-      style={styles.carouselItem}
-      onPress={() => {
-        // Handle image press (e.g., open fullscreen gallery)
-      }}
-    >
-      <Image 
-        source={{ uri: item.image_url }} 
-        style={styles.carouselImage}
-        resizeMode="cover"
-      />
-    </TouchableOpacity>
-  );
+  const renderImageItem = ({ item, index }) => {
+    console.log(`Rendering image ${index}, item type:`, typeof item);
+    
+    // Handle different possible data structures
+    let imageUrl;
+    
+    if (typeof item === 'string') {
+      imageUrl = item.trim();
+    } else if (item && typeof item === 'object') {
+      // Try to extract URL from object (could be image_url, url, uri, etc.)
+      imageUrl = item.image_url || item.url || item.uri || '';
+      if (imageUrl) imageUrl = imageUrl.trim();
+    }
+    
+    console.log(`Image ${index} URL:`, imageUrl);
+    
+    return (
+      <View style={styles.carouselItem}>
+        {imageUrl ? (
+          <Image 
+            source={{ uri: imageUrl }} 
+            style={styles.carouselImage}
+            resizeMode="cover"
+            onError={(e) => {
+              console.error(`Error loading image ${index}:`, e.nativeEvent.error);
+              console.log(`Failed URL: ${imageUrl}`);
+            }}
+          />
+        ) : (
+          <View style={[styles.noImagePlaceholder, { backgroundColor: `${typeColor}20` }]}>
+            <FontAwesome5 name="image" size={40} color="#fff" />
+            <Text style={styles.noImageText}>Image not available</Text>
+          </View>
+        )}
+      </View>
+    );
+  };
 
   const renderDayBadge = (day) => {
     const isOpen = touristSpot.days_open && touristSpot.days_open.includes(day);
@@ -137,78 +168,92 @@ export default function AdminTouristSpotViewScreen() {
     );
   };
 
+  // Get a color based on the tourist spot type
+  const getTypeColor = (type: string) => {
+    const colors: Record<string, string> = {
+      'ADVENTURE': '#f97316',
+      'BEACH': '#0ea5e9',
+      'CAMPING': '#84cc16',
+      'CULTURAL': '#8b5cf6',
+      'HISTORICAL': '#f59e0b',
+      'NATURAL': '#10b981',
+      'RECREATIONAL': '#ec4899',
+      'RELIGIOUS': '#6366f1',
+      'OTHERS': '#64748b'
+    };
+    return colors[type] || '#64748b';
+  };
+
+  // Return loading, error, and not found states similar to announcement view
   if (loading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0284c7" />
-        <Text style={styles.loadingText}>Loading tourist spot details...</Text>
-      </SafeAreaView>
+      <View style={styles.loadingContainer}>
+        <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+        <View style={styles.loadingContent}>
+          <ActivityIndicator size="large" color="#38bdf8" />
+          <Text style={styles.loadingText}>Loading tourist spot...</Text>
+        </View>
+      </View>
     );
   }
 
-  if (error) {
+  if (error || !touristSpot) {
     return (
-      <SafeAreaView style={styles.errorContainer}>
-        <Ionicons name="alert-circle" size={48} color="#ef4444" />
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>Go Back</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    );
-  }
-
-  if (!touristSpot) {
-    return (
-      <SafeAreaView style={styles.errorContainer}>
-        <Ionicons name="help-circle" size={48} color="#94a3b8" />
-        <Text style={styles.errorText}>Tourist spot not found</Text>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>Go Back</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    );
-  }
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      
-      {/* Header with back button */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backBtn} 
+      <View style={styles.errorContainer}>
+        <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+        <FontAwesome5 name="exclamation-triangle" size={50} color="#fbbf24" />
+        <Text style={styles.errorTitle}>Tourist Spot Not Found</Text>
+        <Text style={styles.errorText}>
+          {error || "We couldn't find the tourist spot you're looking for."}
+        </Text>
+        <TouchableOpacity
+          style={styles.backToListButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color="#0284c7" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>
-          {touristSpot.name}
-        </Text>
-        <TouchableOpacity 
-          style={styles.shareBtn}
-          onPress={handleShare}
-        >
-          <Ionicons name="share-social-outline" size={24} color="#0284c7" />
+          <Text style={styles.backToListButtonText}>Return to List</Text>
         </TouchableOpacity>
       </View>
+    );
+  }
 
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollViewContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Image Carousel */}
-        {touristSpot.images && touristSpot.images.length > 0 ? (
-          <View style={styles.carouselContainer}>
+  const typeColor = getTypeColor(touristSpot.type);
+  const formattedType = toSentenceCase(touristSpot.type);
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      
+      {/* Top Navigation Bar */}
+      <View style={styles.navbar}>
+        <TouchableOpacity 
+          style={styles.navButton}
+          onPress={() => router.back()}
+        >
+          <FontAwesome5 name="arrow-left" size={18} color="#fff" />
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.navButton}
+          onPress={handleShare}
+        >
+          <FontAwesome5 name="share-alt" size={18} color="#fff" />
+        </TouchableOpacity>
+      </View>
+      
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Hero Image Section */}
+        {touristSpot.images && Array.isArray(touristSpot.images) && touristSpot.images.length > 0 ? (
+          <View style={styles.imageContainer}>
             <FlatList
               ref={carouselRef}
               data={touristSpot.images}
               renderItem={renderImageItem}
-              keyExtractor={(item, index) => `image-${index}`}
+              keyExtractor={(_, index) => `image-${index}`}
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
+              snapToInterval={SCREEN_WIDTH}
+              decelerationRate="fast"
               onMomentumScrollEnd={(event) => {
                 const slideIndex = Math.floor(
                   event.nativeEvent.contentOffset.x / 
@@ -218,7 +263,7 @@ export default function AdminTouristSpotViewScreen() {
               }}
             />
             
-            {/* Pagination dots */}
+            {/* Pagination dots - make them more visible */}
             {touristSpot.images.length > 1 && (
               <View style={styles.paginationContainer}>
                 {touristSpot.images.map((_, index) => (
@@ -235,281 +280,469 @@ export default function AdminTouristSpotViewScreen() {
           </View>
         ) : (
           <View style={styles.noImageContainer}>
-            <Ionicons name="image-outline" size={60} color="#94a3b8" />
-            <Text style={styles.noImageText}>No images available</Text>
+            <LinearGradient
+              colors={[typeColor, '#0f172a']}
+              style={styles.noImageGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <FontAwesome5 name="image" size={40} color="#fff" />
+              <Text style={styles.noImageText}>No image available</Text>
+            </LinearGradient>
           </View>
         )}
-
-        {/* Tourist Spot Details */}
-        <View style={styles.detailsContainer}>
-          {/* Name and Type */}
-          <View style={styles.nameContainer}>
-            <Text style={styles.name}>{touristSpot.name}</Text>
-            <View style={[styles.typeBadge, getTypeStyle(touristSpot.type).badge]}>
-              <Text style={styles.typeText}>{touristSpot.type}</Text>
+        
+        {/* Content Section */}
+        <View style={styles.contentContainer}>
+          {/* Type and Operating Hours */}
+          <View style={styles.metaContainer}>
+            <View style={[styles.typeTag, { backgroundColor: typeColor }]}>
+              <Text style={styles.typeTagText}>{formattedType}</Text>
+            </View>
+            
+            <View style={styles.hoursContainer}>
+              <FontAwesome5 name="clock" solid size={14} color="#94a3b8" />
+              <Text style={styles.hoursText}>
+                {touristSpot.opening_time || 'N/A'} - {touristSpot.closing_time || 'N/A'}
+              </Text>
             </View>
           </View>
           
+          {/* Title */}
+          <Text style={styles.title}>{toSentenceCase(touristSpot.name)}</Text>
+          
           {/* Location */}
           <View style={styles.locationContainer}>
-            <Ionicons name="location-outline" size={18} color="#64748b" />
+            <FontAwesome5 name="map-marker-alt" solid size={14} color={typeColor} />
             <Text style={styles.locationText}>
-              {touristSpot.barangay}, {touristSpot.municipality}
+              {toSentenceCase(touristSpot.barangay)}, {toSentenceCase(touristSpot.municipality)}
             </Text>
           </View>
           
           {/* Description */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Description</Text>
-            <Text style={styles.description}>{touristSpot.description}</Text>
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.descriptionLabel}>About this place</Text>
+            <Text style={styles.descriptionText}>
+              {toSentenceCase(touristSpot.description)}
+            </Text>
           </View>
           
-          {/* Rules */}
-          {touristSpot.rules && (
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Rules & Guidelines</Text>
-              <View style={styles.rulesContainer}>
-                <Text style={styles.rulesText}>{touristSpot.rules}</Text>
-              </View>
-            </View>
-          )}
-          
-          {/* Opening Hours */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Opening Hours</Text>
-            <View style={styles.timeContainer}>
-              <Ionicons name="time-outline" size={18} color="#64748b" />
-              <Text style={styles.timeText}>
-                {touristSpot.opening_time || 'Not specified'} - {touristSpot.closing_time || 'Not specified'}
+          {/* Entrance Fee */}
+          <View style={styles.feeContainer}>
+            <Text style={styles.feeLabel}>Entrance Fee</Text>
+            <View style={styles.feeContent}>
+              <FontAwesome5 name="ticket-alt" solid size={14} color={typeColor} />
+              <Text style={styles.feeText}>
+                {touristSpot.entrance_fee ? `₱${touristSpot.entrance_fee}` : 'Free Entry'}
               </Text>
             </View>
             
-            <View style={styles.daysContainer}>
-              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
-                renderDayBadge(day)
-              ))}
+            {touristSpot.other_fees && (
+              <Text style={styles.otherFeesText}>
+                {toSentenceCase(touristSpot.other_fees)}
+              </Text>
+            )}
+          </View>
+          
+          {/* Open Days */}
+          <View style={styles.daysContainer}>
+            <Text style={styles.daysLabel}>Open Days</Text>
+            <View style={styles.daysRow}>
+              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(renderDayBadge)}
             </View>
           </View>
           
           {/* Contact Information */}
-          {(touristSpot.contact_number || touristSpot.facebook_page) && (
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Contact Information</Text>
+          {(touristSpot.contact_number || touristSpot.email || touristSpot.facebook_page) && (
+            <View style={styles.contactContainer}>
+              <Text style={styles.contactLabel}>Contact Information</Text>
               
               {touristSpot.contact_number && (
-                <View style={styles.contactContainer}>
-                  <Ionicons name="call-outline" size={18} color="#64748b" />
+                <TouchableOpacity 
+                  style={styles.contactRow}
+                  onPress={() => Linking.openURL(`tel:${touristSpot.contact_number}`)}
+                >
+                  <FontAwesome5 name="phone-alt" solid size={14} color={typeColor} />
                   <Text style={styles.contactText}>{touristSpot.contact_number}</Text>
-                </View>
+                </TouchableOpacity>
+              )}
+              
+              {touristSpot.email && (
+                <TouchableOpacity 
+                  style={styles.contactRow}
+                  onPress={() => Linking.openURL(`mailto:${touristSpot.email}`)}
+                >
+                  <FontAwesome5 name="envelope" solid size={14} color={typeColor} />
+                  <Text style={styles.contactText}>{touristSpot.email}</Text>
+                </TouchableOpacity>
               )}
               
               {touristSpot.facebook_page && (
                 <TouchableOpacity 
-                  style={styles.contactContainer}
-                  onPress={handleOpenFacebook}
+                  style={styles.contactRow}
+                  onPress={() => Linking.openURL(touristSpot.facebook_page)}
                 >
-                  <Ionicons name="logo-facebook" size={18} color="#1877f2" />
-                  <Text style={[styles.contactText, styles.linkText]}>
-                    {touristSpot.facebook_page}
-                  </Text>
+                  <FontAwesome5 name="facebook" brands size={14} color={typeColor} />
+                  <Text style={styles.contactText}>{touristSpot.facebook_page}</Text>
                 </TouchableOpacity>
               )}
             </View>
           )}
           
-          {/* Fees */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Fees</Text>
-            <View style={styles.feeContainer}>
-              <Ionicons name="cash-outline" size={18} color="#64748b" />
-              <Text style={styles.feeText}>
-                Entrance: {touristSpot.entrance_fee ? `₱${touristSpot.entrance_fee}` : 'Free Entry'}
-              </Text>
+          {/* Amenities */}
+          {touristSpot.amenities && touristSpot.amenities.length > 0 && (
+            <View style={styles.amenitiesContainer}>
+              <Text style={styles.amenitiesLabel}>Amenities</Text>
+              <View style={styles.amenitiesList}>
+                {touristSpot.amenities.map((amenity, index) => (
+                  <View key={`amenity-${index}`} style={styles.amenityBadge}>
+                    <Text style={styles.amenityText}>{toSentenceCase(amenity)}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
-            
-            {touristSpot.other_fees && (
-              <View style={styles.otherFeesContainer}>
-                <Text style={styles.otherFeesTitle}>Additional Fees:</Text>
-                <Text style={styles.otherFeesText}>{touristSpot.other_fees}</Text>
-              </View>
-            )}
-          </View>
+          )}
           
-          {/* Coordinates */}
-          {(touristSpot.latitude && touristSpot.longitude) && (
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Coordinates</Text>
-              <View style={styles.coordinatesContainer}>
-                <Ionicons name="navigate-outline" size={18} color="#64748b" />
-                <Text style={styles.coordinatesText}>
-                  {touristSpot.latitude}, {touristSpot.longitude}
-                </Text>
-              </View>
+          {/* Rules */}
+          {touristSpot.rules && (
+            <View style={styles.rulesContainer}>
+              <Text style={styles.rulesLabel}>Rules & Guidelines</Text>
+              <Text style={styles.rulesText}>
+                {toSentenceCase(touristSpot.rules)}
+              </Text>
             </View>
           )}
         </View>
       </ScrollView>
-      
-      {/* Action Buttons */}
-      <View style={styles.actionButtonsContainer}>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.mapButton]}
-          onPress={handleOpenMap}
-          disabled={!touristSpot.latitude || !touristSpot.longitude}
-        >
-          <Ionicons name="map-outline" size={20} color="#ffffff" />
-          <Text style={styles.actionButtonText}>View on Map</Text>
-        </TouchableOpacity>
-        
-        {touristSpot.contact_number && (
-          <TouchableOpacity
-            style={[styles.actionButton, styles.callButton]}
-            onPress={handleCall}
-          >
-            <Ionicons name="call-outline" size={20} color="#ffffff" />
-            <Text style={styles.actionButtonText}>Call</Text>
-          </TouchableOpacity>
-        )}
-        
-      </View>
-    </SafeAreaView>
+    </View>
   );
 }
-
-// Helper function to get style based on tourist spot type
-const getTypeStyle = (type) => {
-  switch (type) {
-    case 'NATURAL':
-      return {
-        badge: { backgroundColor: '#10b981' },
-        text: { color: '#ffffff' }
-      };
-    case 'HISTORICAL':
-      return {
-        badge: { backgroundColor: '#8b5cf6' },
-        text: { color: '#ffffff' }
-      };
-    case 'CULTURAL':
-      return {
-        badge: { backgroundColor: '#f59e0b' },
-        text: { color: '#ffffff' }
-      };
-    case 'BEACH':
-      return {
-        badge: { backgroundColor: '#0ea5e9' },
-        text: { color: '#ffffff' }
-      };
-    case 'RELIGIOUS':
-      return {
-        badge: { backgroundColor: '#6366f1' },
-        text: { color: '#ffffff' }
-      };
-    default:
-      return {
-        badge: { backgroundColor: '#64748b' },
-        text: { color: '#ffffff' }
-      };
-  }
-};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#0f172a',
   },
   loadingContainer: {
     flex: 1,
+    backgroundColor: '#0f172a',
+  },
+  loadingContent: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
   },
   loadingText: {
-    marginTop: 12,
+    color: '#cbd5e1',
+    marginTop: 16,
     fontSize: 16,
-    color: '#64748b',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
-    padding: 20,
+    backgroundColor: '#0f172a',
+    padding: 24,
+  },
+  errorTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#fff',
+    marginTop: 16,
+    marginBottom: 8,
   },
   errorText: {
-    marginTop: 12,
     fontSize: 16,
-    color: '#64748b',
+    color: '#94a3b8',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
   },
-  backButton: {
-    backgroundColor: '#0284c7',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+  backToListButton: {
+    backgroundColor: '#3b82f6',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 8,
   },
-  backButtonText: {
-    color: '#ffffff',
+  backToListButtonText: {
+    color: '#fff',
     fontWeight: '600',
   },
-  header: {
+  navbar: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: STATUS_BAR_HEIGHT + 10,
+    paddingBottom: 10,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    backgroundColor: 'transparent',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     zIndex: 10,
-    elevation: 2,
   },
-  backBtn: {
-    padding: 8,
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#0f172a',
-    textAlign: 'center',
-    marginHorizontal: 8,
-  },
-  shareBtn: {
-    padding: 8,
+  navButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   scrollView: {
     flex: 1,
+    backgroundColor: '#0f172a',
   },
-  scrollViewContent: {
-    paddingBottom: 80, // Extra padding for action buttons
-  },
-  carouselContainer: {
+  imageContainer: {
     width: SCREEN_WIDTH,
     height: SCREEN_WIDTH * 0.75,
-    backgroundColor: '#e2e8f0',
+    position: 'relative',
+    backgroundColor: '#1e293b',
+    marginBottom: 24, // Add space below the image container
   },
   carouselItem: {
     width: SCREEN_WIDTH,
     height: SCREEN_WIDTH * 0.75,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   carouselImage: {
     width: '100%',
     height: '100%',
   },
+  noImageContainer: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_WIDTH * 0.75,
+  },
+  noImageGradient: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noImageText: {
+    color: '#fff',
+    marginTop: 12,
+    fontSize: 16,
+    opacity: 0.8,
+  },
+  contentContainer: {
+    backgroundColor: '#0f172a',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    marginTop: -24,
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    paddingBottom: 40,
+    zIndex: 1, // Ensure content is above the image
+  },
+  metaContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  typeTag: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  typeTagText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  hoursContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  hoursText: {
+    fontSize: 14,
+    color: '#94a3b8',
+    marginLeft: 8,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#fff',
+    marginBottom: 12,
+    lineHeight: 32,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  locationText: {
+    fontSize: 16,
+    color: '#cbd5e1',
+    marginLeft: 8,
+  },
+  descriptionContainer: {
+    backgroundColor: '#1e293b',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+  },
+  descriptionLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 12,
+  },
+  descriptionText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#cbd5e1',
+  },
+  feeContainer: {
+    backgroundColor: '#1e293b',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+  },
+  feeLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 12,
+  },
+  feeContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  feeText: {
+    fontSize: 16,
+    color: '#cbd5e1',
+    marginLeft: 8,
+    fontWeight: '600',
+  },
+  otherFeesText: {
+    fontSize: 14,
+    color: '#94a3b8',
+    marginTop: 4,
+    marginLeft: 22,
+  },
+  daysContainer: {
+    backgroundColor: '#1e293b',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+  },
+  daysLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 12,
+  },
+  daysRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  dayBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  openDay: {
+    backgroundColor: '#10b981',
+  },
+  closedDay: {
+    backgroundColor: '#ef4444',
+  },
+  dayText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  contactContainer: {
+    backgroundColor: '#1e293b',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+  },
+  contactLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 12,
+  },
+  contactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  contactText: {
+    fontSize: 16,
+    color: '#cbd5e1',
+    marginLeft: 12,
+  },
+  amenitiesContainer: {
+    backgroundColor: '#1e293b',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+  },
+  amenitiesLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 12,
+  },
+  amenitiesList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  amenityBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  amenityText: {
+    fontSize: 14,
+    color: '#cbd5e1',
+  },
+  rulesContainer: {
+    backgroundColor: '#1e293b',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+  },
+  rulesLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 12,
+  },
+  rulesText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#cbd5e1',
+  },
   paginationContainer: {
+    position: 'absolute',
+    bottom: 16,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'absolute',
-    bottom: 16,
-    width: '100%',
+    zIndex: 5, // Ensure dots are above images
   },
   paginationDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
     marginHorizontal: 4,
   },
   paginationDotActive: {
@@ -521,35 +754,40 @@ const styles = StyleSheet.create({
   noImageContainer: {
     width: SCREEN_WIDTH,
     height: SCREEN_WIDTH * 0.75,
-    backgroundColor: '#e2e8f0',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   noImageText: {
     marginTop: 8,
     fontSize: 16,
     color: '#94a3b8',
   },
-  detailsContainer: {
-    padding: 16,
+  noImagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(30, 41, 59, 0.8)',
+  },
+  
+  // Redesigned cards
+  detailsCard: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
-    margin: CARD_MARGIN,
-    width: CARD_WIDTH,
-    elevation: 2,
+    margin: 16,
+    padding: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  nameContainer: {
+  nameRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
   },
-  name: {
-    fontSize: 24,
+  spotName: {
+    fontSize: 22,
     fontWeight: '700',
     color: '#0f172a',
     flex: 1,
@@ -558,6 +796,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
+    backgroundColor: '#0284c7',
     marginLeft: 8,
   },
   typeText: {
@@ -565,20 +804,52 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 12,
   },
-  locationContainer: {
+  locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
   },
   locationText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#64748b',
     marginLeft: 6,
   },
-  sectionContainer: {
-    marginBottom: 20,
+  
+  // Action buttons inside the card
+  actionButtonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
   },
-  sectionTitle: {
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0284c7',
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginHorizontal: 4,
+  },
+  actionButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  
+  // Common card style
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    margin: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  cardTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#0f172a',
@@ -589,19 +860,22 @@ const styles = StyleSheet.create({
     color: '#334155',
     lineHeight: 24,
   },
-  hoursContainer: {
+  hoursRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
   },
-  timeContainer: {
-    marginRight: 16,
-  },
-  timeText: {
+  hoursText: {
     fontSize: 16,
     color: '#64748b',
   },
-  daysContainer: {
+  daysTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0f172a',
+    marginBottom: 8,
+  },
+  daysRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
@@ -630,7 +904,7 @@ const styles = StyleSheet.create({
   closedDayText: {
     color: '#ffffff',
   },
-  contactContainer: {
+  contactRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
@@ -640,7 +914,7 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginLeft: 6,
   },
-  feeContainer: {
+  feeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
@@ -649,84 +923,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#64748b',
     marginLeft: 6,
-  },
-  coordinatesContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  coordinatesText: {
-    fontSize: 16,
-    color: '#64748b',
-    marginLeft: 6,
-  },
-  adminActionButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 16,
-    backgroundColor: '#ffffff',
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-  },
-  adminActionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginHorizontal: 8,
-  },
-  editButton: {
-    backgroundColor: '#10b981',
-  },
-  deleteButton: {
-    backgroundColor: '#ef4444',
-  },
-  adminActionButtonText: {
-    color: '#ffffff',
-    marginLeft: 8,
-  },
-  actionButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 16,
-    backgroundColor: '#ffffff',
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginHorizontal: 8,
-  },
-  mapButton: {
-    backgroundColor: '#0284c7',
-  },
-  callButton: {
-    backgroundColor: '#10b981',
-  },
-  facebookButton: {
-    backgroundColor: '#1877f2',
-  },
-  actionButtonText: {
-    color: '#ffffff',
-    marginLeft: 8,
-  },
-  rulesContainer: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-  },
-  rulesText: {
-    fontSize: 16,
-    color: '#334155',
-    lineHeight: 24,
   },
   otherFeesContainer: {
     backgroundColor: '#f8fafc',
@@ -745,11 +941,36 @@ const styles = StyleSheet.create({
     color: '#334155',
     lineHeight: 24,
   },
+  amenitiesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  amenityBadge: {
+    backgroundColor: '#e2e8f0',
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginRight: 12,
+    marginBottom: 12,
+  },
+  amenityText: {
+    fontSize: 14,
+    color: '#0f172a',
+  },
   linkText: {
     color: '#1877f2',
     textDecorationLine: 'underline',
   },
 });
+
+
+
+
+
+
+
+
 
 
 
