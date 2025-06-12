@@ -143,6 +143,12 @@ const {
   syncBookingToCalendarController,
 } = require("../controllers/calendarController.js");
 
+const {
+  getGuidesPerPackageController,
+  createBookingController,
+  getTouristBookingsController
+} = require("../controllers/bookingController.js");
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -485,4 +491,20 @@ app.post(
   "/api/v1/calendar/sync-booking",
   // authenticateTourGuide,
   syncBookingToCalendarController
+);
+
+// Routes for Booking
+app.get(
+  "/api/v1/guides-per-package/:packageId",
+  getGuidesPerPackageController
+);
+app.post(
+  "/api/v1/bookings",
+  authenticateUser,
+  createBookingController
+);
+app.get(
+  "/api/v1/tourist/bookings",
+  authenticateUser,
+  getTouristBookingsController
 );
