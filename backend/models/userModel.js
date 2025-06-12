@@ -10,10 +10,12 @@ const createUser = async (userData) => {
     role,
     nationality,
     status = "Active",
+    attraction_id = null,         // ✅ Default to null
+    accommodation_id = null       // ✅ Default to null
   } = userData;
 
   const result = await db.query(
-    "INSERT INTO users (first_name, last_name, email, password, phone_number, role, nationality, created_at, status) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8) RETURNING *",
+    "INSERT INTO users (first_name, last_name, email, password, phone_number, role, nationality, created_at, status, attraction_id, accommodation_id) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9, $10) RETURNING *",
     [
       first_name,
       last_name,
@@ -23,6 +25,8 @@ const createUser = async (userData) => {
       role,
       nationality,
       status,
+      attraction_id,
+      accommodation_id
     ]
   );
 
@@ -37,7 +41,6 @@ const findUserByEmail = async (email) => {
 };
 
 const editUser = async (userId, userData) => {
-  // Build dynamic SQL for only provided fields
   const fields = [];
   const values = [];
   let idx = 1;
@@ -62,10 +65,10 @@ const editUser = async (userId, userData) => {
 
 const deleteUser = async (email) => {
   const result = await db.query(
-    "UPDATE users SET deleted_at = NOW(), status =$1 WHERE email = $2",
+    "UPDATE users SET deleted_at = NOW(), status = $1 WHERE email = $2",
     ["Inactive", email]
   );
-  return result.rowCount > 0; // Return true if a user was deleted
+  return result.rowCount > 0;
 };
 
 const statusCheck = async (email) => {

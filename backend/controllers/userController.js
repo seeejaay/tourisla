@@ -16,6 +16,8 @@ const createUserController = async (req, res) => {
       phone_number,
       role,
       nationality,
+      attraction_id,         //  Added
+      accommodation_id       //  Added
     } = req.body;
 
     // Default role for new users
@@ -33,7 +35,7 @@ const createUserController = async (req, res) => {
         "Tour Operator"
       ];
       if (role && allowedRoles.includes(role)) {
-        assignedRole = role; // Allow admins to assign roles
+        assignedRole = role;
       } else if (role) {
         return res.status(403).json({ error: "Invalid role assignment" });
       }
@@ -49,8 +51,10 @@ const createUserController = async (req, res) => {
       email,
       hashedPassword,
       phone_number,
-      role: assignedRole, // Use the assigned role
+      role: assignedRole,
       nationality,
+      attraction_id,        // Pass it to model
+      accommodation_id      // Pass it to model
     });
 
     res.status(201).json({
@@ -69,7 +73,7 @@ const currentUserController = async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const user = req.session.user; // Assuming user info is stored in session
+    const user = req.session.user;
     res.status(200).json({
       status: "success",
       data: { user },
@@ -82,7 +86,7 @@ const currentUserController = async (req, res) => {
 
 const editUserController = async (req, res) => {
   try {
-    const userId = req.params.userId; // Get userId from URL
+    const userId = req.params.userId;
     const {
       first_name,
       last_name,
@@ -93,6 +97,8 @@ const editUserController = async (req, res) => {
       role,
       status,
       last_login_at,
+      attraction_id,          // Add this
+      accommodation_id        // Add this
     } = req.body;
 
     let updatedFields = {
@@ -104,15 +110,15 @@ const editUserController = async (req, res) => {
       role,
       status,
       last_login_at,
+      attraction_id,          // Include in update
+      accommodation_id        // Include in update
     };
 
-    // Only hash and update password if provided
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
       updatedFields.password = hashedPassword;
     }
 
-    // Call your model's editUser with userId and updatedFields
     const updatedUser = await editUser(userId, updatedFields);
 
     if (!updatedUser) {
@@ -127,6 +133,7 @@ const editUserController = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 const deleteUserController = async (req, res) => {
   try {
@@ -147,7 +154,7 @@ const deleteUserController = async (req, res) => {
 
 const viewUserController = async (req, res) => {
   try {
-    const userId = req.params.userId; // Assuming userId is passed as a URL parameter
+    const userId = req.params.userId;
     const user = await findUserById(userId);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
