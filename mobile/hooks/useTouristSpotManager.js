@@ -18,13 +18,24 @@ export const useTouristSpotManager = () => {
     setError(null);
     
     try {
+      // Try to fetch from API first
       const data = await fetchTouristSpots();
       setTouristSpots(data);
       return data;
     } catch (err) {
       console.error('Error fetching tourist spots:', err);
-      setError('Failed to load tourist spots. Please try again.');
-      return [];
+      
+      // If API fails, use mock data as fallback
+      try {
+        console.log('Using mock data as fallback');
+        const mockData = getMockTouristSpots();
+        setTouristSpots(mockData);
+        return mockData;
+      } catch (mockErr) {
+        console.error('Error with mock data:', mockErr);
+        setError('Failed to load tourist spots. Please try again.');
+        return [];
+      }
     } finally {
       setLoading(false);
     }
@@ -36,12 +47,27 @@ export const useTouristSpotManager = () => {
     setError(null);
     
     try {
+      // Try to fetch from API first
       const data = await fetchTouristSpotById(id);
       return data;
     } catch (err) {
       console.error(`Error fetching tourist spot with ID ${id}:`, err);
-      setError('Failed to load tourist spot details. Please try again.');
-      return null;
+      
+      // If API fails, try to find in mock data
+      try {
+        console.log('Using mock data as fallback for single tourist spot');
+        const mockData = getMockTouristSpots();
+        const spot = mockData.find(spot => spot.id.toString() === id.toString());
+        if (spot) {
+          return spot;
+        } else {
+          setError('Tourist spot not found');
+          return null;
+        }
+      } catch (mockErr) {
+        setError('Failed to load tourist spot details');
+        return null;
+      }
     } finally {
       setLoading(false);
     }
@@ -121,4 +147,6 @@ export const useTouristSpotManager = () => {
     deleteTouristSpot
   };
 };
+
+
 

@@ -129,6 +129,7 @@ export const deleteTouristSpot = async (touristSpotId, token) => {
 
 // Use mock data if API is unavailable
 export const getMockTouristSpots = () => {
+  console.log('Returning mock tourist spot data');
   return [
     {
       id: 1,
@@ -136,9 +137,17 @@ export const getMockTouristSpots = () => {
       description: "The Chocolate Hills are a geological formation in the Bohol province of the Philippines. They are a famous tourist attraction of Bohol.",
       type: "NATURAL",
       barangay: "Buenos Aires",
-      municipality: "Carmen",
+      municipality: "SANTA_FE",
+      province: "Cebu",
+      longitude: "124.1694",
+      latitude: "9.8333",
+      opening_time: "6:00 AM",
+      closing_time: "6:00 PM",
+      days_open: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"],
+      entrance_fee: "50",
+      contact_number: "+639123456789",
       images: [
-        { image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Chocolate_Hills_overview.JPG/1200px-Chocolate_Hills_overview.JPG" }
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Chocolate_Hills_overview.JPG/1200px-Chocolate_Hills_overview.JPG"
       ]
     },
     {
@@ -147,9 +156,17 @@ export const getMockTouristSpots = () => {
       description: "Panglao is a popular tourist destination in the Philippines, and is well known for its white sand beaches and diving locations.",
       type: "BEACH",
       barangay: "Danao",
-      municipality: "Panglao",
+      municipality: "BANTAYAN",
+      province: "Cebu",
+      longitude: "123.7775",
+      latitude: "9.5833",
+      opening_time: "24 hours",
+      closing_time: "24 hours",
+      days_open: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"],
+      entrance_fee: "Free",
+      contact_number: "+639123456789",
       images: [
-        { image_url: "https://a.cdn-hotels.com/gdcs/production143/d1112/c4fedab1-4041-4db4-9d0e-a64701588c54.jpg" }
+        "https://a.cdn-hotels.com/gdcs/production143/d1112/c4fedab1-4041-4db4-9d0e-a64701588c54.jpg"
       ]
     },
     {
@@ -158,12 +175,22 @@ export const getMockTouristSpots = () => {
       description: "The Church of Our Lady of the Immaculate Conception, commonly known as Baclayon Church, is a historic church in Bohol, Philippines.",
       type: "HISTORICAL",
       barangay: "Baclayon",
-      municipality: "Baclayon",
+      municipality: "MADRIDEJOS",
+      province: "Cebu",
+      longitude: "123.9167",
+      latitude: "9.6333",
+      opening_time: "8:00 AM",
+      closing_time: "5:00 PM",
+      days_open: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"],
+      entrance_fee: "50",
+      contact_number: "+639123456789",
       images: [
-        { image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Baclayon_Church_Bohol.jpg/1200px-Baclayon_Church_Bohol.jpg" }
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Baclayon_Church_Bohol.jpg/1200px-Baclayon_Church_Bohol.jpg"
       ]
     }
   ];
 };
+
+
 
 

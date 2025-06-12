@@ -92,67 +92,53 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
     
     return (
       <View style={styles.card}>
+        {/* Image Section with Gradient Overlay */}
         <View style={styles.cardImageContainer}>
           {item.images && item.images.length > 0 ? (
-            <Image
-              source={{ uri: item.images[0].image_url }}
-              style={styles.cardImage}
-              resizeMode="cover"
-            />
+            <>
+              <Image
+                source={{ uri: item.images[0] }}
+                style={styles.cardImage}
+                resizeMode="cover"
+              />
+              <LinearGradient
+                colors={['transparent', 'rgba(0,0,0,0.7)']}
+                style={styles.imageGradient}
+              />
+            </>
           ) : (
             <View style={[styles.noImagePlaceholder, { backgroundColor: `${typeColor}20` }]}>
               <Ionicons name="image-outline" size={40} color={typeColor} />
-              <Text style={{ color: typeColor, marginTop: 8 }}>No Image</Text>
             </View>
           )}
+          
+          {/* Type Badge */}
           <View style={[styles.typeBadge, { backgroundColor: typeColor }]}>
             <Text style={styles.typeText}>{item.type}</Text>
           </View>
-        </View>
-        
-        <TouchableOpacity
-          style={styles.cardContent}
-          activeOpacity={0.9}
-          onPress={() => router.push(`/admin/tourist_spots/admin_tourist_spot_view?id=${item.id}`)}
-        >
-          <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
           
-          <View style={styles.locationRow}>
-            <Ionicons name="location-outline" size={16} color="#64748b" />
-            <Text style={styles.locationText} numberOfLines={1}>
-              {item.barangay}, {item.municipality}
-            </Text>
-          </View>
-          
-          <Text style={styles.cardDescription} numberOfLines={2}>
-            {item.description}
-          </Text>
-          
-          <View style={styles.cardFooter}>
-            {item.entrance_fee ? (
-              <View style={styles.feeContainer}>
-                <Ionicons name="cash-outline" size={14} color="#64748b" />
-                <Text style={styles.feeText}>
-                  {typeof item.entrance_fee === 'number' 
-                    ? `₱${item.entrance_fee.toFixed(2)}` 
-                    : item.entrance_fee}
-                </Text>
-              </View>
-            ) : null}
-            
-            <View style={styles.hoursContainer}>
-              <Ionicons name="time-outline" size={14} color="#64748b" />
-              <Text style={styles.hoursText}>
-                {item.opening_time && item.closing_time 
-                  ? `${item.opening_time} - ${item.closing_time}` 
-                  : 'Hours not specified'}
+          {/* Title overlay on image */}
+          <View style={styles.titleOverlay}>
+            <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
+            <View style={styles.locationRow}>
+              <Ionicons name="location-outline" size={14} color="#ffffff" />
+              <Text style={styles.locationText} numberOfLines={1}>
+                {item.barangay}, {item.municipality}
               </Text>
             </View>
           </View>
-        </TouchableOpacity>
+        </View>
         
-        {/* Admin Action Buttons */}
-        <View style={styles.adminActions}>
+        {/* Action Buttons */}
+        <View style={styles.actionButtonsRow}>
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.viewButton]}
+            onPress={() => router.push(`/admin/tourist_spots/admin_tourist_spot_view?id=${item.id}`)}
+          >
+            <Ionicons name="eye-outline" size={18} color="#ffffff" />
+            <Text style={styles.actionButtonText}>View</Text>
+          </TouchableOpacity>
+          
           <TouchableOpacity 
             style={[styles.actionButton, styles.editButton]}
             onPress={() => router.push(`/admin/tourist_spots/admin_tourist_spot_edit?id=${item.id}`)}
@@ -257,7 +243,7 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
             <Ionicons name="search-outline" size={48} color="#94a3b8" />
             <Text style={styles.emptyText}>
               {touristSpots.length === 0
-                ? "No tourist spots found. Add one to get started."
+                ? "No tourist spots found. Using mock data for demonstration."
                 : "No tourist spots match your search criteria."}
             </Text>
             {touristSpots.length > 0 && (
@@ -364,16 +350,16 @@ const styles = StyleSheet.create({
     paddingBottom: 80, // Extra padding for FAB
   },
   card: {
-    width: cardWidth,
+    width: '100%',
     backgroundColor: '#ffffff',
     borderRadius: 16,
     marginBottom: 16,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
   cardImageContainer: {
     position: 'relative',
@@ -382,6 +368,13 @@ const styles = StyleSheet.create({
   cardImage: {
     width: '100%',
     height: '100%',
+  },
+  imageGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '50%',
   },
   noImagePlaceholder: {
     width: '100%',
@@ -394,86 +387,63 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     right: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 12,
   },
   typeText: {
     color: '#ffffff',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
+    textTransform: 'uppercase',
   },
-  cardContent: {
+  titleOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     padding: 16,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#0f172a',
-    marginBottom: 6,
+    color: '#ffffff',
+    marginBottom: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   locationText: {
     fontSize: 14,
-    color: '#64748b',
+    color: '#ffffff',
     marginLeft: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
-  cardDescription: {
-    fontSize: 14,
-    color: '#334155',
-    marginBottom: 12,
-    lineHeight: 20,
-  },
-  cardFooter: {
+  actionButtonsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
-    paddingTop: 12,
-  },
-  feeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  feeText: {
-    fontSize: 14,
-    color: '#334155',
-    fontWeight: '600',
-    marginLeft: 4,
-  },
-  hoursContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  hoursText: {
-    fontSize: 14,
-    color: '#64748b',
-    marginLeft: 4,
-  },
-  adminActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     padding: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
+    justifyContent: 'space-between',
   },
   actionButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    flex: 1,
     justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 8,
     marginHorizontal: 4,
   },
-  editButton: {
+  viewButton: {
     backgroundColor: '#0ea5e9',
+  },
+  editButton: {
+    backgroundColor: '#10b981',
   },
   deleteButton: {
     backgroundColor: '#ef4444',
@@ -481,7 +451,8 @@ const styles = StyleSheet.create({
   actionButtonText: {
     color: '#ffffff',
     fontWeight: '600',
-    marginLeft: 4,
+    marginLeft: 6,
+    fontSize: 14,
   },
   loadingContainer: {
     flex: 1,
@@ -556,3 +527,4 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
 });
+
