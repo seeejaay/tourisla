@@ -5,18 +5,19 @@ const {
   getGoogleTokens,
 } = require('../models/calendarModel');
 
-// redirect user to google consent screen
+// Redirects user to Google's consent page for Calendar access
 const authorizeGoogleCalendarController = (req, res) => {
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: "offline",
     scope: SCOPES,
     prompt: "consent", 
-    state: JSON.stringify({ userId: req.user.id }), 
+    // state: JSON.stringify({ userId: req.user.id }), THIS IS THE REAL CODE USED WITH FRONTEND
+    state: JSON.stringify({ userId: 4 }) // for manual testing in web browser
   });
   res.redirect(authUrl);
 };
 
-// handle OAuth2 callback and exchange code for tokens
+// Handles Google’s redirect, exchanges code for tokens, saves tokens
 const googleCalendarCallbackController = async (req, res) => {
   const { code, state } = req.query;
   const { userId } = JSON.parse(state);
@@ -36,18 +37,19 @@ const googleCalendarCallbackController = async (req, res) => {
   }
 };
 
-// sync booking to calendar event
+// Creates a Google Calendar event for a confirmed booking
 const syncBookingToCalendarController = async (req, res) => {
-  const tourguideId = req.user.id;
+  // const tourguideId = req.user.id; // THIS IS THE REAL CODE USED WITH FRONTEND
+  const tourguideId = 4; // for manual testing in web browser
   const { title, description, startDateTime, endDateTime } = req.body;
 
   try {
     const tokens = await getGoogleTokens(tourguideId);
 
     oauth2Client.setCredentials({
-      access_token: tokens.google_access_token,
-      refresh_token: tokens.google_refresh_token,
-      expiry_date: new Date(tokens.google_token_expiry).getTime(),
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expiry_date: new Date(tokens.token_expiry).getTime(),
     });
 
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
