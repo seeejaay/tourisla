@@ -129,6 +129,7 @@ const {
   viewArticleByIdController,
 } = require("../controllers/articleController");
 
+const { registerVisitorController } = require("../controllers/visitorRegistrationController");
 
 app.use(
   session({
@@ -420,4 +421,7 @@ app.put("/api/v1/articles/:articleId", authenticateAdmin, editArticleController)
 app.delete("/api/v1/articles/:articleId", authenticateAdmin, deleteArticleController);
 app.get("/api/v1/articles", viewArticlesController);
 app.get("/api/v1/articles/:articleId", viewArticleByIdController);
+
+// Visitor Registration Route
+app.post("/api/v1/register", registerVisitorController);
 
