@@ -65,14 +65,6 @@ const {
 } = require("../controllers/guideUploadDocuController.js");
 
 const {
-  createTouristSpotController,
-  editTouristSpotController,
-  deleteTouristSpotController,
-  viewTouristSpotsController,
-  viewTouristSpotByIdController,
-} = require('../controllers/touristSpotController');
-
-const {
   createRuleController,
   editRuleController,
   deleteRuleController,
@@ -219,26 +211,6 @@ app.get(
   authenticateTourGuide,
   getGuideUploadDocuByIdController
 );
-
-// Routes for Tourist Spots
-app.post(
-  "/api/v1/tourist-spots",
-  authenticateAdmin,
-  upload.array("images", 5),
-  createTouristSpotController
-);
-app.put(
-  "/api/v1/tourist-spots/:touristSpotId",
-  authenticateAdmin,
-  editTouristSpotController
-);
-app.delete(
-  "/api/v1/tourist-spots/:touristSpotId",
-  authenticateAdmin,
-  deleteTouristSpotController
-);
-app.get("/api/v1/tourist-spots", viewTouristSpotsController);
-app.get("/api/v1/tourist-spots/:touristSpotId", viewTouristSpotByIdController);
 
 // Rules & Regulations Routes
 app.post("/api/v1/rules", authenticateAdmin, createRuleController);
