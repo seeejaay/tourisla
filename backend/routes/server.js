@@ -80,6 +80,13 @@ const {
   viewArticleByIdController,
 } = require("../controllers/articleController");
 
+const {
+  createAccommodationController,
+  editAccommodationController,
+  deleteAccommodationController,
+  viewAccommodationsController,
+  viewAccommodationByIdController,
+} = require("../controllers/accommodationController.js");
 
 app.use(
   session({
@@ -226,3 +233,9 @@ app.delete("/api/v1/articles/:articleId", authenticateAdmin, deleteArticleContro
 app.get("/api/v1/articles", viewArticlesController);
 app.get("/api/v1/articles/:articleId", viewArticleByIdController);
 
+// Routes for Accommodations
+app.post("/api/v1/accommodations", authenticateAdmin, createAccommodationController);
+app.put("/api/v1/accommodations/:accommodationId", authenticateAdmin, editAccommodationController);
+app.delete("/api/v1/accommodations/:accommodationId", authenticateAdmin, deleteAccommodationController);
+app.get("/api/v1/accommodations", viewAccommodationsController);
+app.get("/api/v1/accommodations/:accommodationId", viewAccommodationByIdController);
