@@ -473,16 +473,16 @@ app.get(
 // Routes for Google Calendar integration
 app.get(
   "/api/v1/calendar/authorize",
-  authenticateTourGuide,
+  // authenticateTourGuide,
   authorizeGoogleCalendarController
 );
 app.get(
-  "/api/v1/calendar/callback",
-  authenticateTourGuide,
+  "/api/v1/calendar/auth/callback",
+  // authenticateTourGuide,
   googleCalendarCallbackController
 );
 app.post(
   "/api/v1/calendar/sync-booking",
-  authenticateTourGuide,
+  // authenticateTourGuide,
   syncBookingToCalendarController
 );
