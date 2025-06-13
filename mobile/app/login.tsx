@@ -6,33 +6,57 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Animated,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  
+  // Animation value for error notification
+  const errorAnim = useRef(new Animated.Value(0)).current;
+  
+  // Handle error animation when error state changes
+  useEffect(() => {
+    if (error) {
+      // Reset animation value first
+      errorAnim.setValue(0);
+      
+      // Animate in with a bounce effect
+      Animated.spring(errorAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        friction: 8,
+        tension: 40,
+      }).start();
+      
+      // Set a timeout to hide the error after 5 seconds
+      const timer = setTimeout(() => {
+        Animated.timing(errorAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => setError(''));
+      }, 5000);
+      
+      // Clear the timeout if the component unmounts or error changes
+      return () => clearTimeout(timer);
+    }
+  }, [error, errorAnim]);
 
   const handleLogin = async () => {
     setError('');
     const trimmedEmail = email.trim().toUpperCase();
     const trimmedPassword = password.trim();
 
-    console.log('Logging in with:', {
-      email: trimmedEmail,
-      password: trimmedPassword,
-    });
-
     try {
-      console.log('Sending login payload:', { email: trimmedEmail, password: trimmedPassword });
       const res = await login({ email: trimmedEmail, password: trimmedPassword });
-      console.log('Login Response:', res);
-
       const { role, ...userData } = res.user;
 
       if (!role) {
@@ -45,32 +69,68 @@ export default function LoginScreen() {
 
       switch (role) {
         case 'Admin':
-          router.replace('/admin/admin_dashboard'); // Keep it simple, match the file structure
+          router.replace('/admin/admin_dashboard');
           break;
         case 'Tourist':
-          router.replace('/tourist/tourist_dashboard'); // This one works, keep it
+          router.replace('/tourist/tourist_dashboard');
           break;
         case 'tour_guide':
           router.replace('/guide_home');
           break;
-        case 'tour_operator':
-          router.replace('/operator_home');
+        case 'Tour Operator':
+          router.replace('/operator/operator_dashboard');
           break;
         default:
           setError('Unknown role.');
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Login Error:', err.response?.data || err.message);
-      setError(err.response?.data?.message || err.message || 'An error occurred during login.');
+      // Extract the error message
+      if (err.response?.data?.error === "Invalid email or password") {
+        setError('Invalid email or password');
+      } else {
+        setError(err.response?.data?.message || err.message || 'An error occurred during login.');
+      }
     }
   };
 
-  // Debug API URL function removed
-
   return (
     <View style={styles.container}>
+      {/* Title */}
       <Text style={styles.title}>Login</Text>
+      
+      {/* Error Notification - Positioned below the title */}
+      {error && (
+        <Animated.View 
+          style={[
+            styles.errorNotification,
+            {
+              opacity: errorAnim,
+              transform: [
+                {
+                  translateY: errorAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [20, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          <View style={styles.errorContent}>
+            <Feather name="alert-circle" size={20} color="#ffffff" />
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.errorDismiss}
+            onPress={() => setError('')}
+          >
+            <Feather name="x" size={18} color="#ffffff" />
+          </TouchableOpacity>
+        </Animated.View>
+      )}
 
+      {/* Login Form */}
       <TextInput
         placeholder="Email"
         value={email}
@@ -107,8 +167,6 @@ export default function LoginScreen() {
       <TouchableOpacity onPress={() => router.push('/signup')}>
         <Text style={styles.signupRedirectText}>Don’t have an account? Sign up</Text>
       </TouchableOpacity>
-
-      // Debug button removed
     </View>
   );
 }
@@ -116,15 +174,47 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fb', // ghost
+    backgroundColor: '#f8f9fb',
     paddingHorizontal: 20,
     justifyContent: 'center',
+  },
+  errorNotification: {
+    backgroundColor: '#ef4444', // Bootstrap danger background
+    borderColor: '#f5c2c7', // Bootstrap danger border
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  errorContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  errorText: {
+    color: '#ffffff', // Bootstrap danger text color
+    fontSize: 14,
+    fontWeight: '900',
+    marginLeft: 8,
+    flex: 1,
+  },
+  errorDismiss: {
+    padding: 4,
   },
   title: {
     fontSize: 36,
     fontWeight: '900',
     textAlign: 'center',
-    color: '#0f172a', // water
+    color: '#0f172a',
     marginBottom: 24,
   },
   input: {
