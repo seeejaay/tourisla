@@ -12,12 +12,13 @@ import {
   SafeAreaView,
   Dimensions,
   ScrollView,
+  Platform,
   Alert
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from "react-native-vector-icons/Feather";
 import { useTouristSpotManager } from '../../../hooks/useTouristSpotManager';
 
 const { width } = Dimensions.get('window');
@@ -108,7 +109,7 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
             </>
           ) : (
             <View style={[styles.noImagePlaceholder, { backgroundColor: `${typeColor}20` }]}>
-              <Ionicons name="image-outline" size={40} color={typeColor} />
+              <Icon name="image" size={40} color={typeColor} />
             </View>
           )}
           
@@ -121,7 +122,7 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
           <View style={styles.titleOverlay}>
             <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
             <View style={styles.locationRow}>
-              <Ionicons name="location-outline" size={14} color="#ffffff" />
+              <Icon name="map-pin" size={14} color="#ffffff" />
               <Text style={styles.locationText} numberOfLines={1}>
                 {item.barangay}, {item.municipality}
               </Text>
@@ -135,7 +136,7 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
             style={[styles.actionButton, styles.viewButton]}
             onPress={() => router.push(`/admin/tourist_spots/admin_tourist_spot_view?id=${item.id}`)}
           >
-            <Ionicons name="eye-outline" size={18} color="#ffffff" />
+            <Icon name="eye" size={18} color="#ffffff" />
             <Text style={styles.actionButtonText}>View</Text>
           </TouchableOpacity>
           
@@ -143,7 +144,7 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
             style={[styles.actionButton, styles.editButton]}
             onPress={() => router.push(`/admin/tourist_spots/admin_tourist_spot_edit?id=${item.id}`)}
           >
-            <Ionicons name="create-outline" size={18} color="#ffffff" />
+            <Icon name="edit-2" size={18} color="#ffffff" />
             <Text style={styles.actionButtonText}>Edit</Text>
           </TouchableOpacity>
           
@@ -151,7 +152,7 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
             style={[styles.actionButton, styles.deleteButton]}
             onPress={() => handleDelete(item.id, item.name)}
           >
-            <Ionicons name="trash-outline" size={18} color="#ffffff" />
+            <Icon name="trash-2" size={18} color="#ffffff" />
             <Text style={styles.actionButtonText}>Delete</Text>
           </TouchableOpacity>
         </View>
@@ -167,7 +168,7 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
         {/* Search and Filter Section */}
         <View style={[styles.searchContainer, { marginTop: headerHeight + 10 }]}>
           <View style={styles.searchInputContainer}>
-            <Ionicons name="search" size={20} color="#64748b" style={styles.searchIcon} />
+            <Icon name="search" size={20} color="#64748b" style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search tourist spots..."
@@ -177,7 +178,7 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
             />
             {searchQuery ? (
               <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Ionicons name="close-circle" size={20} color="#64748b" />
+                <Icon name="x-circle" size={20} color="#64748b" />
               </TouchableOpacity>
             ) : null}
           </View>
@@ -229,7 +230,7 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
           </View>
         ) : error ? (
           <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle-outline" size={48} color="#ef4444" />
+            <Icon name="alert-circle" size={48} color="#ef4444" />
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity
               style={styles.retryButton}
@@ -240,7 +241,7 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
           </View>
         ) : filteredTouristSpots.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Ionicons name="search-outline" size={48} color="#94a3b8" />
+            <Icon name="search" size={48} color="#94a3b8" />
             <Text style={styles.emptyText}>
               {touristSpots.length === 0
                 ? "No tourist spots found. Using mock data for demonstration."
@@ -273,7 +274,7 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
           style={styles.fab}
           onPress={() => router.push('/admin/tourist_spots/admin_tourist_spot_add')}
         >
-          <Ionicons name="add" size={24} color="#ffffff" />
+          <Icon name="plus" size={24} color="#1fd8d6" />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -347,7 +348,7 @@ const styles = StyleSheet.create({
   listContainer: {
     padding: 16,
     paddingTop: 8,
-    paddingBottom: 80, // Extra padding for FAB
+    paddingBottom: 120, // Increased padding for FAB and bottom navigation
   },
   card: {
     width: '100%',
@@ -511,20 +512,29 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   fab: {
-    position: 'absolute',
-    bottom: 24,
-    right: 24,
+    position: "absolute",
+    right: 16,
+    bottom: Platform.OS === 'ios' ? 140 : 130, // Match the position used in other admin pages
+    backgroundColor: "#0f172a",
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#0ea5e9',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    zIndex: 100, // Higher zIndex to ensure visibility
   },
 });
+
+
+
+
+
+
+
+
 

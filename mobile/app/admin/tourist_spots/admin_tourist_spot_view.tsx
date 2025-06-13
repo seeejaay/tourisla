@@ -938,7 +938,7 @@ const styles = StyleSheet.create({
   },
   otherFeesText: {
     fontSize: 16,
-    color: '#334155',
+    color: '#64748b',
     lineHeight: 24,
   },
   amenitiesContainer: {
@@ -959,10 +959,50 @@ const styles = StyleSheet.create({
     color: '#0f172a',
   },
   linkText: {
-    color: '#1877f2',
+    color: '#38bdf8',
+    textDecorationLine: 'underline',
+  },
+  mapButtonContainer: {
+    marginTop: 16,
+    marginBottom: 24,
+  },
+  mapButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0ea5e9',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  mapButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  contactText: {
+    fontSize: 16,
+    color: '#cbd5e1',
+    marginLeft: 8,
+    flex: 1,
+  },
+  linkText: {
+    color: '#38bdf8',
     textDecorationLine: 'underline',
   },
 });
+
+
+
+
+
+
 
 
 
