@@ -9,13 +9,18 @@ import {
   RefreshControl,
   FlatList,
   Alert,
-  Platform
+  Platform,
+  Dimensions,
+  Image
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 
+const { width } = Dimensions.get('window');
+
 // Fix the API URL for mobile devices
-// On mobile, localhost/127.0.0.1 refers to the device itself, not your development machine
 const API_URL = Platform.OS === 'web' 
   ? process.env.NEXT_PUBLIC_API_URL 
   : process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.135:3000/api/v1/';
@@ -35,11 +40,17 @@ interface TourGuideApplication {
 }
 
 export default function OperatorHomeScreen({ headerHeight }: { headerHeight: number }) {
+  const router = useRouter();
   const [applications, setApplications] = useState<TourGuideApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [operatorId, setOperatorId] = useState<string | null>(null);
+  const [stats, setStats] = useState({
+    pending: 0,
+    approved: 0,
+    rejected: 0
+  });
 
   useEffect(() => {
     // Get operator ID from auth or storage
@@ -78,59 +89,36 @@ export default function OperatorHomeScreen({ headerHeight }: { headerHeight: num
       
       console.log('Applications response:', response.data);
       setApplications(response.data);
+      
+      // Calculate stats
+      const pending = response.data.filter(app => app.application_status === 'PENDING').length;
+      const approved = response.data.filter(app => app.application_status === 'APPROVED').length;
+      const rejected = response.data.filter(app => app.application_status === 'REJECTED').length;
+      
+      setStats({
+        pending,
+        approved,
+        rejected
+      });
+      
     } catch (err) {
       console.error('Error fetching applications:', err);
       
       // More detailed error handling
       if (axios.isAxiosError(err)) {
         if (err.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
           console.error('Response error data:', err.response.data);
           console.error('Response error status:', err.response.status);
           setError(`Server error (${err.response.status}). Please try again.`);
         } else if (err.request) {
-          // The request was made but no response was received
           console.error('Request error:', err.request);
           setError(`Network error. Cannot connect to ${API_URL}. Please check your API configuration and network connection.`);
         } else {
-          // Something happened in setting up the request
           setError('Request configuration error. Please try again.');
         }
       } else {
         setError('Failed to load tour guide applications. Please try again.');
       }
-      
-      // Use mock data for development
-      console.log('Using mock data due to API error');
-      setApplications([
-        {
-          id: 1,
-          tourguide_id: 101,
-          touroperator_id: 1,
-          reason_for_applying: "I have extensive knowledge of local attractions",
-          application_status: "PENDING",
-          created_at: "2023-06-15T10:30:00Z",
-          updated_at: "2023-06-15T10:30:00Z",
-          first_name: "John",
-          last_name: "Doe",
-          email: "john.doe@example.com",
-          mobile_number: "+639123456789"
-        },
-        {
-          id: 2,
-          tourguide_id: 102,
-          touroperator_id: 1,
-          reason_for_applying: "I speak multiple languages and have 5 years experience",
-          application_status: "APPROVED",
-          created_at: "2023-06-10T14:20:00Z",
-          updated_at: "2023-06-12T09:15:00Z",
-          first_name: "Jane",
-          last_name: "Smith",
-          email: "jane.smith@example.com",
-          mobile_number: "+639187654321"
-        }
-      ]);
     } finally {
       setLoading(false);
     }
@@ -158,6 +146,13 @@ export default function OperatorHomeScreen({ headerHeight }: { headerHeight: num
         )
       );
       
+      // Update stats
+      setStats(prev => ({
+        ...prev,
+        pending: prev.pending - 1,
+        approved: prev.approved + 1
+      }));
+      
       Alert.alert("Success", "Application approved successfully");
     } catch (err) {
       console.error('Error approving application:', err);
@@ -181,6 +176,13 @@ export default function OperatorHomeScreen({ headerHeight }: { headerHeight: num
         )
       );
       
+      // Update stats
+      setStats(prev => ({
+        ...prev,
+        pending: prev.pending - 1,
+        rejected: prev.rejected + 1
+      }));
+      
       Alert.alert("Success", "Application rejected successfully");
     } catch (err) {
       console.error('Error rejecting application:', err);
@@ -188,13 +190,44 @@ export default function OperatorHomeScreen({ headerHeight }: { headerHeight: num
     }
   };
 
+  const navigateToApplicationDetail = (application: TourGuideApplication) => {
+    // Navigate to application detail screen using the new path
+    router.push({
+      pathname: '/operator/home/operator_home_view',
+      params: { 
+        id: application.id.toString(),
+        firstName: application.first_name,
+        lastName: application.last_name,
+        email: application.email,
+        mobileNumber: application.mobile_number,
+        reason: application.reason_for_applying,
+        status: application.application_status,
+        createdAt: application.created_at
+      }
+    });
+  };
+
+  const renderStatCard = (title: string, count: number, icon: string, color: string) => (
+    <View style={[styles.statCard, { backgroundColor: color }]}>
+      <View style={styles.statIconContainer}>
+        <MaterialCommunityIcons name={icon as any} size={24} color="#ffffff" />
+      </View>
+      <Text style={styles.statCount}>{count}</Text>
+      <Text style={styles.statTitle}>{title}</Text>
+    </View>
+  );
+
   const renderApplicationItem = ({ item }: { item: TourGuideApplication }) => {
     const isPending = item.application_status === 'PENDING';
     const isApproved = item.application_status === 'APPROVED';
     const isRejected = item.application_status === 'REJECTED';
     
     return (
-      <View style={styles.applicationCard}>
+      <TouchableOpacity 
+        style={styles.applicationCard}
+        onPress={() => navigateToApplicationDetail(item)}
+        activeOpacity={0.7}
+      >
         <View style={styles.applicationHeader}>
           <View style={styles.nameContainer}>
             <Text style={styles.nameText}>{item.first_name} {item.last_name}</Text>
@@ -216,39 +249,43 @@ export default function OperatorHomeScreen({ headerHeight }: { headerHeight: num
         
         <View style={styles.applicationDetails}>
           <View style={styles.detailRow}>
-            <Ionicons name="mail-outline" size={16} color="#64748b" />
+            <Ionicons name="mail" size={16} color="#64748b" />
             <Text style={styles.detailText}>{item.email}</Text>
           </View>
-          <View style={styles.detailRow}>
-            <Ionicons name="call-outline" size={16} color="#64748b" />
-            <Text style={styles.detailText}>{item.mobile_number}</Text>
-          </View>
-        </View>
-        
-        <View style={styles.reasonContainer}>
-          <Text style={styles.reasonLabel}>Reason for applying:</Text>
-          <Text style={styles.reasonText}>{item.reason_for_applying}</Text>
         </View>
         
         {isPending && (
           <View style={styles.actionButtons}>
             <TouchableOpacity 
               style={[styles.actionButton, styles.approveButton]}
-              onPress={() => handleApprove(item.id)}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleApprove(item.id);
+              }}
             >
               <Ionicons name="checkmark-outline" size={18} color="#ffffff" />
               <Text style={styles.approveButtonText}>Approve</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.actionButton, styles.rejectButton]}
-              onPress={() => handleReject(item.id)}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleReject(item.id);
+              }}
             >
               <Ionicons name="close-outline" size={18} color="#ffffff" />
               <Text style={styles.rejectButtonText}>Reject</Text>
             </TouchableOpacity>
           </View>
         )}
-      </View>
+        
+        <View style={styles.cardFooter}>
+          <View style={styles.viewDetailsContainer}>
+            <Text style={styles.viewDetailsText}>View complete details</Text>
+            <Ionicons name="chevron-forward" size={16} color="#0ea5e9" />
+          </View>
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -265,8 +302,29 @@ export default function OperatorHomeScreen({ headerHeight }: { headerHeight: num
           />
         }
       >
-        <Text style={styles.headerText}>Tour Guide Applications</Text>
-        <Text style={styles.subHeaderText}>Manage applications from tour guides</Text>
+        <LinearGradient
+          colors={['#0ea5e9', '#24d5dc']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.headerContainer}
+        >
+          <View style={styles.headerContent}>
+            <Text style={styles.welcomeText}>Welcome Back</Text>
+            <Text style={styles.headerText}>Tour Guide Applications</Text>
+            <Text style={styles.subHeaderText}>Manage applications from tour guides</Text>
+          </View>
+        </LinearGradient>
+        
+        {/* Stats Section */}
+        <View style={styles.statsContainer}>
+          {renderStatCard('Pending', stats.pending, 'clock-outline', '#f59e0b')}
+          {renderStatCard('Approved', stats.approved, 'check-circle-outline', '#10b981')}
+          {renderStatCard('Rejected', stats.rejected, 'close-circle-outline', '#ef4444')}
+        </View>
+        
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Recent Applications</Text>
+        </View>
         
         <View style={styles.applicationsContainer}>
           {loading ? (
@@ -326,8 +384,12 @@ export default function OperatorHomeScreen({ headerHeight }: { headerHeight: num
             </View>
           ) : applications.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Ionicons name="document-outline" size={40} color="#94a3b8" />
-              <Text style={styles.emptyText}>No tour guide applications yet</Text>
+              <Image 
+                source={{ uri: 'https://cdn-icons-png.flaticon.com/512/6598/6598519.png' }} 
+                style={styles.emptyImage} 
+              />
+              <Text style={styles.emptyTitle}>No Applications Yet</Text>
+              <Text style={styles.emptyText}>Tour guide applications will appear here</Text>
             </View>
           ) : (
             <FlatList
@@ -350,21 +412,84 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   scrollContent: {
-    padding: 16,
     paddingBottom: 100,
   },
+  headerContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 30,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    marginBottom: 8,
+    marginHorizontal: 16,
+  },
+  headerContent: {
+    alignItems: 'flex-start',
+  },
+  welcomeText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginBottom: 4,
+  },
   headerText: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#0f172a',
+    color: '#ffffff',
     marginBottom: 4,
   },
   subHeaderText: {
     fontSize: 16,
-    color: '#64748b',
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
     marginBottom: 24,
   },
+  statCard: {
+    width: (width - 48) / 3,
+    padding: 16,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  statIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  statCount: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 4,
+  },
+  statTitle: {
+    fontSize: 14,
+    color: '#ffffff',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#0f172a',
+  },
   applicationsContainer: {
+    marginHorizontal: 8,
     marginBottom: 16,
   },
   loadingContainer: {
@@ -449,17 +574,18 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     gap: 16,
+    marginBottom: 16,
   },
   applicationCard: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    marginHorizontal: 8,
+    shadowOffset: { width: 1, height: 3 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
     elevation: 2,
-    marginBottom: 16,
   },
   applicationHeader: {
     marginBottom: 12,
@@ -468,11 +594,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 0,
   },
   nameText: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '900',
     color: '#0f172a',
   },
   statusBadge: {
@@ -481,21 +607,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   pendingBadge: {
-    backgroundColor: 'rgba(234, 179, 8, 0.1)',
+    backgroundColor: 'rgba(234, 179, 8, 0.9)',
   },
   approvedBadge: {
-    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+    backgroundColor: 'rgba(34, 197, 94, 0.9)',
   },
   rejectedBadge: {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    backgroundColor: 'rgba(239, 68, 68, 0.9)',
   },
   statusText: {
     fontSize: 12,
-    fontWeight: '500',
-    color: '#0f172a',
+    fontWeight: '700',
+    color: '#ffffff',
   },
   dateText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#64748b',
   },
   applicationDetails: {
@@ -552,5 +678,22 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '600',
     marginLeft: 4,
+  },
+  cardFooter: {
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    paddingTop: 12,
+  },
+  viewDetailsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  viewDetailsText: {
+    fontSize: 11,
+    color: '#0ea5e9',
+    fontWeight: '700',
+    marginRight: 4,
   },
 });
