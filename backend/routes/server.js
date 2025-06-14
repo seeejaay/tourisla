@@ -152,6 +152,19 @@ const {
   viewTourPackageByIdController,
 } = require("../controllers/tourPackagesController.js");
 
+const {
+  createAccommodationLogController,
+  editAccommodationLogController,
+  deleteAccommodationLogController,
+  getAllAccommodationLogsController,
+  getAccommodationLogByIdController
+} = require("../controllers/accommodationLogController.js");
+
+const {
+  exportAccommodationLogController
+} = require("../controllers/accommodationLogController");
+
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -522,3 +535,32 @@ app.get(
   authenticateTourOperator,
   viewTourPackageByIdController
 );
+
+
+// Accommodation Logs Routes
+app.post(
+  "/api/v1/accommodation-logs",
+  authenticateTourismStaff,
+  createAccommodationLogController
+);
+app.put(
+  "/api/v1/accommodation-logs/:logId",
+  authenticateTourismStaff,
+  editAccommodationLogController
+);
+app.delete(
+  "/api/v1/accommodation-logs/:logId",
+ authenticateTourismStaff,
+  deleteAccommodationLogController
+);
+//excel export for accommodation logs — MUST be placed before ":logId"
+app.get("/api/v1/accommodation-logs/export", exportAccommodationLogController);
+app.get("/api/v1/accommodation-logs", getAllAccommodationLogsController);
+app.get("/api/v1/accommodation-logs/:logId", getAccommodationLogByIdController);
+
+
+
+
+
+
+
