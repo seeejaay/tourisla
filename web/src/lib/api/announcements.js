@@ -68,7 +68,8 @@ export const createAnnouncement = async (announcementData) => {
 
 export const updateAnnouncement = async (announcementId, announcementData) => {
   try {
-    console.log("Sending announcement data to API:", announcementData); // Log data being sent to the API
+    console.log("Sending id to API:", announcementId);
+    console.log("Sending data", announcementData); // Log data being sent to the API
     const response = await axios.put(
       `${API_URL}announcements/${announcementId}`,
       announcementData,

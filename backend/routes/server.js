@@ -4,7 +4,7 @@ const session = require("express-session");
 const { getPresignedUrl } = require("../utils/s3.js");
 const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
-
+const { allowedRoles } = require("../middleware/middleware.js");
 const db = require("../db/index.js");
 const app = express();
 const cors = require("cors");
@@ -40,6 +40,8 @@ const {
   authenticateAdmin,
   authenticateTourGuide,
   authenticateTourOperator,
+  authenticateTourismStaff,
+  authenticateTourismOfficer,
 } = require("../middleware/middleware.js");
 
 const {
@@ -223,17 +225,18 @@ app.post(
   "/api/v1/announcements",
   upload.single("image"),
   createAnnouncementController,
-  authenticateAdmin
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"])
 );
 app.put(
   "/api/v1/announcements/:announcementId",
   upload.single("image"),
-  editAnnouncementController
+  editAnnouncementController,
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"])
 );
 app.delete(
   "/api/v1/announcements/:announcementId",
   deleteAnnouncementController,
-  authenticateAdmin
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"])
 );
 app.get(
   "/api/v1/announcements/category/:category([a-zA-Z0-9-_]+)",
@@ -411,27 +414,40 @@ app.put(
 // Routes for Tourist Spots
 app.post(
   "/api/v1/tourist-spots",
-  authenticateAdmin,
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"]),
   upload.array("images", 5),
   createTouristSpotController
 );
 app.put(
   "/api/v1/tourist-spots/:touristSpotId",
-  authenticateAdmin,
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"]),
+  upload.array("images", 5),
   editTouristSpotController
 );
 app.delete(
   "/api/v1/tourist-spots/:touristSpotId",
-  authenticateAdmin,
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"]),
   deleteTouristSpotController
 );
 app.get("/api/v1/tourist-spots", viewTouristSpotsController);
 app.get("/api/v1/tourist-spots/:touristSpotId", viewTouristSpotByIdController);
 
 // Rules & Regulations Routes
-app.post("/api/v1/rules", authenticateAdmin, createRuleController);
-app.put("/api/v1/rules/:ruleId", authenticateAdmin, editRuleController);
-app.delete("/api/v1/rules/:ruleId", authenticateAdmin, deleteRuleController);
+app.post(
+  "/api/v1/rules",
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"]),
+  createRuleController
+);
+app.put(
+  "/api/v1/rules/:ruleId",
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"]),
+  editRuleController
+);
+app.delete(
+  "/api/v1/rules/:ruleId",
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"]),
+  deleteRuleController
+);
 app.get("/api/v1/rules", viewRulesController);
 app.get("/api/v1/rules/:ruleId", viewRuleByIdController);
 

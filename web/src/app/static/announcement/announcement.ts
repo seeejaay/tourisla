@@ -1,3 +1,4 @@
+import categories from "./category.json"; // Assuming categories.json is in the same directory
 export const announcementFields = [
   {
     name: "title",
@@ -26,7 +27,8 @@ export const announcementFields = [
   {
     name: "category",
     label: "Category",
-    type: "text",
+    type: "select",
+    options: categories,
     placeholder: "Category",
   },
   {

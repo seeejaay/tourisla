@@ -39,6 +39,7 @@ export function useUserManager() {
     try {
       const response = await createUser({ ...data, captchaToken });
       await viewAllUsers();
+
       return response;
     } catch (error) {
       setError("An error occurred while creating the user. " + error);

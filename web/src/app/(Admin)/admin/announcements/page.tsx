@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useAnnouncementManager } from "@/hooks/useAnnouncementManager";
 
-import Sidebar from "@/components/custom/sidebar";
 import {
   Announcement,
   columns as announcementColumns,
@@ -67,7 +66,6 @@ export default function AnnouncementsPage() {
 
   return (
     <>
-      <Sidebar />
       <main className="flex flex-col items-center justify-start min-h-screen gap-12 w-full bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4">
         <div className="flex max-w-[100rem] w-full flex-col items-center justify-start gap-4 px-4 py-2 lg:pl-0">
           <h1 className="text-4xl font-extrabold text-center text-blue-700 tracking-tight">
@@ -130,7 +128,9 @@ export default function AnnouncementsPage() {
                     <EditAnnouncement
                       announcement={editDialogAnnouncement}
                       onSave={async (updatedAnnouncement) => {
-                        await updateAnnouncement(updatedAnnouncement);
+                        // Always use the original announcement's id from the dialog
+                        const id = editDialogAnnouncement.id;
+                        await updateAnnouncement(id, updatedAnnouncement);
                         await refreshAnnouncements();
                         setEditDialogAnnouncement(null);
                       }}
