@@ -139,8 +139,7 @@ const {
 
 const {
   authorizeGoogleCalendarController,
-  googleCalendarCallbackController,
-  syncBookingToCalendarController,
+  googleCalendarCallbackController
 } = require("../controllers/calendarController.js");
 
 const {
@@ -486,11 +485,6 @@ app.get(
   "/api/v1/calendar/auth/callback",
   // authenticateTourGuide,
   googleCalendarCallbackController
-);
-app.post(
-  "/api/v1/calendar/sync-booking",
-  // authenticateTourGuide,
-  syncBookingToCalendarController
 );
 
 // Routes for Booking
