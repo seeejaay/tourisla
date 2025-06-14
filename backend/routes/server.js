@@ -73,6 +73,7 @@ const {
   createGuideUploadDocuController,
   editGuideUploadDocuController,
   getGuideUploadDocuByIdController,
+  getGuideUploadByUserIdController,
 } = require("../controllers/guideUploadDocuController.js");
 
 const {
@@ -139,8 +140,11 @@ const {
   viewAccommodationByIdController,
 } = require("../controllers/accommodationController.js");
 
-const { registerVisitorController } = require("../controllers/visitorRegistrationController");
+const {
+  registerVisitorController,
+} = require("../controllers/visitorRegistrationController");
 
+const {
   createTourPackageController,
   updateTourPackageController,
   deleteTourPackageController,
@@ -299,6 +303,11 @@ app.get(
   "/api/v1/guideUploadDocu/:docuId",
   authenticateTourGuide,
   getGuideUploadDocuByIdController
+);
+app.get(
+  "/api/v1/guideUploadDocu/:userId",
+  authenticateTourGuide,
+  getGuideUploadByUserIdController
 );
 
 // Routes for Tour Operator Registration
@@ -466,13 +475,27 @@ app.delete(
 app.get("/api/v1/articles", viewArticlesController);
 app.get("/api/v1/articles/:articleId", viewArticleByIdController);
 
-
 // Routes for Accommodations
-app.post("/api/v1/accommodations", authenticateAdmin, createAccommodationController);
-app.put("/api/v1/accommodations/:accommodationId", authenticateAdmin, editAccommodationController);
-app.delete("/api/v1/accommodations/:accommodationId", authenticateAdmin, deleteAccommodationController);
+app.post(
+  "/api/v1/accommodations",
+  authenticateAdmin,
+  createAccommodationController
+);
+app.put(
+  "/api/v1/accommodations/:accommodationId",
+  authenticateAdmin,
+  editAccommodationController
+);
+app.delete(
+  "/api/v1/accommodations/:accommodationId",
+  authenticateAdmin,
+  deleteAccommodationController
+);
 app.get("/api/v1/accommodations", viewAccommodationsController);
-app.get("/api/v1/accommodations/:accommodationId", viewAccommodationByIdController);
+app.get(
+  "/api/v1/accommodations/:accommodationId",
+  viewAccommodationByIdController
+);
 
 // Visitor Registration Route
 app.post("/api/v1/register", registerVisitorController);
@@ -499,4 +522,3 @@ app.get(
   authenticateTourOperator,
   viewTourPackageByIdController
 );
-
