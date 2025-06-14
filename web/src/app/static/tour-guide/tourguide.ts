@@ -53,3 +53,38 @@ export const tourGuideFields = [
     placeholder: "Reason for applying as a tour guide",
   },
 ];
+
+export const tourGuideDocuFields = [
+  {
+    name: "document_type",
+    label: "Document Type",
+    type: "select",
+    options: [
+      { value: "GOV_ID", label: "Government ID" },
+      { value: "BIRTH_CERT", label: "Birth Certificate" },
+      { value: "NBI_CLEARANCE", label: "NBI Clearance" },
+      { value: "BRGY_CLEARANCE", label: "Barangay Clearance" },
+      { value: "MED_CERT", label: "Medical Certificate" },
+      { value: "PASSPORT_PHOTO", label: "Passport" },
+      { value: "RESUME", label: "Resume" },
+    ],
+  },
+  {
+    name: "file_path",
+    label: "File Upload",
+    type: "file",
+    placeholder: "Upload your document here",
+  },
+  {
+    name: "requirements",
+    label: "Requirements",
+    type: "checkbox",
+    placeholder: "Select all that apply",
+    options: [
+      { value: "FILIPINO_CITIZEN", label: "Filipino Citizen" },
+      { value: "FIT", label: "Fit to Work" },
+      { value: "TRAINING_CERTIFIED", label: "Training Certified" },
+      { value: "NO_CRIMINAL_RECORD", label: "No Criminal Record" },
+    ],
+  },
+];

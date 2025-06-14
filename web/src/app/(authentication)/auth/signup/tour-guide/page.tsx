@@ -100,7 +100,7 @@ export default function TourGuideRegister() {
         setError(userRes?.error || "User registration failed.");
         return;
       }
-
+      const user_id = userRes.data.user.user_id;
       // 2. Register tour guide applicant
       const guidePayload = {
         first_name: form.first_name,
@@ -115,7 +115,9 @@ export default function TourGuideRegister() {
             ? form.profile_picture
             : undefined,
         application_status: "PENDING" as const,
+        user_id, // Assuming userRes contains the created user's ID
       };
+
       const guideRes = await createTourGuideApplicant(guidePayload);
       if (!guideRes) {
         setError("Tour guide application failed.");

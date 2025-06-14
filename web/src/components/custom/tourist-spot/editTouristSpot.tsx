@@ -49,12 +49,19 @@ export default function EditTouristSpot({
       return;
     }
 
-    // If images are changed, use FormData
     if (imageFiles && imageFiles.length > 0) {
       const formData = new FormData();
       Object.entries(form).forEach(([key, value]) => {
-        if (key !== "images") {
-          formData.append(key, value as string);
+        if (key === "images") return; // skip existing images array
+        if (Array.isArray(value)) {
+          formData.append(key, JSON.stringify(value));
+        } else if (typeof value === "object" && value !== null) {
+          formData.append(key, JSON.stringify(value));
+        } else if (value !== undefined && value !== null) {
+          formData.append(key, String(value));
+        } else {
+          // Always append empty string for missing fields
+          formData.append(key, "");
         }
       });
       Array.from(imageFiles).forEach((file) => {

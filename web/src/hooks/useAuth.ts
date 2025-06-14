@@ -40,9 +40,15 @@ export function useAuth() {
       }
       if (router) {
         if (resLogin.user.role === "Admin") {
-          router.push("/admin/dashboard");
+          router.replace("/admin/dashboard");
+        } else if (resLogin.user.role === "Tourism Staff") {
+          router.replace("/tourism-staff/dashboard");
+        } else if (resLogin.user.role === "Tourism Officer") {
+          router.replace("/tourism-officer/dashboard");
+        } else if (resLogin.user.role === "Cultural Director") {
+          router.replace("/cultural-director/dashboard");
         } else {
-          router.push("/");
+          router.replace("/");
         }
       }
       setLoading(false);
@@ -109,7 +115,7 @@ export function useAuth() {
           router.replace("/");
           return;
         }
-
+        console.log("Current User:", resCurrentUser);
         return resCurrentUser;
       } catch (error) {
         setError("An error occurred while fetching the current user." + error);

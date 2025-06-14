@@ -61,8 +61,9 @@ const createUserController = async (req, res) => {
       return res.status(409).json({ error: "Email already exists" });
     }
 
-    // Check if the authenticated user is an admin
-    if (req.session && req.session.user && req.session.user.role === "Admin") {
+    // Role assignment logic for admins
+    let assignedRole = "";
+    if (isAdmin) {
       const allowedRoles = [
         "Tourist",
         "Admin",
@@ -77,6 +78,13 @@ const createUserController = async (req, res) => {
       } else if (role) {
         return res.status(403).json({ error: "Invalid role assignment" });
       }
+    } else {
+      const allowedSelfSignupRoles = ["Tourist", "Tour Guide", "Tour Operator"];
+      if (role && allowedSelfSignupRoles.includes(role)) {
+        assignedRole = role; // Allow self-signup for specific roles
+      } else {
+        assignedRole = "Tourist"; // Default for self-signup
+      }
     }
 
     // Hash the password
@@ -89,7 +97,7 @@ const createUserController = async (req, res) => {
       email: formatedEmail,
       hashedPassword,
       phone_number,
-      role, // Use the assigned role
+      role: assignedRole,
       nationality,
     });
 

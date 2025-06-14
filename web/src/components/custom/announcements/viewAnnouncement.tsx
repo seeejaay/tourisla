@@ -1,7 +1,6 @@
 import { Announcement } from "./columns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import Image from "next/image";
 
 export default function ViewAnnouncement({
   announcement,
