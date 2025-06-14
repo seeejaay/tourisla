@@ -3,6 +3,7 @@ import {
     Text,
     ScrollView,
     TouchableOpacity,
+    Pressable,
     StyleSheet,
     StatusBar,
     Alert,
@@ -14,9 +15,10 @@ import {
 import { useRouter } from "expo-router";
 import { useEffect, useState, useRef } from "react";
 import { fetchHotlines, deleteHotline } from "../../../lib/api/hotline";
-import Icon from "react-native-vector-icons/Ionicons";
+import Icon from "react-native-vector-icons/Feather";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useIsFocused } from '@react-navigation/native';
 
 interface Hotline {
     id: number;
@@ -60,26 +62,31 @@ const formatMunicipality = (municipality: string) => {
     return municipality.replace(/_/g, " ");
 };
 
-export default function AdminHotlinesScreen() {
+export default function AdminHotlinesScreen({ headerHeight }) {
     const router = useRouter();
+    const isFocused = useIsFocused();
     const [hotlines, setHotlines] = useState<Hotline[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const [error, setError] = useState<string | null>(null);
     const scrollY = useRef(new Animated.Value(0)).current;
 
+    // Load hotlines when screen comes into focus
     useEffect(() => {
-        loadHotlines();
-    }, []);
+        if (isFocused) {
+            loadHotlines();
+        }
+    }, [isFocused]);
 
     const loadHotlines = async () => {
         try {
             setLoading(true);
             const data = await fetchHotlines();
+            console.log("Fetched hotlines:", data); // Add logging to debug
             setHotlines(data);
-            setError("");
+            setError(null);
         } catch (err) {
+            console.error("Error loading hotlines:", err);
             setError("Failed to load emergency contacts. Please try again.");
-            console.error(err);
         } finally {
             setLoading(false);
         }
@@ -151,49 +158,55 @@ export default function AdminHotlinesScreen() {
         const typeColor = getTypeColor();
         
         return (
-            <TouchableOpacity 
-                style={styles.card}
-                onPress={onView}
-                activeOpacity={0.9}
-            >
+            <View style={styles.card}>
                 <View style={styles.cardContent}>
+                    {/* Left side with icon */}
                     <View style={[styles.iconContainer, { backgroundColor: `${typeColor}20` }]}>
                         <MaterialCommunityIcons name={iconName} size={24} color={typeColor} />
                     </View>
                     
+                    {/* Middle content */}
                     <View style={styles.cardDetails}>
-                        <View style={styles.cardHeader}>
-                            <Text style={styles.cardTitle}>{formattedType}</Text>
-                            <View style={[styles.typeBadge, { backgroundColor: typeColor }]}>
-                                <Text style={styles.typeBadgeText}>{formattedMunicipality}</Text>
-                            </View>
-                        </View>
+                        <Text style={styles.cardTitle}>{formattedType}</Text>
                         
                         <View style={styles.contactRow}>
                             <MaterialCommunityIcons name="phone" size={16} color="#64748b" />
                             <Text style={styles.contactNumber}>{contactNumber}</Text>
                         </View>
                         
-                        <View style={styles.cardActions}>
-                            <TouchableOpacity 
-                                style={styles.actionButton}
-                                onPress={onView}
-                            >
-                                <MaterialCommunityIcons name="eye-outline" size={16} color="#0f172a" />
-                                <Text style={styles.actionButtonText}>Details</Text>
-                            </TouchableOpacity>
-                            
-                            <TouchableOpacity 
-                                style={[styles.actionButton, styles.deleteButton]}
-                                onPress={onDelete}
-                            >
-                                <MaterialCommunityIcons name="delete-outline" size={16} color="#ef4444" />
-                                <Text style={[styles.actionButtonText, styles.deleteButtonText]}>Remove</Text>
-                            </TouchableOpacity>
+                        <View style={[styles.municipalityBadge, { backgroundColor: typeColor }]}>
+                            <Text style={styles.municipalityText}>{formattedMunicipality}</Text>
                         </View>
                     </View>
+                    
+                    {/* Right side with action buttons */}
+                    <View style={styles.cardActions}>
+                        <TouchableOpacity 
+                            style={[styles.iconButton, styles.viewButton]}
+                            onPress={onView}
+                        >
+                            <MaterialCommunityIcons name="eye" size={18} color="#ffffff" />
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity 
+                            style={[styles.iconButton, styles.editButton]}
+                            onPress={() => router.push({ 
+                                pathname: "/admin/hotlines/admin_hotline_edit", 
+                                params: { id: id } 
+                            })}
+                        >
+                            <MaterialCommunityIcons name="pencil" size={18} color="#ffffff" />
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity 
+                            style={[styles.iconButton, styles.deleteButton]}
+                            onPress={onDelete}
+                        >
+                            <MaterialCommunityIcons name="delete" size={18} color="#ffffff" />
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </TouchableOpacity>
+            </View>
         );
     };
 
@@ -201,12 +214,11 @@ export default function AdminHotlinesScreen() {
         <SafeAreaView style={styles.safeContainer}>
             <View style={styles.container}>
 
-                {/* Header */}
-                <View style={styles.header}><Text style={styles.headerTitle}>Hotlines Directory</Text></View>
+                {/* Header removed */}
 
                 {/* Content */}
                 <Animated.ScrollView 
-                    style={styles.scrollView}
+                    style={[styles.scrollView, { marginTop: headerHeight }]}
                     contentContainerStyle={styles.contentContainer}
                     showsVerticalScrollIndicator={false}
                     onScroll={Animated.event(
@@ -264,14 +276,14 @@ export default function AdminHotlinesScreen() {
                     )}
                 </Animated.ScrollView>
                 
-                {/* Floating Action Button */}
-                {!loading && hotlines.length > 0 && (
-                    <TouchableOpacity 
-                        style={styles.fab}
+                {/* Add hotline FAB - Adjusted position */}
+                {!loading && !error && (
+                    <Pressable
+                        style={[styles.fab]} // Increased bottom margin
                         onPress={() => router.push("/admin/hotlines/admin_hotline_add")}
                     >
-                        <MaterialCommunityIcons name="plus" size={24} color="#FFFFFF" />
-                    </TouchableOpacity>
+                        <Icon name="plus" size={24} color="#1fd8d6" />
+                    </Pressable>
                 )}
             </View>
         </SafeAreaView>
@@ -287,52 +299,12 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f8fafc',
     },
-    header: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 50 + STATUS_BAR_HEIGHT,
-        backgroundColor: "#0f172a",
-        borderBottomColor: "rgba(0, 0, 0, 0.1)",
-        borderBottomWidth: 1,
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        paddingTop: STATUS_BAR_HEIGHT,
-        paddingHorizontal: 20,
-        zIndex: 50,
-        shadowColor: "#000",
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 4 },
-        elevation: 8,
-        borderBottomLeftRadius: 15,
-        borderBottomRightRadius: 15,
-    },
-    headerTitle: {
-        fontSize: 22,
-        fontWeight: "900",
-        color: "#ecf0f1",
-        textShadowColor: "rgba(0, 0, 0, 0.2)",
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
-    },
-    addButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
     scrollView: {
         flex: 1,
-        marginTop: 50 + STATUS_BAR_HEIGHT,
     },
     contentContainer: {
         padding: 16,
-        paddingBottom: 80,
+        paddingBottom: 120, // Increased bottom padding for FAB
     },
     centerContainer: {
         alignItems: 'center',
@@ -418,6 +390,7 @@ const styles = StyleSheet.create({
     cardContent: {
         flexDirection: 'row',
         padding: 16,
+        alignItems: 'center',
     },
     iconContainer: {
         width: 48,
@@ -430,73 +403,72 @@ const styles = StyleSheet.create({
     cardDetails: {
         flex: 1,
     },
-    cardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
     cardTitle: {
-        fontSize: 16,
-        fontWeight: '700',
+        fontSize: 20,
+        fontWeight: '900',
         color: '#0f172a',
-    },
-    typeBadge: {
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 6,
-    },
-    typeBadgeText: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#ffffff',
+        marginBottom: 6,
     },
     contactRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: 8,
     },
     contactNumber: {
-        fontSize: 15,
+        fontSize: 14,
         color: "#334155",
         marginLeft: 8,
         fontWeight: '500',
     },
+    municipalityBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+        alignSelf: 'flex-start',
+    },
+    municipalityText: {
+        color: '#ffffff',
+        fontSize: 12,
+        fontWeight: '600',
+    },
     cardActions: {
-        flexDirection: 'row',
-        justifyContent: 'flex-start',
-        marginTop: 4,
-    },
-    actionButton: {
-        flexDirection: 'row',
+        flexDirection: 'column',
+        justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 16,
+        gap: 8,
+        marginLeft: 12,
     },
-    actionButtonText: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: '#0f172a',
-        marginLeft: 4,
+    iconButton: {
+        width: 32,
+        height: 32,
+        borderRadius: 6,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    viewButton: {
+        backgroundColor: '#0f172a',
+    },
+    editButton: {
+        backgroundColor: '#3b82f6',
     },
     deleteButton: {
-        marginLeft: 8,
-    },
-    deleteButtonText: {
-        color: '#ef4444',
+        backgroundColor: '#ef4444',
     },
     fab: {
         position: "absolute",
-        bottom: 16,
         right: 16,
+        bottom: Platform.OS === 'ios' ? 140 : 130, 
         backgroundColor: "#0f172a",
         width: 56,
         height: 56,
         borderRadius: 28,
         justifyContent: "center",
         alignItems: "center",
-        elevation: 4,
+        elevation: 8,
         shadowColor: "#000",
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        zIndex: 100, // Higher zIndex to ensure visibility
     },
 });

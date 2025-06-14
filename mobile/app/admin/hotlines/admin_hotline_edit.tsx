@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,33 +14,104 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useHotlineManager } from "@/hooks/useHotlineManager";
 import Icon from "react-native-vector-icons/Ionicons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import { hotlineSchema } from "@/static/hotline/useHotlineManagerSchema";
 import { hotlineFields } from "@/static/hotline/hotline";
+import { LinearGradient } from "expo-linear-gradient";
 
 const STATUS_BAR_HEIGHT = Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0;
 
-export default function AdminHotlineAddScreen() {
+export default function AdminHotlineEditScreen() {
   const router = useRouter();
-  const { createHotline } = useHotlineManager();
-  const [loading, setLoading] = useState(false);
+  const { id } = useLocalSearchParams();
+  const { viewHotline, updateHotline } = useHotlineManager();
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   
   const [form, setForm] = useState<{
+    id: number;
     municipality: "SANTA_FE" | "BANTAYAN" | "MADRIDEJOS";
     type: "MEDICAL" | "POLICE" | "BFP" | "NDRRMO" | "COAST_GUARD";
     contact_number: string;
     address: string;
   }>({
+    id: Number(id),
     municipality: "BANTAYAN",
     type: "MEDICAL",
     contact_number: "",
     address: "",
   });
+
+  // Get type color
+  const getTypeColor = (type: string) => {
+    switch(type) {
+      case "MEDICAL":
+        return "#ef4444";
+      case "POLICE":
+        return "#3b82f6";
+      case "BFP":
+        return "#f97316";
+      case "NDRRMO":
+        return "#eab308";
+      case "COAST_GUARD":
+        return "#06b6d4";
+      default:
+        return "#6366f1";
+    }
+  };
+
+  // Get hotline icon
+  const getHotlineIcon = (type: string) => {
+    switch(type) {
+      case "MEDICAL":
+        return "hospital";
+      case "POLICE":
+        return "police-badge";
+      case "BFP":
+        return "fire";
+      case "NDRRMO":
+        return "alert";
+      case "COAST_GUARD":
+        return "ship";
+      default:
+        return "phone";
+    }
+  };
+
+  // Fetch hotline data when component mounts
+  useEffect(() => {
+    const fetchHotlineData = async () => {
+      try {
+        setLoading(true);
+        const hotline = await viewHotline(Number(id));
+        if (hotline) {
+          setForm({
+            id: hotline.id,
+            municipality: hotline.municipality as any,
+            type: hotline.type as any,
+            contact_number: hotline.contact_number,
+            address: hotline.address || "",
+          });
+        } else {
+          Alert.alert("Error", "Failed to load hotline data");
+          router.back();
+        }
+      } catch (error) {
+        console.error("Error fetching hotline:", error);
+        Alert.alert("Error", "Failed to load hotline data");
+        router.back();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHotlineData();
+  }, [id]);
 
   const handleChange = (name: string, value: string) => {
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -75,75 +146,43 @@ export default function AdminHotlineAddScreen() {
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
     try {
-      const result = await createHotline(form);
+      const result = await updateHotline(form);
       if (result) {
         Alert.alert(
           "Success",
-          "Emergency contact added successfully",
+          "Emergency contact updated successfully",
           [
             {
               text: "OK",
               onPress: () => {
-                // Navigate back to the hotlines list
                 router.back();
-                // Add a small delay and then refresh the hotlines list
-                setTimeout(() => {
-                  // You can add a global event or use a state management solution
-                  // to trigger a refresh on the hotlines list screen
-                  // For now, we'll rely on the useEffect in the list screen
-                }, 300);
               },
             },
           ]
         );
       } else {
-        Alert.alert("Error", "Failed to add emergency contact");
+        Alert.alert("Error", "Failed to update emergency contact");
       }
     } catch (error) {
-      console.error("Error creating hotline:", error);
-      Alert.alert("Error", "Failed to add emergency contact");
+      console.error("Error updating hotline:", error);
+      Alert.alert("Error", "Failed to update emergency contact");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  // Helper function to get icon based on hotline type
-  const getHotlineIcon = (type: string) => {
-    switch(type) {
-      case "MEDICAL":
-        return "medical-bag";
-      case "POLICE":
-        return "police-badge";
-      case "BFP":
-        return "fire-truck";
-      case "NDRRMO":
-        return "shield-alert";
-      case "COAST_GUARD":
-        return "sail-boat";
-      default:
-        return "phone";
-    }
-  };
-
-  // Helper function to get color based on hotline type
-  const getTypeColor = (type: string) => {
-    switch(type) {
-      case "MEDICAL":
-        return "#ef4444";
-      case "POLICE":
-        return "#3b82f6";
-      case "BFP":
-        return "#f97316";
-      case "NDRRMO":
-        return "#eab308";
-      case "COAST_GUARD":
-        return "#06b6d4";
-      default:
-        return "#6366f1";
-    }
-  };
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeContainer}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#4cc9f0" />
+          <Text style={styles.loadingText}>Loading hotline data...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeContainer}>
@@ -154,7 +193,7 @@ export default function AdminHotlineAddScreen() {
         <Pressable onPress={() => router.back()} style={styles.backButton}>
           <Icon name="arrow-back-outline" size={24} color="#fff" />
         </Pressable>
-        <Text style={styles.headerTitle}>Add Emergency Contact</Text>
+        <Text style={styles.headerTitle}>Edit Emergency Contact</Text>
       </View>
 
       <KeyboardAvoidingView
@@ -178,8 +217,30 @@ export default function AdminHotlineAddScreen() {
             </Text>
           </View>
 
-          {/* Form Fields */}
+          {/* Form Container */}
           <View style={styles.formContainer}>
+            {/* Type Field */}
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Type</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={form.type}
+                  onValueChange={(value) => handleChange("type", value)}
+                  style={styles.picker}
+                  itemStyle={styles.pickerItem}
+                >
+                  <Picker.Item label="Medical" value="MEDICAL" />
+                  <Picker.Item label="Police" value="POLICE" />
+                  <Picker.Item label="Fire Department" value="BFP" />
+                  <Picker.Item label="Disaster Response" value="NDRRMO" />
+                  <Picker.Item label="Coast Guard" value="COAST_GUARD" />
+                </Picker>
+              </View>
+              {errors.type && (
+                <Text style={styles.errorText}>{errors.type}</Text>
+              )}
+            </View>
+
             {/* Municipality Field */}
             <View style={styles.formGroup}>
               <Text style={styles.label}>Municipality</Text>
@@ -190,41 +251,13 @@ export default function AdminHotlineAddScreen() {
                   style={styles.picker}
                   itemStyle={styles.pickerItem}
                 >
-                  {hotlineFields[0].options.map((option) => (
-                    <Picker.Item
-                      key={option.value}
-                      label={option.label}
-                      value={option.value}
-                    />
-                  ))}
+                  <Picker.Item label="Bantayan" value="BANTAYAN" />
+                  <Picker.Item label="Santa Fe" value="SANTA_FE" />
+                  <Picker.Item label="Madridejos" value="MADRIDEJOS" />
                 </Picker>
               </View>
               {errors.municipality && (
                 <Text style={styles.errorText}>{errors.municipality}</Text>
-              )}
-            </View>
-
-            {/* Type Field */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Hotline Type</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={form.type}
-                  onValueChange={(value) => handleChange("type", value)}
-                  style={styles.picker}
-                  itemStyle={styles.pickerItem}
-                >
-                  {hotlineFields[1].options.map((option) => (
-                    <Picker.Item
-                      key={option.value}
-                      label={option.label}
-                      value={option.value}
-                    />
-                  ))}
-                </Picker>
-              </View>
-              {errors.type && (
-                <Text style={styles.errorText}>{errors.type}</Text>
               )}
             </View>
 
@@ -237,9 +270,8 @@ export default function AdminHotlineAddScreen() {
                   style={styles.input}
                   value={form.contact_number}
                   onChangeText={(value) => handleChange("contact_number", value)}
-                  placeholder="+63XXXXXXXXXX"
+                  placeholder="Enter contact number"
                   keyboardType="phone-pad"
-                  placeholderTextColor="#94a3b8"
                 />
               </View>
               {errors.contact_number && (
@@ -257,8 +289,8 @@ export default function AdminHotlineAddScreen() {
                   value={form.address}
                   onChangeText={(value) => handleChange("address", value)}
                   placeholder="Enter address"
-                  placeholderTextColor="#94a3b8"
                   multiline
+                  numberOfLines={1}
                 />
               </View>
               {errors.address && (
@@ -271,14 +303,14 @@ export default function AdminHotlineAddScreen() {
           <TouchableOpacity
             style={styles.submitButton}
             onPress={handleSubmit}
-            disabled={loading}
+            disabled={submitting}
           >
-            {loading ? (
+            {submitting ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
               <>
-                <MaterialCommunityIcons name="check" size={20} color="#fff" />
-                <Text style={styles.submitButtonText}>Save Emergency Contact</Text>
+                <MaterialCommunityIcons name="content-save" size={20} color="#fff" />
+                <Text style={styles.submitButtonText}>Update Contact</Text>
               </>
             )}
           </TouchableOpacity>
@@ -398,6 +430,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#0f172a",
   },
+  textArea: {
+    minHeight: 100,
+    textAlignVertical: "top",
+    paddingTop: 12,
+  },
   errorText: {
     color: "#ef4444",
     fontSize: 14,
@@ -417,8 +454,17 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginLeft: 8,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#64748b",
+  },
 });
-
 
 
 

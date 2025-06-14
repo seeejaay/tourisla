@@ -19,16 +19,17 @@ const createTouristSpot = async (data) => {
     email,
     facebook_page,
     rules,
+    images
   } = data;
 
   const result = await db.query(
     `INSERT INTO tourist_spots 
     (name, type, description, barangay, municipality, province, longitude, latitude,
 opening_time, closing_time, days_open, entrance_fee, other_fees, 
-contact_number, email, facebook_page, rules) 
+contact_number, email, facebook_page, rules, images) 
     VALUES 
     ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 
-$16, $17) 
+$16, $17, $18) 
     RETURNING *`,
     [
       name,
@@ -48,29 +49,11 @@ $16, $17)
       email,
       facebook_page,
       rules,
+      images || []
     ]
   );
 
   return result.rows[0];
-};
-
-const uploadTouristSpotImages = async (touristSpotId, imageUrls) => {
-  const insertPromises = imageUrls.map((url) =>
-    db.query(
-      `INSERT INTO tourist_spot_images (tourist_spot_id, image_url) 
-       VALUES ($1, $2)`,
-      [touristSpotId, url]
-    )
-  );
-  await Promise.all(insertPromises);
-};
-
-const deleteTouristSpotImages = async (touristSpotId) => {
-  await db.query(
-    `DELETE FROM tourist_spot_images WHERE tourist_spot_id = 
-$1`,
-    [touristSpotId]
-  );
 };
 
 const editTouristSpot = async (id, data) => {
@@ -92,6 +75,7 @@ const editTouristSpot = async (id, data) => {
     email,
     facebook_page,
     rules,
+    images
   } = data;
 
   const result = await db.query(
@@ -112,9 +96,10 @@ const editTouristSpot = async (id, data) => {
       contact_number = $14, 
       email = $15, 
       facebook_page = $16, 
-      rules = $17, 
+      rules = $17,
+      images = $18,
       updated_at = CURRENT_TIMESTAMP 
-    WHERE id = $18 
+    WHERE id = $19 
     RETURNING *`,
     [
       name,
@@ -134,6 +119,7 @@ const editTouristSpot = async (id, data) => {
       email,
       facebook_page,
       rules,
+      images || [],
       id,
     ]
   );
@@ -150,40 +136,19 @@ const deleteTouristSpot = async (id) => {
 };
 
 const getAllTouristSpots = async () => {
-  const result = await db.query(` 
-    SELECT ts.*, 
-      COALESCE(json_agg(ti.*) FILTER (WHERE ti.id IS NOT NULL), '[]') AS 
-images 
-    FROM tourist_spots ts 
-    LEFT JOIN tourist_spot_images ti ON ts.id = ti.tourist_spot_id 
-    GROUP BY ts.id 
-    ORDER BY ts.created_at DESC 
+  const result = await db.query(`
+    SELECT * FROM tourist_spots
+    ORDER BY created_at DESC
   `);
   return result.rows;
 };
 
 const getTouristSpotById = async (id) => {
   const result = await db.query(
-    ` 
-    SELECT ts.*, 
-      COALESCE(json_agg(ti.*) FILTER (WHERE ti.id IS NOT NULL), '[]') AS 
-images 
-    FROM tourist_spots ts 
-    LEFT JOIN tourist_spot_images ti ON ts.id = ti.tourist_spot_id 
-    WHERE ts.id = $1 
-    GROUP BY ts.id 
-  `,
+    `SELECT * FROM tourist_spots WHERE id = $1`,
     [id]
   );
   return result.rows[0];
-};
-
-const getTouristSpotImages = async (touristSpotId) => {
-  const result = await db.query(
-    `SELECT * FROM tourist_spot_images WHERE tourist_spot_id = $1 ORDER BY id ASC`,
-    [touristSpotId]
-  );
-  return result.rows;
 };
 
 module.exports = {
@@ -192,7 +157,4 @@ module.exports = {
   deleteTouristSpot,
   getAllTouristSpots,
   getTouristSpotById,
-  uploadTouristSpotImages,
-  deleteTouristSpotImages,
-  getTouristSpotImages, // <-- add this line
 };
