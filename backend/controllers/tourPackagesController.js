@@ -1,17 +1,18 @@
 const e = require("express");
 const {
-  getAllTourPackagesByOperator,
-  getTourPackageById,
   createTourPackage,
   updateTourPackage,
   deleteTourPackage,
+  getAllTourPackagesByOperator,
+  getTourPackageById,
+  getAssignedGuidesByPackage,
 } = require("../models/tourPackagesModel.js");
 
 // Tour Operator managing tour packages
 
 const createTourPackageController = async (req, res) => {
   try {
-    const touroperator_id = req.user.id;
+    const touroperator_id = 1;
     let {
       package_name,
       location,
@@ -23,6 +24,7 @@ const createTourPackageController = async (req, res) => {
       available_slots,
       date_start,
       date_end,
+      assigned_guides,
     } = req.body;
 
     package_name = package_name.toUpperCase();
@@ -57,7 +59,8 @@ const createTourPackageController = async (req, res) => {
       exclusions,
       available_slots,
       date_start,
-      date_end
+      date_end,
+      assigned_guides
     });
 
     res.status(201).json({ message: "Tour package created", tourPackage: newPackage });
@@ -165,7 +168,6 @@ const viewTourPackageByIdController = async (req, res) => {
     res.send(err.message);
   }
 };
-
 
 module.exports = {
   createTourPackageController,
