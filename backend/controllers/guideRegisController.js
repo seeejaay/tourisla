@@ -25,8 +25,9 @@ const createGuideRegisController = async (req, res) => {
       email,
       reason_for_applying,
       application_status,
+      user_id, // <-- add this line
     } = req.body;
-    console.log(req.body);
+    // ...existing code...
     first_name = first_name.toUpperCase();
     last_name = last_name.toUpperCase();
     sex = sex.toUpperCase();
@@ -60,6 +61,7 @@ const createGuideRegisController = async (req, res) => {
       profile_picture,
       reason_for_applying,
       application_status,
+      user_id,
     });
     console.log("Tour Guide Application Created Successfully");
     res.json(guideRegis);
