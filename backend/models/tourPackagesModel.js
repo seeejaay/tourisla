@@ -11,7 +11,8 @@ const createTourPackage = async ({
   exclusions,
   available_slots,
   date_start,
-  date_end
+  date_end,
+  assigned_guides = []
 }) => {
   const result = await db.query(
     `INSERT INTO tour_packages 
@@ -30,10 +31,26 @@ const createTourPackage = async ({
       exclusions,
       available_slots,
       date_start,
-      date_end,
+      date_end
     ]
   );
-  return result.rows[0];
+  const newPackage = result.rows[0];
+
+  // Insert assigned tour guides only if they have google_tokens
+  for (const guideId of assigned_guides) {
+    const tokenRes = await db.query(
+      `SELECT 1 FROM google_tokens WHERE tourguide_id = $1`,
+      [guideId]
+    );
+    if (tokenRes.rowCount > 0) {
+      await db.query(
+        `INSERT INTO tourguide_assignments (tourguide_id, tour_package_id) VALUES ($1, $2)`,
+        [guideId, newPackage.id]
+      );
+    }
+  }
+
+  return newPackage;
 };
 
 const updateTourPackage = async (id, touroperator_id, packageData) => {
@@ -96,7 +113,7 @@ const getAllTourPackagesByOperator = async (touroperator_id) => {
   return result.rows;
 };
 
-const getTourPackageById = async (id, touroperator_id) => {
+const getTourPackageByIdForOperator = async (id, touroperator_id) => {
   const result = await db.query(
     `SELECT * FROM tour_packages 
      WHERE id = $1 AND touroperator_id = $2`,
@@ -105,10 +122,39 @@ const getTourPackageById = async (id, touroperator_id) => {
   return result.rows[0];
 };
 
+const getTourPackageById = async (id) => {
+  const result = await db.query(
+    `SELECT * FROM tour_packages WHERE id = $1`,
+    [id]
+  );
+  return result.rows[0];
+};
+
+const getAssignedGuidesByPackage = async (packageId) => {
+  const result = await db.query(
+    `
+    SELECT 
+      tga.tourguide_id,
+      tga.notes,
+      ta.first_name,
+      ta.last_name,
+      ta.email
+    FROM tourguide_assignments tga
+    JOIN tourguide_applicants ta ON tga.tourguide_id = ta.id
+    WHERE tga.tour_package_id = $1
+    `,
+    [packageId]
+  );
+
+  return result.rows;
+};
+
 module.exports = {
   createTourPackage,
   updateTourPackage,
   deleteTourPackage,
   getAllTourPackagesByOperator,
+  getTourPackageByIdForOperator,
   getTourPackageById,
+  getAssignedGuidesByPackage,
 };

@@ -40,5 +40,5 @@ const googleCalendarCallbackController = async (req, res) => {
 
 module.exports = {
   authorizeGoogleCalendarController,
-  googleCalendarCallbackController
+  googleCalendarCallbackController,
 };

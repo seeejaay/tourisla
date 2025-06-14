@@ -143,9 +143,11 @@ const {
 } = require("../controllers/calendarController.js");
 
 const {
-  getGuidesPerPackageController,
   createBookingController,
-  getTouristBookingsController
+  updateBookingStatusController,
+  getTouristBookingsController,
+  getBookingsByPackageController,
+  getBookingByIdController,
 } = require("../controllers/bookingController.js");
 
 app.use(
@@ -488,17 +490,29 @@ app.get(
 );
 
 // Routes for Booking
-app.get(
-  "/api/v1/guides-per-package/:packageId",
-  getGuidesPerPackageController
-);
 app.post(
   "/api/v1/bookings",
-  authenticateUser,
+  // authenticateUser,
+  upload.single("proof_of_payment"),
   createBookingController
 );
+app.put(
+  "/api/v1/bookings/:id/status",
+  // authenticateTourOperator,
+  updateBookingStatusController
+);
 app.get(
-  "/api/v1/tourist/bookings",
+  "/api/v1/bookings/tourist",
   authenticateUser,
   getTouristBookingsController
 );
+app.get(
+  "/api/v1/bookings/package/:packageId",
+  authenticateTourOperator,
+  getBookingsByPackageController
+);
+app.get(
+  "/api/v1/bookings/:id",
+  authenticateUser,
+  getBookingByIdController
+);  
