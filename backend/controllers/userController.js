@@ -31,10 +31,12 @@ const createUserController = async (req, res) => {
     const formatedEmail = email.toUpperCase();
 
     const captchaToken = req.body.captchaToken;
-    
+
     // Special handling for mobile app
-    if (captchaToken === 'mobile-app-verification-token') {
-      console.log("Mobile app verification token received - bypassing reCAPTCHA check");
+    if (captchaToken === "mobile-app-verification-token") {
+      console.log(
+        "Mobile app verification token received - bypassing reCAPTCHA check"
+      );
       // Skip the reCAPTCHA verification for mobile app
     } else if (!captchaToken) {
       return res.status(400).json({ error: "Captcha token is required" });
@@ -43,10 +45,10 @@ const createUserController = async (req, res) => {
       const secretKey = process.env.RECAPTCHA_SECRET_KEY;
       console.log("Secret Key:", secretKey);
       console.log("Captcha Token:", captchaToken);
-      
+
       const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
       const captchaRes = await axios.post(verifyUrl);
-      
+
       if (!captchaRes.data.success) {
         console.log("Captcha verification failed:", captchaRes.data);
         return res.status(400).json({ error: "Captcha verification failed" });
@@ -60,7 +62,7 @@ const createUserController = async (req, res) => {
     if (existingUser) {
       return res.status(409).json({ error: "Email already exists" });
     }
-
+    const isAdmin = req.session.user && req.session.user.role === "Admin";
     // Role assignment logic for admins
     let assignedRole = "";
     if (isAdmin) {
