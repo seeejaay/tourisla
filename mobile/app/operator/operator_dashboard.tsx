@@ -1,9 +1,9 @@
+import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import AdminHomeScreen from './home/admin_home';
-import AdminAnnouncementsScreen from './announcements/admin_announcements';
-import AdminHotlinesScreen from './hotlines/admin_hotlines';
-import AdminTouristSpotsScreen from './tourist_spots/admin_tourist_spots';
-import AdminProfileScreen from './profile/admin_profile';
+import OperatorHomeScreen from './home/operator_home';
+import OperatorToursScreen from './tours/operator_tours';
+import OperatorBookingsScreen from './bookings/operator_bookings';
+import OperatorProfileScreen from './profile/operator_profile';
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, View, Platform, TouchableOpacity, Image, Text, StatusBar, Dimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -24,25 +24,10 @@ function ProfileHeader() {
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
-        setLoading(true);
-        const response = await auth.currentUser();
-        console.log("User data response:", JSON.stringify(response));
-        
-        let userData = null;
-        if (response && response.data && response.data.user) {
-          userData = response.data.user;
-        } else if (response && response.user) {
-          userData = response.user;
-        } else if (response && response.data) {
-          userData = response.data;
-        } else if (typeof response === 'object' && response !== null) {
-          userData = response;
-        }
-        
-        console.log("Extracted user data:", userData);
-        setCurrentUser(userData);
+        const user = await auth.getCurrentUser();
+        setCurrentUser(user);
       } catch (error) {
-        console.error("Failed to fetch user data:", error);
+        console.error('Error fetching current user:', error);
       } finally {
         setLoading(false);
       }
@@ -78,7 +63,7 @@ function ProfileHeader() {
         {/* Left side - User profile */}
         <TouchableOpacity 
           style={styles.profileSection}
-          onPress={() => router.push('/admin/profile/admin_profile')}
+          onPress={() => router.push('/operator/profile/operator_profile')}
           activeOpacity={0.7}
         >
           {/* Avatar */}
@@ -88,7 +73,7 @@ function ProfileHeader() {
             ) : (
               <View style={styles.avatarPlaceholder}>
                 <Text style={styles.avatarInitial}>
-                  {currentUser?.first_name?.charAt(0) || currentUser?.email?.charAt(0) || 'A'}
+                  {currentUser?.first_name?.charAt(0) || currentUser?.email?.charAt(0) || 'O'}
                 </Text>
               </View>
             )}
@@ -148,12 +133,12 @@ function CustomTabBar({ state, descriptors, navigation }) {
           
           if (route.name === 'Home') {
             iconName = isFocused ? "home" : "home-outline";
-          } else if (route.name === 'Announcements') {
-            iconName = isFocused ? "megaphone" : "megaphone-outline";
-          } else if (route.name === 'Tourist Spots') {
-            iconName = isFocused ? "location" : "location-outline";
-          } else if (route.name === 'Hotlines') {
-            iconName = isFocused ? "call" : "call-outline";
+          } else if (route.name === 'Tours') {
+            iconName = isFocused ? "map" : "map-outline";
+          } else if (route.name === 'Bookings') {
+            iconName = isFocused ? "calendar" : "calendar-outline";
+          } else if (route.name === 'Profile') {
+            iconName = isFocused ? "person" : "person-outline";
           }
           
           const onPress = () => {
@@ -220,7 +205,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
   );
 }
 
-export default function AdminDashboard() {
+export default function OperatorDashboard() {
   const { tab } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   
@@ -243,16 +228,19 @@ export default function AdminDashboard() {
           name="Home"
           options={{ tabBarLabel: 'Home' }}
         >
-          {() => <AdminHomeScreen headerHeight={headerHeight} />}
+          {() => <OperatorHomeScreen headerHeight={headerHeight} />}
         </Tab.Screen>
-        <Tab.Screen name="Announcements">
-          {() => <AdminAnnouncementsScreen headerHeight={headerHeight} />}
+        <Tab.Screen 
+          name="Tours"
+          options={{ tabBarLabel: 'Tours' }}
+        >
+          {() => <OperatorToursScreen headerHeight={headerHeight} />}
         </Tab.Screen>
-        <Tab.Screen name="Tourist Spots">
-          {() => <AdminTouristSpotsScreen headerHeight={headerHeight} />}
-        </Tab.Screen>
-        <Tab.Screen name="Hotlines">
-          {() => <AdminHotlinesScreen headerHeight={headerHeight} />}
+        <Tab.Screen 
+          name="Bookings"
+          options={{ tabBarLabel: 'Bookings' }}
+        >
+          {() => <OperatorBookingsScreen headerHeight={headerHeight} />}
         </Tab.Screen>
       </Tab.Navigator>
     </View>
@@ -420,3 +408,5 @@ const styles = StyleSheet.create({
     color: 'rgba(148, 163, 184, 0.8)',
   },
 });
+
+

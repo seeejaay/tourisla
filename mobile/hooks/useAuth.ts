@@ -38,7 +38,7 @@ export function useAuth() {
       }
       if (router) {
         if (resLogin.user.role === "Admin") {
-          router.push("/admin/admin_dashboard");
+          router.push("/admin/admin_dashboard"); // Match the file structure
         } else if (resLogin.user.role === "Tourist") {
           router.push("/tourist/tourist_dashboard");
         } else if (resLogin.user.role === "tour_guide") {

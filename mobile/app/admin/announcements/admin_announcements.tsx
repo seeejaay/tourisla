@@ -8,6 +8,7 @@ import {
     Modal, 
     SafeAreaView,
     TextInput,
+    Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useEffect, useState, useCallback } from "react";
@@ -15,6 +16,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Icon from "react-native-vector-icons/Feather";
 import SortButton from "../../../components/SortButton";
 import { fetchAnnouncements, deleteAnnouncement } from "../../../lib/api/announcement";
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface Announcement {
     id: string;
@@ -22,23 +24,52 @@ interface Announcement {
     description: string;
     location: string;
     category: string;
-    date_posted: string; // Assuming this is a string in ISO format
+    date_posted: string;
 }
 
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
 
-export default function AdminAnnouncementsScreen() {
+export default function AdminAnnouncementsScreen({ headerHeight }) {
     const router = useRouter();
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [sortOption, setSortOption] = useState("newest");
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedAnnouncementId, setSelectedAnnouncementId] = useState<string | null>(null);
 
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    const [sortOption, setSortOption] = useState<"recent" | "newest">("recent");
-    const [searchQuery, setSearchQuery] = useState("");
+    const [showFilters, setShowFilters] = useState(false);
 
+    // Function to get category color
+    const getCategoryColor = (category: string) => {
+        const colors: Record<string, string> = {
+            EVENTS: "#4f46e5",
+            FIESTA: "#f59e0b",
+            CULTURAL_TOURISM: "#10b981",
+            ENVIRONMENTAL_COASTAL: "#059669",
+            HOLIDAY_SEASONAL: "#f97316",
+            GOVERNMENT_PUBLIC_SERVICE: "#6366f1",
+            STORM_SURGE: "#dc2626",
+            TSUNAMI: "#b91c1c",
+            GALE_WARNING: "#ef4444",
+            MONSOON_LOW_PRESSURE: "#7c3aed",
+            RED_TIDE: "#c026d3",
+            JELLYFISH_BLOOM: "#8b5cf6",
+            FISH_KILL: "#ec4899",
+            PROTECTED_WILDLIFE: "#14b8a6",
+            OIL_SPILL: "#4b5563",
+            COASTAL_EROSION: "#78716c",
+            CORAL_BLEACHING: "#f43f5e",
+            HEAT_WAVE: "#f97316",
+            FLOOD_LANDSLIDE: "#0ea5e9",
+            DENGUE_WATERBORNE: "#84cc16",
+            POWER_INTERRUPTION: "#64748b",
+        };
+        
+        return colors[category] || "#6b7280";
+    };
 
     useFocusEffect(
         useCallback(() => {
@@ -69,9 +100,11 @@ export default function AdminAnnouncementsScreen() {
       })
     .sort((a, b) => {
         if (sortOption === "recent") {
-          return new Date(b.date_posted).getTime() - new Date(a.date_posted).getTime(); // Most recently updated first
+          // "Recent" - newest date at the top (most recently created first)
+          return new Date(b.date_posted).getTime() - new Date(a.date_posted).getTime();
         } else if (sortOption === "newest") {
-          return new Date(a.date_posted).getTime() - new Date(b.date_posted).getTime(); // Newest last
+          // "Newest" - oldest date at the top (oldest created first)
+          return new Date(a.date_posted).getTime() - new Date(b.date_posted).getTime();
         }
         return 0;
     });
@@ -97,74 +130,110 @@ export default function AdminAnnouncementsScreen() {
         <SafeAreaView style={styles.safeContainer}>
         <View style={styles.container}>
 
-            {/* Header */}
-            <View style={styles.header}><Text style={styles.headerTitle}>Announcements</Text></View>
+            {/* Header removed */}
 
             <ScrollView
-            style={styles.scrollView}
+            style={[styles.scrollView, { marginTop: headerHeight }]}
             contentContainerStyle={{ paddingBottom: 20 }}
             >
 
-            {/* Filter + Sort Options */}
+            {/* Filter Tags in Grid Layout */}
             <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    <View style={{ flexDirection: "row", gap: 8 }}>
-                        {[
-                        'EVENTS',
-                        'FIESTA',
-                        'CULTURAL_TOURISM',
-                        'ENVIRONMENTAL_COASTAL',
-                        'HOLIDAY_SEASONAL',
-                        'GOVERNMENT_PUBLIC_SERVICE',
-                        'STORM_SURGE',
-                        'TSUNAMI',
-                        'GALE_WARNING',
-                        'MONSOON_LOW_PRESSURE',
-                        'RED_TIDE',
-                        'JELLYFISH_BLOOM',
-                        'FISH_KILL',
-                        'PROTECTED_WILDLIFE',
-                        'OIL_SPILL',
-                        'COASTAL_EROSION',
-                        'CORAL_BLEACHING',
-                        'HEAT_WAVE',
-                        'FLOOD_LANDSLIDE',
-                        'DENGUE_WATERBORNE',
-                        'POWER_INTERRUPTION',
-                        ].map((category) => (
-                        <Pressable
-                            key={category}
-                            style={{
-                            backgroundColor: selectedCategory === category ? "#007dab" : "#d1d5db",
-                            paddingVertical: 6,
-                            paddingHorizontal: 12,
-                            borderRadius: 20,
-                            }}
-                            onPress={() => setSelectedCategory((prev) => (prev === category ? null : category))}
-                        >
-                            <Text style={{ fontSize: 10, color: selectedCategory === category ? "#fff" : "#374151" }}>
-                            {category.replace(/_/g, " ")}
-                            </Text>
-                        </Pressable>
-                        ))}
-                    </View>
-                </ScrollView>
-                
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8}}>
+                {/* Search and Sort Row */}
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
                     <View style={[styles.searchContainer, { flex: 1 }]}>
                         <Icon name="search" size={16} color="#6b7280" style={{ marginRight: 8 }} />
                         <TextInput
-                        style={styles.searchInput}
-                        placeholder="Search announcements..."
-                        placeholderTextColor="#9ca3af"
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
+                            style={styles.searchInput}
+                            placeholder="Search announcements..."
+                            placeholderTextColor="#9ca3af"
+                            value={searchQuery}
+                            onChangeText={setSearchQuery}
                         />
                     </View>
+                    
                     {/* Sorting Options */}
-                    <SortButton sortOption={sortOption || "recent"} setSortOption={setSortOption} style={{ marginLeft: 8 }} />
+                    <SortButton sortOption={sortOption || "recent"} setSortOption={setSortOption} />
                 </View>
-
+                
+                {/* Filter Toggle Button Row */}
+                <View style={styles.filterToggleRow}>
+                    <Pressable 
+                        style={styles.filterToggleButton}
+                        onPress={() => setShowFilters(!showFilters)}
+                    >
+                        <Icon name={showFilters ? "chevron-up" : "chevron-down"} size={16} color="#475569" style={{ marginRight: 4 }} />
+                        <Text style={styles.filterToggleText}>
+                            {showFilters ? "Hide Filters" : "Show Filters"}
+                        </Text>
+                        {selectedCategory && (
+                            <View style={styles.filterBadge}>
+                                <Text style={styles.filterBadgeText}>1</Text>
+                            </View>
+                        )}
+                    </Pressable>
+                </View>
+                
+                {/* Collapsible Filter Section */}
+                {showFilters && (
+                    <View style={styles.filtersSection}>
+                        <View style={styles.filterContainer}>
+                            {[
+                                'EVENTS',
+                                'FIESTA',
+                                'CULTURAL_TOURISM',
+                                'ENVIRONMENTAL_COASTAL',
+                                'HOLIDAY_SEASONAL',
+                                'GOVERNMENT_PUBLIC_SERVICE',
+                                'STORM_SURGE',
+                                'TSUNAMI',
+                                'GALE_WARNING',
+                                'MONSOON_LOW_PRESSURE',
+                                'RED_TIDE',
+                                'JELLYFISH_BLOOM',
+                                'FISH_KILL',
+                                'PROTECTED_WILDLIFE',
+                                'OIL_SPILL',
+                                'COASTAL_EROSION',
+                                'CORAL_BLEACHING',
+                                'HEAT_WAVE',
+                                'FLOOD_LANDSLIDE',
+                                'DENGUE_WATERBORNE',
+                                'POWER_INTERRUPTION',
+                            ].map((category) => (
+                                <Pressable
+                                    key={category}
+                                    style={[
+                                        styles.filterTag,
+                                        selectedCategory === category && styles.filterTagSelected
+                                    ]}
+                                    onPress={() => {
+                                        setSelectedCategory((prev) => (prev === category ? null : category));
+                                    }}
+                                >
+                                    <Text style={[
+                                        styles.filterTagText,
+                                        selectedCategory === category && styles.filterTagTextSelected
+                                    ]}>
+                                        {category.replace(/_/g, " ")}
+                                    </Text>
+                                    {selectedCategory === category && (
+                                        <Icon name="x" size={12} color="#fff" style={styles.filterTagIcon} />
+                                    )}
+                                </Pressable>
+                            ))}
+                        </View>
+                        
+                        {selectedCategory && (
+                            <Pressable 
+                                style={styles.clearFiltersButton}
+                                onPress={() => setSelectedCategory(null)}
+                            >
+                                <Text style={styles.clearFiltersText}>Clear Filter</Text>
+                            </Pressable>
+                        )}
+                    </View>
+                )}
             </View>
 
             {/* Announcement Cards */}
@@ -182,39 +251,64 @@ export default function AdminAnnouncementsScreen() {
                         style={styles.card}
                         onPress={() => router.push(`/admin/announcements/admin_announcement_view?id=${item.id}`)}
                     >
-                        <View style={styles.cardHeader}>
-                            <Text style={styles.cardTitle}>{item.title}</Text>
-                            <View style={styles.actionButtons}>
-                            <Pressable
-                                onPress={(e) => {
-                                    e.stopPropagation(); // Prevent triggering the card's onPress
-                                    router.push(`/admin/announcements/admin_announcement_edit?id=${item.id}`);
-                                }}
-                                style={styles.editButton}
-                            >
-                                <Icon name="edit-3" size={18} color="#ffffff" />
-                            </Pressable>
-                            <Pressable
-                                onPress={(e) => {
-                                    e.stopPropagation(); // Prevent triggering the card's onPress
-                                    openDeleteModal(item.id);
-                                }}
-                                style={styles.deleteButton}
-                            >
-                                <Icon name="trash-2" size={18} color="#ffffff" />
-                            </Pressable>
+                        <LinearGradient
+                            colors={['#0f172a', '#1e293b']}
+                            style={styles.cardGradient}
+                        />
+                        
+                        <View style={styles.cardContent}>
+                            {/* Left color indicator */}
+                            <View 
+                                style={[
+                                    styles.categoryIndicator, 
+                                    { backgroundColor: getCategoryColor(item.category) }
+                                ]} 
+                            />
+                            
+                            {/* Main content */}
+                            <View style={styles.mainContent}>
+                                <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">
+                                    {item.title}
+                                </Text>
+                                <Text style={styles.categoryText}>
+                                    {item.category.replace(/_/g, " ")}
+                                </Text>
+                            </View>
+                            
+                            {/* Right section with actions */}
+                            <View style={styles.rightSection}>
+                                {/* Action buttons */}
+                                <View style={styles.actionButtons}>
+                                    <Pressable
+                                        onPress={(e) => {
+                                            e.stopPropagation();
+                                            router.push(`/admin/announcements/admin_announcement_edit?id=${item.id}`);
+                                        }}
+                                        style={styles.editButton}
+                                    >
+                                        <Icon name="edit-3" size={16} color="#ffffff" />
+                                    </Pressable>
+                                    <Pressable
+                                        onPress={(e) => {
+                                            e.stopPropagation();
+                                            openDeleteModal(item.id);
+                                        }}
+                                        style={styles.deleteButton}
+                                    >
+                                        <Icon name="trash-2" size={16} color="#ffffff" />
+                                    </Pressable>
+                                </View>
+                                
+                                {/* Date at bottom right */}
+                                <Text style={styles.dateText} numberOfLines={1} ellipsizeMode="tail">
+                                    {new Date(item.date_posted).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "short",
+                                        day: "numeric"
+                                    })}
+                                </Text>
                             </View>
                         </View>
-                        <Text style={styles.cardDescription}>{item.description}</Text>
-                        <Text style={styles.cardFooter}>
-                            {item.location} | {item.category.replace(/_/g, " ")} | {
-                            new Date(item.date_posted).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric"
-                            })
-                            }
-                        </Text>
                     </Pressable>
                 ))
                 )}
@@ -225,7 +319,7 @@ export default function AdminAnnouncementsScreen() {
                 style={styles.fab}
                 onPress={() => router.push("/admin/announcements/admin_announcement_create")}
             >
-                <Icon name="plus" size={24} color="#007dab" />
+                <Icon name="plus" size={24} color="#1fd8d6" />
             </Pressable>
 
             {/* Delete Modal */}
@@ -270,95 +364,94 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: '#f8fafc',
+        backgroundColor: '#f1f1f1',
     },
-    header: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 50 + STATUS_BAR_HEIGHT,
-        backgroundColor: "#0f172a",
-        borderBottomColor: "rgba(0, 0, 0, 0.1)",
-        borderBottomWidth: 1,
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        paddingTop: STATUS_BAR_HEIGHT,
-        paddingHorizontal: 20,
-        zIndex: 50,
-        shadowColor: "#000",
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 4 },
-        elevation: 8,
-        borderBottomLeftRadius: 15,
-        borderBottomRightRadius: 15,
-    },
-    headerTitle: {
-        fontSize: 22,
-        fontWeight: "900",
-        color: "#ecf0f1",
-        textShadowColor: "rgba(0, 0, 0, 0.2)",
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
-    },
+    // Header styles removed
     scrollView: {
         flex: 1,
-        marginTop: 50 + STATUS_BAR_HEIGHT,
+        // marginTop will be set dynamically based on headerHeight prop
     },
     contentContainer: {
         padding: 16,
     },
     card: {
-        backgroundColor: "#ffffff",
         borderRadius: 12,
-        paddingTop: 16,
-        paddingRight: 16,
-        paddingLeft: 16,
-        paddingBottom: 4,
-        marginBottom: 10,
+        marginBottom: 12,
         shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowOpacity: 0.15,
+        shadowRadius: 5,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 3,
+        overflow: 'hidden',
+        position: 'relative',
     },
-    cardHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginBottom: 8,
+    cardGradient: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+    },
+    cardContent: {
+        flexDirection: 'row',
+        height: 84,
+    },
+    categoryIndicator: {
+        width: 5,
+        height: '70%',
+        borderTopRightRadius: 3,
+        borderBottomRightRadius: 3,
+        alignSelf: 'center',
+    },
+    mainContent: {
+        flex: 1,
+        paddingVertical: 16,
+        paddingHorizontal: 16,
+        justifyContent: 'center',
     },
     cardTitle: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: "bold",
-        flex: 1,
+        color: "#ffffff",
+        marginBottom: 4,
+    },
+    categoryText: {
+        fontSize: 12,
+        color: '#8ecae6',
+        fontWeight: '500',
+    },
+    rightSection: {
+        width: 90,
+        height: '100%',
+        paddingRight: 16,
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        paddingVertical: 12,
     },
     actionButtons: {
-        flexDirection: "row",
-        alignItems: "flex-start",
-        gap: 4,
-        marginLeft: 16,
+        flexDirection: 'row',
+        gap: 8,
+    },
+    dateText: {
+        fontSize: 11,
+        color: '#a8dadc',
+        fontWeight: '400',
+        maxWidth: 90,
     },
     editButton: {
-        backgroundColor: "#38bdf8",
-        padding: 10,
-        borderRadius: 6,
-    },
-    cardDescription: {
-        fontSize: 10,
-        color: "#374151",
-        marginBottom: 12,
-    },
-    cardFooter: {
-        fontSize: 8,
-        color: "#6b7280",
-        fontStyle: "italic",
-        textAlign: "right",
+        backgroundColor: "#4cc9f0",
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        justifyContent: "center",
+        alignItems: "center",
     },
     deleteButton: {
-        backgroundColor: "#dc3545",
-        padding: 10,
-        borderRadius: 6,
+        backgroundColor: "#ef4444",
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        justifyContent: "center",
         alignItems: "center",
     },
     deleteButtonText: {
@@ -367,18 +460,20 @@ const styles = StyleSheet.create({
     },
     fab: {
         position: "absolute",
-        bottom: 16,
         right: 16,
+        bottom: Platform.OS === 'ios' ? 140 : 130, 
         backgroundColor: "#0f172a",
         width: 56,
         height: 56,
         borderRadius: 28,
         justifyContent: "center",
         alignItems: "center",
-        elevation: 4,
+        elevation: 8,
         shadowColor: "#000",
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        zIndex: 100, // Higher zIndex than the navbar
     },
     message: {
         textAlign: "center",
@@ -456,9 +551,101 @@ const styles = StyleSheet.create({
         marginTop: 8,
         height: 40,
     },
-      searchInput: {
+    searchInput: {
         flex: 1,
         fontSize: 14,
         color: "#111827",
+    },
+    filterContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
+        marginBottom: 12,
+    },
+    filterTag: {
+        backgroundColor: '#d1d5db',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+    },
+    filterTagSelected: {
+        backgroundColor: '#1194fe',
+    },
+    filterTagText: {
+        fontSize: 10,
+        color: '#374151',
+    },
+    filterTagTextSelected: {
+        color: '#fff',
+    },
+    filterTagIcon: {
+        marginLeft: 4,
+    },
+    clearFiltersButton: {
+        backgroundColor: '#6c757d',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    clearFiltersText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+    filterToggleRow: {
+        marginBottom: 12,
+    },
+    filterToggleButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f1f5f9',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        alignSelf: 'flex-start',
+        position: 'relative',
+        // Shadow for Android
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 2 },
+    },
+    filterToggleText: {
+        color: '#475569',
+        fontSize: 14,
+        fontWeight: '900',
+    },
+    filterBadge: {
+        position: 'absolute',
+        top: -6,
+        right: -6,
+        backgroundColor: '#ef4444',
+        width: 18,
+        height: 18,
+        borderRadius: 9,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    filterBadgeText: {
+        color: '#ffffff',
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
+    filtersSection: {
+        backgroundColor: '#f8fafc',
+        borderRadius: 8,
+        padding: 12,
+        marginBottom: 12,
+        elevation: 2,
+        shadowColor: "#000",
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 2 },
     },
 });

@@ -180,27 +180,6 @@ export default function AdminHotlineViewScreen() {
                         )}
                     </View>
                 </View>
-
-                {/* Action Buttons */}
-                <View style={styles.actionButtons}>
-                <LinearGradient
-                    colors={['#06b6d4', '#0284c7']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.gradientButtonWrapper}
-                >
-                    <Pressable
-                        style={styles.gradientButton}
-                        onPress={() => router.push({
-                            pathname: "/admin/hotlines/admin_hotline_edit",
-                            params: { id: hotline.id }
-                        })}
-                    >
-                        <MaterialCommunityIcons name="pencil" size={20} color="#fff" />
-                        <Text style={styles.actionButtonText}>Edit Contact</Text>
-                    </Pressable>
-                </LinearGradient>
-                </View>
             </ScrollView>
         </SafeAreaView>
     );
@@ -318,40 +297,6 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#0f172a',
     },
-    actionButtons: {
-        paddingHorizontal: 16,
-        marginTop: 8,
-    },
-    actionButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 12,
-        borderRadius: 8,
-        marginBottom: 12,
-    },
-    actionButtonText: {
-        color: '#fff',
-        fontWeight: '600',
-        fontSize: 16,
-        marginLeft: 8,
-    },
-    editButton: {
-        backgroundColor: '#0284c7',
-    },
-    gradientButtonWrapper: {
-        borderRadius: 8,
-        marginBottom: 12,
-        overflow: 'hidden',
-    },
-    gradientButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-    },
-    
     centered: {
         flex: 1,
         justifyContent: "center",

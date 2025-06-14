@@ -11,8 +11,8 @@ export default function SortButton({ sortOption, setSortOption }: SortButtonProp
   const [modalVisible, setModalVisible] = React.useState(false);
 
   const options = [
-    { label: <Text style={{ fontWeight: "600" }}>Recently Updated</Text>, value: "recent" },
-    { label: <Text style={{ fontWeight: "600" }}>Newly Added</Text>, value: "newest" },
+    { label: <Text style={{ fontWeight: "600" }}>Newest First</Text>, value: "recent" },
+    { label: <Text style={{ fontWeight: "600" }}>Oldest First</Text>, value: "newest" },
   ];
 
   return (

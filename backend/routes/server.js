@@ -132,6 +132,15 @@ const {
 } = require("../controllers/articleController");
 
 const {
+  createAccommodationController,
+  editAccommodationController,
+  deleteAccommodationController,
+  viewAccommodationsController,
+  viewAccommodationByIdController,
+} = require("../controllers/accommodationController.js");
+
+const { registerVisitorController } = require("../controllers/visitorRegistrationController");
+
   createTourPackageController,
   updateTourPackageController,
   deleteTourPackageController,
@@ -457,6 +466,17 @@ app.delete(
 app.get("/api/v1/articles", viewArticlesController);
 app.get("/api/v1/articles/:articleId", viewArticleByIdController);
 
+
+// Routes for Accommodations
+app.post("/api/v1/accommodations", authenticateAdmin, createAccommodationController);
+app.put("/api/v1/accommodations/:accommodationId", authenticateAdmin, editAccommodationController);
+app.delete("/api/v1/accommodations/:accommodationId", authenticateAdmin, deleteAccommodationController);
+app.get("/api/v1/accommodations", viewAccommodationsController);
+app.get("/api/v1/accommodations/:accommodationId", viewAccommodationByIdController);
+
+// Visitor Registration Route
+app.post("/api/v1/register", registerVisitorController);
+
 // Routes — Tour Packages
 app.post("/api/v1/tour-packages", createTourPackageController);
 app.put(
@@ -479,3 +499,4 @@ app.get(
   authenticateTourOperator,
   viewTourPackageByIdController
 );
+
