@@ -1,139 +1,158 @@
 import axios from "axios";
+import { getApiUrl, logApiRequest } from "./utils";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
-// Update with your actual API URL
-
-// ANNOUNCEMENTS
 export const fetchAnnouncements = async () => {
   try {
-    const response = await axios.get(`${API_URL}announcements`, {
+    const url = getApiUrl('announcements');
+    logApiRequest('GET', url);
+    
+    const response = await axios.get(url, {
       withCredentials: true,
     });
 
     if (response.status !== 200) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    console.log("Fetched announcements:", response.data);
-    return response.data;
-  } catch (err) {
-    console.error(
-      "Error fetching announcements:",
-      err.response?.data || err.message
-    );
-    throw err;
-  }
-};
-
-export const viewAnnouncement = async (announcementId) => {
-  try {
-    const response = await axios.get(
-      `${API_URL}announcements/${announcementId}`,
-      {
-        withCredentials: true,
-      }
-    );
-
-    if (response.status !== 200) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    // Ensure the response includes date_posted
-    return {
-      ...response.data,
-      date_posted: response.data.date_posted || null,
-    };
-  } catch (err) {
-    console.error(
-      `Error viewing announcement with ID ${announcementId}:`,
-      err.response?.data || err.message
-    );
-    throw err;
-  }
-};
-
-export const createAnnouncement = async (announcementData) => {
-  console.log("Payload being sent to the backend:", announcementData);
-  try {
-    // Ensure all required fields are included in the request body
-    const requiredFields = ["category", "description", "location", "title"];
-    for (const field of requiredFields) {
-      if (!announcementData[field]) {
-        throw new Error(`Missing required field: ${field}`);
-      }
-    }
-
-    const response = await axios.post(
-      `${API_URL}announcements`,
-      announcementData,
-      {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (response.status !== 200 && response.status !== 201) {
-      throw new Error(
-        `Failed to create announcement. Status: ${response.status}`
-      );
+      throw new Error(`HTTP Error! Status: ${response.status}`);
     }
 
     return response.data;
   } catch (error) {
     console.error(
-      "Error creating announcement:",
+      "Error Fetching Announcements: ",
       error.response?.data || error.message
     );
     throw error;
   }
 };
 
-export const updateAnnouncement = async (announcementId, announcementData) => {
+export const viewAnnouncement = async (announcementId) => {
   try {
-    const response = await axios.put(
-      `${API_URL}announcements/${announcementId}`,
-      announcementData,
-      {
-        withCredentials: true,
-      }
-    );
+    const url = getApiUrl(`announcements/${announcementId}`);
+    logApiRequest('GET', url);
+    
+    const response = await axios.get(url, {
+      withCredentials: true,
+    });
 
     if (response.status !== 200) {
-      throw new Error(
-        `Failed to update announcement. Status: ${response.status}`
-      );
+      throw new Error(`HTTP Error! Status: ${response.status}`);
     }
 
     return response.data;
   } catch (error) {
     console.error(
-      `Error updating announcement with ID ${announcementId}:`,
+      "Error Fetching Announcement: ",
       error.response?.data || error.message
     );
+    throw error;
+  }
+};
+
+export const createAnnouncement = async (data) => {
+  try {
+    const url = getApiUrl('announcements');
+    logApiRequest('POST', url, data instanceof FormData ? 'FormData with image' : data);
+    
+    let response;
+    
+    if (data instanceof FormData) {
+      // If FormData is provided (with image)
+      response = await axios.post(url, data, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Accept': 'application/json'
+        }
+      });
+    } else {
+      // If regular JSON data is provided
+      response = await axios.post(url, data, {
+        withCredentials: true,
+      });
+    }
+
+    if (response.status !== 200 && response.status !== 201) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Creating Announcement: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+// Update announcement
+export const updateAnnouncement = async (id, data) => {
+  try {
+    const url = getApiUrl(`announcements/${id}`);
+    console.log("Update URL:", url);
+    
+    // Set timeout and retry logic
+    const axiosConfig = {
+      timeout: 30000, // 30 seconds timeout
+      withCredentials: true,
+    };
+    
+    if (data instanceof FormData) {
+      console.log("Updating announcement with FormData");
+      
+      // Log FormData contents for debugging
+      for (let pair of data.entries()) {
+        console.log(`FormData field: ${pair[0]}, value: ${typeof pair[1] === 'object' ? 'File object' : pair[1]}`);
+      }
+      
+      // Try using fetch API for FormData which can be more reliable
+      const fetchResponse = await fetch(url, {
+        method: 'PUT',
+        body: data,
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!fetchResponse.ok) {
+        const errorText = await fetchResponse.text();
+        throw new Error(`HTTP Error! Status: ${fetchResponse.status}, Message: ${errorText}`);
+      }
+      
+      const responseData = await fetchResponse.json();
+      console.log("Update response:", responseData);
+      return responseData;
+    } else {
+      // Regular JSON data
+      console.log("Updating announcement with JSON data:", JSON.stringify(data));
+      const response = await axios.put(url, data, axiosConfig);
+      console.log("Update response:", response.data);
+      return response.data;
+    }
+  } catch (error) {
+    // Enhanced error logging
+    console.error("Error Updating Announcement: ", error.message);
     throw error;
   }
 };
 
 export const deleteAnnouncement = async (announcementId) => {
   try {
-    const response = await axios.delete(
-      `${API_URL}announcements/${announcementId}`,
-      {
-        withCredentials: true,
-      }
-    );
+    const url = getApiUrl(`announcements/${announcementId}`);
+    logApiRequest('DELETE', url);
+    
+    const response = await axios.delete(url, {
+      withCredentials: true,
+    });
 
-    if (response.status !== 200) {
-      throw new Error(
-        `Failed to delete announcement. Status: ${response.status}`
-      );
+    if (response.status !== 200 && response.status !== 204) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
     }
 
     return response.data;
   } catch (error) {
     console.error(
-      `Error deleting announcement with ID ${announcementId}:`,
+      "Error Deleting Announcement: ",
       error.response?.data || error.message
     );
     throw error;

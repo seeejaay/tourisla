@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import {
   login,
+  logout as logoutApi,
   forgotPassword,
   resetPassword,
   currentUser,
@@ -119,6 +120,26 @@ export function useAuth() {
     [setLoading, setError]
   );
 
+  const logout = async (router: AppRouterInstance) => {
+    setLoading(true);
+    setError("");
+    try {
+      const resLogout = await logoutApi();
+      if (resLogout?.error) {
+        setError(resLogout.error);
+        setLoading(false);
+        return;
+      }
+      setError("");
+      setLoading(false);
+
+      router.push("/auth/login");
+    } catch (err) {
+      setError("An error occurred during logout: " + err);
+    } finally {
+      setLoading(false);
+    }
+  };
   return {
     loginUser,
     error,
@@ -128,5 +149,6 @@ export function useAuth() {
     handleForgotPassword,
     handleResetPassword,
     loggedInUser,
+    logout,
   };
 }
