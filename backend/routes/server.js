@@ -152,6 +152,8 @@ const {
   viewTourPackageByIdController,
 } = require("../controllers/tourPackagesController.js");
 
+const { getWeather } = require("../controllers/weatherController");
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -170,6 +172,7 @@ const port = process.env.PORT || 3005;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+app.get("/weather", getWeather);
 
 app.get("/api/v1/users", async (req, res) => {
   try {
