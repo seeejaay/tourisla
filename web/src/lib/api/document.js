@@ -6,13 +6,14 @@ export const createGuideUploadDocu = async (guideId, documentData, file) => {
   try {
     const formData = new FormData();
     formData.append("document_type", documentData.document_type);
-    formData.append("requirements", JSON.stringify(documentData.requirements));
-    formData.append("file", file);
+    formData.append("requirements", JSON.stringify(requirementsArray));
+    formData.append("document", file);
 
     const response = await axios.post(
       `${API_URL}guideUploadDocu/${guideId}`,
       formData,
       {
+        withCredentials: true,
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -48,6 +49,7 @@ export const editGuideUploadDocu = async (docuId, documentData, file) => {
       `${API_URL}guideUploadDocu/${docuId}`,
       formData,
       {
+        withCredentials: true,
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -72,7 +74,9 @@ export const editGuideUploadDocu = async (docuId, documentData, file) => {
 
 export const fetchGuideUploadDocuById = async (docuId) => {
   try {
-    const response = await axios.get(`${API_URL}guideUploadDocu/${docuId}`);
+    const response = await axios.get(`${API_URL}guideUploadDocu/${docuId}`, {
+      withCredentials: true,
+    });
 
     if (response.status !== 200) {
       throw new Error(
@@ -84,6 +88,28 @@ export const fetchGuideUploadDocuById = async (docuId) => {
   } catch (error) {
     console.error(
       "Error fetching guide upload document:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const fetchGuideUploadDocuByGuideId = async (guideId) => {
+  try {
+    const response = await axios.get(`${API_URL}guideUploadDocu/${guideId}`, {
+      withCredentials: true,
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Failed to fetch guide upload documents. Server responded with status: ${response.status}`
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error fetching guide upload documents by guide ID:",
       error.response?.data || error.message
     );
     throw error;
@@ -104,6 +130,7 @@ export const createOperatorUploadDocu = async (
       `${API_URL}operatorUploadDocu/${operatorId}`,
       formData,
       {
+        withCredentials: true,
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -138,6 +165,7 @@ export const editOperatorUploadDocu = async (docuId, documentData, file) => {
       `${API_URL}operatorUploadDocu/${docuId}`,
       formData,
       {
+        withCredentials: true,
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -162,7 +190,9 @@ export const editOperatorUploadDocu = async (docuId, documentData, file) => {
 
 export const fetchOperatorUploadDocuById = async (docuId) => {
   try {
-    const response = await axios.get(`${API_URL}operatorUploadDocu/${docuId}`);
+    const response = await axios.get(`${API_URL}operatorUploadDocu/${docuId}`, {
+      withCredentials: true,
+    });
 
     if (response.status !== 200) {
       throw new Error(
