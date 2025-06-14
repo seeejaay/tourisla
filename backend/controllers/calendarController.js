@@ -5,6 +5,7 @@ const {
   getGoogleTokens,
 } = require('../models/calendarModel');
 
+// FOR TOUR GUIDES ONLY
 // Redirects user to Google's consent page for Calendar access
 const authorizeGoogleCalendarController = (req, res) => {
   const authUrl = oauth2Client.generateAuthUrl({
@@ -37,53 +38,7 @@ const googleCalendarCallbackController = async (req, res) => {
   }
 };
 
-// Creates a Google Calendar event for a confirmed booking
-const syncBookingToCalendarController = async (req, res) => {
-  // const tourguideId = req.user.id; // THIS IS THE REAL CODE USED WITH FRONTEND
-  const tourguideId = 4; // for manual testing in web browser
-  const { title, description, startDateTime, endDateTime } = req.body;
-
-  try {
-    const tokens = await getGoogleTokens(tourguideId);
-
-    oauth2Client.setCredentials({
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-      expiry_date: new Date(tokens.token_expiry).getTime(),
-    });
-
-    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-
-    const event = {
-      summary: title,
-      description,
-      start: {
-        dateTime: startDateTime,
-        timeZone: 'Asia/Manila',
-      },
-      end: {
-        dateTime: endDateTime,
-        timeZone: 'Asia/Manila',
-      },
-    };
-
-    const response = await calendar.events.insert({
-      calendarId: 'primary',
-      resource: event,
-    });
-
-    res.status(200).json({
-      message: 'Event created on Google Calendar.',
-      eventId: response.data.id,
-    });
-  } catch (error) {
-    console.error('Error syncing booking:', error);
-    res.status(500).json({ error: 'Failed to sync to Google Calendar' });
-  }
-};
-
 module.exports = {
   authorizeGoogleCalendarController,
-  googleCalendarCallbackController,
-  syncBookingToCalendarController,
+  googleCalendarCallbackController
 };
