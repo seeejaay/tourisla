@@ -75,7 +75,6 @@ const updateBookingStatusController = async (req, res) => {
 
     if (status === "APPROVED") {
       const booking = await getBookingById(id);
-      console.log("Booking:", booking);
       const { scheduled_date, tour_package_id } = booking;
       const assignedGuides = await getAssignedGuidesByPackage(tour_package_id);
       const tourPackage = await getTourPackageById(tour_package_id);
