@@ -55,7 +55,7 @@ const createUserController = async (req, res) => {
     }
 
     // Role assignment logic for admins
-    let assignedRole = "Tourist";
+    let assignedRole = "";
     if (isAdmin) {
       const allowedRoles = [
         "Tourist",
@@ -72,7 +72,12 @@ const createUserController = async (req, res) => {
         return res.status(403).json({ error: "Invalid role assignment" });
       }
     } else {
-      assignedRole = "Tourist"; // Default for self-signup
+      const allowedSelfSignupRoles = ["Tourist", "Tour Guide", "Tour Operator"];
+      if (role && allowedSelfSignupRoles.includes(role)) {
+        assignedRole = role; // Allow self-signup for specific roles
+      } else {
+        assignedRole = "Tourist"; // Default for self-signup
+      }
     }
 
     // Hash the password
