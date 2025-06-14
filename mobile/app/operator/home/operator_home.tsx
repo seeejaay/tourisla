@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   View, 
   Text, 
@@ -7,12 +7,18 @@ import {
   TouchableOpacity, 
   ActivityIndicator,
   RefreshControl,
-  FlatList
+  FlatList,
+  Alert,
+  Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1/';
+// Fix the API URL for mobile devices
+// On mobile, localhost/127.0.0.1 refers to the device itself, not your development machine
+const API_URL = Platform.OS === 'web' 
+  ? process.env.NEXT_PUBLIC_API_URL 
+  : process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.135:3000/api/v1/';
 
 interface TourGuideApplication {
   id: number;
@@ -63,15 +69,40 @@ export default function OperatorHomeScreen({ headerHeight }: { headerHeight: num
     setError('');
     
     try {
+      console.log(`Fetching applications from: ${API_URL}applications/${operatorId}`);
+      
       const response = await axios.get(`${API_URL}applications/${operatorId}`, {
-        withCredentials: true
+        withCredentials: true,
+        timeout: 15000, // Increased timeout to 15 seconds
       });
       
+      console.log('Applications response:', response.data);
       setApplications(response.data);
     } catch (err) {
       console.error('Error fetching applications:', err);
-      setError('Failed to load tour guide applications. Please try again.');
+      
+      // More detailed error handling
+      if (axios.isAxiosError(err)) {
+        if (err.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.error('Response error data:', err.response.data);
+          console.error('Response error status:', err.response.status);
+          setError(`Server error (${err.response.status}). Please try again.`);
+        } else if (err.request) {
+          // The request was made but no response was received
+          console.error('Request error:', err.request);
+          setError(`Network error. Cannot connect to ${API_URL}. Please check your API configuration and network connection.`);
+        } else {
+          // Something happened in setting up the request
+          setError('Request configuration error. Please try again.');
+        }
+      } else {
+        setError('Failed to load tour guide applications. Please try again.');
+      }
+      
       // Use mock data for development
+      console.log('Using mock data due to API error');
       setApplications([
         {
           id: 1,
@@ -114,7 +145,8 @@ export default function OperatorHomeScreen({ headerHeight }: { headerHeight: num
   const handleApprove = async (applicationId: number) => {
     try {
       await axios.put(`${API_URL}applications/${applicationId}/approve`, {}, {
-        withCredentials: true
+        withCredentials: true,
+        timeout: 10000
       });
       
       // Update local state
@@ -125,16 +157,19 @@ export default function OperatorHomeScreen({ headerHeight }: { headerHeight: num
             : app
         )
       );
+      
+      Alert.alert("Success", "Application approved successfully");
     } catch (err) {
       console.error('Error approving application:', err);
-      setError('Failed to approve application. Please try again.');
+      Alert.alert("Error", "Failed to approve application. Please try again.");
     }
   };
 
   const handleReject = async (applicationId: number) => {
     try {
       await axios.put(`${API_URL}applications/${applicationId}/reject`, {}, {
-        withCredentials: true
+        withCredentials: true,
+        timeout: 10000
       });
       
       // Update local state
@@ -145,9 +180,11 @@ export default function OperatorHomeScreen({ headerHeight }: { headerHeight: num
             : app
         )
       );
+      
+      Alert.alert("Success", "Application rejected successfully");
     } catch (err) {
       console.error('Error rejecting application:', err);
-      setError('Failed to reject application. Please try again.');
+      Alert.alert("Error", "Failed to reject application. Please try again.");
     }
   };
 
@@ -159,25 +196,22 @@ export default function OperatorHomeScreen({ headerHeight }: { headerHeight: num
     return (
       <View style={styles.applicationCard}>
         <View style={styles.applicationHeader}>
-          <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>
-              {item.first_name.charAt(0)}{item.last_name.charAt(0)}
-            </Text>
+          <View style={styles.nameContainer}>
+            <Text style={styles.nameText}>{item.first_name} {item.last_name}</Text>
+            <View style={[
+              styles.statusBadge,
+              isPending ? styles.pendingBadge : 
+              isApproved ? styles.approvedBadge : 
+              styles.rejectedBadge
+            ]}>
+              <Text style={styles.statusText}>
+                {isPending ? 'Pending' : isApproved ? 'Approved' : 'Rejected'}
+              </Text>
+            </View>
           </View>
-          <View style={styles.applicationHeaderText}>
-            <Text style={styles.applicantName}>{item.first_name} {item.last_name}</Text>
-            <Text style={styles.applicationDate}>
-              Applied on {new Date(item.created_at).toLocaleDateString()}
-            </Text>
-          </View>
-          <View style={[
-            styles.statusBadge,
-            isPending ? styles.pendingBadge : 
-            isApproved ? styles.approvedBadge : 
-            styles.rejectedBadge
-          ]}>
-            <Text style={styles.statusText}>{item.application_status}</Text>
-          </View>
+          <Text style={styles.dateText}>
+            Applied on {new Date(item.created_at).toLocaleDateString()}
+          </Text>
         </View>
         
         <View style={styles.applicationDetails}>
@@ -189,27 +223,28 @@ export default function OperatorHomeScreen({ headerHeight }: { headerHeight: num
             <Ionicons name="call-outline" size={16} color="#64748b" />
             <Text style={styles.detailText}>{item.mobile_number}</Text>
           </View>
-          <View style={styles.reasonContainer}>
-            <Text style={styles.reasonLabel}>Reason for applying:</Text>
-            <Text style={styles.reasonText}>{item.reason_for_applying}</Text>
-          </View>
+        </View>
+        
+        <View style={styles.reasonContainer}>
+          <Text style={styles.reasonLabel}>Reason for applying:</Text>
+          <Text style={styles.reasonText}>{item.reason_for_applying}</Text>
         </View>
         
         {isPending && (
           <View style={styles.actionButtons}>
             <TouchableOpacity 
-              style={[styles.actionButton, styles.rejectButton]}
-              onPress={() => handleReject(item.id)}
-            >
-              <Ionicons name="close-circle-outline" size={18} color="#ef4444" />
-              <Text style={[styles.actionButtonText, styles.rejectButtonText]}>Reject</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
               style={[styles.actionButton, styles.approveButton]}
               onPress={() => handleApprove(item.id)}
             >
-              <Ionicons name="checkmark-circle-outline" size={18} color="#10b981" />
-              <Text style={[styles.actionButtonText, styles.approveButtonText]}>Approve</Text>
+              <Ionicons name="checkmark-outline" size={18} color="#ffffff" />
+              <Text style={styles.approveButtonText}>Approve</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.actionButton, styles.rejectButton]}
+              onPress={() => handleReject(item.id)}
+            >
+              <Ionicons name="close-outline" size={18} color="#ffffff" />
+              <Text style={styles.rejectButtonText}>Reject</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -219,25 +254,21 @@ export default function OperatorHomeScreen({ headerHeight }: { headerHeight: num
 
   return (
     <View style={[styles.container, { paddingTop: headerHeight }]}>
-      <ScrollView
+      <ScrollView 
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#0ea5e9']}
+            tintColor="#0ea5e9"
+          />
         }
       >
-        <View style={styles.headerSection}>
-          <Text style={styles.welcomeText}>Tour Operator Dashboard</Text>
-          <Text style={styles.subHeaderText}>Manage your tours and guides</Text>
-        </View>
+        <Text style={styles.headerText}>Tour Guide Applications</Text>
+        <Text style={styles.subHeaderText}>Manage applications from tour guides</Text>
         
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Tour Guide Applications</Text>
-            <TouchableOpacity onPress={fetchApplications}>
-              <Ionicons name="refresh-outline" size={20} color="#0ea5e9" />
-            </TouchableOpacity>
-          </View>
-          
+        <View style={styles.applicationsContainer}>
           {loading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#0ea5e9" />
@@ -247,12 +278,51 @@ export default function OperatorHomeScreen({ headerHeight }: { headerHeight: num
             <View style={styles.errorContainer}>
               <Ionicons name="alert-circle-outline" size={24} color="#ef4444" />
               <Text style={styles.errorText}>{error}</Text>
-              <TouchableOpacity 
-                style={styles.retryButton}
-                onPress={fetchApplications}
-              >
-                <Text style={styles.retryButtonText}>Retry</Text>
-              </TouchableOpacity>
+              <View style={styles.errorActions}>
+                <TouchableOpacity 
+                  style={styles.retryButton}
+                  onPress={fetchApplications}
+                >
+                  <Text style={styles.retryButtonText}>Retry</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.mockDataButton}
+                  onPress={() => {
+                    // Use mock data for development
+                    setApplications([
+                      {
+                        id: 1,
+                        tourguide_id: 101,
+                        touroperator_id: 1,
+                        reason_for_applying: "I have extensive knowledge of local attractions",
+                        application_status: "PENDING",
+                        created_at: "2023-06-15T10:30:00Z",
+                        updated_at: "2023-06-15T10:30:00Z",
+                        first_name: "John",
+                        last_name: "Doe",
+                        email: "john.doe@example.com",
+                        mobile_number: "+639123456789"
+                      },
+                      {
+                        id: 2,
+                        tourguide_id: 102,
+                        touroperator_id: 1,
+                        reason_for_applying: "I speak multiple languages and have 5 years experience",
+                        application_status: "APPROVED",
+                        created_at: "2023-06-10T14:20:00Z",
+                        updated_at: "2023-06-12T09:15:00Z",
+                        first_name: "Jane",
+                        last_name: "Smith",
+                        email: "jane.smith@example.com",
+                        mobile_number: "+639187654321"
+                      }
+                    ]);
+                    setError('');
+                  }}
+                >
+                  <Text style={styles.mockDataButtonText}>Use Mock Data</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ) : applications.length === 0 ? (
             <View style={styles.emptyContainer}>
@@ -265,42 +335,9 @@ export default function OperatorHomeScreen({ headerHeight }: { headerHeight: num
               renderItem={renderApplicationItem}
               keyExtractor={item => item.id.toString()}
               scrollEnabled={false}
-              ItemSeparatorComponent={() => <View style={styles.separator} />}
+              contentContainerStyle={styles.listContainer}
             />
           )}
-        </View>
-        
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.quickActionsGrid}>
-            <TouchableOpacity style={styles.quickActionCard}>
-              <View style={[styles.quickActionIcon, { backgroundColor: 'rgba(14, 165, 233, 0.1)' }]}>
-                <Ionicons name="map-outline" size={24} color="#0ea5e9" />
-              </View>
-              <Text style={styles.quickActionText}>Create Tour</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.quickActionCard}>
-              <View style={[styles.quickActionIcon, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
-                <Ionicons name="calendar-outline" size={24} color="#10b981" />
-              </View>
-              <Text style={styles.quickActionText}>View Bookings</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.quickActionCard}>
-              <View style={[styles.quickActionIcon, { backgroundColor: 'rgba(139, 92, 246, 0.1)' }]}>
-                <Ionicons name="people-outline" size={24} color="#8b5cf6" />
-              </View>
-              <Text style={styles.quickActionText}>Manage Guides</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.quickActionCard}>
-              <View style={[styles.quickActionIcon, { backgroundColor: 'rgba(249, 115, 22, 0.1)' }]}>
-                <Ionicons name="stats-chart-outline" size={24} color="#f97316" />
-              </View>
-              <Text style={styles.quickActionText}>Analytics</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </ScrollView>
     </View>
@@ -316,10 +353,7 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 100,
   },
-  headerSection: {
-    marginBottom: 24,
-  },
-  welcomeText: {
+  headerText: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#0f172a',
@@ -328,9 +362,95 @@ const styles = StyleSheet.create({
   subHeaderText: {
     fontSize: 16,
     color: '#64748b',
-  },
-  section: {
     marginBottom: 24,
+  },
+  applicationsContainer: {
+    marginBottom: 16,
+  },
+  loadingContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 200,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#64748b',
+    marginTop: 12,
+  },
+  errorContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#64748b',
+    marginTop: 12,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  errorActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  retryButton: {
+    backgroundColor: '#0ea5e9',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+  },
+  mockDataButton: {
+    backgroundColor: '#8b5cf6',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  mockDataButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+  },
+  emptyContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 200,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#64748b',
+    marginTop: 12,
+  },
+  listContainer: {
+    gap: 16,
+  },
+  applicationCard: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 16,
@@ -339,100 +459,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 3,
     elevation: 2,
+    marginBottom: 16,
   },
-  sectionHeader: {
+  applicationHeader: {
+    marginBottom: 12,
+  },
+  nameContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 4,
   },
-  sectionTitle: {
+  nameText: {
     fontSize: 18,
     fontWeight: '600',
     color: '#0f172a',
-    marginBottom: 16,
-  },
-  loadingContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: '#64748b',
-  },
-  errorContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  errorText: {
-    marginTop: 8,
-    fontSize: 14,
-    color: '#ef4444',
-    textAlign: 'center',
-  },
-  retryButton: {
-    marginTop: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    fontSize: 14,
-    color: '#0f172a',
-    fontWeight: '500',
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-  },
-  emptyText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: '#64748b',
-    textAlign: 'center',
-  },
-  applicationCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
-  },
-  applicationHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-  },
-  avatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#0ea5e9',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  avatarText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  applicationHeaderText: {
-    flex: 1,
-  },
-  applicantName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#0f172a',
-  },
-  applicationDate: {
-    fontSize: 12,
-    color: '#64748b',
   },
   statusBadge: {
     paddingHorizontal: 8,
@@ -440,22 +481,25 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   pendingBadge: {
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    backgroundColor: 'rgba(234, 179, 8, 0.1)',
   },
   approvedBadge: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
   },
   rejectedBadge: {
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
   },
   statusText: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '500',
     color: '#0f172a',
   },
+  dateText: {
+    fontSize: 14,
+    color: '#64748b',
+  },
   applicationDetails: {
-    padding: 12,
-    backgroundColor: '#f8fafc',
+    marginBottom: 12,
   },
   detailRow: {
     flexDirection: 'row',
@@ -468,7 +512,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   reasonContainer: {
-    marginTop: 8,
+    marginBottom: 16,
   },
   reasonLabel: {
     fontSize: 14,
@@ -483,60 +527,30 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    justifyContent: 'space-between',
   },
   actionButton: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: 10,
+    borderRadius: 8,
+    flex: 0.48,
+  },
+  approveButton: {
+    backgroundColor: '#10b981',
   },
   rejectButton: {
-    borderRightWidth: 1,
-    borderRightColor: '#e2e8f0',
-  },
-  approveButton: {},
-  actionButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginLeft: 6,
-  },
-  rejectButtonText: {
-    color: '#ef4444',
+    backgroundColor: '#ef4444',
   },
   approveButtonText: {
-    color: '#10b981',
+    color: '#ffffff',
+    fontWeight: '600',
+    marginLeft: 4,
   },
-  separator: {
-    height: 12,
-  },
-  quickActionsSection: {
-    marginBottom: 24,
-  },
-  quickActionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 12,
-    marginHorizontal: -6,
-  },
-  quickActionCard: {
-    width: '50%',
-    padding: 6,
-  },
-  quickActionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  quickActionText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#0f172a',
+  rejectButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    marginLeft: 4,
   },
 });
-
