@@ -2,7 +2,8 @@ const e = require("express");
 const {
   createGuideUploadDocu,
   editGuideUploadDocu,
-  getGuideUploadDocuById
+  getGuideUploadDocuById,
+  getGuideUploadByUserId,
 } = require("../models/guideUploadDocuModel.js");
 
 const { s3Client, PutObjectCommand } = require("../utils/s3.js"); // Adjust the path as necessary
@@ -15,16 +16,16 @@ const createGuideUploadDocuController = async (req, res) => {
     let { document_type, requirements } = req.body;
 
     document_type = document_type.toUpperCase();
-    requirements = requirements.map(req => req.toUpperCase());
+    requirements = requirements.map((req) => req.toUpperCase());
 
     const allowedTypes = [
-      'GOV_ID',
-      'BIRTH_CERT',
-      'NBI_CLEARANCE',
-      'BRGY_CLEARANCE',
-      'MED_CERT',
-      'PASSPORT_PHOTO',
-      'RESUME'
+      "GOV_ID",
+      "BIRTH_CERT",
+      "NBI_CLEARANCE",
+      "BRGY_CLEARANCE",
+      "MED_CERT",
+      "PASSPORT_PHOTO",
+      "RESUME",
     ];
 
     if (!allowedTypes.includes(document_type)) {
@@ -37,13 +38,17 @@ const createGuideUploadDocuController = async (req, res) => {
       "FIT",
       "FLUENT",
       "TRAINING_CERTIFIED",
-      "NO_CRIMINAL_RECORD"
+      "NO_CRIMINAL_RECORD",
     ];
 
-    const isComplete = requiredFlags.every(flag => requirements.includes(flag));
+    const isComplete = requiredFlags.every((flag) =>
+      requirements.includes(flag)
+    );
 
     if (!isComplete) {
-      return res.status(400).json({ error: "All qualifications must be checked." });
+      return res
+        .status(400)
+        .json({ error: "All qualifications must be checked." });
     }
 
     // Handle file upload for the tour guide's document
@@ -77,7 +82,6 @@ const createGuideUploadDocuController = async (req, res) => {
   }
 };
 
-
 const editGuideUploadDocuController = async (req, res) => {
   try {
     const { docuId } = req.params;
@@ -86,13 +90,13 @@ const editGuideUploadDocuController = async (req, res) => {
     document_type = document_type.toUpperCase();
 
     const allowedTypes = [
-      'GOV_ID',
-      'BIRTH_CERT',
-      'NBI_CLEARANCE',
-      'BRGY_CLEARANCE',
-      'MED_CERT',
-      'PASSPORT_PHOTO',
-      'RESUME'
+      "GOV_ID",
+      "BIRTH_CERT",
+      "NBI_CLEARANCE",
+      "BRGY_CLEARANCE",
+      "MED_CERT",
+      "PASSPORT_PHOTO",
+      "RESUME",
     ];
 
     if (!allowedTypes.includes(document_type)) {
@@ -128,7 +132,6 @@ const editGuideUploadDocuController = async (req, res) => {
   }
 };
 
-
 const getGuideUploadDocuByIdController = async (req, res) => {
   try {
     const { docuId } = req.params;
@@ -150,9 +153,27 @@ const getGuideUploadDocuByIdController = async (req, res) => {
   }
 };
 
+const getGuideUploadByUserIdController = async (req, res) => {
+  try {
+    const currentUserId = req.session.user.id; // current user ID from session
+    const guideUploads = await getGuideUploadByUserId(currentUserId);
+
+    if (!guideUploads || guideUploads.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No documents found for this user" });
+    }
+
+    res.json(guideUploads);
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 module.exports = {
   createGuideUploadDocuController,
   editGuideUploadDocuController,
-  getGuideUploadDocuByIdController
+  getGuideUploadDocuByIdController,
+  getGuideUploadByUserIdController,
 };
