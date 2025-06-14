@@ -111,7 +111,7 @@ const {
   deleteTouristSpotController,
   viewTouristSpotsController,
   viewTouristSpotByIdController,
-} = require('../controllers/touristSpotController');
+} = require("../controllers/touristSpotController");
 
 const {
   createRuleController,
@@ -119,7 +119,7 @@ const {
   deleteRuleController,
   viewRulesController,
   viewRuleByIdController,
-} = require('../controllers/rulesRegulationController.js');
+} = require("../controllers/rulesRegulationController.js");
 
 const {
   createArticleController,
@@ -138,6 +138,13 @@ const {
 } = require("../controllers/accommodationController.js");
 
 const { registerVisitorController } = require("../controllers/visitorRegistrationController");
+
+  createTourPackageController,
+  updateTourPackageController,
+  deleteTourPackageController,
+  viewTourPackagesController,
+  viewTourPackageByIdController,
+} = require("../controllers/tourPackagesController.js");
 
 app.use(
   session({
@@ -218,7 +225,11 @@ app.post(
   createAnnouncementController,
   authenticateAdmin
 );
-app.put("/api/v1/announcements/:announcementId", editAnnouncementController);
+app.put(
+  "/api/v1/announcements/:announcementId",
+  upload.single("image"),
+  editAnnouncementController
+);
 app.delete(
   "/api/v1/announcements/:announcementId",
   deleteAnnouncementController,
@@ -230,11 +241,7 @@ app.get(
 );
 
 // Routes for Hotlines
-app.post(
-  "/api/v1/hotlines", 
-  authenticateAdmin, 
-  createHotlineController
-);
+app.post("/api/v1/hotlines", authenticateAdmin, createHotlineController);
 app.put(
   "/api/v1/hotlines/:hotlineId",
   authenticateAdmin,
@@ -251,11 +258,12 @@ app.get("/api/v1/hotlines/:hotlineId", viewHotlineByIdController);
 // Routes for Tour Guide Registration
 app.post(
   "/api/v1/guideRegis",
-  authenticateTourGuide,
+  upload.single("profile_picture"),
   createGuideRegisController
 );
 app.put(
   "/api/v1/guideRegis/:guideId",
+  upload.single("profile_picture"),
   authenticateTourGuide,
   editGuideRegisController
 );
@@ -274,11 +282,13 @@ app.get(
 // Routes for Tour Guide Document Upload
 app.post(
   "/api/v1/guideUploadDocu/:guideId",
+  upload.single("document"),
   authenticateTourGuide,
   createGuideUploadDocuController
 );
 app.put(
   "/api/v1/guideUploadDocu/:docuId",
+  upload.single("document"),
   authenticateTourGuide,
   editGuideUploadDocuController
 );
@@ -318,11 +328,13 @@ app.get(
 // Routes for Tour Operator Document Upload
 app.post(
   "/api/v1/operatorUploadDocu/:operatorId",
+  upload.single("document"),
   authenticateTourOperator,
   createOperatorUploadDocuController
 );
 app.put(
   "/api/v1/operatorUploadDocu/:documentId",
+  upload.single("document"),
   authenticateTourOperator,
   editOperatorUploadDocuController
 );
@@ -425,10 +437,19 @@ app.get("/api/v1/rules/:ruleId", viewRuleByIdController);
 
 // Routes — Articles
 app.post("/api/v1/articles", authenticateAdmin, createArticleController);
-app.put("/api/v1/articles/:articleId", authenticateAdmin, editArticleController);
-app.delete("/api/v1/articles/:articleId", authenticateAdmin, deleteArticleController);
+app.put(
+  "/api/v1/articles/:articleId",
+  authenticateAdmin,
+  editArticleController
+);
+app.delete(
+  "/api/v1/articles/:articleId",
+  authenticateAdmin,
+  deleteArticleController
+);
 app.get("/api/v1/articles", viewArticlesController);
 app.get("/api/v1/articles/:articleId", viewArticleByIdController);
+
 
 // Routes for Accommodations
 app.post("/api/v1/accommodations", authenticateAdmin, createAccommodationController);
@@ -439,4 +460,27 @@ app.get("/api/v1/accommodations/:accommodationId", viewAccommodationByIdControll
 
 // Visitor Registration Route
 app.post("/api/v1/register", registerVisitorController);
+
+// Routes — Tour Packages
+app.post("/api/v1/tour-packages", createTourPackageController);
+app.put(
+  "/api/v1/tour-packages/:id",
+  authenticateTourOperator,
+  updateTourPackageController
+);
+app.delete(
+  "/api/v1/tour-packages/:id",
+  authenticateTourOperator,
+  deleteTourPackageController
+);
+app.get(
+  "/api/v1/tour-packages",
+  authenticateTourOperator,
+  viewTourPackagesController
+);
+app.get(
+  "/api/v1/tour-packages/:id",
+  authenticateTourOperator,
+  viewTourPackageByIdController
+);
 

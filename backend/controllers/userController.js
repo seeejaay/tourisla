@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
+const axios = require("axios");
 const {
   createUser,
   editUser,
@@ -25,12 +26,41 @@ const createUserController = async (req, res) => {
       nationality,
     } = req.body;
 
+    const formatedFirstName = first_name.toUpperCase();
+    const formatedLastName = last_name.toUpperCase();
+    const formatedEmail = email.toUpperCase();
+
+    const captchaToken = req.body.captchaToken;
+    
+    // Special handling for mobile app
+    if (captchaToken === 'mobile-app-verification-token') {
+      console.log("Mobile app verification token received - bypassing reCAPTCHA check");
+      // Skip the reCAPTCHA verification for mobile app
+    } else if (!captchaToken) {
+      return res.status(400).json({ error: "Captcha token is required" });
+    } else {
+      // Verify captcha for web clients
+      const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+      console.log("Secret Key:", secretKey);
+      console.log("Captcha Token:", captchaToken);
+      
+      const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
+      const captchaRes = await axios.post(verifyUrl);
+      
+      if (!captchaRes.data.success) {
+        console.log("Captcha verification failed:", captchaRes.data);
+        return res.status(400).json({ error: "Captcha verification failed" });
+      } else {
+        console.log("Captcha verification successful");
+      }
+    }
+
     // Default role for new users
-    let assignedRole = "Tourist";
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return res.status(409).json({ error: "Email already exists" });
     }
+
     // Check if the authenticated user is an admin
     if (req.session && req.session.user && req.session.user.role === "Admin") {
       const allowedRoles = [
@@ -54,12 +84,12 @@ const createUserController = async (req, res) => {
 
     // Create the user in the database
     const user = await createUser({
-      first_name,
-      last_name,
-      email,
+      first_name: formatedFirstName,
+      last_name: formatedLastName,
+      email: formatedEmail,
       hashedPassword,
       phone_number,
-      role: assignedRole, // Use the assigned role
+      role, // Use the assigned role
       nationality,
     });
 
@@ -68,6 +98,7 @@ const createUserController = async (req, res) => {
       status: "success",
       data: { user },
     });
+    console.log("Account created successfully");
   } catch (error) {
     console.error("Error adding user:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -80,7 +111,18 @@ const currentUserController = async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const user = req.session.user; // Assuming user info is stored in session
+    // Get the user ID from the session
+    const userId = req.session.user.user_id ?? req.session.user.id;
+    if (!userId) {
+      return res.status(400).json({ error: "User ID missing in session" });
+    }
+
+    // Fetch the latest user data from the database
+    const user = await findUserById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
     res.status(200).json({
       status: "success",
       data: { user },
@@ -107,9 +149,9 @@ const editUserController = async (req, res) => {
     } = req.body;
 
     let updatedFields = {
-      first_name,
-      last_name,
-      email,
+      first_name: first_name.toUpperCase(),
+      last_name: last_name.toUpperCase(),
+      email: email.toUpperCase(),
       phone_number,
       nationality,
       role,
@@ -189,7 +231,7 @@ const forgotPasswordController = async (req, res) => {
     await setResetPasswordToken(email, token, expires);
 
     //on production, use the actual URL of your frontend
-    const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+    const resetLink = `http://localhost:3000/auth/reset-password?token=${token}`;
     await sendResetPasswordEmail(email, resetLink);
 
     res.status(200).json({

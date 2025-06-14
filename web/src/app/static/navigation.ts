@@ -3,27 +3,35 @@ export const navigation = [
     tag: "Home",
     href: "/",
     title: "Home",
+    dropdown: [
+      {
+        tag: "About",
+        href: "/about",
+        title: "About",
+      },
+      {
+        tag: "Contact",
+        href: "/contact",
+        title: "Contact",
+      },
+    ],
   },
   {
-    tag: "About",
-    href: "about",
-    title: "About",
+    tag: "Map",
+    href: "/map",
+    title: "Map",
   },
   {
-    tag: "Services",
-    href: "/services",
-    title: "Services",
+    tag: "Culture",
+    href: "/culture",
+    title: "Culture",
   },
   {
-    tag: "Contact",
-    href: "/contact",
-    title: "Contact",
+    tag: "Announcements",
+    href: "/announcements",
+    title: "Announcements",
   },
-  {
-    tag: "Blog",
-    href: "/blog",
-    title: "Blog",
-  },
+  // Add more main nav items as needed
 ];
 export const footerNavigation = [
   {
