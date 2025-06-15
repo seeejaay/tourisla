@@ -5,7 +5,7 @@ import * as auth from '@/lib/api/auth.js';
 import { FontAwesome, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
-export default function TouristProfileScreen() {
+export default function StaffProfileScreen() {
   const [user, setUser] = useState<{
     avatar?: string;
     first_name?: string;
@@ -77,15 +77,8 @@ export default function TouristProfileScreen() {
   };
 
   const handleEditProfile = () => {
+    alert("Navigate to Edit Profile");
     setShowMenu(false);
-    router.push({
-      pathname: '/tourist/profile/edit_profile',
-      params: {
-        first_name: user?.first_name || '',
-        last_name: user?.last_name || '',
-        phone_number: user?.phone_number || ''
-      }
-    });
   };
 
   if (loading) {
@@ -195,8 +188,8 @@ export default function TouristProfileScreen() {
             <Text style={styles.email}>{user?.email}</Text>
 
             {/* Role Badge */}
-            <View style={[styles.roleBadge, user?.role === 'tourist' ? styles.touristBadge : styles.userBadge]}>
-              <Text style={[styles.roleText, user?.role !== 'tourist' && styles.userRoleText]}>
+            <View style={[styles.roleBadge, user?.role === 'tourism staff' ? styles.staffBadge : styles.userBadge]}>
+              <Text style={[styles.roleText, user?.role !== 'tourism staff' && styles.userRoleText]}>
                 {user?.role?.toUpperCase()}
               </Text>
             </View>
@@ -449,7 +442,7 @@ const styles = StyleSheet.create({
     borderRadius: 9999,
     backgroundColor: 'transparent',
   },
-  touristBadge: {
+  staffBadge: {
     backgroundColor: '#38bdf8',
     paddingVertical: 4,
     paddingHorizontal: 10,

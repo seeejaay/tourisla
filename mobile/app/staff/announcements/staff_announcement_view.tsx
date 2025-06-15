@@ -39,7 +39,7 @@ interface Announcement {
   image_url?: string;
 }
 
-export default function TouristAnnouncementViewScreen() {
+export default function StaffAnnouncementViewScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { viewAnnouncement, loading, error } = useAnnouncementManager();
