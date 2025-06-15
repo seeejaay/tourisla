@@ -74,23 +74,6 @@ const getAccommodationLogByIdController = async (req, res) => {
   }
 };
 
-// const exportAccommodationLogController = async (req, res) => {
-//   try {
-//     const filter = req.query;
-//     const csvData = await exportAccommodationLog(filter);
-
-//     if (!csvData) {
-//       return res.status(404).send("No records to export.");
-//     }
-
-//     res.setHeader("Content-Type", "text/csv");
-//     res.setHeader("Content-Disposition", "attachment; filename=accommodation_logs.csv");
-//     res.send(csvData);
-//   } catch (err) {
-//     console.error("Export error:", err.message);
-//     res.status(500).send("Failed to export logs.");
-//   }
-// };
 
 const exportAccommodationLogController = async (req, res) => {
   try {
