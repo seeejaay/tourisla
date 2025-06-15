@@ -185,10 +185,8 @@ export default function AdminProfile() {
 
   const handleAbout = () => {
     setShowMenu(false);
-    // For now, just show an alert. Later you can navigate to the About page
-    alert("About page will be available soon");
-    // When you create the About page, you can use:
-    // router.push('/admin/profile/about');
+    // Navigate to the About page
+    router.push('/admin/profile/about');
   };
 
   if (loading) {
@@ -432,7 +430,7 @@ const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight ||
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f8fafc',
   },
   header: {
     position: 'absolute',

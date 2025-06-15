@@ -26,7 +26,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // Use the exact path you specified
 const mapImage = require('../../../assets/maps/cebu-tourist-map.jpg');
 
-export default function TouristMapScreen({ headerHeight }) {
+export default function AdminMapScreen({ headerHeight }) {
   const [fullscreenVisible, setFullscreenVisible] = useState(false);
   const [downloadLoading, setDownloadLoading] = useState(false);
   
