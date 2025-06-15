@@ -284,7 +284,7 @@ export default function EditProfileScreen() {
             <Text style={styles.profileName}>
               {formatNameWords(form.first_name)} {formatNameWords(form.last_name)}
             </Text>
-            <Text style={styles.profileEmail}>{userData?.email}</Text>
+            <Text style={styles.profileEmail}>{userData?.email?.toLowerCase()}</Text>
           </View>
 
           <View style={styles.formContainer}>
@@ -616,6 +616,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   }
 });
+
 
 
 

@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import * as auth from '@/lib/api/auth';
 import { useIsFocused } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
@@ -220,26 +221,45 @@ export default function TouristProfile() {
 
   return (
     <View style={styles.container}>
-      {/* Instagram-style header with gradient */}
-      <Animated.View 
-        style={[
-          styles.header, 
-          { 
-            opacity: headerOpacity,
-            elevation: headerElevation,
-            shadowOpacity: scrollY.interpolate({
-              inputRange: [0, 100],
-              outputRange: [0.08, 0.16],
-              extrapolate: 'clamp',
-            })
-          }
-        ]}
+      {/* Header with gradient background */}
+      <LinearGradient
+        colors={['#23a9f2', '#0f172a']}
+        start={{ x: 1, y: 2 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.headerGradient}
       >
-        <Text style={[styles.headerTitle]}>Profile</Text>
-        <TouchableOpacity onPress={handleMenuToggle} style={styles.menuButton}>
-          <Feather name="menu" size={24} color="#fff" />
-        </TouchableOpacity>
-      </Animated.View>
+        <Animated.View 
+          style={[
+            styles.header, 
+            { 
+              opacity: headerOpacity,
+              shadowOpacity: scrollY.interpolate({
+                inputRange: [0, 100],
+                outputRange: [0.08, 0.16],
+                extrapolate: 'clamp',
+              })
+            }
+          ]}
+        >
+          <View style={styles.headerLeft}>
+            <Text style={styles.headerTitle}>Profile</Text>
+            <View style={styles.headerBadge}>
+              <Text style={styles.headerBadgeText}>
+                {user?.role?.toUpperCase() || 'TOURIST'}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={styles.headerIconButton}>
+              <Feather name="bell" size={22} color="#fff" />
+              <View style={styles.notificationDot} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleMenuToggle} style={styles.menuButton}>
+              <Feather name="menu" size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </LinearGradient>
 
       {showMenu && (
         <View style={[styles.dropdownMenu]}>
@@ -270,7 +290,7 @@ export default function TouristProfile() {
       >
         {user && (
           <>
-            {/* Instagram-style profile header */}
+            {/* Profile header */}
             <View style={styles.profileHeader}>
               {/* Profile image with story ring */}
               <View style={styles.profileImageContainer}>
@@ -279,13 +299,13 @@ export default function TouristProfile() {
                     <Image 
                       source={{ uri: user.profile_image }} 
                       style={styles.profileImage}
-                      key={`profile-${new Date().getTime()}`} // Force re-render with unique key
+                      key={`profile-${new Date().getTime()}`}
                     />
                   ) : user?.avatar ? (
                     <Image 
                       source={{ uri: user.avatar }} 
                       style={styles.profileImage}
-                      key={`avatar-${new Date().getTime()}`} // Force re-render with unique key
+                      key={`avatar-${new Date().getTime()}`}
                     />
                   ) : (
                     <View style={styles.profileImagePlaceholder}>
@@ -321,9 +341,6 @@ export default function TouristProfile() {
                   `${formatNameWords(user.first_name)} ${formatNameWords(user.last_name)}` 
                   : 'Tourist'}
               </Text>
-              <View style={styles.roleBadge}>
-                <Text style={styles.roleText}>{user?.role?.toUpperCase() || 'TOURIST'}</Text>
-              </View>
             </View>
             
             {/* Edit profile button */}
@@ -422,26 +439,93 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 50 + STATUS_BAR_HEIGHT,
-    backgroundColor: '#38bdf8',
+    height: 60 + STATUS_BAR_HEIGHT,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: STATUS_BAR_HEIGHT,
     paddingHorizontal: 20,
     zIndex: 50,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 60 + STATUS_BAR_HEIGHT,
+    zIndex: 40,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 8,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: '900',
     color: '#fff',
+    marginRight: 12,
+    letterSpacing: 0.5,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  headerBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  headerBadgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  headerIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  notificationDot: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ef4444',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
   },
   menuButton: {
-    padding: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   dropdownMenu: {
     position: 'absolute',
@@ -478,7 +562,7 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   scrollContent: {
-    paddingTop: 60 + STATUS_BAR_HEIGHT,
+    paddingTop: 65 + STATUS_BAR_HEIGHT,
     paddingBottom: 30,
   },
   profileHeader: {
@@ -550,20 +634,6 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginTop: 2,
   },
-  roleBadge: {
-    marginTop: 8,
-    backgroundColor: '#38bdf8',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 12,
-  },
-  roleText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '600',
-    letterSpacing: 0.5,
-  },
   editProfileButton: {
     marginHorizontal: 20,
     marginVertical: 10,
@@ -588,7 +658,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '900',
     color: '#0f172a',
     marginBottom: 15,
   },
