@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   View, 
   Text, 
@@ -11,17 +11,23 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
-  Image
+  Image,
+  BackHandler
 } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useFocusEffect, useNavigation } from 'expo-router';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { updateUserProfile } from '@/lib/api/profile';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
 import selectFields from '@/static/selectFields';
 import { StatusBar } from 'expo-status-bar';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function EditProfileScreen() {
+  // Get navigation object
+  const navigation = useNavigation();
+  
+  // Existing state
   const params = useLocalSearchParams();
   const [form, setForm] = useState({
     first_name: params.first_name?.toString() || '',
@@ -33,8 +39,20 @@ export default function EditProfileScreen() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
   
+  // Add new state for profile image
+  const [profileImage, setProfileImage] = useState(null);
+  
   // Get nationality options from selectFields
   const nationalityOptions = selectFields().find(field => field.name === 'nationality')?.options || [];
+
+  // Add this helper function at the top of your component
+  const formatNameWords = (name) => {
+    if (!name) return '';
+    // Split the name by spaces and capitalize each word
+    return name.split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
 
   // Get user data on component mount
   useEffect(() => {
@@ -44,6 +62,11 @@ export default function EditProfileScreen() {
         if (storedUserData) {
           const parsed = JSON.parse(storedUserData);
           setUserData(parsed);
+          
+          // Set profile image if available
+          if (parsed.profile_image || parsed.avatar) {
+            setProfileImage(parsed.profile_image || parsed.avatar);
+          }
           
           // Update form with stored user data if not provided in params
           setForm(prev => ({
@@ -63,12 +86,57 @@ export default function EditProfileScreen() {
   }, []);
 
   const handleChange = (name, value) => {
-    setForm(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    if (name === 'first_name' || name === 'last_name') {
+      // Format names with first letter capitalized, rest lowercase
+      setForm(prev => ({
+        ...prev,
+        [name]: value // Store the original value, we'll format on display
+      }));
+    } else {
+      // For other fields, no special formatting
+      setForm(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
+  // Add image picker function
+  const pickImage = async () => {
+    try {
+      // Request permissions
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert('Permission Required', 'Please allow access to your photo library to change your profile picture.');
+        return;
+      }
+      
+      // Launch image picker
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+      
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const selectedImage = result.assets[0];
+        console.log('Selected image:', selectedImage.uri);
+        
+        // Set the image URI to state
+        setProfileImage(selectedImage.uri);
+        
+        // Here you would typically upload the image to your server
+        // For now, we'll just store the URI locally
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to select image. Please try again.');
+    }
+  };
+
+  // Update the handleSave function to force a refresh when returning to profile
   const handleSave = async () => {
     if (!userData || (!userData.user_id && !userData.id)) {
       Alert.alert("Error", "User ID not found. Please log in again.");
@@ -78,15 +146,21 @@ export default function EditProfileScreen() {
     try {
       setLoading(true);
       
+      // Format names before saving
+      const formattedFirstName = formatNameWords(form.first_name);
+      const formattedLastName = formatNameWords(form.last_name);
+      
       // Format data for API
       const dataToSend = {
-        first_name: form.first_name,
-        last_name: form.last_name,
+        user_id: userData.user_id || userData.id, // Include user_id explicitly
+        first_name: formattedFirstName,
+        last_name: formattedLastName,
         phone_number: form.phone_number,
         nationality: form.nationality,
         email: userData.email, // Keep original email
         role: userData.role || 'Tourist',
-        status: userData.status || 'Active'
+        status: userData.status || 'Active',
+        profile_image: profileImage // Add profile image to the data
       };
       
       console.log('Attempting to update profile with data:', dataToSend);
@@ -97,14 +171,21 @@ export default function EditProfileScreen() {
       // Update local storage with new data
       const newUserData = {
         ...userData,
-        first_name: form.first_name,
-        last_name: form.last_name,
+        first_name: formattedFirstName,
+        last_name: formattedLastName,
         phone_number: form.phone_number,
-        nationality: form.nationality
+        nationality: form.nationality,
+        profile_image: profileImage, // Add profile image to local storage
+        avatar: profileImage // Also update avatar field for compatibility
       };
       
       console.log('Updating AsyncStorage with:', newUserData);
       await AsyncStorage.setItem('userData', JSON.stringify(newUserData));
+      
+      // Set a flag in AsyncStorage to indicate profile was updated
+      // This is critical for the profile page to know it needs to refresh
+      await AsyncStorage.setItem('profileUpdated', 'true');
+      console.log('Set profileUpdated flag to true');
       
       Alert.alert(
         "Success", 
@@ -113,10 +194,9 @@ export default function EditProfileScreen() {
           {
             text: "OK",
             onPress: () => {
-              // Force refresh the tourist_profile screen by replacing it
-              router.replace({
-                pathname: "/tourist/profile/tourist_profile",
-                params: { refresh: Date.now() }
+              // Go back to previous screen with a refresh parameter
+              router.back({
+                params: { refresh: new Date().getTime() }
               });
             }
           }
@@ -146,6 +226,23 @@ export default function EditProfileScreen() {
     }
   };
 
+  // Add this effect to handle hardware back button
+  useFocusEffect(
+    useCallback(() => {
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+        navigation.goBack();
+        return true;
+      });
+      
+      // Clean up event listener on unmount
+      return () => backHandler.remove();
+    }, [navigation])
+  );
+
+  const handleCancel = () => {
+    navigation.goBack();
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
@@ -154,7 +251,7 @@ export default function EditProfileScreen() {
         style={styles.container}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <MaterialIcons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Edit Profile</Text>
@@ -168,9 +265,9 @@ export default function EditProfileScreen() {
         >
           <View style={styles.profileImageSection}>
             <View style={styles.avatarContainer}>
-              {userData?.profile_image ? (
+              {profileImage ? (
                 <Image 
-                  source={{ uri: userData.profile_image }} 
+                  source={{ uri: profileImage }} 
                   style={styles.avatar} 
                 />
               ) : (
@@ -180,11 +277,13 @@ export default function EditProfileScreen() {
                   </Text>
                 </View>
               )}
-              <TouchableOpacity style={styles.editAvatarButton}>
+              <TouchableOpacity style={styles.editAvatarButton} onPress={pickImage}>
                 <MaterialIcons name="camera-alt" size={16} color="#fff" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.profileName}>{form.first_name} {form.last_name}</Text>
+            <Text style={styles.profileName}>
+              {formatNameWords(form.first_name)} {formatNameWords(form.last_name)}
+            </Text>
             <Text style={styles.profileEmail}>{userData?.email}</Text>
           </View>
 
@@ -197,7 +296,7 @@ export default function EditProfileScreen() {
                 <Ionicons name="person-outline" size={20} color="#38bdf8" style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
-                  value={form.first_name}
+                  value={formatNameWords(form.first_name)}
                   onChangeText={(text) => handleChange('first_name', text)}
                   placeholder="Enter first name"
                   placeholderTextColor="#9ca3af"
@@ -211,7 +310,7 @@ export default function EditProfileScreen() {
                 <Ionicons name="person-outline" size={20} color="#38bdf8" style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
-                  value={form.last_name}
+                  value={formatNameWords(form.last_name)}
                   onChangeText={(text) => handleChange('last_name', text)}
                   placeholder="Enter last name"
                   placeholderTextColor="#9ca3af"
@@ -278,7 +377,7 @@ export default function EditProfileScreen() {
             
             <TouchableOpacity 
               style={styles.cancelButton} 
-              onPress={() => router.back()}
+              onPress={handleCancel}
               disabled={loading}
             >
               <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -517,5 +616,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   }
 });
+
+
+
+
+
+
 
 
