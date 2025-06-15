@@ -49,8 +49,13 @@ export default function AdminProfileScreen() {
     }
   };
 
+  const handleAbout = () => {
+    alert("Navigate to About Page");
+    setShowMenu(false);
+  };
+
   const handleEditProfile = () => {
-    alert("Navigate to Edit Profile");
+    alert("Navigate to Edit Profile Page");
     setShowMenu(false);
   };
 
@@ -107,9 +112,9 @@ export default function AdminProfileScreen() {
 
       {showMenu && (
         <View style={[styles.dropdownMenu]}>
-          <TouchableOpacity style={[styles.menuItem]} onPress={handleEditProfile}>
-            <FontAwesome name="cog" size={20} color="#555" />
-            <Text style={styles.menuText}>Settings</Text>
+          <TouchableOpacity style={[styles.menuItem]} onPress={handleAbout}>
+            <FontAwesome name="info-circle" size={20} color="#555" />
+            <Text style={styles.menuText}>About</Text>
           </TouchableOpacity>
           <View style={styles.menuDivider} />
           <TouchableOpacity style={[styles.menuItem]} onPress={handleLogout}>

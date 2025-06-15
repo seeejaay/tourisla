@@ -1,5 +1,5 @@
 import axios from "axios";
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
+import { getApiUrl } from './apiUtils';
 
 export const fetchUsers = async () => {
   try {
@@ -58,19 +58,26 @@ export const viewOneUser = async (userId) => {
 export const editUser = async (userData) => {
   try {
     console.log("Payload sent to API:", userData); // Debug log
-    const response = await axios.put(
-      `${API_URL}users/${userData.user_id}`,
-      userData,
-      {
-        withCredentials: true,
-      }
-    );
+    
+    if (!userData.user_id) {
+      throw new Error("User ID is required for updating a user");
+    }
+    
+    const url = getApiUrl(`users/${userData.user_id}`);
+    console.log("API URL:", url);
+    
+    const response = await axios.put(url, userData, {
+      withCredentials: true,
+    });
+    
     console.log("API response:", response.data); // Debug log
+    
     if (response.status !== 200) {
       throw new Error(
         `Failed to edit user. Server responded with status: ${response.status}`
       );
     }
+    
     return response.data;
   } catch (error) {
     console.error("Error editing user:", error.response?.data || error.message); // Debug log
