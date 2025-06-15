@@ -112,28 +112,62 @@ export default function WeatherScreen() {
   const loadWeatherData = async () => {
     try {
       setLoading(true);
-      let { status } = await Location.requestForegroundPermissionsAsync();
       
-      if (status !== 'granted') {
-        setError('Location permission is required for accurate weather data.');
-        setLoading(false);
-        return;
+      // Set default location to Bantayan Island, Cebu
+      const defaultLocation = {
+        latitude: 11.1667,  // Bantayan Island latitude
+        longitude: 123.7333 // Bantayan Island longitude
+      };
+      
+      let location;
+      
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        
+        if (status !== 'granted') {
+          console.log('Location permission denied, using default location');
+          location = defaultLocation;
+        } else {
+          // Try to get current location, but use default if it fails or takes too long
+          const locationPromise = Location.getCurrentPositionAsync({ 
+            accuracy: Location.Accuracy.Balanced 
+          });
+          
+          // Set a timeout for getting location (5 seconds)
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Location timeout')), 5000);
+          });
+          
+          // Race between getting location and timeout
+          const userLocation = await Promise.race([locationPromise, timeoutPromise])
+            .catch(err => {
+              console.log('Error or timeout getting location:', err);
+              return null;
+            });
+            
+          if (userLocation) {
+            location = userLocation.coords;
+          } else {
+            console.log('Using default location (Bantayan Island)');
+            location = defaultLocation;
+          }
+        }
+      } catch (error) {
+        console.log('Error getting location:', error);
+        location = defaultLocation;
       }
-      
-      const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      const { latitude, longitude } = location.coords;
       
       // Store the location for future use
       await AsyncStorage.setItem('lastLocation', JSON.stringify({
-        latitude,
-        longitude,
+        latitude: location.latitude,
+        longitude: location.longitude,
         timestamp: Date.now()
       }));
       
-      const weatherData = await getCurrentWeather(latitude, longitude);
+      const weatherData = await getCurrentWeather(location.latitude, location.longitude);
       setCurrentWeather(weatherData);
       
-      const forecastData = await getWeatherForecast(latitude, longitude);
+      const forecastData = await getWeatherForecast(location.latitude, location.longitude);
       setForecast(forecastData);
     } catch (error) {
       console.error('Error loading weather data:', error);
@@ -437,6 +471,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
 });
+
+
 
 
 
