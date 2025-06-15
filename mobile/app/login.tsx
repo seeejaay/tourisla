@@ -80,6 +80,9 @@ export default function LoginScreen() {
         case 'Tour Operator':
           router.replace('/operator/operator_dashboard');
           break;
+        case 'Tourism Staff':
+          router.replace('/staff/staff_dashboard');
+          break;
         default:
           setError('Unknown role.');
       }

@@ -1,8 +1,8 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import TouristHomeScreen from './home/tourist_home';
-import TouristAnnouncementsScreen from './announcements/tourist_announcements';
-import TouristHotlinesScreen from './hotlines/tourist_hotlines';
-import TouristProfileScreen from './profile/tourist_profile';
+import StaffHomeScreen from './home/staff_home';
+import StaffAnnouncementsScreen from './announcements/staff_announcements';
+import StaffHotlinesScreen from './hotlines/staff_hotlines';
+import StaffProfileScreen from './profile/staff_profile';
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, View, Platform, TouchableOpacity, Image, Text, StatusBar, Dimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -11,7 +11,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
 import * as auth from '@/lib/api/auth';
-import TouristTouristSpotsScreen from './tourist_spots/tourist_tourist_spots';
 
 const Tab = createBottomTabNavigator();
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -57,6 +56,7 @@ function ProfileHeader() {
     if (role === 'Tourist' || role === 'tourist') return 'Tourist';
     if (role === 'tour_guide') return 'Tour Guide';
     if (role === 'tour_operator') return 'Tour Operator';
+    if (role === 'Tourism Staff') return 'Tourism Staff';
     
     return role.split('_').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
@@ -78,7 +78,7 @@ function ProfileHeader() {
         {/* Left side - User profile */}
         <TouchableOpacity 
           style={styles.profileSection}
-          onPress={() => router.push('/tourist/profile/tourist_profile')}
+          onPress={() => router.push('/staff/profile/staff_profile')}
           activeOpacity={0.7}
         >
           {/* Avatar */}
@@ -150,10 +150,10 @@ function CustomTabBar({ state, descriptors, navigation }) {
             iconName = isFocused ? "home" : "home-outline";
           } else if (route.name === 'Announcements') {
             iconName = isFocused ? "megaphone" : "megaphone-outline";
-          } else if (route.name === 'Tourist Spots') {
-            iconName = isFocused ? "location" : "location-outline";
           } else if (route.name === 'Hotlines') {
-            iconName = isFocused ? "call" : "call-outline";
+            iconName = isFocused ? "book" : "book-outline";
+          } else if (route.name === 'Profile') {
+            iconName = isFocused ? "person" : "person-outline";
           }
           
           const onPress = () => {
@@ -220,7 +220,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
   );
 }
 
-export default function TouristDashboard() {
+export default function StaffDashboard() {
   const { tab } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   
@@ -243,16 +243,13 @@ export default function TouristDashboard() {
           name="Home"
           options={{ tabBarLabel: 'Home' }}
         >
-          {() => <TouristHomeScreen headerHeight={headerHeight} />}
+          {() => <StaffHomeScreen headerHeight={headerHeight} />}
         </Tab.Screen>
         <Tab.Screen name="Announcements">
-          {() => <TouristAnnouncementsScreen headerHeight={headerHeight} />}
-        </Tab.Screen>
-        <Tab.Screen name="Tourist Spots">
-          {() => <TouristTouristSpotsScreen headerHeight={headerHeight} />}
+          {() => <StaffAnnouncementsScreen headerHeight={headerHeight} />}
         </Tab.Screen>
         <Tab.Screen name="Hotlines">
-          {() => <TouristHotlinesScreen headerHeight={headerHeight} />}
+          {() => <StaffHotlinesScreen headerHeight={headerHeight} />}
         </Tab.Screen>
       </Tab.Navigator>
     </View>

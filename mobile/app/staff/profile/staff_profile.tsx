@@ -23,7 +23,7 @@ const formatNameWords = (name) => {
     .join(' ');
 };
 
-export default function TouristProfile() {
+export default function StaffProfile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -172,7 +172,7 @@ export default function TouristProfile() {
   const handleEditProfile = () => {
     setShowMenu(false);
     router.push({
-      pathname: '/tourist/profile/edit_profile',
+      pathname: '/staff/profile/edit_profile',
       params: {
         first_name: user?.first_name || '',
         last_name: user?.last_name || '',
@@ -188,7 +188,7 @@ export default function TouristProfile() {
     // For now, just show an alert. Later you can navigate to the About page
     alert("About page will be available soon");
     // When you create the About page, you can use:
-    // router.push('/tourist/profile/about');
+    // router.push('/staff/profile/about');
   };
 
   if (loading) {
@@ -245,7 +245,7 @@ export default function TouristProfile() {
             <Text style={styles.headerTitle}>Profile</Text>
             <View style={styles.headerBadge}>
               <Text style={styles.headerBadgeText}>
-                {user?.role?.toUpperCase() || 'TOURIST'}
+                {user?.role?.toUpperCase() || 'STAFF'}
               </Text>
             </View>
           </View>
@@ -339,7 +339,7 @@ export default function TouristProfile() {
               <Text style={styles.displayName}>
                 {user?.first_name && user?.last_name ? 
                   `${formatNameWords(user.first_name)} ${formatNameWords(user.last_name)}` 
-                  : 'Tourist'}
+                  : 'Tourism Staff'}
               </Text>
             </View>
             
@@ -405,7 +405,7 @@ export default function TouristProfile() {
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>Account Type</Text>
                   <Text style={styles.infoValue}>
-                    {user?.role ? formatNameWords(user.role) : 'Tourist'}
+                    {user?.role ? formatNameWords(user.role) : 'Tourism Staff'}
                   </Text>
                 </View>
               </View>
