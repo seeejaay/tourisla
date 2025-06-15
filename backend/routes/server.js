@@ -20,7 +20,7 @@ app.use(
       "http://192.168.0.135:3000",
       "http://192.168.0.130",
       "http://dev.tourisla.local:3000",
-      "", // change this to your local IP address
+      // change this to your local IP address
       process.env.CLIENT_URL, // Add this if you want to support env config too
     ],
     credentials: true,
@@ -156,7 +156,8 @@ const {
 
 const { getWeather } = require("../controllers/weatherController");
 const {
-  getTripadvisorLocation,
+  getTripadvisorHotels,
+  getTripadvisorHotelsWithPhotos,
 } = require("../controllers/tripadvisorController.js");
 app.use(
   session({
@@ -536,4 +537,5 @@ app.get(
 );
 
 //tripadvisors
-app.get("/api/v1/hotels", getTripadvisorLocation);
+
+app.get("/tripadvisor/hotels", getTripadvisorHotelsWithPhotos);
