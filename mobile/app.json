@@ -11,7 +11,9 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "This app uses your location to provide local weather information."
+        "NSLocationWhenInUseUsageDescription": "This app uses your location to provide local weather information.",
+        "NSPhotoLibraryAddUsageDescription": "This app needs access to save brochures and maps to your photo library.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to save brochures and maps."
       }
     },
     "android": {
@@ -24,7 +26,11 @@
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
-        "INTERNET"
+        "INTERNET",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "MEDIA_LIBRARY",
+        "MEDIA_LIBRARY_WRITE"
       ]
     },
     "web": {
@@ -47,6 +53,14 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to save brochures and maps.",
+          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save brochures and maps to your photos.",
+          "isAccessMediaLocationEnabled": true
         }
       ]
     ],
