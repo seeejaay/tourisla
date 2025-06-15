@@ -1,65 +1,158 @@
-import { View, Text, ActivityIndicator, TouchableOpacity, StyleSheet, Image, ScrollView, Platform, StatusBar, Animated } from 'react-native';
-import { useEffect, useState, useRef } from 'react';
-import { router } from 'expo-router';
-import * as auth from '@/lib/api/auth.js';
-import { FontAwesome, MaterialIcons, Ionicons } from '@expo/vector-icons';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { 
+  View, Text, StyleSheet, TouchableOpacity, Image, 
+  ScrollView, RefreshControl, ActivityIndicator, 
+  Platform, Animated, Alert, Dimensions
+} from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StatusBar } from 'expo-status-bar';
+import * as auth from '@/lib/api/auth';
+import { useIsFocused } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-export default function StaffProfileScreen() {
-  const [user, setUser] = useState<{
-    avatar?: string;
-    first_name?: string;
-    last_name?: string;
-    email: string;
-    role: string;
-    phone_number?: string;
-  } | null>(null);
-  const [error, setError] = useState("");
-  const [showMenu, setShowMenu] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const scrollY = useRef(new Animated.Value(0)).current;
+const { width } = Dimensions.get('window');
 
+// Add this helper function at the top of your component
+const formatNameWords = (name) => {
+  if (!name) return '';
+  // Split the name by spaces and capitalize each word
+  return name.split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
+export default function StaffProfile() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+  const [showMenu, setShowMenu] = useState(false);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const params = useLocalSearchParams();
+  const isFocused = useIsFocused();
+
+  // Add this effect to force refresh when the screen is focused
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        console.log("Fetching user data...");
-        setLoading(true);
-        const response = await auth.currentUser();
-        console.log("User data response:", JSON.stringify(response));
+    if (isFocused) {
+      console.log("Screen is focused, refreshing data...");
+      fetchUser();
+    }
+  }, [isFocused, fetchUser]);
+
+  // Update the fetchUser function to clear any cached images
+  const fetchUser = useCallback(async () => {
+    try {
+      console.log("Fetching user data...");
+      setLoading(true);
+      
+      // Clear image cache by setting user to null first
+      setUser(null);
+      
+      // First try to get from AsyncStorage for immediate display
+      const storedUserData = await AsyncStorage.getItem('userData');
+      if (storedUserData) {
+        const parsedData = JSON.parse(storedUserData);
+        console.log("User data from AsyncStorage:", parsedData);
         
-        // Handle different response formats
-        let userData = null;
-        
-        if (response.data && response.data.user) {
-          // Format: { data: { user: {...} } }
-          userData = response.data.user;
-        } else if (response.user) {
-          // Format: { user: {...} }
-          userData = response.user;
-        } else if (response.data) {
-          // Format: { data: {...} }
-          userData = response.data;
-        } else if (typeof response === 'object' && response !== null) {
-          // Format: {...} (user object directly)
-          userData = response;
-        }
-        
-        if (userData) {
-          console.log("Extracted user data:", userData);
-          setUser(userData);
-        } else {
-          console.error("Could not extract user data from response:", response);
-          setError("Invalid user data format received from server.");
-        }
-      } catch (err) {
-        console.error("Failed to fetch user data:", err);
-        setError("Failed to fetch user data. " + (err.message || "Unknown error"));
-      } finally {
-        setLoading(false);
+        // Force a small delay to ensure UI updates
+        setTimeout(() => {
+          setUser(parsedData);
+        }, 100);
       }
-    };
-    fetchUser();
+      
+      // Then fetch from API to ensure data is up-to-date
+      const response = await auth.currentUser();
+      console.log("User data response from API:", JSON.stringify(response));
+      
+      // Handle different response formats
+      let userData = null;
+      
+      if (response.data && response.data.user) {
+        userData = response.data.user;
+      } else if (response.user) {
+        userData = response.user;
+      } else if (response.data) {
+        userData = response.data;
+      } else if (typeof response === 'object' && response !== null) {
+        userData = response;
+      }
+      
+      if (userData) {
+        console.log("Extracted user data:", userData);
+        
+        // Ensure we have the profile_image from AsyncStorage if it's not in the API response
+        if (storedUserData) {
+          const parsedStored = JSON.parse(storedUserData);
+          // Always prefer the stored profile image if it exists
+          if (parsedStored.profile_image) {
+            userData.profile_image = parsedStored.profile_image;
+          }
+          if (parsedStored.avatar) {
+            userData.avatar = parsedStored.avatar;
+          }
+          
+          // Also ensure we have the latest name, phone, nationality from AsyncStorage
+          if (parsedStored.first_name) userData.first_name = parsedStored.first_name;
+          if (parsedStored.last_name) userData.last_name = parsedStored.last_name;
+          if (parsedStored.phone_number) userData.phone_number = parsedStored.phone_number;
+          if (parsedStored.nationality) userData.nationality = parsedStored.nationality;
+        }
+        
+        // Update AsyncStorage with the latest data
+        await AsyncStorage.setItem('userData', JSON.stringify(userData));
+        
+        setUser(userData);
+      } else {
+        console.error("Could not extract user data from response:", response);
+        setError("Invalid user data format received from server.");
+      }
+    } catch (err) {
+      console.error("Failed to fetch user data:", err);
+      setError("Failed to fetch user data. " + (err.message || "Unknown error"));
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
+
+  // Add this effect to check if profile was updated when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      console.log("Profile screen focused, checking for updates...");
+      const checkProfileUpdate = async () => {
+        try {
+          const wasUpdated = await AsyncStorage.getItem('profileUpdated');
+          console.log("Profile updated flag:", wasUpdated);
+          if (wasUpdated === 'true') {
+            // Profile was updated, refresh data
+            console.log("Profile was updated, refreshing data...");
+            fetchUser();
+            // Clear the flag
+            await AsyncStorage.setItem('profileUpdated', 'false');
+          }
+        } catch (error) {
+          console.error("Error checking profile update status:", error);
+        }
+      };
+      
+      checkProfileUpdate();
+      return () => {
+        // Cleanup if needed
+      };
+    }, [fetchUser])
+  );
+
+  // Refresh when screen loads or refresh param changes
+  useEffect(() => {
+    fetchUser();
+  }, [params.refresh, fetchUser]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchUser();
+  }, [fetchUser]);
 
   const handleMenuToggle = () => setShowMenu(prev => !prev);
 
@@ -77,8 +170,25 @@ export default function StaffProfileScreen() {
   };
 
   const handleEditProfile = () => {
-    alert("Navigate to Edit Profile");
     setShowMenu(false);
+    router.push({
+      pathname: '/staff/profile/edit_profile',
+      params: {
+        first_name: user?.first_name || '',
+        last_name: user?.last_name || '',
+        phone_number: user?.phone_number || '',
+        nationality: user?.nationality || '',
+        email: user?.email || ''
+      }
+    });
+  };
+
+  const handleAbout = () => {
+    setShowMenu(false);
+    // For now, just show an alert. Later you can navigate to the About page
+    alert("About page will be available soon");
+    // When you create the About page, you can use:
+    // router.push('/staff/profile/about');
   };
 
   if (loading) {
@@ -111,136 +221,203 @@ export default function StaffProfileScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Animated Header with menu */}
-      <Animated.View 
-        style={[
-          styles.header, 
-          { 
-            opacity: headerOpacity,
-            elevation: headerElevation,
-            shadowOpacity: scrollY.interpolate({
-              inputRange: [0, 100],
-              outputRange: [0.08, 0.16],
-              extrapolate: 'clamp',
-            })
-          }
-        ]}
+      {/* Header with gradient background */}
+      <LinearGradient
+        colors={['#23a9f2', '#0f172a']}
+        start={{ x: 1, y: 2 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.headerGradient}
       >
-        <Text style={[styles.headerTitle]}>My Profile</Text>
-        <TouchableOpacity onPress={handleMenuToggle} style={styles.menuButton}>
-          <FontAwesome name="bars" size={28} color="#ecf0f1" />
-        </TouchableOpacity>
-      </Animated.View>
+        <Animated.View 
+          style={[
+            styles.header, 
+            { 
+              opacity: headerOpacity,
+              shadowOpacity: scrollY.interpolate({
+                inputRange: [0, 100],
+                outputRange: [0.08, 0.16],
+                extrapolate: 'clamp',
+              })
+            }
+          ]}
+        >
+          <View style={styles.headerLeft}>
+            <Text style={styles.headerTitle}>Profile</Text>
+            <View style={styles.headerBadge}>
+              <Text style={styles.headerBadgeText}>
+                {user?.role?.toUpperCase() || 'STAFF'}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={styles.headerIconButton}>
+              <Feather name="bell" size={22} color="#fff" />
+              <View style={styles.notificationDot} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleMenuToggle} style={styles.menuButton}>
+              <Feather name="menu" size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </LinearGradient>
 
       {showMenu && (
         <View style={[styles.dropdownMenu]}>
-          <TouchableOpacity style={[styles.menuItem]} onPress={handleEditProfile}>
-            <FontAwesome name="cog" size={20} color="#555" />
-            <Text style={styles.menuText}>Settings</Text>
+          <TouchableOpacity style={[styles.menuItem]} onPress={handleAbout}>
+            <Feather name="info" size={20} color="#555" />
+            <Text style={styles.menuText}>About</Text>
           </TouchableOpacity>
           <View style={styles.menuDivider} />
           <TouchableOpacity style={[styles.menuItem]} onPress={handleLogout}>
-            <FontAwesome name="sign-out" size={20} color="#d9534f" />
+            <Feather name="log-out" size={20} color="#d9534f" />
             <Text style={[styles.menuText, { color: '#d9534f' }]}>Log Out</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      {/* Scrollable Content */}
+      {/* Scrollable Content with RefreshControl */}
       <Animated.ScrollView
-        contentContainerStyle={{ paddingTop: 30, paddingBottom: 30 }} 
+        contentContainerStyle={styles.scrollContent} 
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: false }
         )}
         scrollEventThrottle={16}
       >
-        {/* Profile Card */}
-        {user && (
-          <View style={styles.profileCard}>
-            <LinearGradient
-              colors={['rgba(0, 125, 171, 0.25)', 'rgba(15, 23, 42, 0.15)']}
-              style={styles.cardGradient}
-            />
-            
-            {/* Profile Image */}
-            <View style={styles.avatarContainer}>
-              {user?.avatar ? (
-                <Image source={{ uri: user.avatar }} style={styles.avatar} />
-              ) : (
-                <LinearGradient
-                  colors={['#38bdf8', '#005d7f']}
-                  style={styles.avatarGradient}
-                >
-                  <FontAwesome name="user" size={70} color="#fff" />
-                </LinearGradient>
-              )}
-              <TouchableOpacity style={styles.editAvatarButton}>
-                <FontAwesome name="camera" size={14} color="#fff" />
-              </TouchableOpacity>
-            </View>
-
-            {/* Name & Email */}
-            <Text style={styles.name}>
-              {`${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.email}
-            </Text>
-            <Text style={styles.email}>{user?.email}</Text>
-
-            {/* Role Badge */}
-            <View style={[styles.roleBadge, user?.role === 'tourism staff' ? styles.staffBadge : styles.userBadge]}>
-              <Text style={[styles.roleText, user?.role !== 'tourism staff' && styles.userRoleText]}>
-                {user?.role?.toUpperCase()}
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {/* User Info Section */}
         {user && (
           <>
-            <View style={styles.infoSection}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>User Information</Text>
-                <TouchableOpacity style={[styles.editProfileButton]} onPress={handleEditProfile}>
-                  <MaterialIcons name="edit" size={24} color="#38bdf8" />
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.infoRow}>
-                <View style={styles.iconContainer}>
-                  <MaterialIcons name="phone" size={24} color="#38bdf8" />
-                </View>
-                <View style={styles.infoTextGroup}>
-                  <Text style={styles.infoValue}>{user?.phone_number || "N/A"}</Text>
-                  <Text style={styles.infoLabel}>Phone Number</Text>
-                </View>
-                <TouchableOpacity style={styles.actionButton}>
-                  <Ionicons name="call-outline" size={20} color="#38bdf8" />
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.infoRow}>
-                <View style={styles.iconContainer}>
-                  <MaterialIcons name="security" size={24} color="#38bdf8" />
-                </View>
-                <View style={styles.infoTextGroup}>
-                  <Text style={styles.infoValue}>{user?.role}</Text>
-                  <Text style={styles.infoLabel}>Role</Text>
+            {/* Profile header */}
+            <View style={styles.profileHeader}>
+              {/* Profile image with story ring */}
+              <View style={styles.profileImageContainer}>
+                <View style={styles.storyRing}>
+                  {user?.profile_image ? (
+                    <Image 
+                      source={{ uri: user.profile_image }} 
+                      style={styles.profileImage}
+                      key={`profile-${new Date().getTime()}`}
+                    />
+                  ) : user?.avatar ? (
+                    <Image 
+                      source={{ uri: user.avatar }} 
+                      style={styles.profileImage}
+                      key={`avatar-${new Date().getTime()}`}
+                    />
+                  ) : (
+                    <View style={styles.profileImagePlaceholder}>
+                      <Text style={styles.profileImageInitials}>
+                        {user?.first_name?.charAt(0) || ''}{user?.last_name?.charAt(0) || ''}
+                      </Text>
+                    </View>
+                  )}
                 </View>
               </View>
-
-              <View style={styles.infoRow}>
-                <View style={styles.iconContainer}>
-                  <MaterialIcons name="email" size={24} color="#38bdf8" />
+              
+              {/* Profile stats */}
+              <View style={styles.statsContainer}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statNumber}>0</Text>
+                  <Text style={styles.statLabel}>Trips</Text>
                 </View>
-                <View style={styles.infoTextGroup}>
-                  <Text style={styles.infoValue}>{user?.email}</Text>
-                  <Text style={styles.infoLabel}>Email Address</Text>
+                <View style={styles.statItem}>
+                  <Text style={styles.statNumber}>0</Text>
+                  <Text style={styles.statLabel}>Reviews</Text>
                 </View>
-                <TouchableOpacity style={styles.actionButton}>
-                  <MaterialIcons name="content-copy" size={20} color="#38bdf8" />
+                <View style={styles.statItem}>
+                  <Text style={styles.statNumber}>0</Text>
+                  <Text style={styles.statLabel}>Bookmarks</Text>
+                </View>
+              </View>
+            </View>
+            
+            {/* Profile info */}
+            <View style={styles.profileInfo}>
+              <Text style={styles.displayName}>
+                {user?.first_name && user?.last_name ? 
+                  `${formatNameWords(user.first_name)} ${formatNameWords(user.last_name)}` 
+                  : 'Tourism Staff'}
+              </Text>
+            </View>
+            
+            {/* Edit profile button */}
+            <TouchableOpacity 
+              style={styles.editProfileButton}
+              onPress={handleEditProfile}
+            >
+              <Text style={styles.editProfileText}>Edit Profile</Text>
+            </TouchableOpacity>
+            
+            {/* Divider */}
+            <View style={styles.divider} />
+            
+            {/* User information cards */}
+            <View style={styles.infoCardsContainer}>
+              <Text style={styles.sectionTitle}>Personal Information</Text>
+              
+              {/* Email card */}
+              <View style={styles.infoCard}>
+                <View style={styles.infoIconContainer}>
+                  <Feather name="mail" size={20} color="#38bdf8" />
+                </View>
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoLabel}>Email</Text>
+                  <Text style={styles.infoValue}>{user?.email?.toLowerCase() || 'Not provided'}</Text>
+                </View>
+                <TouchableOpacity style={styles.infoAction}>
+                  <Feather name="copy" size={18} color="#64748b" />
                 </TouchableOpacity>
+              </View>
+              
+              {/* Phone card */}
+              <View style={styles.infoCard}>
+                <View style={styles.infoIconContainer}>
+                  <Feather name="phone" size={20} color="#38bdf8" />
+                </View>
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoLabel}>Phone</Text>
+                  <Text style={styles.infoValue}>{user?.phone_number || 'Not provided'}</Text>
+                </View>
+                <TouchableOpacity style={styles.infoAction}>
+                  <Feather name="phone-outgoing" size={18} color="#64748b" />
+                </TouchableOpacity>
+              </View>
+              
+              {/* Nationality card */}
+              <View style={styles.infoCard}>
+                <View style={styles.infoIconContainer}>
+                  <Feather name="flag" size={20} color="#38bdf8" />
+                </View>
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoLabel}>Nationality</Text>
+                  <Text style={styles.infoValue}>{user?.nationality || 'Not provided'}</Text>
+                </View>
+              </View>
+              
+              {/* Account type card */}
+              <View style={styles.infoCard}>
+                <View style={styles.infoIconContainer}>
+                  <Feather name="user" size={20} color="#38bdf8" />
+                </View>
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoLabel}>Account Type</Text>
+                  <Text style={styles.infoValue}>
+                    {user?.role ? formatNameWords(user.role) : 'Tourism Staff'}
+                  </Text>
+                </View>
+              </View>
+            </View>
+            
+            {/* Activity section */}
+            <View style={styles.activitySection}>
+              <Text style={styles.sectionTitle}>Recent Activity</Text>
+              <View style={styles.emptyActivity}>
+                <Feather name="calendar" size={40} color="#cbd5e1" />
+                <Text style={styles.emptyActivityText}>No recent activity</Text>
+                <Text style={styles.emptyActivitySubtext}>Your trips and bookings will appear here</Text>
               </View>
             </View>
           </>
@@ -255,77 +432,118 @@ const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight ||
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
-    paddingTop: 20,
+    backgroundColor: '#ffffff',
   },
-
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f8fafc',
-  },
-
-  errorText: {
-    color: '#e03e3e',
-    fontSize: 16,
-  },
-
   header: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: 50 + STATUS_BAR_HEIGHT,
-    backgroundColor: '#0f172a',
-    borderBottomColor: 'rgba(0, 0, 0, 0.2)',
-    borderBottomWidth: 1,
+    height: 60 + STATUS_BAR_HEIGHT,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: STATUS_BAR_HEIGHT,
     paddingHorizontal: 20,
     zIndex: 50,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 6,
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 15,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
-
+  headerGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 60 + STATUS_BAR_HEIGHT,
+    zIndex: 40,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 8,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '900',
-    color: '#ecf0f1',
+    color: '#fff',
+    marginRight: 12,
+    letterSpacing: 0.5,
     textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 1, height: 1 },
+    textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
-
-  menuButton: {
-    padding: 8,
+  headerBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-
+  headerBadgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  headerIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  notificationDot: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ef4444',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  menuButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+  },
   dropdownMenu: {
     position: 'absolute',
     top: 60 + STATUS_BAR_HEIGHT,
     right: 20,
-    width: 200,
+    width: 180,
     backgroundColor: '#fff',
     borderRadius: 12,
-    elevation: 7,
+    elevation: 5,
     shadowColor: '#000',
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.1,
     shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    paddingVertical: 10,
+    shadowOffset: { width: 0, height: 5 },
+    paddingVertical: 8,
     zIndex: 100,
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.05)',
   },
-
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -333,213 +551,199 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     gap: 12,
   },
-
   menuText: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#34495e',
+    color: '#333',
   },
-
   menuDivider: {
     height: 1,
-    backgroundColor: '#ecf0f1',
-    marginHorizontal: 14,
-    opacity: 0.8,
+    backgroundColor: '#f1f5f9',
+    marginVertical: 4,
   },
-
-  profileCard: {
-    marginTop: 16 + STATUS_BAR_HEIGHT, // Adjust for header height
-    marginHorizontal: 16,
-    backgroundColor: '#ffffff', 
-    borderRadius: 20,
-    paddingVertical: 30,
-    paddingHorizontal: 25,
-    alignItems: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    position: 'relative',
-    overflow: 'hidden',
+  scrollContent: {
+    paddingTop: 65 + STATUS_BAR_HEIGHT,
+    paddingBottom: 30,
   },
-
-  cardGradient: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    borderRadius: 20,
-    // Make gradient more prominent with stronger colors
-    colors: ['rgba(56, 189, 248, 0.25)', 'rgba(15, 23, 42, 0.15)'],
-  },
-
-  avatarContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    overflow: 'visible', 
-    marginBottom: 15,
-    position: 'relative',
-    justifyContent: 'center',
+  profileHeader: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
     alignItems: 'center',
   },
-  avatar: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 60,
-    resizeMode: 'cover',
+  profileImageContainer: {
+    marginRight: 30,
   },
-  
-  avatarGradient: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 60,
-  },
-  
-
-  editAvatarButton: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: '#38bdf8',
-    borderRadius: 20,
-    width: 32,
-    height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
+  storyRing: {
+    width: 86,
+    height: 86,
+    borderRadius: 43,
     borderWidth: 2,
-    borderColor: '#fff',
-    zIndex: 10,
-    elevation: 5, // For Android
-  },
-
-  name: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#2c3e50',
-  },
-
-  email: {
-    fontSize: 14,
-    color: '#7f8c8d',
-    marginTop: 4,
-  },
-
-  roleBadge: {
-    marginTop: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 15,
-  },
-
-  userBadge: {
     borderColor: '#38bdf8',
-    borderWidth: 2,
-    borderRadius: 9999,
-    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 3,
   },
-  staffBadge: {
-    backgroundColor: '#38bdf8',
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 20,
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 40,
   },
-  roleText: {
-    color: 'white',
-    fontSize: 12,
+  profileImagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 40,
+    backgroundColor: '#e2e8f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileImageInitials: {
+    fontSize: 30,
     fontWeight: 'bold',
-    letterSpacing: 1,
-  },
-  userRoleText: {
     color: '#38bdf8',
   },
-  infoSection: {
-    marginHorizontal: 16,
-    marginTop: 16,
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  
-  sectionHeader: {
+  statsContainer: {
+    flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
+  },
+  statItem: {
     alignItems: 'center',
-    marginBottom: 16,
   },
-  
-  editProfileButton: {
-    padding: 8,
-    borderRadius: 12,
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
-  },
-  
-  sectionTitle: {
+  statNumber: {
     fontSize: 18,
-    fontWeight: '800',
-    color: '#2c3e50',
-    letterSpacing: 0,
+    fontWeight: 'bold',
+    color: '#0f172a',
   },
-  
-  infoRow: {
+  statLabel: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 4,
+  },
+  profileInfo: {
+    paddingHorizontal: 20,
+    marginBottom: 15,
+  },
+  displayName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#0f172a',
+  },
+  username: {
+    fontSize: 14,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  editProfileButton: {
+    marginHorizontal: 20,
+    marginVertical: 10,
+    paddingVertical: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    alignItems: 'center',
+  },
+  editProfileText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  divider: {
+    height: 8,
+    backgroundColor: '#f1f5f9',
+    marginVertical: 15,
+  },
+  infoCardsContainer: {
+    paddingHorizontal: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#0f172a',
+    marginBottom: 15,
+  },
+  infoCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    backgroundColor: '#fefefe',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    backgroundColor: '#fff',
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.2)',
+    marginBottom: 12,
+    padding: 15,
     shadowColor: '#000',
-    shadowOpacity: 0.02,
-    shadowRadius: 4,
     shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
   },
-  
-  iconContainer: {
+  infoIconContainer: {
     width: 40,
     height: 40,
-    borderRadius: 12,
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+    borderRadius: 20,
+    backgroundColor: '#f0f9ff',
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 15,
   },
-  
-  infoTextGroup: {
-    marginLeft: 12,
+  infoContent: {
     flex: 1,
   },
-  
-  infoValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#34495e',
-  },
-  
   infoLabel: {
     fontSize: 12,
-    color: '#7f8c8d',
-    marginTop: 2,
-    letterSpacing: 0.4,
+    color: '#64748b',
+    marginBottom: 4,
   },
-  
-  actionButton: {
+  infoValue: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#0f172a',
+  },
+  infoAction: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+    backgroundColor: '#f8fafc',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  activitySection: {
+    paddingHorizontal: 20,
+    marginTop: 20,
+  },
+  emptyActivity: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 30,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  emptyActivityText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0f172a',
+    marginTop: 15,
+    marginBottom: 5,
+  },
+  emptyActivitySubtext: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+  },
+  errorText: {
+    color: '#e03e3e',
+    fontSize: 16,
   },
 });

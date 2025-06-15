@@ -158,7 +158,7 @@ export default function EditProfileScreen() {
         phone_number: form.phone_number,
         nationality: form.nationality,
         email: userData.email, // Keep original email
-        role: userData.role || 'Tourist',
+        role: userData.role || 'Tourism Staff',
         status: userData.status || 'Active',
         profile_image: profileImage // Add profile image to the data
       };
