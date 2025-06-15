@@ -18,7 +18,9 @@ app.use(
       "http://localhost:3000",
       "http://192.168.0.130:3000",
       "http://192.168.0.135:3000",
-      "http://192.168.0.130", // change this to your local IP address
+      "http://192.168.0.130",
+      "http://dev.tourisla.local:3000",
+      "", // change this to your local IP address
       process.env.CLIENT_URL, // Add this if you want to support env config too
     ],
     credentials: true,
@@ -153,7 +155,9 @@ const {
 } = require("../controllers/tourPackagesController.js");
 
 const { getWeather } = require("../controllers/weatherController");
-
+const {
+  getTripadvisorLocation,
+} = require("../controllers/tripadvisorController.js");
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -172,6 +176,11 @@ const port = process.env.PORT || 3005;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+// app.listen(3005, "127.0.0.1", () => {
+//   console.log("Server is running on http://dev.tourisla.local:3005");
+// });
+
 app.get("/weather", getWeather);
 
 app.get("/api/v1/users", async (req, res) => {
@@ -525,3 +534,6 @@ app.get(
   authenticateTourOperator,
   viewTourPackageByIdController
 );
+
+//tripadvisors
+app.get("/api/v1/hotels", getTripadvisorLocation);

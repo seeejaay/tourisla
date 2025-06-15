@@ -37,8 +37,8 @@ export const useWeather = (location = "Bantayan") => {
         const data: WeatherData = await fetchWeather(location);
         setWeather(data);
         setError(null);
-      } catch (err: any) {
-        setError(err);
+      } catch (error) {
+        setError(error as Error);
         setWeather(null);
       } finally {
         setLoading(false);
