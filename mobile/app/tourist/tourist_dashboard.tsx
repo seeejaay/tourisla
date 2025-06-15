@@ -1,9 +1,10 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import TouristHomeScreen from './home/tourist_home';
+import TouristMapScreen from './map/tourist_map';
 import TouristAnnouncementsScreen from './announcements/tourist_announcements';
 import TouristHotlinesScreen from './hotlines/tourist_hotlines';
 import TouristProfileScreen from './profile/tourist_profile';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { StyleSheet, View, Platform, TouchableOpacity, Image, Text, StatusBar, Dimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -148,6 +149,8 @@ function CustomTabBar({ state, descriptors, navigation }) {
           
           if (route.name === 'Home') {
             iconName = isFocused ? "home" : "home-outline";
+          } else if (route.name === 'Map') {
+            iconName = isFocused ? "map" : "map-outline";
           } else if (route.name === 'Announcements') {
             iconName = isFocused ? "megaphone" : "megaphone-outline";
           } else if (route.name === 'Tourist Spots') {
@@ -244,6 +247,12 @@ export default function TouristDashboard() {
           options={{ tabBarLabel: 'Home' }}
         >
           {() => <TouristHomeScreen headerHeight={headerHeight} />}
+        </Tab.Screen>
+        <Tab.Screen 
+          name="Map"
+          options={{ tabBarLabel: 'Map' }}
+        >
+          {() => <TouristMapScreen headerHeight={headerHeight} />}
         </Tab.Screen>
         <Tab.Screen name="Announcements">
           {() => <TouristAnnouncementsScreen headerHeight={headerHeight} />}
