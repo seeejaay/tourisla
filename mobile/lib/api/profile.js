@@ -25,17 +25,24 @@ export const updateUserProfile = async (profileData) => {
       throw new Error('User ID not found. Please log in again.');
     }
     
+    console.log('Updating profile for user ID:', userId);
+    console.log('Profile data being sent:', JSON.stringify(profileData));
+    
     // Format the data exactly as expected by the backend
     const formattedData = {
       first_name: profileData.first_name,
       last_name: profileData.last_name,
       phone_number: profileData.phone_number,
       nationality: profileData.nationality,
-      // Include other fields that might be required
       email: profileData.email,
       role: profileData.role || 'Tourist',
       status: profileData.status || 'Active'
     };
+    
+    // Add profile image if available
+    if (profileData.profile_image) {
+      formattedData.profile_image = profileData.profile_image;
+    }
     
     // Remove undefined values
     Object.keys(formattedData).forEach(key => {
@@ -44,16 +51,60 @@ export const updateUserProfile = async (profileData) => {
       }
     });
     
-    console.log('Updating profile for user ID:', userId);
-    console.log('Formatted profile data:', formattedData);
+    // Try multiple endpoints and methods until one works
+    let response;
+    let error;
     
-    const url = getApiUrl(`users/${userId}`);
-    const response = await axios.put(url, formattedData, {
-      withCredentials: true,
-    });
+    // First try the standard endpoint with PUT
+    try {
+      const url = getApiUrl(`users/${userId}`);
+      console.log('Trying standard endpoint:', url);
+      response = await axios.put(url, formattedData, {
+        withCredentials: true,
+      });
+      console.log('Update profile response:', response.status);
+      return response.data;
+    } catch (err) {
+      console.error('Standard endpoint failed:', err.message);
+      error = err;
+      // Continue to next attempt
+    }
     
-    console.log('Update profile response:', response.status);
-    return response.data;
+    // Try alternative endpoint with PUT
+    try {
+      const url = getApiUrl('users/update');
+      console.log('Trying alternative endpoint:', url);
+      response = await axios.put(url, {
+        ...formattedData,
+        user_id: userId
+      }, {
+        withCredentials: true,
+      });
+      console.log('Alternative update response:', response.status);
+      return response.data;
+    } catch (err) {
+      console.error('Alternative endpoint failed:', err.message);
+      // Continue to next attempt
+    }
+    
+    // Try with POST method
+    try {
+      const url = getApiUrl('users/update');
+      console.log('Trying POST method:', url);
+      response = await axios.post(url, {
+        ...formattedData,
+        user_id: userId
+      }, {
+        withCredentials: true,
+      });
+      console.log('POST update response:', response.status);
+      return response.data;
+    } catch (err) {
+      console.error('POST method failed:', err.message);
+    }
+    
+    // If we got here, all attempts failed
+    throw error || new Error('All update attempts failed');
   } catch (error) {
     console.error(
       "Error Updating User Profile: ",
@@ -141,6 +192,8 @@ export const changePassword = async (passwordData) => {
     throw error;
   }
 };
+
+
 
 
 
