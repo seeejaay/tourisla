@@ -1,6 +1,42 @@
+const { format } = require("date-fns"); // Add this to use date formatting
 const db = require("../db/index.js");
+const ExcelJS = require("exceljs");
 
 
+// const exportAccommodationLog = async (filter) => {
+//   const { accommodation_id, start_date, end_date } = filter;
+
+//   const result = await db.query(
+//     `SELECT 
+//       avl.*, 
+//       a.no_of_rooms, 
+//       a.name_of_establishment 
+//      FROM accommodation_visitor_logs avl
+//      JOIN accommodations a ON a.id = avl.accommodation_id
+//      WHERE ($1::int IS NULL OR avl.accommodation_id = $1)
+//      AND ($2::date IS NULL OR avl.log_date >= $2)
+//      AND ($3::date IS NULL OR avl.log_date <= $3)
+//      ORDER BY avl.log_date ASC`,
+//     [accommodation_id || null, start_date || null, end_date || null]
+//   );
+
+//   const logs = result.rows;
+//   if (!logs.length) return null;
+
+//   const headers = Object.keys(logs[0]);
+//   const csvLines = [
+//     headers.join(","), // headers row
+//     ...logs.map(row =>
+//       headers.map(field => {
+//         let val = row[field];
+//         if (Array.isArray(val)) val = JSON.stringify(val);
+//         return `"${String(val).replace(/"/g, '""')}"`; // escape quotes
+//       }).join(",")
+//     )
+//   ];
+
+//   return csvLines.join("\n");
+// };
 const exportAccommodationLog = async (filter) => {
   const { accommodation_id, start_date, end_date } = filter;
 
@@ -21,20 +57,59 @@ const exportAccommodationLog = async (filter) => {
   const logs = result.rows;
   if (!logs.length) return null;
 
-  const headers = Object.keys(logs[0]);
-  const csvLines = [
-    headers.join(","), // headers row
-    ...logs.map(row =>
-      headers.map(field => {
-        let val = row[field];
-        if (Array.isArray(val)) val = JSON.stringify(val);
-        return `"${String(val).replace(/"/g, '""')}"`; // escape quotes
-      }).join(",")
-    )
+  // 🧠 Determine the maximum number of rooms across all logs
+  let maxRoomNumber = 0;
+  logs.forEach(log => {
+    const rooms = log.rooms_occupied || [];
+    const maxInRow = Math.max(...rooms, 0);
+    if (maxInRow > maxRoomNumber) maxRoomNumber = maxInRow;
+  });
+
+  // ✅ Create workbook and worksheet
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Accommodation Logs");
+
+  // ✅ Define headers
+  const headers = [
+    "Log Date",
+    "Day",
+    "Accommodation Name",
+    ...Array.from({ length: maxRoomNumber }, (_, i) => `Room No. ${i + 1}`),
+    "Number of Guests Check IN",
+    "Number of Guests Staying Over-night",
+    "Total Rooms Occupied"
   ];
 
-  return csvLines.join("\n");
+  worksheet.addRow(headers);
+
+  // ✅ Add rows
+  logs.forEach(log => {
+    const formattedDate = format(new Date(log.log_date), "MMMM d, yyyy");
+    const day = format(new Date(log.log_date), "EEEE");
+    const name = log.name_of_establishment;
+    const rooms = log.rooms_occupied || [];
+
+    const roomCols = Array.from({ length: maxRoomNumber }, (_, i) =>
+      rooms.includes(i + 1) ? "Occupied" : ""
+    );
+
+    const row = [
+      formattedDate,
+      day,
+      name,
+      ...roomCols,
+      log.number_of_guests_check_in,
+      log.number_of_guests_overnight,
+      rooms.length
+    ];
+
+    worksheet.addRow(row);
+  });
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  return buffer;
 };
+
 
 
 
@@ -53,6 +128,10 @@ const createAccommodationLog = async (logData, userId) => {
     number_of_guests_check_in,
     number_of_guests_overnight
   } = logData;
+
+  if (new Date(checkout_date) < new Date(log_date)) {
+  throw new Error("Checkout date must be the same or after the check-in date.");
+  }
 
   const day_of_week = getDayOfWeek(log_date);
 
@@ -73,8 +152,9 @@ const createAccommodationLog = async (logData, userId) => {
 
   const existingBookings = await db.query(
     `SELECT rooms_occupied FROM accommodation_visitor_logs
-     WHERE accommodation_id = $1 AND checkout_date >= CURRENT_DATE`,
-    [accommodationId]
+     WHERE accommodation_id = $1
+     AND NOT ($3 < log_date OR $2 > checkout_date)`,
+    [accommodationId, log_date, checkout_date]
   );
 
   const alreadyBooked = new Set();
@@ -86,32 +166,36 @@ const createAccommodationLog = async (logData, userId) => {
 
   const duplicateRooms = rooms_occupied.filter(r => alreadyBooked.has(r));
   if (duplicateRooms.length > 0) {
-    throw new Error(`Room(s) already booked: ${duplicateRooms.join(", ")}`);
+    throw new Error(`Room(s) already booked in the selected date range: ${duplicateRooms.join(", ")}`);
   }
 
-  const result = await db.query(
-    `INSERT INTO accommodation_visitor_logs (
-      accommodation_id,
-      log_date,
-      checkout_date,
-      day_of_week,
-      rooms_occupied,
-      number_of_guests_check_in,
-      number_of_guests_overnight,
-      created_by_user_id
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    RETURNING *`,
-    [
-      accommodationId,
-      log_date,
-      checkout_date,
-      day_of_week,
-      rooms_occupied,
-      number_of_guests_check_in,
-      number_of_guests_overnight,
-      userId
-    ]
-  );
+  const totalRoomsOccupied = rooms_occupied.length;
+
+const result = await db.query(
+  `INSERT INTO accommodation_visitor_logs (
+    accommodation_id,
+    log_date,
+    checkout_date,
+    day_of_week,
+    rooms_occupied,
+    total_rooms_occupied,
+    number_of_guests_check_in,
+    number_of_guests_overnight,
+    created_by_user_id
+  ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+  RETURNING *`,
+  [
+    accommodationId,
+    log_date,
+    checkout_date,
+    day_of_week,
+    rooms_occupied,
+    totalRoomsOccupied,
+    number_of_guests_check_in,
+    number_of_guests_overnight,
+    userId
+  ]
+);
 
   return result.rows[0];
 };
@@ -125,6 +209,10 @@ const editAccommodationLog = async (logId, logData, userId) => {
     number_of_guests_check_in,
     number_of_guests_overnight
   } = logData;
+
+  if (new Date(checkout_date) < new Date(log_date)) {
+  throw new Error("Checkout date must be the same or after the check-in date.");
+}
 
   const day_of_week = getDayOfWeek(log_date);
 
@@ -161,6 +249,8 @@ const editAccommodationLog = async (logId, logData, userId) => {
     throw new Error(`Room(s) already booked: ${duplicateRooms.join(", ")}`);
   }
 
+  const totalRoomsOccupied = rooms_occupied.length;
+
   const result = await db.query(
     `UPDATE accommodation_visitor_logs SET
       accommodation_id = $1,
@@ -168,11 +258,12 @@ const editAccommodationLog = async (logId, logData, userId) => {
       checkout_date = $3,
       day_of_week = $4,
       rooms_occupied = $5,
-      number_of_guests_check_in = $6,
-      number_of_guests_overnight = $7,
+      total_rooms_occupied = $6,
+      number_of_guests_check_in = $7,
+      number_of_guests_overnight = $8,
       last_updated = CURRENT_TIMESTAMP,
-      created_by_user_id = $8
-    WHERE id = $9
+      created_by_user_id = $9
+    WHERE id = $10
     RETURNING *`,
     [
       accommodationId,
@@ -180,12 +271,14 @@ const editAccommodationLog = async (logId, logData, userId) => {
       checkout_date,
       day_of_week,
       rooms_occupied,
+      totalRoomsOccupied,
       number_of_guests_check_in,
       number_of_guests_overnight,
       userId,
       logId
     ]
   );
+
 
   return result.rows[0];
 };
