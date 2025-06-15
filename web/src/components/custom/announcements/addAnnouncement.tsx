@@ -6,7 +6,7 @@ import { announcementSchema } from "@/app/static/announcement/useAnnouncementMan
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-
+import categories from "@/app/static/announcement/category.json";
 export default function AddAnnouncement({
   onSuccess,
   onCancel,
@@ -33,7 +33,10 @@ export default function AddAnnouncement({
     const file = e.target.files?.[0];
     setImageFile(file || null);
   };
-
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -130,12 +133,20 @@ export default function AddAnnouncement({
       </div>
       <div>
         <label className="block text-xs font-semibold mb-1">Category</label>
-        <Input
+        <select
           name="category"
           value={form.category}
-          onChange={handleChange}
-          placeholder="Category"
-        />
+          onChange={handleSelectChange}
+          required
+          className="border rounded px-2 py-1 text-sm w-full"
+        >
+          <option value="">Select category</option>
+          {categories.map((cat: string) => (
+            <option key={cat} value={cat}>
+              {cat.replace(/_/g, " ")}
+            </option>
+          ))}
+        </select>
       </div>
       <div>
         <label className="block text-xs font-semibold mb-1">Image</label>

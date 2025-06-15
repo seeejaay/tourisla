@@ -51,7 +51,6 @@ export const useTourGuideManager = () => {
       setLoading(true);
       setError("");
       try {
-        console.log("Sending Data:", tourGuideData);
         const response: TourGuide & { error?: string } =
           await apiCreateTourGuideApplicant(tourGuideData);
         if (response.error) {

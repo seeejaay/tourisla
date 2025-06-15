@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useHotlineManager } from "@/hooks/useHotlineManager";
 
-import Sidebar from "@/components/custom/sidebar";
 import { columns as hotlineColumns } from "@/components/custom/hotline/columns";
 import { Hotline } from "@/app/static/hotline/useHotlineManagerSchema";
 import DataTable from "@/components/custom/data-table";
@@ -65,7 +64,6 @@ export default function HotlinesPage() {
 
   return (
     <>
-      <Sidebar />
       <main className="flex flex-col items-center justify-start min-h-screen gap-12 w-full bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4">
         <div className="flex max-w-[100rem] w-full flex-col items-center justify-start gap-4 px-4 py-2 lg:pl-0">
           <h1 className="text-4xl font-extrabold text-center text-blue-700 tracking-tight">
