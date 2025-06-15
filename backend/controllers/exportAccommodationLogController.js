@@ -4,6 +4,10 @@ const db = require("../db/index.js");
 const exportAccommodationLog = async (filter) => {
   const { accommodation_id, start_date, end_date } = filter;
 
+  // 🛡️ Sanitize empty strings to null so SQL conditions work properly
+  const startDate = start_date?.trim() || null;
+  const endDate = end_date?.trim() || null;
+
   const result = await db.query(
     `SELECT 
       avl.*, 
@@ -15,7 +19,7 @@ const exportAccommodationLog = async (filter) => {
      AND ($2::date IS NULL OR avl.log_date >= $2)
      AND ($3::date IS NULL OR avl.log_date <= $3)
      ORDER BY avl.log_date ASC`,
-    [accommodation_id || null, start_date || null, end_date || null]
+    [accommodation_id || null, startDate, endDate]
   );
 
   const logs = result.rows;
