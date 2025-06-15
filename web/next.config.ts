@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   ],
 
   images: {
+    domains: ["media-cdn.tripadvisor.com"],
     remotePatterns: [
       {
         protocol: "https",
