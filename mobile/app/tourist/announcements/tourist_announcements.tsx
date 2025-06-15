@@ -274,11 +274,11 @@ const getCategoryColor = (category: string) => {
 const styles = StyleSheet.create({
     safeContainer: {
         flex: 1,
-        backgroundColor: "#f3f4f6",
+        backgroundColor: "#f8fafc",
     },
     container: {
         flex: 1,
-        backgroundColor: "#f3f4f6",
+        backgroundColor: "#f8fafc",
     },
     scrollView: {
         flex: 1,
