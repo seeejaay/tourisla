@@ -2,7 +2,7 @@
 
 import Header from "@/components/custom/header";
 import Image from "next/image";
-
+import { useRouter } from "next/navigation";
 const destinations = [
   {
     title: "Sea",
@@ -25,6 +25,7 @@ const destinations = [
 ];
 
 export default function Home() {
+  const router = useRouter();
   return (
     <>
       <Header />
@@ -40,7 +41,7 @@ export default function Home() {
                 with us!
               </p>
               <a
-                href="#explore"
+                onClick={() => router.push("/listings")}
                 className="inline-block px-8 py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-medium shadow transition"
               >
                 Explore Now
