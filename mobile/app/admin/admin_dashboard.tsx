@@ -1,10 +1,9 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AdminHomeScreen from './home/admin_home';
+import AdminMapScreen from './map/admin_map';
 import AdminAnnouncementsScreen from './announcements/admin_announcements';
-import AdminHotlinesScreen from './hotlines/admin_hotlines';
-import AdminTouristSpotsScreen from './tourist_spots/admin_tourist_spots';
 import AdminProfileScreen from './profile/admin_profile';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { StyleSheet, View, Platform, TouchableOpacity, Image, Text, StatusBar, Dimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -12,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
 import * as auth from '@/lib/api/auth';
+import AdminTouristSpotsScreen from './tourist_spots/admin_tourist_spots';
 
 const Tab = createBottomTabNavigator();
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -88,7 +88,7 @@ function ProfileHeader() {
             ) : (
               <View style={styles.avatarPlaceholder}>
                 <Text style={styles.avatarInitial}>
-                  {currentUser?.first_name?.charAt(0) || currentUser?.email?.charAt(0) || 'A'}
+                  {currentUser?.first_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
                 </Text>
               </View>
             )}
@@ -148,13 +148,14 @@ function CustomTabBar({ state, descriptors, navigation }) {
           
           if (route.name === 'Home') {
             iconName = isFocused ? "home" : "home-outline";
+          } else if (route.name === 'Map') {
+            iconName = isFocused ? "map" : "map-outline";
           } else if (route.name === 'Announcements') {
             iconName = isFocused ? "megaphone" : "megaphone-outline";
           } else if (route.name === 'Tourist Spots') {
             iconName = isFocused ? "location" : "location-outline";
-          } else if (route.name === 'Hotlines') {
-            iconName = isFocused ? "call" : "call-outline";
           }
+          // Removed Hotlines case
           
           const onPress = () => {
             const event = navigation.emit({
@@ -245,15 +246,19 @@ export default function AdminDashboard() {
         >
           {() => <AdminHomeScreen headerHeight={headerHeight} />}
         </Tab.Screen>
+        <Tab.Screen 
+          name="Map"
+          options={{ tabBarLabel: 'Map' }}
+        >
+          {() => <AdminMapScreen headerHeight={headerHeight} />}
+        </Tab.Screen>
         <Tab.Screen name="Announcements">
           {() => <AdminAnnouncementsScreen headerHeight={headerHeight} />}
         </Tab.Screen>
         <Tab.Screen name="Tourist Spots">
           {() => <AdminTouristSpotsScreen headerHeight={headerHeight} />}
         </Tab.Screen>
-        <Tab.Screen name="Hotlines">
-          {() => <AdminHotlinesScreen headerHeight={headerHeight} />}
-        </Tab.Screen>
+        {/* Removed Hotlines Tab.Screen */}
       </Tab.Navigator>
     </View>
   );
@@ -357,9 +362,20 @@ const styles = StyleSheet.create({
     bottom: 0,
     borderRadius: 20,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   tabBarGradient: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   tabBarInnerShadow: {
     position: 'absolute',
@@ -367,54 +383,49 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
   },
   tabButtonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+    height: '100%',
     paddingHorizontal: 10,
-    paddingTop: 10,
-    paddingBottom: Platform.OS === 'ios' ? 25 : 10,
   },
   tabButton: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    position: 'relative',
+    alignItems: 'center',
+    paddingVertical: 10,
   },
   activeTabIndicator: {
     position: 'absolute',
-    top: -10,
-    width: 25,
+    top: 8,
+    width: 30,
     height: 3,
     borderRadius: 1.5,
     overflow: 'hidden',
   },
   activeTabGradient: {
-    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   tabIconContainer: {
     width: 50,
-    height: 24,
-    alignItems: 'center',
+    height: 40,
     justifyContent: 'center',
-    marginBottom: 4,
+    alignItems: 'center',
+    borderRadius: 12,
   },
   activeTabIconContainer: {
     backgroundColor: 'rgba(56, 189, 248, 0.15)',
-    borderRadius: 12,
-    width: 50,
-    height: 24,
   },
   tabLabel: {
     fontSize: 11,
-    fontWeight: '500',
+    marginTop: 4,
     textAlign: 'center',
   },
   activeTabLabel: {
     color: '#ffffff',
+    fontWeight: '600',
   },
   inactiveTabLabel: {
     color: 'rgba(148, 163, 184, 0.8)',

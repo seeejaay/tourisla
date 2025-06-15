@@ -319,7 +319,7 @@ export default function AdminAnnouncementsScreen({ headerHeight }) {
                 style={styles.fab}
                 onPress={() => router.push("/admin/announcements/admin_announcement_create")}
             >
-                <Icon name="plus" size={24} color="#1fd8d6" />
+                <Icon name="plus" size={24} color="#ffffff" />
             </Pressable>
 
             {/* Delete Modal */}

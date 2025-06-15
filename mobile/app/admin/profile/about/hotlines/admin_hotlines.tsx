@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useEffect, useState, useRef } from "react";
-import { fetchHotlines, deleteHotline } from "../../../lib/api/hotline";
+import { fetchHotlines, deleteHotline } from "../../../../../lib/api/hotline";
 import Icon from "react-native-vector-icons/Feather";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -81,7 +81,6 @@ export default function AdminHotlinesScreen({ headerHeight }) {
         try {
             setLoading(true);
             const data = await fetchHotlines();
-            console.log("Fetched hotlines:", data); // Add logging to debug
             setHotlines(data);
             setError(null);
         } catch (err) {
@@ -94,34 +93,42 @@ export default function AdminHotlinesScreen({ headerHeight }) {
 
     const handleDelete = (id: number) => {
         Alert.alert(
-            "Confirm Removal",
-            "Are you sure you want to remove this emergency contact?",
+            "Delete Hotline",
+            "Are you sure you want to delete this hotline?",
             [
-                { text: "Cancel", style: "cancel" },
                 {
-                    text: "Remove",
+                    text: "Cancel",
+                    style: "cancel"
+                },
+                {
+                    text: "Delete",
                     style: "destructive",
                     onPress: async () => {
                         try {
-                            setLoading(true);
                             await deleteHotline(id);
-                            setHotlines(hotlines.filter((h) => h.id !== id));
-                            Alert.alert("Success", "Emergency contact removed successfully");
-                        } catch (err) {
-                            Alert.alert("Error", "Failed to remove emergency contact");
-                            console.error(err);
-                        } finally {
-                            setLoading(false);
+                            await loadHotlines();
+                        } catch (error) {
+                            Alert.alert("Error", "Failed to delete hotline");
                         }
-                    },
-                },
+                    }
+                }
             ]
         );
     };
 
+    const handleBackPress = () => {
+        router.back();
+    };
+
+    const headerOpacity = scrollY.interpolate({
+        inputRange: [0, 100],
+        outputRange: [1, 0.9],
+        extrapolate: 'clamp',
+    });
+
     const headerElevation = scrollY.interpolate({
-        inputRange: [0, 50],
-        outputRange: [2, 8],
+        inputRange: [0, 100],
+        outputRange: [1, 8],
         extrapolate: 'clamp',
     });
 
@@ -212,51 +219,44 @@ export default function AdminHotlinesScreen({ headerHeight }) {
 
     return (
         <SafeAreaView style={styles.safeContainer}>
+            <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+            
+            {/* Header with gradient background */}
+            <LinearGradient
+                colors={['#0f172a', '#1e293b']}
+                style={styles.header}
+            >
+                <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+                    <Icon name="arrow-left" size={24} color="#fff" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Emergency Hotlines</Text>
+                <View style={styles.placeholder} />
+            </LinearGradient>
+
             <View style={styles.container}>
-
-                {/* Header removed */}
-
-                {/* Content */}
-                <Animated.ScrollView 
-                    style={[styles.scrollView, { marginTop: headerHeight }]}
-                    contentContainerStyle={styles.contentContainer}
-                    showsVerticalScrollIndicator={false}
-                    onScroll={Animated.event(
-                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                        { useNativeDriver: false }
-                    )}
-                    scrollEventThrottle={16}
-                >
-                    {loading ? (
-                        <View style={styles.centerContainer}>
-                            <ActivityIndicator size="large" color="#0f172a" style={styles.loadingIndicator} />
-                            <Text style={styles.loadingText}>Loading emergency contacts...</Text>
-                        </View>
-                    ) : error ? (
-                        <View style={styles.centerContainer}>
-                            <MaterialCommunityIcons name="alert-circle-outline" size={48} color="#ef4444" />
-                            <Text style={styles.errorText}>{error}</Text>
-                            <TouchableOpacity style={styles.retryButton} onPress={loadHotlines}>
-                                <Text style={styles.retryButtonText}>Retry</Text>
-                            </TouchableOpacity>
-                        </View>
-                    ) : hotlines.length === 0 ? (
-                        <View style={styles.centerContainer}>
-                            <MaterialCommunityIcons name="phone-off" size={64} color="#94a3b8" />
-                            <Text style={styles.emptyText}>No emergency contacts available</Text>
-                            <Text style={styles.emptySubtext}>Add contacts to help tourists during emergencies</Text>
-                            <TouchableOpacity 
-                                style={styles.addHotlineButton}
-                                onPress={() => router.push("/admin/hotlines/admin_hotline_add")}
-                            >
-                                <MaterialCommunityIcons name="plus" size={20} color="#FFFFFF" />
-                                <Text style={styles.addHotlineButtonText}>Add Emergency Contact</Text>
-                            </TouchableOpacity>
-                        </View>
-                    ) : (
-                        <>
-                            <Text style={styles.sectionTitle}>All Emergency Contacts</Text>
-                            <Text style={styles.sectionSubtitle}>Manage contacts for tourists in case of emergencies</Text>
+                {loading ? (
+                    <View style={styles.centered}>
+                        <ActivityIndicator size="large" color="#0f172a" />
+                    </View>
+                ) : error ? (
+                    <View style={styles.centered}>
+                        <Text style={styles.errorText}>{error}</Text>
+                    </View>
+                ) : (
+                    <>
+                        <Animated.ScrollView
+                            style={styles.scrollView}
+                            contentContainerStyle={styles.scrollContent}
+                            showsVerticalScrollIndicator={false}
+                            onScroll={Animated.event(
+                                [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                                { useNativeDriver: false }
+                            )}
+                            scrollEventThrottle={16}
+                        >
+                            <Text style={styles.sectionDescription}>
+                                Manage emergency hotlines for tourists and staff.
+                            </Text>
                             
                             {hotlines.map((hotline) => (
                                 <HotlineCard
@@ -272,18 +272,16 @@ export default function AdminHotlinesScreen({ headerHeight }) {
                                     })}
                                 />
                             ))}
-                        </>
-                    )}
-                </Animated.ScrollView>
-                
-                {/* Add hotline FAB - Adjusted position */}
-                {!loading && !error && (
-                    <Pressable
-                        style={[styles.fab]} // Increased bottom margin
-                        onPress={() => router.push("/admin/hotlines/admin_hotline_add")}
-                    >
-                        <Icon name="plus" size={24} color="#1fd8d6" />
-                    </Pressable>
+                        </Animated.ScrollView>
+                        
+                        {/* Add hotline FAB */}
+                        <Pressable
+                            style={styles.fab}
+                            onPress={() => router.push("/admin/hotlines/admin_hotline_add")}
+                        >
+                            <Icon name="plus" size={24} color="#ffffff" />
+                        </Pressable>
+                    </>
                 )}
             </View>
         </SafeAreaView>
@@ -297,84 +295,50 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: '#f8fafc',
+    },
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    errorText: {
+        color: '#ef4444',
+        fontSize: 16,
+        textAlign: 'center',
+        marginHorizontal: 20,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingTop: STATUS_BAR_HEIGHT,
+        paddingBottom: 16,
+        paddingHorizontal: 16,
+    },
+    backButton: {
+        padding: 8,
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#fff',
+    },
+    placeholder: {
+        width: 40,
     },
     scrollView: {
         flex: 1,
+        marginBottom: STATUS_BAR_HEIGHT, // Adjust for status bar height and header padding
     },
-    contentContainer: {
+    scrollContent: {
         padding: 16,
-        paddingBottom: 120, // Increased bottom padding for FAB
+        paddingBottom: STATUS_BAR_HEIGHT + 40, // Extra padding for FAB
     },
-    centerContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 24,
-        marginTop: 40,
-    },
-    loadingIndicator: {
-        marginBottom: 16,
-    },
-    loadingText: {
-        fontSize: 16,
-        color: "#64748b",
-        textAlign: "center",
-    },
-    errorText: {
-        fontSize: 16,
-        color: "#ef4444",
-        textAlign: "center",
-        marginTop: 16,
-        marginBottom: 20,
-    },
-    retryButton: {
-        backgroundColor: '#0f172a',
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-    },
-    retryButtonText: {
-        color: '#ffffff',
-        fontWeight: '600',
-    },
-    emptyText: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: "#334155",
-        textAlign: "center",
-        marginTop: 16,
-    },
-    emptySubtext: {
-        fontSize: 14,
-        color: "#64748b",
-        textAlign: "center",
-        marginTop: 8,
-        marginBottom: 24,
-    },
-    addHotlineButton: {
-        backgroundColor: '#0f172a',
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    addHotlineButtonText: {
-        color: '#ffffff',
-        fontWeight: '600',
-        fontSize: 16,
-        marginLeft: 8,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: '#0f172a',
-        marginBottom: 4,
-    },
-    sectionSubtitle: {
+    sectionDescription: {
         fontSize: 14,
         color: '#64748b',
-        marginBottom: 16,
+        marginBottom: 20,
+        lineHeight: 20,
     },
     card: {
         backgroundColor: '#ffffff',
@@ -455,20 +419,19 @@ const styles = StyleSheet.create({
         backgroundColor: '#ef4444',
     },
     fab: {
-        position: "absolute",
+        position: 'absolute',
         right: 16,
-        bottom: Platform.OS === 'ios' ? 140 : 130, 
-        backgroundColor: "#0f172a",
+        bottom: 56,
         width: 56,
         height: 56,
         borderRadius: 28,
-        justifyContent: "center",
-        alignItems: "center",
-        elevation: 8,
-        shadowColor: "#000",
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 4 },
-        zIndex: 100, // Higher zIndex to ensure visibility
+        backgroundColor: '#0f172a',
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
     },
 });

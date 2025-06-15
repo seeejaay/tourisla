@@ -185,10 +185,8 @@ export default function TouristProfile() {
 
   const handleAbout = () => {
     setShowMenu(false);
-    // For now, just show an alert. Later you can navigate to the About page
-    alert("About page will be available soon");
-    // When you create the About page, you can use:
-    // router.push('/tourist/profile/about');
+    // Navigate to the About page
+    router.push('/tourist/profile/about');
   };
 
   if (loading) {
