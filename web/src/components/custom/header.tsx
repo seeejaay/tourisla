@@ -8,6 +8,7 @@ import Link from "next/link";
 import { navigation } from "@/app/static/navigation";
 import { Menu, X } from "lucide-react";
 import Pill from "@/components/custom/pill";
+import WeatherWidget from "@/components/custom/weather";
 
 export default function Header() {
   const pathName = usePathname();
@@ -81,14 +82,16 @@ export default function Header() {
                 )
               )}
             </div>
-            <div className="ml-6">
+            <div className="ml-6 flex flex-row">
               <Pill />
+              <WeatherWidget />
             </div>
           </div>
 
           {/* Mobile Menu Button */}
           <div className="flex lg:hidden items-center space-x-4">
             <Pill className="mr-2" />
+            <WeatherWidget />
             <Button
               className="lg:hidden hover:bg-gray-100 rounded-full w-10 h-10 p-2 cursor-pointer transition-all duration-200 flex items-center justify-center"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
