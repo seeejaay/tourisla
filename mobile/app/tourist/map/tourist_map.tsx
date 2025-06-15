@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   Text, 
@@ -7,87 +7,178 @@ import {
   Dimensions, 
   ScrollView,
   SafeAreaView,
-  TouchableOpacity
+  TouchableOpacity,
+  Modal,
+  StatusBar,
+  Alert,
+  ActivityIndicator,
+  Platform
 } from 'react-native';
 import { Stack } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import ImageViewer from 'react-native-image-zoom-viewer';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import * as MediaLibrary from 'expo-media-library';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+// Use the exact path you specified
+const mapImage = require('../../../assets/maps/cebu-tourist-map.jpg');
+
 export default function TouristMapScreen({ headerHeight }) {
-  // Use a local image from the assets folder
-  // Create the assets folder if it doesn't exist: mobile/assets/maps/
-  // Then place your map image there and reference it like this:
-  const mapImageSource = require('@/assets/maps/cebu-tourist-map.jpg');
+  const [fullscreenVisible, setFullscreenVisible] = useState(false);
+  const [downloadLoading, setDownloadLoading] = useState(false);
   
-  // Alternatively, you can still use a remote URL if needed
-  // const mapImageUrl = "https://www.cebu-philippines.net/images/cebu-tourist-map.jpg";
+  // For ImageViewer component with local image
+  const images = [
+    {
+      url: '',
+      props: {
+        source: mapImage
+      }
+    }
+  ];
+
+  const toggleFullscreen = (visible) => {
+    setFullscreenVisible(visible);
+    StatusBar.setHidden(visible);
+  };
+
+  const downloadImage = async () => {
+    try {
+      setDownloadLoading(true);
+      
+      // Request permissions first (for Android)
+      if (Platform.OS === 'android') {
+        const { status } = await MediaLibrary.requestPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission needed', 'Please grant media library permissions to save the image');
+          setDownloadLoading(false);
+          return;
+        }
+      }
+      
+      // Get the URI of the image asset
+      const assetUri = Image.resolveAssetSource(mapImage).uri;
+      console.log('Asset URI:', assetUri);
+      
+      // Create a destination file path
+      const fileUri = `${FileSystem.cacheDirectory}cebu-tourist-map.jpg`;
+      
+      // Download the file from the asset URI to the destination
+      const downloadResult = await FileSystem.downloadAsync(assetUri, fileUri);
+      console.log('Download result:', downloadResult);
+      
+      if (downloadResult.status !== 200) {
+        throw new Error(`Download failed with status ${downloadResult.status}`);
+      }
+      
+      if (Platform.OS === 'android') {
+        // Save to media library on Android
+        const asset = await MediaLibrary.createAssetAsync(fileUri);
+        await MediaLibrary.createAlbumAsync('Bantayan Island', asset, false);
+        Alert.alert('Success', 'Map saved to your gallery in Bantayan Island album');
+      } else {
+        // Share on iOS
+        await Sharing.shareAsync(fileUri);
+      }
+      
+      setDownloadLoading(false);
+    } catch (error) {
+      console.error('Error downloading image:', error);
+      Alert.alert('Error', 'Failed to download the map. Please try again.');
+      setDownloadLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
       <View style={[styles.content, { marginTop: headerHeight }]}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.headerTitle}>Tourist Map</Text>
-          <Text style={styles.headerSubtitle}>Explore key locations and attractions</Text>
-        </View>
+        <Text style={styles.headerTitle}>Tourist Map</Text>
         
-        <ScrollView 
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.mapContainer}>
+        <ScrollView style={styles.scrollView}>
+          {/* Touchable wrapper for the image */}
+          <TouchableOpacity 
+            activeOpacity={0.95}
+            onPress={() => toggleFullscreen(true)}
+            style={styles.mapImageWrapper}
+          >
             <Image 
-              source={mapImageSource}
+              source={mapImage}
               style={styles.mapImage}
               resizeMode="contain"
             />
-          </View>
+            
+            {/* Fullscreen icon */}
+            <View style={styles.fullscreenIconContainer}>
+              <MaterialIcons name="fullscreen" size={24} color="#ffffff" />
+            </View>
+          </TouchableOpacity>
           
-          <View style={styles.legendContainer}>
-            <Text style={styles.legendTitle}>Map Legend</Text>
-            
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: '#e74c3c' }]} />
-              <Text style={styles.legendText}>Tourist Spots</Text>
-            </View>
-            
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: '#3498db' }]} />
-              <Text style={styles.legendText}>Beaches</Text>
-            </View>
-            
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: '#2ecc71' }]} />
-              <Text style={styles.legendText}>Parks & Nature</Text>
-            </View>
-            
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: '#f39c12' }]} />
-              <Text style={styles.legendText}>Historical Sites</Text>
-            </View>
-            
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: '#9b59b6' }]} />
-              <Text style={styles.legendText}>Shopping & Entertainment</Text>
-            </View>
-          </View>
+          <Text style={styles.tapInstructionText}>
+            Tap on the map to view in full screen
+          </Text>
           
-          <View style={styles.infoContainer}>
-            <View style={styles.infoHeader}>
-              <Ionicons name="information-circle" size={24} color="#38bdf8" />
-              <Text style={styles.infoTitle}>About This Map</Text>
-            </View>
-            <Text style={styles.infoText}>
-              This map shows the major tourist attractions, beaches, historical sites, and other 
-              points of interest. Use it to plan your journey and discover the best places to visit.
-              For more detailed information about specific locations, check the Tourist Spots section.
-            </Text>
-          </View>
+          {/* Download button */}
+          <TouchableOpacity 
+            style={styles.downloadButton}
+            onPress={downloadImage}
+            disabled={downloadLoading}
+          >
+            {downloadLoading ? (
+              <ActivityIndicator size="small" color="#ffffff" />
+            ) : (
+              <>
+                <Ionicons name="download-outline" size={20} color="#ffffff" style={styles.downloadIcon} />
+                <Text style={styles.downloadText}>Save Map to Gallery</Text>
+              </>
+            )}
+          </TouchableOpacity>
         </ScrollView>
       </View>
+      
+      {/* Fullscreen Modal with ImageViewer */}
+      <Modal
+        visible={fullscreenVisible}
+        transparent={true}
+        animationType="fade"
+        statusBarTranslucent={true}
+        onRequestClose={() => toggleFullscreen(false)}
+      >
+        <View style={styles.modalContainer}>
+          <ImageViewer
+            imageUrls={images}
+            enableSwipeDown={true}
+            onSwipeDown={() => toggleFullscreen(false)}
+            backgroundColor="#000000"
+            renderHeader={() => (
+              <View style={styles.modalHeaderContainer}>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => toggleFullscreen(false)}
+                >
+                  <MaterialIcons name="close" size={24} color="#ffffff" />
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.downloadButtonModal}
+                  onPress={downloadImage}
+                  disabled={downloadLoading}
+                >
+                  {downloadLoading ? (
+                    <ActivityIndicator size="small" color="#ffffff" />
+                  ) : (
+                    <Ionicons name="download-outline" size={24} color="#ffffff" />
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -101,99 +192,80 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
   },
-  headerContainer: {
-    marginBottom: 16,
-    paddingTop: 8,
-  },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#0f172a',
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: '#64748b',
-    marginTop: 4,
+    marginVertical: 16,
   },
   scrollView: {
     flex: 1,
   },
-  scrollContent: {
-    paddingBottom: 24,
-  },
-  mapContainer: {
-    width: SCREEN_WIDTH - 32,
-    height: SCREEN_WIDTH * 1.2,
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
+  mapImageWrapper: {
+    position: 'relative',
+    borderRadius: 8,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   mapImage: {
-    width: '100%',
-    height: '100%',
+    width: SCREEN_WIDTH - 32,
+    height: SCREEN_WIDTH * 1.2,
+    borderRadius: 8,
   },
-  legendContainer: {
-    marginTop: 24,
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  fullscreenIconContainer: {
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 20,
+    padding: 8,
   },
-  legendTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#0f172a',
-    marginBottom: 12,
+  tapInstructionText: {
+    textAlign: 'center',
+    color: '#64748b',
+    marginTop: 8,
+    marginBottom: 16,
   },
-  legendItem: {
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  modalHeaderContainer: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    left: 20,
+    zIndex: 10,
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
+    justifyContent: 'space-between',
   },
-  legendDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+  closeButton: {
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 20,
+    padding: 8,
+  },
+  downloadButtonModal: {
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 20,
+    padding: 8,
+  },
+  downloadButton: {
+    backgroundColor: '#0ea5e9',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  downloadIcon: {
     marginRight: 8,
   },
-  legendText: {
-    fontSize: 16,
-    color: '#334155',
-  },
-  infoContainer: {
-    marginTop: 24,
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  infoHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  infoTitle: {
-    fontSize: 18,
+  downloadText: {
+    color: '#ffffff',
     fontWeight: '600',
-    color: '#0f172a',
-    marginLeft: 8,
-  },
-  infoText: {
     fontSize: 16,
-    color: '#334155',
-    lineHeight: 24,
   },
 });
+
+
