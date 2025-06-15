@@ -10,6 +10,7 @@ import * as Location from 'expo-location';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getCurrentWeather, getWeatherForecast, getWeatherBackgroundColor } from '@/lib/api/weather';
 import WeatherImage from '@/components/WeatherImage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { height } = Dimensions.get('window');
 const STATUS_BAR_HEIGHT = Platform.OS === 'ios' ? 44 : StatusBar.currentHeight || 0;
@@ -122,6 +123,13 @@ export default function WeatherScreen() {
       const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       const { latitude, longitude } = location.coords;
       
+      // Store the location for future use
+      await AsyncStorage.setItem('lastLocation', JSON.stringify({
+        latitude,
+        longitude,
+        timestamp: Date.now()
+      }));
+      
       const weatherData = await getCurrentWeather(latitude, longitude);
       setCurrentWeather(weatherData);
       
@@ -129,7 +137,24 @@ export default function WeatherScreen() {
       setForecast(forecastData);
     } catch (error) {
       console.error('Error loading weather data:', error);
-      setError('Failed to load weather data. Please try again.');
+      
+      // Try to use cached weather data if available
+      try {
+        const cachedWeather = await AsyncStorage.getItem('cachedWeather');
+        const cachedForecast = await AsyncStorage.getItem('cachedForecast');
+        
+        if (cachedWeather) {
+          setCurrentWeather(JSON.parse(cachedWeather));
+          if (cachedForecast) {
+            setForecast(JSON.parse(cachedForecast));
+          }
+          setError('Using cached weather data. Pull down to refresh.');
+        } else {
+          setError('Failed to load weather data. Please try again.');
+        }
+      } catch (cacheError) {
+        setError('Failed to load weather data. Please try again.');
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -139,6 +164,18 @@ export default function WeatherScreen() {
   useEffect(() => {
     loadWeatherData();
   }, []);
+
+  useEffect(() => {
+    if (currentWeather) {
+      AsyncStorage.setItem('cachedWeather', JSON.stringify(currentWeather))
+        .catch(err => console.error('Failed to cache weather data:', err));
+    }
+    
+    if (forecast) {
+      AsyncStorage.setItem('cachedForecast', JSON.stringify(forecast))
+        .catch(err => console.error('Failed to cache forecast data:', err));
+    }
+  }, [currentWeather, forecast]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -400,6 +437,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
 });
+
+
 
 
 
