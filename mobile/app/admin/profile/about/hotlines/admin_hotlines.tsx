@@ -198,7 +198,7 @@ export default function AdminHotlinesScreen({ headerHeight }) {
                         <TouchableOpacity 
                             style={[styles.iconButton, styles.editButton]}
                             onPress={() => router.push({ 
-                                pathname: "/admin/hotlines/admin_hotline_edit", 
+                                pathname: "/admin/profile/about/hotlines/admin_hotline_edit", 
                                 params: { id: id } 
                             })}
                         >
@@ -267,7 +267,7 @@ export default function AdminHotlinesScreen({ headerHeight }) {
                                     contactNumber={hotline.contact_number}
                                     onDelete={() => handleDelete(hotline.id)}
                                     onView={() => router.push({ 
-                                        pathname: "/admin/hotlines/admin_hotline_view", 
+                                        pathname: "/admin/profile/about/hotlines/admin_hotline_view", 
                                         params: { id: hotline.id } 
                                     })}
                                 />
@@ -277,7 +277,7 @@ export default function AdminHotlinesScreen({ headerHeight }) {
                         {/* Add hotline FAB */}
                         <Pressable
                             style={styles.fab}
-                            onPress={() => router.push("/admin/hotlines/admin_hotline_add")}
+                            onPress={() => router.push("/admin/profile/about/hotlines/admin_hotline_add")}
                         >
                             <Icon name="plus" size={24} color="#ffffff" />
                         </Pressable>

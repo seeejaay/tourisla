@@ -269,8 +269,8 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 24,
+    fontWeight: '900',
     color: '#fff',
   },
   placeholder: {
