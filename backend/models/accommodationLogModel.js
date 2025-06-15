@@ -3,40 +3,6 @@ const db = require("../db/index.js");
 const ExcelJS = require("exceljs");
 
 
-// const exportAccommodationLog = async (filter) => {
-//   const { accommodation_id, start_date, end_date } = filter;
-
-//   const result = await db.query(
-//     `SELECT 
-//       avl.*, 
-//       a.no_of_rooms, 
-//       a.name_of_establishment 
-//      FROM accommodation_visitor_logs avl
-//      JOIN accommodations a ON a.id = avl.accommodation_id
-//      WHERE ($1::int IS NULL OR avl.accommodation_id = $1)
-//      AND ($2::date IS NULL OR avl.log_date >= $2)
-//      AND ($3::date IS NULL OR avl.log_date <= $3)
-//      ORDER BY avl.log_date ASC`,
-//     [accommodation_id || null, start_date || null, end_date || null]
-//   );
-
-//   const logs = result.rows;
-//   if (!logs.length) return null;
-
-//   const headers = Object.keys(logs[0]);
-//   const csvLines = [
-//     headers.join(","), // headers row
-//     ...logs.map(row =>
-//       headers.map(field => {
-//         let val = row[field];
-//         if (Array.isArray(val)) val = JSON.stringify(val);
-//         return `"${String(val).replace(/"/g, '""')}"`; // escape quotes
-//       }).join(",")
-//     )
-//   ];
-
-//   return csvLines.join("\n");
-// };
 const exportAccommodationLog = async (filter) => {
   const { accommodation_id, start_date, end_date } = filter;
 
