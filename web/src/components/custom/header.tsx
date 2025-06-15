@@ -27,7 +27,7 @@ export default function Header() {
   return (
     <>
       <nav
-        className={`fixed w-full z-50 transition-all duration-300 ${
+        className={`fixed w-full z-30 transition-all duration-300 ${
           scrolled
             ? "bg-white/95 backdrop-blur-md shadow-sm py-2"
             : "bg-transparent py-4"

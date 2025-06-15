@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Announcement } from "./columns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { announcementSchema } from "@/app/static/announcement/useAnnouncementManagerSchema";
+import categories from "@/app/static/announcement/category.json";
 
 export default function EditAnnouncement({
   announcement,
@@ -13,39 +14,61 @@ export default function EditAnnouncement({
   onCancel,
 }: {
   announcement: Announcement;
-  onSave: (updatedAnnouncement: Announcement) => void | Promise<void>;
+  onSave: (
+    updatedAnnouncement: Announcement | FormData
+  ) => void | Promise<void>;
   onCancel: () => void;
 }) {
   const [form, setForm] = useState<Announcement>({
     ...announcement,
-    id: String(announcement.id),
+    id: announcement.id ? String(announcement.id) : "",
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
   ) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    const { name, value, type, files } = e.target as HTMLInputElement;
+    if (type === "file" && files && files[0]) {
+      setImageFile(files[0]);
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    // Validate with Zod schema (regex included)
     const result = announcementSchema.safeParse(form);
     if (!result.success) {
       setError(result.error.errors[0].message);
       return;
     }
 
-    onSave(form);
+    let updateData: Announcement | FormData;
+    if (imageFile) {
+      const formData = new FormData();
+      Object.entries(form).forEach(([key, value]) => {
+        if (key !== "id") {
+          formData.append(key, value ?? "");
+        }
+      });
+      formData.append("image", imageFile);
+      updateData = formData;
+    } else {
+      const { ...rest } = form;
+      updateData = rest as Announcement;
+    }
+
+    await onSave(updateData);
   };
 
   return (
@@ -97,21 +120,37 @@ export default function EditAnnouncement({
           </div>
           <div className="flex flex-col gap-1">
             <Label htmlFor="category">Category</Label>
-            <Input
+            <select
               id="category"
-              type="text"
               name="category"
               value={form.category}
               onChange={handleChange}
-            />
+              className="border rounded px-2 py-1 text-sm"
+              required
+            >
+              <option value="">Select category</option>
+              {categories.map((cat: string) => (
+                <option key={cat} value={cat}>
+                  {cat.replace(/_/g, " ")}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="flex flex-col gap-1">
-            <Label htmlFor="image_url">Image URL</Label>
+            <Label htmlFor="image_url">Image</Label>
+            {form.image_url && (
+              <img
+                src={form.image_url}
+                alt="Announcement"
+                className="mb-2 max-h-48 object-contain rounded"
+              />
+            )}
             <Input
               id="image_url"
-              type="text"
+              type="file"
               name="image_url"
-              value={form.image_url}
+              accept="image/*"
+              ref={fileInputRef}
               onChange={handleChange}
             />
           </div>

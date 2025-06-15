@@ -22,6 +22,28 @@ const authenticateAdmin = (req, res, next) => {
   next();
 };
 
+const authenticateTourismStaff = (req, res, next) => {
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ error: "Unauthorized: Please log in" });
+  }
+  if (req.session.user.role !== "Tourism Staff") {
+    return res.status(403).json({ error: "Forbidden: Tourism staff only" });
+  }
+  req.user = req.session.user; // Attach user info to the request object
+  next();
+};
+
+const authenticateTourismOfficer = (req, res, next) => {
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ error: "Unauthorized: Please log in" });
+  }
+  if (req.session.user.role !== "Tourism Officer") {
+    return res.status(403).json({ error: "Forbidden: Tourism officer only" });
+  }
+  req.user = req.session.user; // Attach user info to the request object
+  next();
+};
+
 // Middleware to check if the user is a tour guide
 const authenticateTourGuide = (req, res, next) => {
   if (!req.session || !req.session.user) {
@@ -50,9 +72,31 @@ const authenticateTourOperator = (req, res, next) => {
   next();
 };
 
+const allowedRoles = (roles) => {
+  return (req, res, next) => {
+    // Check if user is logged in
+    if (!req.session || !req.session.user) {
+      return res.status(401).json({ error: "Unauthorized: Please log in" });
+    }
+
+    // Check if user's role is in the allowed roles
+    if (!roles.includes(req.session.user.role)) {
+      return res
+        .status(403)
+        .json({ error: "Forbidden: Insufficient permissions" });
+    }
+
+    req.user = req.session.user; // Attach user info to the request object
+    next();
+  };
+};
+
 module.exports = {
   authenticateUser,
   authenticateAdmin,
   authenticateTourGuide,
   authenticateTourOperator,
+  authenticateTourismStaff,
+  authenticateTourismOfficer,
+  allowedRoles,
 };

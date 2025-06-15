@@ -73,6 +73,7 @@ export const createTouristSpot = async (touristSpotData) => {
 
 export const updateTouristSpot = async (touristSpotId, touristSpotData) => {
   try {
+    console.log("Sending Tourist Spot Data: ", touristSpotData);
     const response = await axios.put(
       `${API_URL}tourist-spots/${touristSpotId}`,
       touristSpotData,
@@ -84,7 +85,6 @@ export const updateTouristSpot = async (touristSpotId, touristSpotData) => {
     if (response.status !== 200) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
     }
-
     return response.data;
   } catch (error) {
     console.error(

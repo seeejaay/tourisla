@@ -1,5 +1,5 @@
 import { z } from "zod";
-
+import categories from "./category.json"; // Assuming categories.json is in the same directory
 const announcementSchema = z.object({
   id: z.string().optional(),
   title: z
@@ -27,17 +27,11 @@ const announcementSchema = z.object({
       message: "Location can only contain letters and spaces.",
     })
     .optional(),
-  category: z
-    .string()
-    .max(50, { message: "Category must be less than 50 characters." })
-    .regex(/^[a-zA-Z\s]+$/, {
-      message: "Category can only contain letters and spaces.",
-    })
-    .optional(),
-  image_url: z
-    .string()
-    .max(200, { message: "Image URL must be less than 200 characters." })
-    .optional(),
+  category: z.enum([...categories] as [string, ...string[]], {
+    required_error: "Category is required.",
+    invalid_type_error: "Invalid category.",
+  }),
+  image_url: z.string().optional(),
 });
 
 export type Announcement = z.infer<typeof announcementSchema>;

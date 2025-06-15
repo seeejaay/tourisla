@@ -1,18 +1,22 @@
 "use client";
 
-import adminNavigation from "@/app/static/admin-navigation";
-// import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
-// import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-
+import { useRouter, usePathname } from "next/navigation";
 import { logout } from "@/lib/api/auth"; // Import the logout function
-
 import { LogOut, ChevronsRight, ChevronsLeft } from "lucide-react";
 
-import { usePathname } from "next/navigation";
+export type NavItem = {
+  name: string;
+  title: string;
+  href: string;
+  icon: React.ElementType;
+};
 
-const Sidebar = () => {
+type SidebarProps = {
+  navigation: NavItem[];
+};
+
+const Sidebar = ({ navigation }: SidebarProps) => {
   const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const pathName = usePathname();
@@ -28,7 +32,7 @@ const Sidebar = () => {
   return (
     <nav
       className={`fixed bg-gray-800 backdrop-blur-xl border-r border-gray-100/20 
-        text-gray-100 h-full flex flex-col transition-all duration-300 ease-in-out z-10
+        text-gray-100 h-full flex flex-col transition-all duration-300 ease-in-out z-50
         ${isCollapsed ? "w-20" : "w-64"}`}
     >
       {/* Sidebar Header */}
@@ -54,7 +58,7 @@ const Sidebar = () => {
       {/* Sidebar Body */}
       <div className="flex-grow overflow-y-auto py-6">
         <ul className="space-y-2 px-3">
-          {adminNavigation.map((item) => (
+          {navigation.map((item) => (
             <li key={item.name} className="group">
               <button
                 onClick={() => router.push(item.href)}

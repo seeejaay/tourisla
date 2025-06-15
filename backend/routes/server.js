@@ -4,7 +4,7 @@ const session = require("express-session");
 const { getPresignedUrl } = require("../utils/s3.js");
 const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
-
+const { allowedRoles } = require("../middleware/middleware.js");
 const db = require("../db/index.js");
 const app = express();
 const cors = require("cors");
@@ -40,6 +40,8 @@ const {
   authenticateAdmin,
   authenticateTourGuide,
   authenticateTourOperator,
+  authenticateTourismStaff,
+  authenticateTourismOfficer,
 } = require("../middleware/middleware.js");
 
 const {
@@ -71,6 +73,7 @@ const {
   createGuideUploadDocuController,
   editGuideUploadDocuController,
   getGuideUploadDocuByIdController,
+  getGuideUploadByUserIdController,
 } = require("../controllers/guideUploadDocuController.js");
 
 const {
@@ -130,12 +133,37 @@ const {
 } = require("../controllers/articleController");
 
 const {
+  createAccommodationController,
+  editAccommodationController,
+  deleteAccommodationController,
+  viewAccommodationsController,
+  viewAccommodationByIdController,
+} = require("../controllers/accommodationController.js");
+
+const {
+  registerVisitorController,
+} = require("../controllers/visitorRegistrationController");
+
+const {
   createTourPackageController,
   updateTourPackageController,
   deleteTourPackageController,
   viewTourPackagesController,
   viewTourPackageByIdController,
 } = require("../controllers/tourPackagesController.js");
+
+const {
+  createAccommodationLogController,
+  editAccommodationLogController,
+  deleteAccommodationLogController,
+  getAllAccommodationLogsController,
+  getAccommodationLogByIdController
+} = require("../controllers/accommodationLogController.js");
+
+const {
+  exportAccommodationLogController
+} = require("../controllers/accommodationLogController");
+
 
 app.use(
   session({
@@ -214,17 +242,18 @@ app.post(
   "/api/v1/announcements",
   upload.single("image"),
   createAnnouncementController,
-  authenticateAdmin
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"])
 );
 app.put(
   "/api/v1/announcements/:announcementId",
   upload.single("image"),
-  editAnnouncementController
+  editAnnouncementController,
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"])
 );
 app.delete(
   "/api/v1/announcements/:announcementId",
   deleteAnnouncementController,
-  authenticateAdmin
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"])
 );
 app.get(
   "/api/v1/announcements/category/:category([a-zA-Z0-9-_]+)",
@@ -287,6 +316,11 @@ app.get(
   "/api/v1/guideUploadDocu/:docuId",
   authenticateTourGuide,
   getGuideUploadDocuByIdController
+);
+app.get(
+  "/api/v1/guideUploadDocu/:userId",
+  authenticateTourGuide,
+  getGuideUploadByUserIdController
 );
 
 // Routes for Tour Operator Registration
@@ -402,27 +436,40 @@ app.put(
 // Routes for Tourist Spots
 app.post(
   "/api/v1/tourist-spots",
-  authenticateAdmin,
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"]),
   upload.array("images", 5),
   createTouristSpotController
 );
 app.put(
   "/api/v1/tourist-spots/:touristSpotId",
-  authenticateAdmin,
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"]),
+  upload.array("images", 5),
   editTouristSpotController
 );
 app.delete(
   "/api/v1/tourist-spots/:touristSpotId",
-  authenticateAdmin,
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"]),
   deleteTouristSpotController
 );
 app.get("/api/v1/tourist-spots", viewTouristSpotsController);
 app.get("/api/v1/tourist-spots/:touristSpotId", viewTouristSpotByIdController);
 
 // Rules & Regulations Routes
-app.post("/api/v1/rules", authenticateAdmin, createRuleController);
-app.put("/api/v1/rules/:ruleId", authenticateAdmin, editRuleController);
-app.delete("/api/v1/rules/:ruleId", authenticateAdmin, deleteRuleController);
+app.post(
+  "/api/v1/rules",
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"]),
+  createRuleController
+);
+app.put(
+  "/api/v1/rules/:ruleId",
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"]),
+  editRuleController
+);
+app.delete(
+  "/api/v1/rules/:ruleId",
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"]),
+  deleteRuleController
+);
 app.get("/api/v1/rules", viewRulesController);
 app.get("/api/v1/rules/:ruleId", viewRuleByIdController);
 
@@ -440,6 +487,31 @@ app.delete(
 );
 app.get("/api/v1/articles", viewArticlesController);
 app.get("/api/v1/articles/:articleId", viewArticleByIdController);
+
+// Routes for Accommodations
+app.post(
+  "/api/v1/accommodations",
+  authenticateAdmin,
+  createAccommodationController
+);
+app.put(
+  "/api/v1/accommodations/:accommodationId",
+  authenticateAdmin,
+  editAccommodationController
+);
+app.delete(
+  "/api/v1/accommodations/:accommodationId",
+  authenticateAdmin,
+  deleteAccommodationController
+);
+app.get("/api/v1/accommodations", viewAccommodationsController);
+app.get(
+  "/api/v1/accommodations/:accommodationId",
+  viewAccommodationByIdController
+);
+
+// Visitor Registration Route
+app.post("/api/v1/register", registerVisitorController);
 
 // Routes — Tour Packages
 app.post("/api/v1/tour-packages", createTourPackageController);
@@ -463,3 +535,32 @@ app.get(
   authenticateTourOperator,
   viewTourPackageByIdController
 );
+
+
+// Accommodation Logs Routes
+app.post(
+  "/api/v1/accommodation-logs",
+  authenticateTourismStaff,
+  createAccommodationLogController
+);
+app.put(
+  "/api/v1/accommodation-logs/:logId",
+  authenticateTourismStaff,
+  editAccommodationLogController
+);
+app.delete(
+  "/api/v1/accommodation-logs/:logId",
+ authenticateTourismStaff,
+  deleteAccommodationLogController
+);
+//excel export for accommodation logs — MUST be placed before ":logId"
+app.get("/api/v1/accommodation-logs/export", exportAccommodationLogController);
+app.get("/api/v1/accommodation-logs", getAllAccommodationLogsController);
+app.get("/api/v1/accommodation-logs/:logId", getAccommodationLogByIdController);
+
+
+
+
+
+
+
