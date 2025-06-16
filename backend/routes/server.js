@@ -184,6 +184,11 @@ const {
   getTripadvisorHotels,
   getTripadvisorHotelsWithPhotos,
 } = require("../controllers/tripadvisorController.js");
+
+const { exportVisitorLogController } = require("../controllers/exportVisitorLogController");
+const { exportVisitorLogGroupController } = require("../controllers/exportVisitorLogGroupController");
+
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -593,10 +598,12 @@ app.put("/api/v1/policies/:policyId", authenticateAdmin, editPolicyController);
 app.delete("/api/v1/policies/:policyId", authenticateAdmin, deletePolicyController);
 
 
-
-
-
-
 //tripadvisors
 
 app.get("/tripadvisor/hotels", getTripadvisorHotelsWithPhotos);
+
+//Individual Visitor Log Export
+app.get("/api/v1/visitor-logs/export", exportVisitorLogController);
+
+//Visitor Summary Grouped by Month Export
+app.get("/api/v1/visitor-summary/export", exportVisitorLogGroupController);
