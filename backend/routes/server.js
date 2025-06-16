@@ -503,7 +503,7 @@ app.put(
 );
 app.get(
   "/api/v1/bookings/tourist",
-  authenticateUser,
+  // authenticateUser,
   getTouristBookingsController
 );
 app.get(
