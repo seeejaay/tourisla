@@ -52,11 +52,23 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     setError('');
+    
+    // Validate inputs
+    if (!email || !password) {
+      setError('Email and password are required');
+      return;
+    }
+    
+    // Format email exactly as backend expects
     const trimmedEmail = email.trim().toUpperCase();
     const trimmedPassword = password.trim();
 
     try {
+      console.log('Attempting login with email:', trimmedEmail);
+      
       const res = await login({ email: trimmedEmail, password: trimmedPassword });
+      console.log('Login response:', JSON.stringify(res));
+      
       const { role, ...userData } = res.user;
 
       if (!role) {
@@ -74,7 +86,7 @@ export default function LoginScreen() {
         case 'Tourist':
           router.replace('/tourist/tourist_dashboard');
           break;
-        case 'tour_guide':
+        case 'Tour Guide':
           router.replace('/guide_home');
           break;
         case 'Tour Operator':
@@ -84,7 +96,8 @@ export default function LoginScreen() {
           router.replace('/staff/staff_dashboard');
           break;
         default:
-          setError('Unknown role.');
+          console.log('Unknown role received:', role);
+          setError('Unknown role: ' + role);
       }
     } catch (err) {
       console.error('Login Error:', err.response?.data || err.message);
@@ -167,9 +180,12 @@ export default function LoginScreen() {
         <Text style={styles.loginButtonText}>LOGIN</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push('/signup')}>
-        <Text style={styles.signupRedirectText}>Don’t have an account? Sign up</Text>
-      </TouchableOpacity>
+      {/* Login Redirect */}
+      <View style={styles.footer}>
+        <TouchableOpacity onPress={() => router.push('/role-selection')}>
+          <Text style={styles.signupText}>Don't have an account? Sign Up</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -267,10 +283,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 16,
   },
-  signupRedirectText: {
+  signupText: {
     textAlign: 'center',
     color: '#0f172a',
     fontWeight: '500',
+  },
+  footer: {
+    marginTop: 24,
   },
   // helpButton and helpButtonText styles removed
 });

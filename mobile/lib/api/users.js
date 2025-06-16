@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_URL } from '../config'; // Import API_URL from config
 import { getApiUrl } from './apiUtils';
 
 export const fetchUsers = async () => {
@@ -21,7 +22,8 @@ export const fetchUsers = async () => {
 export const createUser = async (userData) => {
   try {
     console.log("Sending user data to API:", userData);
-    const response = await axios.post(`${API_URL}users`, userData, {
+    const url = getApiUrl('users'); // Use getApiUrl helper
+    const response = await axios.post(url, userData, {
       withCredentials: true,
     });
     if (response.status !== 201) {
