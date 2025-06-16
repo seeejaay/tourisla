@@ -13,14 +13,17 @@ const createVisitorGroupMembers = async (registrationId, members) => {
   const promises = members.map((member) =>
     db.query(
       `INSERT INTO visitor_group_members 
-      (registration_id, name, age, sex, place_of_residence)
-      VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      (registration_id, name, age, sex, is_foreign, municipality, province, country)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
       [
         registrationId,
         member.name,
         member.age,
         member.sex,
-        member.place_of_residence,
+        member.is_foreign || false,
+        member.municipality || '',
+        member.province || '',
+        member.country || '',
       ]
     )
   );
@@ -28,6 +31,7 @@ const createVisitorGroupMembers = async (registrationId, members) => {
   const results = await Promise.all(promises);
   return results.map((res) => res.rows[0]);
 };
+
 
 module.exports = {
   createVisitorRegistration,
