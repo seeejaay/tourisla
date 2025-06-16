@@ -58,6 +58,10 @@ export default function Settings() {
     router.push('/operator/profile/about/hotlines/operator_hotlines');
   };
 
+  const navigateToTerms = () => {
+    router.push('/operator/profile/about/terms/operator_terms');
+  };
+
   const navigateToRules = () => {
     router.push('/operator/profile/settings/rules/operator_rules');
   };
@@ -237,15 +241,12 @@ export default function Settings() {
           
           {/* Terms and Conditions */}
           <TouchableOpacity 
-            style={styles.subsectionHeader} 
-            onPress={() => toggleSection('terms')}
+            style={styles.subsectionHeader}
+            onPress={navigateToTerms}
+            activeOpacity={0.7}
           >
             <Text style={styles.subsectionTitle}>Terms & Conditions</Text>
-            <Feather 
-              name={expandedSection === 'terms' ? 'chevron-up' : 'chevron-down'} 
-              size={20} 
-              color="#64748b" 
-            />
+            <Feather name="chevron-right" size={20} color="#64748b" />
           </TouchableOpacity>
           
           {expandedSection === 'terms' && (
