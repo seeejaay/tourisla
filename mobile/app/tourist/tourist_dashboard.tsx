@@ -12,6 +12,7 @@ import Animated from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
 import * as auth from '@/lib/api/auth';
 import TouristTouristSpotsScreen from './tourist_spots/tourist_tourist_spots';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Tab = createBottomTabNavigator();
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -25,8 +26,10 @@ function ProfileHeader() {
     const fetchCurrentUser = async () => {
       try {
         setLoading(true);
+        
+        // First try to get the role from the API
         const response = await auth.currentUser();
-        console.log("User data response:", JSON.stringify(response));
+        console.log("API Response:", JSON.stringify(response));
         
         let userData = null;
         if (response && response.data && response.data.user) {
@@ -39,7 +42,20 @@ function ProfileHeader() {
           userData = response;
         }
         
-        console.log("Extracted user data:", userData);
+        // If no role in the API response, try to get it from AsyncStorage
+        if (userData && !userData.role) {
+          try {
+            const storedRole = await AsyncStorage.getItem('role');
+            if (storedRole) {
+              console.log("Using role from AsyncStorage:", storedRole);
+              userData.role = storedRole;
+            }
+          } catch (storageError) {
+            console.error("Failed to get role from storage:", storageError);
+          }
+        }
+        
+        console.log("Final user data with role:", JSON.stringify(userData));
         setCurrentUser(userData);
       } catch (error) {
         console.error("Failed to fetch user data:", error);
@@ -106,7 +122,7 @@ function ProfileHeader() {
                     : 'Unknown User'}
                 </Text>
                 <Text style={styles.userRole}>
-                  {currentUser ? formatRole(currentUser.role) : 'Unknown Role'}
+                  {currentUser && currentUser.role ? formatRole(currentUser.role) : 'User'}
                 </Text>
               </>
             )}
@@ -258,7 +274,6 @@ export default function TouristDashboard() {
         <Tab.Screen name="Tourist Spots">
           {() => <TouristTouristSpotsScreen headerHeight={headerHeight} />}
         </Tab.Screen>
-        {/* Removed Hotlines Tab.Screen */}
       </Tab.Navigator>
     </View>
   );
