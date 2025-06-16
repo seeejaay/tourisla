@@ -18,6 +18,10 @@ import { Feather } from '@expo/vector-icons';
 import { useTermsManager } from '../../../../../lib/hooks/useTermsManager';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
+
+// Add this constant at the top of your file
+const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 0;
 
 // Valid policy types based on the backend enum - limited to just TERMS and PRIVACY_POLICY
 const POLICY_TYPES = [
@@ -162,15 +166,19 @@ export default function AdminTermEdit() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
       
-      <View style={styles.header}>
+      {/* Header */}
+      <LinearGradient
+        colors={['#0f172a', '#1e293b']}
+        style={styles.header}
+      >
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Feather name="arrow-left" size={24} color="#000" />
+          <Feather name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edit Terms & Conditions</Text>
         <View style={styles.placeholder} />
-      </View>
+      </LinearGradient>
       
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <View style={styles.formGroup}>
@@ -267,7 +275,7 @@ export default function AdminTermEdit() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f8fafc',
   },
   loadingContainer: {
     flex: 1,
@@ -282,17 +290,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingTop: STATUS_BAR_HEIGHT,
+    paddingBottom: 16,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e1e1e1',
   },
   backButton: {
     padding: 8,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
+    color: '#fff',
   },
   placeholder: {
     width: 40,
