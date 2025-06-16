@@ -146,6 +146,10 @@ const {
   registerVisitorController,
 } = require("../controllers/visitorRegistrationController");
 
+const { 
+  manualCheckInController 
+} = require("../controllers/visitorRegistrationController");
+
 const {
   createTourPackageController,
   updateTourPackageController,
@@ -533,6 +537,7 @@ app.get(
 
 // Visitor Registration Route
 app.post("/api/v1/register", registerVisitorController);
+app.post("/api/v1/register/manual-check-in", manualCheckInController);
 
 // Routes — Tour Packages
 app.post("/api/v1/tour-packages", createTourPackageController);

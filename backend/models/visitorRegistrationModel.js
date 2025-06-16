@@ -1,5 +1,6 @@
 const db = require("../db/index");
 
+// ✅ Create new visitor registration entry
 const createVisitorRegistration = async ({ unique_code, qr_code_url }) => {
   const result = await db.query(
     `INSERT INTO visitor_registrations (unique_code, qr_code_url) 
@@ -9,12 +10,13 @@ const createVisitorRegistration = async ({ unique_code, qr_code_url }) => {
   return result.rows[0];
 };
 
+// ✅ Add group members tied to registration_id
 const createVisitorGroupMembers = async (registrationId, members) => {
   const promises = members.map((member) =>
     db.query(
       `INSERT INTO visitor_group_members 
-      (registration_id, name, age, sex, is_foreign, municipality, province, country)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+        (registration_id, name, age, sex, is_foreign, municipality, province, country)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
       [
         registrationId,
         member.name,
@@ -27,13 +29,52 @@ const createVisitorGroupMembers = async (registrationId, members) => {
       ]
     )
   );
-
   const results = await Promise.all(promises);
   return results.map((res) => res.rows[0]);
 };
 
+// ✅ Check if unique code already exists
+const isUniqueCodeTaken = async (uniqueCode) => {
+  const result = await db.query(
+    `SELECT 1 FROM visitor_registrations WHERE unique_code = $1 LIMIT 1`,
+    [uniqueCode]
+  );
+  return result.rowCount > 0;
+};
+
+// ✅ Fetch registration by unique code
+const getVisitorByUniqueCode = async (uniqueCode) => {
+  const result = await db.query(
+    `SELECT * FROM visitor_registrations WHERE unique_code = $1`,
+    [uniqueCode]
+  );
+  return result.rows[0];
+};
+
+// ✅ Get attraction ID based on user ID
+const getUserAttractionId = async (userId) => {
+  const result = await db.query(
+    `SELECT attraction_id FROM users WHERE user_id = $1 LIMIT 1`,
+    [userId]
+  );
+  return result.rows[0]?.attraction_id || null;
+};
+
+// ✅ Log attraction visit using registration ID (renamed for clarity)
+const logAttractionVisitByRegistration = async ({ registrationId, scannedByUserId, touristSpotId }) => {
+  const result = await db.query(
+    `INSERT INTO attraction_visitor_logs (registration_id, scanned_by_user_id, tourist_spot_id, visit_date)
+     VALUES ($1, $2, $3, CURRENT_DATE) RETURNING *`,
+    [registrationId, scannedByUserId, touristSpotId]
+  );
+  return result.rows[0];
+};
 
 module.exports = {
   createVisitorRegistration,
   createVisitorGroupMembers,
+  getVisitorByUniqueCode,
+  isUniqueCodeTaken,
+  getUserAttractionId,
+  logAttractionVisitByRegistration, // ✅ renamed
 };
