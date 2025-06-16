@@ -15,6 +15,22 @@ const s3Client = new S3Client({
   },
 });
 
+const generateCustomCode = () => {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const numbers = '0123456789';
+
+  let result = '';
+  for (let i = 0; i < 3; i++) {
+    result += letters.charAt(Math.floor(Math.random() * letters.length));
+  }
+  for (let i = 0; i < 3; i++) {
+    result += numbers.charAt(Math.floor(Math.random() * numbers.length));
+  }
+
+  return result;
+};
+
+
 const registerVisitorController = async (req, res) => {
   try {
     const { groupMembers } = req.body;
@@ -23,8 +39,8 @@ const registerVisitorController = async (req, res) => {
       return res.status(400).json({ error: "Group members are required" });
     }
 
-    // Generate unique code
-    const uniqueCode = uuidv4();
+    // Generate custom unique code: ABC123
+    const uniqueCode = generateCustomCode();
 
     // Generate QR Code buffer
     const qrData = `https://yourdomain.com/scan/${uniqueCode}`;

@@ -1,47 +1,64 @@
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { useEffect, useState } from 'react';
-import { currentUser } from '@/lib/api/auth.js';
+import React, { useState, useEffect } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  ScrollView, 
+  TouchableOpacity
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as auth from '@/lib/api/auth';
 
-type User = {
-  first_name: string;
-  // Add other properties of the user object if needed
-};
-
-export default function TouristHomeScreen() {
-  const [user, setUser] = useState<User | null>(null);
-
+export default function TouristHome() {
+  const router = useRouter();
+  const [userName, setUserName] = useState('');
+  const [headerHeight, setHeaderHeight] = useState(0);
+  
+  // Get user name from AsyncStorage
   useEffect(() => {
-    const fetchUser = async () => {
+    const getUserName = async () => {
       try {
-        const data = await currentUser();
-        console.log("Fetched user data:", data);
-        setUser(data);
+        const user = await auth.getCurrentUser();
+        if (user && user.name) {
+          setUserName(user.name.split(' ')[0]); // Get first name
+        }
       } catch (error) {
-        console.error("Failed to load user", error);
+        console.error('Error getting user name:', error);
       }
     };
-    fetchUser();
+    
+    getUserName();
   }, []);
 
-  if (!user) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4CAF50" />
-        <Text style={styles.loadingText}>Loading user...</Text>
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Welcome, {user.first_name}!</Text>
-      </View>
-      <View style={styles.content}>
-        <Text style={styles.description}>
-          This is your home screen. You can show app summaries, stats, or recent activity here.
-        </Text>
-      </View>
+    <View style={[styles.container, { paddingTop: headerHeight }]}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Welcome Section */}
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeText}>
+            Welcome{userName ? `, ${userName}` : ''}!
+          </Text>
+          <Text style={styles.welcomeSubtext}>
+            Discover the beauty of Cebu
+          </Text>
+        </View>
+        
+        {/* Content will be added here */}
+      </ScrollView>
+      
+      {/* Weather FAB Button */}
+      <TouchableOpacity 
+        style={styles.weatherFab}
+        onPress={() => router.push('/tourist/weather')}
+        activeOpacity={0.8}
+      >
+        <MaterialCommunityIcons name="weather-partly-cloudy" size={24} color="white" />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -49,45 +66,39 @@ export default function TouristHomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#f8fafc'
+  },
+  scrollContent: {
     padding: 16,
+    paddingBottom: 80 // Extra padding for FAB
   },
-  header: {
-    backgroundColor: '#4CAF50',
-    padding: 20,
-    borderRadius: 10,
-    marginBottom: 20,
-    alignItems: 'center',
+  welcomeSection: {
+    marginBottom: 20
   },
-  headerText: {
+  welcomeText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#0f172a'
   },
-  content: {
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  description: {
+  welcomeSubtext: {
     fontSize: 16,
-    color: '#333333',
-    textAlign: 'center',
+    color: '#64748b',
+    marginTop: 4
   },
-  loadingContainer: {
-    flex: 1,
+  weatherFab: {
+    position: 'absolute',
+    bottom: 120, // Increased from 20 to 80 to lift it above the bottom navbar
+    left: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 20,
+    backgroundColor: '#0ea5e9',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#333333',
-  },
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5
+  }
 });

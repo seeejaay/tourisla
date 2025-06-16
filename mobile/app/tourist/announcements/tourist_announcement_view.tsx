@@ -20,6 +20,15 @@ import { LinearGradient } from "expo-linear-gradient";
 const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 0;
 const { width, height } = Dimensions.get('window');
 
+// Helper function to convert text to sentence case (capitalize only first letter)
+const toSentenceCase = (text: string) => {
+  if (!text) return '';
+  // Convert to lowercase first
+  const lowercase = text.toLowerCase();
+  // Capitalize only the first letter
+  return lowercase.charAt(0).toUpperCase() + lowercase.slice(1);
+};
+
 interface Announcement {
   id: string;
   title: string;
@@ -208,13 +217,13 @@ export default function TouristAnnouncementViewScreen() {
           {/* Location */}
           <View style={styles.locationContainer}>
             <FontAwesome5 name="map-marker-alt" solid size={14} color={categoryColor} />
-            <Text style={styles.locationText}>{announcement.location}</Text>
+            <Text style={styles.locationText}>{toSentenceCase(announcement.location)}</Text>
           </View>
           
           {/* Description */}
           <View style={styles.descriptionContainer}>
             <Text style={styles.descriptionLabel}>Description</Text>
-            <Text style={styles.descriptionText}>{announcement.description}</Text>
+            <Text style={styles.descriptionText}>{toSentenceCase(announcement.description)}</Text>
           </View>
         </View>
       </ScrollView>

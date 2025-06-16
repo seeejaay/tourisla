@@ -9,7 +9,12 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app uses your location to provide local weather information.",
+        "NSPhotoLibraryAddUsageDescription": "This app needs access to save brochures and maps to your photo library.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to save brochures and maps."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +22,16 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.mobile"
+      "package": "com.anonymous.mobile",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "INTERNET",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "MEDIA_LIBRARY",
+        "MEDIA_LIBRARY_WRITE"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -33,6 +47,20 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to save brochures and maps.",
+          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save brochures and maps to your photos.",
+          "isAccessMediaLocationEnabled": true
         }
       ]
     ],

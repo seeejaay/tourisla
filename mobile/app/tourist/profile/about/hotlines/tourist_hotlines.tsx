@@ -11,13 +11,14 @@ import {
     SafeAreaView,
     Animated,
     Linking,
+    Dimensions,
 } from "react-native";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "expo-router";
-import { fetchHotlines } from "../../../lib/api/hotline";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useIsFocused } from '@react-navigation/native';
+import { fetchHotlines } from "../../../../../lib/api/hotline";
 
 interface Hotline {
     id: number;
@@ -36,7 +37,7 @@ interface HotlineCardProps {
     onView: () => void;
 }
 
-const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
+const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 44;
 
 // Helper function to get icon based on hotline type
 const getHotlineIcon = (type: string) => {
@@ -61,19 +62,14 @@ const formatMunicipality = (municipality: string) => {
     return municipality.replace(/_/g, " ");
 };
 
-export default function TouristHotlinesScreen({ headerHeight }) {
+export default function TouristHotlines() {
     const router = useRouter();
+    const isFocused = useIsFocused();
     const [hotlines, setHotlines] = useState<Hotline[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [selectedMunicipality, setSelectedMunicipality] = useState<string | null>(null);
-    const [selectedType, setSelectedType] = useState<string | null>(null);
-    const [showFilters, setShowFilters] = useState(false);
+    const [error, setError] = useState("");
     const scrollY = useRef(new Animated.Value(0)).current;
-    const isFocused = useIsFocused();
 
-    // Load hotlines when screen comes into focus
     useEffect(() => {
         if (isFocused) {
             loadHotlines();
@@ -84,7 +80,7 @@ export default function TouristHotlinesScreen({ headerHeight }) {
         try {
             setLoading(true);
             const data = await fetchHotlines();
-            console.log("Fetched hotlines:", data); // Add logging to debug
+            console.log("Fetched hotlines:", data);
             setHotlines(data);
             setError("");
         } catch (err) {
@@ -95,13 +91,23 @@ export default function TouristHotlinesScreen({ headerHeight }) {
         }
     };
 
+    const handleBackPress = () => {
+        router.back();
+    };
+
     const handleCall = (phoneNumber: string) => {
         Linking.openURL(`tel:${phoneNumber}`);
     };
 
+    const headerOpacity = scrollY.interpolate({
+        inputRange: [0, 100],
+        outputRange: [1, 0.9],
+        extrapolate: 'clamp',
+    });
+
     const headerElevation = scrollY.interpolate({
-        inputRange: [0, 50],
-        outputRange: [2, 8],
+        inputRange: [0, 100],
+        outputRange: [1, 8],
         extrapolate: 'clamp',
     });
 
@@ -187,13 +193,33 @@ export default function TouristHotlinesScreen({ headerHeight }) {
     });
 
     return (
-        <SafeAreaView style={styles.safeContainer}>
-            <View style={styles.container}>
+        <View style={styles.container}>
+            <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+            
+            {/* Header with gradient background */}
+            <LinearGradient
+                colors={['#0f172a', '#1e293b']}
+                style={styles.header}
+            >
+                <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+                    <Feather name="arrow-left" size={24} color="#fff" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Emergency Hotlines</Text>
+                <View style={styles.placeholder} />
+            </LinearGradient>
 
-                {/* Content */}
-                <Animated.ScrollView 
-                    style={[styles.scrollView, { marginTop: headerHeight }]}
-                    contentContainerStyle={styles.contentContainer}
+            {loading ? (
+                <View style={styles.centered}>
+                    <ActivityIndicator size="large" color="#0f172a" />
+                </View>
+            ) : error ? (
+                <View style={styles.centered}>
+                    <Text style={styles.errorText}>{error}</Text>
+                </View>
+            ) : (
+                <Animated.ScrollView
+                    style={styles.scrollView}
+                    contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
                     onScroll={Animated.event(
                         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -201,154 +227,114 @@ export default function TouristHotlinesScreen({ headerHeight }) {
                     )}
                     scrollEventThrottle={16}
                 >
-                    {loading ? (
-                        <View style={styles.centerContainer}>
-                            <ActivityIndicator size="large" color="#0f172a" style={styles.loadingIndicator} />
-                            <Text style={styles.loadingText}>Loading emergency contacts...</Text>
-                        </View>
-                    ) : error ? (
-                        <View style={styles.centerContainer}>
-                            <MaterialCommunityIcons name="alert-circle-outline" size={48} color="#ef4444" />
-                            <Text style={styles.errorText}>{error}</Text>
-                            <TouchableOpacity style={styles.retryButton} onPress={loadHotlines}>
-                                <Text style={styles.retryButtonText}>Retry</Text>
-                            </TouchableOpacity>
-                        </View>
-                    ) : hotlines.length === 0 ? (
-                        <View style={styles.centerContainer}>
-                            <MaterialCommunityIcons name="phone-off" size={64} color="#94a3b8" />
-                            <Text style={styles.emptyText}>No emergency contacts available</Text>
-                            <Text style={styles.emptySubtext}>Please check back later</Text>
-                        </View>
-                    ) : (
-                        <>
-                            <Text style={styles.sectionTitle}>Emergency Contacts</Text>
-                            <Text style={styles.sectionSubtitle}>Important contacts in case of emergencies</Text>
+                    <Text style={styles.sectionDescription}>
+                        Contact these emergency numbers for immediate assistance during your stay in Isla Verde.
+                    </Text>
+                    
+                    {Object.keys(hotlinesByMunicipality).map((municipality) => (
+                        <View key={municipality} style={styles.municipalitySection}>
+                            <Text style={styles.municipalityHeader}>
+                                {formatMunicipality(municipality)}
+                            </Text>
                             
-                            {Object.entries(hotlinesByMunicipality).map(([municipality, municipalityHotlines]) => (
-                                <View key={municipality} style={styles.municipalitySection}>
-                                    <Text style={styles.municipalityTitle}>
-                                        {formatMunicipality(municipality)}
-                                    </Text>
-                                    
-                                    {municipalityHotlines.map((hotline) => (
-                                        <HotlineCard
-                                            key={hotline.id}
-                                            id={hotline.id}
-                                            type={hotline.type}
-                                            municipality={hotline.municipality}
-                                            contactNumber={hotline.contact_number}
-                                            onCall={() => handleCall(hotline.contact_number)}
-                                            onView={() => router.push({ 
-                                                pathname: "/tourist/hotlines/tourist_hotline_view", 
-                                                params: { id: hotline.id } 
-                                            })}
-                                        />
-                                    ))}
-                                </View>
+                            {hotlinesByMunicipality[municipality].map((hotline) => (
+                                <HotlineCard
+                                    key={hotline.id}
+                                    id={hotline.id}
+                                    type={hotline.type}
+                                    municipality={hotline.municipality}
+                                    contactNumber={hotline.contact_number}
+                                    onCall={() => handleCall(hotline.contact_number)}
+                                    onView={() => router.push({
+                                        pathname: "/tourist/profile/about/hotlines/tourist_hotline_view",
+                                        params: { id: hotline.id }
+                                    })}
+                                />
                             ))}
-                        </>
-                    )}
+                        </View>
+                    ))}
+                    
+                    <View style={styles.footer}>
+                        <Text style={styles.footerText}>
+                            In case of emergency, please contact the nearest local authority.
+                        </Text>
+                    </View>
                 </Animated.ScrollView>
-            </View>
-        </SafeAreaView>
+            )}
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    safeContainer: {
-        flex: 1,
-        backgroundColor: '#f8fafc',
-    },
     container: {
         flex: 1,
         backgroundColor: '#f8fafc',
     },
-    scrollView: {
-        flex: 1,
-        // marginTop will be set dynamically based on headerHeight prop
-    },
-    contentContainer: {
-        padding: 16,
-        paddingBottom: 120, // Increased bottom padding for tab bar
-    },
-    centerContainer: {
+    centered: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 20,
-        minHeight: 300,
-    },
-    loadingIndicator: {
-        marginBottom: 16,
-    },
-    loadingText: {
-        fontSize: 16,
-        color: "#64748b",
-        textAlign: "center",
     },
     errorText: {
+        color: '#ef4444',
         fontSize: 16,
-        color: "#ef4444",
-        textAlign: "center",
-        marginTop: 16,
-        marginBottom: 20,
+        textAlign: 'center',
+        marginHorizontal: 20,
     },
-    retryButton: {
-        backgroundColor: "#3b82f6",
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 8,
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingTop: STATUS_BAR_HEIGHT,
+        paddingBottom: 16,
+        paddingHorizontal: 16,
     },
-    retryButtonText: {
-        color: "#ffffff",
-        fontWeight: "600",
+    backButton: {
+        padding: 8,
     },
-    emptyText: {
+    headerTitle: {
         fontSize: 18,
-        fontWeight: "700",
-        color: "#334155",
-        textAlign: "center",
-        marginTop: 16,
+        fontWeight: '600',
+        color: '#fff',
     },
-    emptySubtext: {
-        fontSize: 14,
-        color: "#64748b",
-        textAlign: "center",
-        marginTop: 8,
+    placeholder: {
+        width: 40,
     },
-    sectionTitle: {
-        fontSize: 24,
-        fontWeight: "800",
-        color: "#0f172a",
-        marginBottom: 8,
+    scrollView: {
+        flex: 1,
     },
-    sectionSubtitle: {
+    scrollContent: {
+        padding: 16,
+        paddingBottom: 32,
+    },
+    sectionDescription: {
         fontSize: 14,
         color: '#64748b',
-        marginBottom: 16,
+        marginBottom: 20,
+        lineHeight: 20,
     },
     municipalitySection: {
         marginBottom: 24,
     },
-    municipalityTitle: {
-        fontSize: 18,
-        fontWeight: "700",
-        color: "#334155",
+    municipalityHeader: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#0f172a',
         marginBottom: 12,
-        marginTop: 8,
-        paddingLeft: 4,
+        paddingBottom: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e2e8f0',
     },
     card: {
         backgroundColor: '#ffffff',
         borderRadius: 12,
         marginBottom: 12,
-        overflow: 'hidden',
-        elevation: 2,
-        shadowColor: "#000",
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+        elevation: 3,
+        overflow: 'hidden',
     },
     cardContent: {
         flexDirection: 'row',
@@ -358,7 +344,7 @@ const styles = StyleSheet.create({
     iconContainer: {
         width: 48,
         height: 48,
-        borderRadius: 12,
+        borderRadius: 24,
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 16,
@@ -367,10 +353,10 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     cardTitle: {
-        fontSize: 20,
-        fontWeight: '900',
+        fontSize: 16,
+        fontWeight: '600',
         color: '#0f172a',
-        marginBottom: 6,
+        marginBottom: 4,
     },
     contactRow: {
         flexDirection: 'row',
@@ -379,9 +365,8 @@ const styles = StyleSheet.create({
     },
     contactNumber: {
         fontSize: 14,
-        color: "#334155",
-        marginLeft: 8,
-        fontWeight: '500',
+        color: '#64748b',
+        marginLeft: 6,
     },
     municipalityBadge: {
         alignSelf: 'flex-start',
@@ -390,10 +375,9 @@ const styles = StyleSheet.create({
         borderRadius: 4,
     },
     municipalityText: {
+        fontSize: 12,
         color: '#ffffff',
-        fontSize: 10,
-        fontWeight: '700',
-        textTransform: 'uppercase',
+        fontWeight: '500',
     },
     cardActions: {
         marginLeft: 8,
@@ -407,5 +391,16 @@ const styles = StyleSheet.create({
     },
     callButton: {
         backgroundColor: '#22c55e',
+    },
+    footer: {
+        marginTop: 16,
+        padding: 16,
+        backgroundColor: '#f1f5f9',
+        borderRadius: 8,
+    },
+    footerText: {
+        fontSize: 14,
+        color: '#64748b',
+        textAlign: 'center',
     },
 });

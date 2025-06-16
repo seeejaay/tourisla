@@ -1,22 +1,41 @@
 import axios from "axios";
 import { getApiUrl, logApiRequest } from "./utils";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const login = async (userData) => {
   try {
-    const url = getApiUrl('login');
-    logApiRequest('POST', url, userData);
+    // Ensure email is uppercase as backend expects
+    if (userData.email) {
+      userData.email = userData.email.toUpperCase();
+    }
     
+    const url = getApiUrl('login');
+    console.log('Login request to:', url);
+    console.log('Login data:', { ...userData, password: '***' });
+    
+    // Add timeout and better error handling
     const response = await axios.post(url, userData, {
       withCredentials: true,
+      timeout: 10000, // 10 second timeout
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
     });
     
+    console.log('Login response status:', response.status);
+    console.log('Login response headers:', response.headers);
+    console.log('Login response data:', response.data);
+    
     if (response.status !== 200) {
+      console.error(`Failed login with status: ${response.status}`);
       throw new Error(`Failed to login. Server responded with status: ${response.status}`);
     }
     
     return response.data;
   } catch (error) {
     console.error("Error during login:", error.response?.data || error.message);
+    console.error("Full error object:", JSON.stringify(error));
     throw error;
   }
 };
@@ -103,14 +122,12 @@ export const resetPassword = async (token, password) => {
 
 export const currentUser = async () => {
   try {
-    // Try different endpoints that might be used by your backend
+    // Define multiple possible endpoints to try
     const possibleEndpoints = [
-      'user',           // First try the standard endpoint
-      'auth/me',        // Then try auth/me
-      'auth/profile',   // Then try auth/profile
-      'auth/user',      // Then try auth/user
-      'users/me',       // Then try users/me
-      'profile'         // Finally try profile
+      'user',           // Try the standard endpoint first
+      'users/current',  // Then try a common alternative
+      'me',             // Another common endpoint for current user
+      'auth/user'       // Auth-prefixed endpoint
     ];
     
     let lastError = null;
@@ -137,7 +154,19 @@ export const currentUser = async () => {
       }
     }
     
-    // If we get here, all endpoints failed
+    // If all endpoints fail, try to get user data from AsyncStorage as fallback
+    try {
+      const userData = await AsyncStorage.getItem('userData');
+      if (userData) {
+        const parsedData = JSON.parse(userData);
+        console.log('Using cached user data from AsyncStorage');
+        return { data: { user: parsedData } };
+      }
+    } catch (storageError) {
+      console.error('Error accessing AsyncStorage:', storageError);
+    }
+    
+    // If we get here, all endpoints failed and no cached data
     throw lastError || new Error('Failed to fetch user from any endpoint');
   } catch (error) {
     console.error("Error getting current user:", error.response?.data || error.message);

@@ -274,7 +274,7 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
           style={styles.fab}
           onPress={() => router.push('/admin/tourist_spots/admin_tourist_spot_add')}
         >
-          <Icon name="plus" size={24} color="#1fd8d6" />
+          <Icon name="plus" size={24} color="#ffffff" />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
