@@ -97,7 +97,7 @@ export default function LoginScreen() {
           break;
         case 'Tour Guide':
         case 'tour_guide':
-          router.replace('/guide_home');
+          router.replace('/guide/guide_dashboard');
           break;
         case 'Tour Operator':
         case 'tour_operator':
