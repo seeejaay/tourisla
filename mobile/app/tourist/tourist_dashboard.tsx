@@ -1,9 +1,9 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import TouristHomeScreen from './home/tourist_home';
+import TouristMapScreen from './map/tourist_map';
 import TouristAnnouncementsScreen from './announcements/tourist_announcements';
-import TouristHotlinesScreen from './hotlines/tourist_hotlines';
 import TouristProfileScreen from './profile/tourist_profile';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { StyleSheet, View, Platform, TouchableOpacity, Image, Text, StatusBar, Dimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
 import * as auth from '@/lib/api/auth';
+import TouristTouristSpotsScreen from './tourist_spots/tourist_tourist_spots';
 
 const Tab = createBottomTabNavigator();
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -147,13 +148,14 @@ function CustomTabBar({ state, descriptors, navigation }) {
           
           if (route.name === 'Home') {
             iconName = isFocused ? "home" : "home-outline";
+          } else if (route.name === 'Map') {
+            iconName = isFocused ? "map" : "map-outline";
           } else if (route.name === 'Announcements') {
             iconName = isFocused ? "megaphone" : "megaphone-outline";
-          } else if (route.name === 'Hotlines') {
-            iconName = isFocused ? "book" : "book-outline";
-          } else if (route.name === 'Profile') {
-            iconName = isFocused ? "person" : "person-outline";
+          } else if (route.name === 'Tourist Spots') {
+            iconName = isFocused ? "location" : "location-outline";
           }
+          // Removed Hotlines case
           
           const onPress = () => {
             const event = navigation.emit({
@@ -244,12 +246,19 @@ export default function TouristDashboard() {
         >
           {() => <TouristHomeScreen headerHeight={headerHeight} />}
         </Tab.Screen>
+        <Tab.Screen 
+          name="Map"
+          options={{ tabBarLabel: 'Map' }}
+        >
+          {() => <TouristMapScreen headerHeight={headerHeight} />}
+        </Tab.Screen>
         <Tab.Screen name="Announcements">
           {() => <TouristAnnouncementsScreen headerHeight={headerHeight} />}
         </Tab.Screen>
-        <Tab.Screen name="Hotlines">
-          {() => <TouristHotlinesScreen headerHeight={headerHeight} />}
+        <Tab.Screen name="Tourist Spots">
+          {() => <TouristTouristSpotsScreen headerHeight={headerHeight} />}
         </Tab.Screen>
+        {/* Removed Hotlines Tab.Screen */}
       </Tab.Navigator>
     </View>
   );

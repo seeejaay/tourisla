@@ -154,6 +154,27 @@ const {
   viewTourPackageByIdController,
 } = require("../controllers/tourPackagesController.js");
 
+const {
+  createAccommodationLogController,
+  editAccommodationLogController,
+  deleteAccommodationLogController,
+  getAllAccommodationLogsController,
+  getAccommodationLogByIdController
+} = require("../controllers/accommodationLogController.js");
+
+const {
+  exportAccommodationLogController
+} = require("../controllers/accommodationLogController");
+
+const {
+  createPolicyController,
+  editPolicyController,
+  deletePolicyController,
+  getAllPoliciesController,
+  getPolicyByIdController,
+  getPoliciesByTypeController,
+} = require("../controllers/policyController");
+
 const { getWeather } = require("../controllers/weatherController");
 const {
   getTripadvisorHotels,
@@ -535,6 +556,41 @@ app.get(
   authenticateTourOperator,
   viewTourPackageByIdController
 );
+
+
+// Accommodation Logs Routes
+app.post(
+  "/api/v1/accommodation-logs",
+  authenticateTourismStaff,
+  createAccommodationLogController
+);
+app.put(
+  "/api/v1/accommodation-logs/:logId",
+  authenticateTourismStaff,
+  editAccommodationLogController
+);
+app.delete(
+  "/api/v1/accommodation-logs/:logId",
+ authenticateTourismStaff,
+  deleteAccommodationLogController
+);
+//excel export for accommodation logs — MUST be placed before ":logId"
+app.get("/api/v1/accommodation-logs/export", exportAccommodationLogController);
+app.get("/api/v1/accommodation-logs", getAllAccommodationLogsController);
+app.get("/api/v1/accommodation-logs/:logId", getAccommodationLogByIdController);
+
+// Policy Routes
+app.get("/api/v1/policies", getAllPoliciesController);
+app.get("/api/v1/policies/:policyId", getPolicyByIdController);
+app.get("/api/v1/policies/type/:type([a-zA-Z0-9-_]+)", getPoliciesByTypeController);
+app.post("/api/v1/policies", authenticateAdmin, createPolicyController);
+app.put("/api/v1/policies/:policyId", authenticateAdmin, editPolicyController);
+app.delete("/api/v1/policies/:policyId", authenticateAdmin, deletePolicyController);
+
+
+
+
+
 
 //tripadvisors
 
