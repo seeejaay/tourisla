@@ -18,6 +18,11 @@ const createRuleController = async (req, res) => {
       effective_date
     } = req.body;
 
+    // Validate required fields
+    if (!title || !description || !penalty || !category) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
     const rule = await createRule({
       title: title?.toUpperCase(),
       description: description?.toUpperCase(),
@@ -27,10 +32,18 @@ const createRuleController = async (req, res) => {
       effective_date
     });
 
-    res.json(rule);
+    res.status(201).json(rule);
   } catch (err) {
     console.log(err.message);
-    res.status(500).send(err.message);
+    
+    // Check for duplicate key error
+    if (err.message.includes('duplicate key') || err.code === '23505') {
+      return res.status(409).json({ 
+        error: "A rule with this ID already exists. Please try again." 
+      });
+    }
+    
+    res.status(500).json({ error: err.message });
   }
 };
 
