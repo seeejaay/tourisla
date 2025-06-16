@@ -1,24 +1,31 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { 
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, 
+  SafeAreaView, StatusBar, ActivityIndicator, Platform 
+} from 'react-native';
 import axios from 'axios';
-import { getApiUrl } from '@/lib/api/utils';
+import { API_URL } from '@/lib/config';
 
 export default function ApiTestScreen() {
   const [results, setResults] = useState([]);
-  const [customEndpoint, setCustomEndpoint] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const getApiUrl = (endpoint) => {
+    // Test different URL patterns
+    return `${API_URL}${endpoint}`;
+  };
 
   const testEndpoints = async () => {
-    setIsLoading(true);
-    setResults([]);
+    setLoading(true);
     
+    // List of endpoints to test
     const endpoints = [
-      'login',
-      'hotlines',
-      'users',
-      'tourist-spots',
-      customEndpoint
-    ].filter(Boolean); // Remove empty endpoints
+      'rules',
+      'api/rules',
+      'api/v1/rules',
+      'v1/rules',
+      'api/v1/tourist-spots', // Test a known working endpoint for comparison
+    ];
     
     const newResults = [];
     
@@ -52,167 +59,158 @@ export default function ApiTestScreen() {
       setResults([...newResults]);
     }
     
-    setIsLoading(false);
+    setLoading(false);
   };
 
-  const testInternetConnectivity = async () => {
-    setIsLoading(true);
-    try {
-      const response = await axios.get('https://www.google.com', { timeout: 5000 });
-      Alert.alert(
-        'Internet Connectivity',
-        `Your device can connect to the internet. Status: ${response.status}`,
-        [{ text: 'OK' }]
-      );
-    } catch (error) {
-      Alert.alert(
-        'Internet Connectivity Failed',
-        `Your device cannot connect to the internet. Error: ${error.message}`,
-        [{ text: 'OK' }]
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const showEnvironmentInfo = () => {
-    Alert.alert(
-      'Environment Variables',
-      `EXPO_PUBLIC_API_URL: ${process.env.EXPO_PUBLIC_API_URL || 'Not set'}`,
-      [{ text: 'OK' }]
-    );
-  };
+  useEffect(() => {
+    testEndpoints();
+  }, []);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>API Endpoint Tester</Text>
-      
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Custom endpoint (e.g., 'auth/profile')"
-          value={customEndpoint}
-          onChangeText={setCustomEndpoint}
-        />
-      </View>
-      
-      <View style={styles.buttonRow}>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>API Endpoint Test</Text>
         <TouchableOpacity 
-          style={styles.button} 
+          style={styles.refreshButton} 
           onPress={testEndpoints}
-          disabled={isLoading}
+          disabled={loading}
         >
-          <Text style={styles.buttonText}>
-            {isLoading ? 'Testing...' : 'Test API Endpoints'}
-          </Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.button} 
-          onPress={testInternetConnectivity}
-          disabled={isLoading}
-        >
-          <Text style={styles.buttonText}>Test Internet</Text>
+          <Text style={styles.refreshButtonText}>Refresh</Text>
         </TouchableOpacity>
       </View>
       
-      <TouchableOpacity 
-        style={styles.envButton} 
-        onPress={showEnvironmentInfo}
-      >
-        <Text style={styles.buttonText}>Show Environment Info</Text>
-      </TouchableOpacity>
+      <Text style={styles.baseUrlText}>Base URL: {API_URL}</Text>
       
-      <ScrollView style={styles.resultsContainer}>
-        {results.map((result, index) => (
-          <View key={index} style={styles.resultItem}>
-            <Text style={styles.resultEndpoint}>{result.endpoint}</Text>
-            <Text style={styles.resultUrl}>{result.url}</Text>
-            <Text style={styles.resultStatus}>Status: {result.status}</Text>
-            {result.details && (
-              <Text style={styles.resultDetails}>{result.details}</Text>
-            )}
-          </View>
-        ))}
-      </ScrollView>
-    </View>
+      {loading && results.length === 0 ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0f172a" />
+          <Text style={styles.loadingText}>Testing API endpoints...</Text>
+        </View>
+      ) : (
+        <ScrollView style={styles.scrollView}>
+          {results.map((result, index) => (
+            <View key={index} style={styles.resultCard}>
+              <Text style={styles.endpointText}>Endpoint: {result.endpoint}</Text>
+              <Text style={styles.urlText}>URL: {result.url}</Text>
+              <Text style={[
+                styles.statusText, 
+                result.status.startsWith('2') ? styles.successStatus : 
+                result.status === 'Testing...' ? styles.pendingStatus : styles.errorStatus
+              ]}>
+                Status: {result.status}
+              </Text>
+              {result.details && (
+                <View style={styles.detailsContainer}>
+                  <Text style={styles.detailsLabel}>Response:</Text>
+                  <Text style={styles.detailsText}>{result.details}</Text>
+                </View>
+              )}
+            </View>
+          ))}
+        </ScrollView>
+      )}
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#f8fafc',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    marginTop: 40,
-  },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-  },
-  buttonRow: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  button: {
+    alignItems: 'center',
+    padding: 16,
     backgroundColor: '#0f172a',
-    padding: 12,
-    borderRadius: 8,
-    flex: 0.48,
-    alignItems: 'center',
   },
-  envButton: {
-    backgroundColor: '#64748b',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
+  headerTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
+    color: '#fff',
   },
-  resultsContainer: {
+  refreshButton: {
+    backgroundColor: '#0f766e',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  refreshButtonText: {
+    color: '#fff',
+    fontWeight: '500',
+  },
+  baseUrlText: {
+    padding: 16,
+    fontSize: 14,
+    color: '#64748b',
+    backgroundColor: '#e2e8f0',
+  },
+  scrollView: {
     flex: 1,
+    padding: 16,
   },
-  resultItem: {
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#ddd',
+  resultCard: {
+    backgroundColor: '#fff',
     borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  endpointText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#0f172a',
     marginBottom: 8,
   },
-  resultEndpoint: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginBottom: 4,
+  urlText: {
+    fontSize: 14,
+    color: '#334155',
+    marginBottom: 8,
   },
-  resultUrl: {
+  statusText: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  successStatus: {
+    color: '#16a34a',
+  },
+  errorStatus: {
+    color: '#dc2626',
+  },
+  pendingStatus: {
+    color: '#0369a1',
+  },
+  detailsContainer: {
+    backgroundColor: '#f1f5f9',
+    padding: 12,
+    borderRadius: 6,
+  },
+  detailsLabel: {
+    fontSize: 14,
+    fontWeight: '500',
     color: '#64748b',
     marginBottom: 4,
   },
-  resultStatus: {
-    color: '#0f172a',
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  resultDetails: {
-    fontFamily: 'monospace',
+  detailsText: {
     fontSize: 12,
-    backgroundColor: '#f1f5f9',
-    padding: 8,
-    borderRadius: 4,
+    color: '#334155',
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#64748b',
+    marginTop: 8,
   },
 });
