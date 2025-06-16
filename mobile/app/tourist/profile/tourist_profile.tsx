@@ -236,7 +236,7 @@ export default function TouristProfile() {
             <Text style={styles.headerTitle}>Profile</Text>
             <View style={styles.headerBadge}>
               <Text style={styles.headerBadgeText}>
-                {user?.role?.toUpperCase() || 'ADMIN'}
+                {user?.role?.toUpperCase() || 'TOURIST'}
               </Text>
             </View>
           </View>
@@ -382,7 +382,7 @@ export default function TouristProfile() {
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>Account Type</Text>
                   <Text style={styles.infoValue}>
-                    {user?.role ? formatNameWords(user.role) : 'Admin'}
+                    {user?.role ? formatNameWords(user.role) : 'Tourist'}
                   </Text>
                 </View>
               </View>
