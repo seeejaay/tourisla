@@ -104,6 +104,8 @@ const getFilteredBookingsByTourist = async (touristId, timeFilter) => {
   }
 
   baseQuery += ` ORDER BY scheduled_date DESC`;
+  console.log("Executing query with:", touristId, timeFilter);
+console.log("Query:", baseQuery);
 
   const result = await db.query(baseQuery, [touristId]);
   return result.rows;

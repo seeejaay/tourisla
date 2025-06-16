@@ -503,7 +503,7 @@ app.patch(
 );
 app.get(
   "/api/v1/bookings/guide",
-  authenticateTourGuide,
+  // authenticateTourGuide,
   getTourGuideBookingsFilteredController
 );
 
@@ -533,22 +533,13 @@ app.get(
   "/api/v1/bookings/:id",
   authenticateUser,
   getBookingByIdController
-);  
-app.get(
-  "api/v1/bookings/tourist/tourist?filter=PAST",
-  authenticateUser,
-  getTouristBookingsFilteredController
 );
 app.get(
-  "api/v1/bookings/tourist/tourist?filter=UPCOMING",
-  authenticateUser,
+  "/api/v1/bookings/tourist/filtered",
+  // authenticateUser,
   getTouristBookingsFilteredController
 );
-app.get(
-  "api/v1/bookings/tourist/tourist?filter=TODAY",
-  authenticateUser,
-  getTouristBookingsFilteredController
-);
+
 
 
 

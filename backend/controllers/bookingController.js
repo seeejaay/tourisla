@@ -8,6 +8,7 @@ const {
   getBookingsByTourist,
   getBookingsByPackage,
   getBookingById,
+  getFilteredBookingsByTourist
 } = require("../models/bookingModel.js");
 const { s3Client, PutObjectCommand } = require("../utils/s3.js");
 
