@@ -14,15 +14,44 @@ import {
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useTermsManager } from '../../../../../lib/hooks/useTermsManager';
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AdminTerms() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
-  const { terms, loading, error, getTerms } = useTermsManager();
+  const { terms, loading, error, getTerms, removeTerm } = useTermsManager();
 
+  // Initial load
   useEffect(() => {
     loadTerms();
   }, []);
+
+  // This effect will run every time the screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log("Terms screen focused, checking for updates...");
+      const checkForUpdates = async () => {
+        try {
+          const termsUpdated = await AsyncStorage.getItem('termsUpdated');
+          if (termsUpdated === 'true') {
+            console.log("Terms were updated, refreshing list...");
+            loadTerms();
+            // Reset the flag
+            await AsyncStorage.setItem('termsUpdated', 'false');
+          }
+        } catch (error) {
+          console.error("Error checking for terms updates:", error);
+        }
+      };
+      
+      // Always refresh when screen comes into focus
+      loadTerms();
+      checkForUpdates();
+      
+      return () => {};
+    }, [])
+  );
 
   const loadTerms = async () => {
     try {
@@ -31,8 +60,6 @@ export default function AdminTerms() {
       await getTerms();
     } catch (err) {
       console.error('Error loading terms:', err);
-      
-      // Show a user-friendly error message
       Alert.alert(
         'Connection Error',
         'Could not connect to the server. Please check your internet connection and try again.',
@@ -53,6 +80,34 @@ export default function AdminTerms() {
 
   const handleViewTerm = (id) => {
     router.push(`/admin/profile/about/terms/admin_term_view?id=${id}`);
+  };
+
+  const handleEditTerm = (id) => {
+    router.push(`/admin/profile/about/terms/admin_term_edit?id=${id}`);
+  };
+
+  const handleDeleteTerm = (id) => {
+    Alert.alert(
+      'Delete Terms & Conditions',
+      'Are you sure you want to delete this document?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await removeTerm(id);
+              Alert.alert('Success', 'Terms & Conditions deleted successfully');
+              loadTerms(); // Refresh the list after deletion
+            } catch (error) {
+              console.error('Error deleting term:', error);
+              Alert.alert('Error', 'Failed to delete terms & conditions');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const formatPolicyType = (type) => {
@@ -89,9 +144,30 @@ export default function AdminTerms() {
         {item.content}
       </Text>
       
-      <View style={styles.viewMore}>
-        <Text style={styles.viewMoreText}>View Details</Text>
-        <Feather name="chevron-right" size={16} color="#3498db" />
+      <View style={styles.actionButtons}>
+        <TouchableOpacity 
+          style={[styles.actionButton, styles.viewButton]}
+          onPress={() => handleViewTerm(item.id)}
+        >
+          <Feather name="eye" size={16} color="#fff" />
+          <Text style={styles.actionButtonText}>View</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.actionButton, styles.editButton]}
+          onPress={() => handleEditTerm(item.id)}
+        >
+          <Feather name="edit-2" size={16} color="#fff" />
+          <Text style={styles.actionButtonText}>Edit</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.actionButton, styles.deleteButton]}
+          onPress={() => handleDeleteTerm(item.id)}
+        >
+          <Feather name="trash-2" size={16} color="#fff" />
+          <Text style={styles.actionButtonText}>Delete</Text>
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
@@ -319,7 +395,43 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginTop: 12,
+    gap: 8,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    justifyContent: 'center',
+  },
+  viewButton: {
+    backgroundColor: '#3498db',
+  },
+  editButton: {
+    backgroundColor: '#f39c12',
+  },
+  deleteButton: {
+    backgroundColor: '#e74c3c',
+  },
+  actionButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: 4,
+  },
 });
+
+
+
+
+
+
+
 
 
 

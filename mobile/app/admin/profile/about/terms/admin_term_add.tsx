@@ -18,13 +18,10 @@ import { Feather } from '@expo/vector-icons';
 import { useTermsManager } from '../../../../../lib/hooks/useTermsManager';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-// Valid policy types based on the backend enum
+// Valid policy types based on the backend enum - limited to just TERMS and PRIVACY_POLICY
 const POLICY_TYPES = [
   'TERMS',
-  'PRIVACY_POLICY',
-  'REFUND_POLICY',
-  'COMMUNITY_GUIDELINES',
-  'TERMS_OF_SERVICE'
+  'PRIVACY_POLICY'
 ];
 
 export default function AdminTermAdd() {
@@ -318,4 +315,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
 
