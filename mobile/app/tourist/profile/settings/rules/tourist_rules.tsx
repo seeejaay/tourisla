@@ -11,8 +11,8 @@ import { useRuleManager } from '@/hooks/useRuleManager';
 
 const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 44;
 
-export default function AdminRulesScreen() {
-  const { rules, loading, error, getRules, deleteRule } = useRuleManager();
+export default function TouristRulesScreen() {
+  const { rules, loading, error, getRules } = useRuleManager();
   const [refreshing, setRefreshing] = useState(false);
 
   // Load rules when the screen is focused
@@ -54,41 +54,8 @@ export default function AdminRulesScreen() {
     await loadRules();
   };
 
-  const handleAddRule = () => {
-    router.push('/tourist/profile/settings/rules/rules_add');
-  };
-
   const handleViewRule = (id: string) => {
     router.push(`/tourist/profile/settings/rules/rules_view?id=${id}`);
-  };
-
-  const handleEditRule = (id: string) => {
-    router.push(`/tourist/profile/settings/rules/rules_edit?id=${id}`);
-  };
-
-  const handleDeleteRule = (id: string) => {
-    Alert.alert(
-      'Confirm Delete',
-      'Are you sure you want to delete this rule?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Delete', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteRule(id);
-              Alert.alert('Success', 'Rule deleted successfully');
-              // Refresh the list after deletion
-              loadRules();
-            } catch (err) {
-              console.error('Error deleting rule:', err);
-              Alert.alert('Error', 'Failed to delete rule');
-            }
-          }
-        }
-      ]
-    );
   };
 
   const renderItem = ({ item }: { item: any }) => (
@@ -118,22 +85,6 @@ export default function AdminRulesScreen() {
           <Feather name="eye" size={16} color="#fff" />
           <Text style={styles.buttonText}>View</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.editButton}
-          onPress={() => handleEditRule(item.id)}
-        >
-          <Feather name="edit" size={16} color="#fff" />
-          <Text style={styles.buttonText}>Edit</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.deleteButton}
-          onPress={() => handleDeleteRule(item.id)}
-        >
-          <Feather name="trash-2" size={16} color="#fff" />
-          <Text style={styles.buttonText}>Delete</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -151,9 +102,7 @@ export default function AdminRulesScreen() {
           <Feather name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Rules & Regulations</Text>
-        <TouchableOpacity onPress={handleAddRule} style={styles.addButton}>
-          <Feather name="plus" size={24} color="#fff" />
-        </TouchableOpacity>
+        <View style={styles.placeholder} />
       </LinearGradient>
 
       {error ? (
@@ -186,7 +135,6 @@ export default function AdminRulesScreen() {
             ) : (
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>No rules found</Text>
-                <Text style={styles.emptySubText}>Tap the + button to add a new rule</Text>
               </View>
             )
           }
@@ -217,8 +165,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
-  addButton: {
-    padding: 8,
+  placeholder: {
+    width: 40,
+    height: 40,
   },
   listContainer: {
     padding: 16,
@@ -276,7 +225,7 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
   },
   viewButton: {
     backgroundColor: '#0ea5e9',
@@ -284,36 +233,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     borderRadius: 6,
     flex: 1,
-    marginRight: 8,
-  },
-  editButton: {
-    backgroundColor: '#f59e0b',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    flex: 1,
-    marginRight: 8,
-  },
-  deleteButton: {
-    backgroundColor: '#ef4444',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    flex: 1,
+    width: '100%',
   },
   buttonText: {
     color: '#fff',
+    fontSize: 14,
     fontWeight: '500',
-    marginLeft: 4,
+    marginLeft: 8,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#64748b',
+    marginTop: 8,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#64748b',
+    textAlign: 'center',
   },
   errorContainer: {
     flex: 1,
@@ -335,32 +286,7 @@ const styles = StyleSheet.create({
   },
   retryText: {
     color: '#fff',
-    fontWeight: '600',
-  },
-  loadingContainer: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#64748b',
-  },
-  emptyContainer: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#64748b',
-    marginBottom: 8,
-  },
-  emptySubText: {
-    fontSize: 14,
-    color: '#94a3b8',
-    textAlign: 'center',
+    fontWeight: '500',
   },
 });
-
 
