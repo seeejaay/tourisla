@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
 import * as auth from '@/lib/api/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Tab = createBottomTabNavigator();
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -24,10 +25,40 @@ function ProfileHeader() {
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
-        const user = await auth.getCurrentUser();
-        setCurrentUser(user);
+        setLoading(true);
+        
+        // First try to get the role from the API
+        const response = await auth.currentUser();
+        console.log("API Response:", JSON.stringify(response));
+        
+        let userData = null;
+        if (response && response.data && response.data.user) {
+          userData = response.data.user;
+        } else if (response && response.user) {
+          userData = response.user;
+        } else if (response && response.data) {
+          userData = response.data;
+        } else if (typeof response === 'object' && response !== null) {
+          userData = response;
+        }
+        
+        // If no role in the API response, try to get it from AsyncStorage
+        if (userData && !userData.role) {
+          try {
+            const storedRole = await AsyncStorage.getItem('role');
+            if (storedRole) {
+              console.log("Using role from AsyncStorage:", storedRole);
+              userData.role = storedRole;
+            }
+          } catch (storageError) {
+            console.error("Failed to get role from storage:", storageError);
+          }
+        }
+        
+        console.log("Final user data with role:", JSON.stringify(userData));
+        setCurrentUser(userData);
       } catch (error) {
-        console.error('Error fetching current user:', error);
+        console.error("Failed to fetch user data:", error);
       } finally {
         setLoading(false);
       }
@@ -41,7 +72,7 @@ function ProfileHeader() {
     if (role === 'Admin' || role === 'admin') return 'Administrator';
     if (role === 'Tourist' || role === 'tourist') return 'Tourist';
     if (role === 'tour_guide') return 'Tour Guide';
-    if (role === 'tour_operator') return 'Tour Operator';
+    if (role === 'Tour Operator') return 'Tour Operator';
     
     return role.split('_').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
@@ -73,7 +104,7 @@ function ProfileHeader() {
             ) : (
               <View style={styles.avatarPlaceholder}>
                 <Text style={styles.avatarInitial}>
-                  {currentUser?.first_name?.charAt(0) || currentUser?.email?.charAt(0) || 'O'}
+                  {currentUser?.first_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
                 </Text>
               </View>
             )}
@@ -91,7 +122,7 @@ function ProfileHeader() {
                     : 'Unknown User'}
                 </Text>
                 <Text style={styles.userRole}>
-                  {currentUser ? formatRole(currentUser.role) : 'Unknown Role'}
+                  {currentUser && currentUser.role ? formatRole(currentUser.role) : 'User'}
                 </Text>
               </>
             )}
@@ -133,13 +164,14 @@ function CustomTabBar({ state, descriptors, navigation }) {
           
           if (route.name === 'Home') {
             iconName = isFocused ? "home" : "home-outline";
-          } else if (route.name === 'Tours') {
+          } else if (route.name === 'Map') {
             iconName = isFocused ? "map" : "map-outline";
-          } else if (route.name === 'Bookings') {
-            iconName = isFocused ? "calendar" : "calendar-outline";
-          } else if (route.name === 'Profile') {
-            iconName = isFocused ? "person" : "person-outline";
+          } else if (route.name === 'Announcements') {
+            iconName = isFocused ? "megaphone" : "megaphone-outline";
+          } else if (route.name === 'Tourist Spots') {
+            iconName = isFocused ? "location" : "location-outline";
           }
+          // Removed Hotlines case
           
           const onPress = () => {
             const event = navigation.emit({
@@ -205,7 +237,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
   );
 }
 
-export default function OperatorDashboard() {
+export default function TouristDashboard() {
   const { tab } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   
@@ -236,10 +268,7 @@ export default function OperatorDashboard() {
         >
           {() => <OperatorToursScreen headerHeight={headerHeight} />}
         </Tab.Screen>
-        <Tab.Screen 
-          name="Bookings"
-          options={{ tabBarLabel: 'Bookings' }}
-        >
+        <Tab.Screen name="Bookings">
           {() => <OperatorBookingsScreen headerHeight={headerHeight} />}
         </Tab.Screen>
       </Tab.Navigator>
@@ -345,9 +374,20 @@ const styles = StyleSheet.create({
     bottom: 0,
     borderRadius: 20,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   tabBarGradient: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   tabBarInnerShadow: {
     position: 'absolute',
@@ -355,58 +395,57 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
   },
   tabButtonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+    height: '100%',
     paddingHorizontal: 10,
-    paddingTop: 10,
-    paddingBottom: Platform.OS === 'ios' ? 25 : 10,
   },
   tabButton: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    position: 'relative',
+    alignItems: 'center',
+    paddingVertical: 10,
   },
   activeTabIndicator: {
     position: 'absolute',
-    top: -10,
-    width: 25,
+    top: 8,
+    width: 30,
     height: 3,
     borderRadius: 1.5,
     overflow: 'hidden',
   },
   activeTabGradient: {
-    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   tabIconContainer: {
     width: 50,
-    height: 24,
-    alignItems: 'center',
+    height: 40,
     justifyContent: 'center',
-    marginBottom: 4,
+    alignItems: 'center',
+    borderRadius: 12,
   },
   activeTabIconContainer: {
     backgroundColor: 'rgba(56, 189, 248, 0.15)',
-    borderRadius: 12,
-    width: 50,
-    height: 24,
   },
   tabLabel: {
     fontSize: 11,
-    fontWeight: '500',
+    marginTop: 4,
     textAlign: 'center',
   },
   activeTabLabel: {
     color: '#ffffff',
+    fontWeight: '600',
   },
   inactiveTabLabel: {
     color: 'rgba(148, 163, 184, 0.8)',
   },
 });
+
+
+
+
 
 

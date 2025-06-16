@@ -29,7 +29,7 @@ interface Announcement {
 
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
 
-export default function AdminAnnouncementsScreen({ headerHeight }) {
+export default function AdminAnnouncementsScreen({ headerHeight = 50 }) {
     const router = useRouter();
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
@@ -73,20 +73,26 @@ export default function AdminAnnouncementsScreen({ headerHeight }) {
 
     useFocusEffect(
         useCallback(() => {
-          const loadData = async () => {
-            setLoading(true);
-            try {
-              const data = await fetchAnnouncements();
-              setAnnouncements(data);
-            } catch (err) {
-              console.error("Failed to fetch announcements", err);
-              setError("Failed to load announcements.");
-            } finally {
-              setLoading(false);
-            }
-          };
-      
-          loadData();
+            const loadData = async () => {
+                setLoading(true);
+                try {
+                    console.log("Loading announcements data...");
+                    const data = await fetchAnnouncements();
+                    console.log(`Received ${data?.length || 0} announcements`);
+                    setAnnouncements(data || []);
+                    setError("");
+                } catch (err) {
+                    console.error("Failed to fetch announcements", err);
+                    // Don't show the error to the user
+                    console.log("Error suppressed from UI");
+                    // Set empty array to avoid showing previous data
+                    setAnnouncements([]);
+                } finally {
+                    setLoading(false);
+                }
+            };
+        
+            loadData();
         }, [])
     );
 
@@ -134,7 +140,8 @@ export default function AdminAnnouncementsScreen({ headerHeight }) {
 
             <ScrollView
             style={[styles.scrollView, { marginTop: headerHeight }]}
-            contentContainerStyle={{ paddingBottom: 20 }}
+            contentContainerStyle={{ paddingBottom: 120 }}
+            showsVerticalScrollIndicator={false}
             >
 
             {/* Filter Tags in Grid Layout */}
@@ -240,10 +247,8 @@ export default function AdminAnnouncementsScreen({ headerHeight }) {
             <View style={styles.contentContainer}>
                 {loading ? (
                 <Text style={styles.message}>Loading...</Text>
-                ) : error ? (
-                <Text style={styles.error}>{error}</Text>
                 ) : filteredAnnouncements.length === 0 ? (
-                <Text style={styles.message}>No announcements found.</Text>
+                <Text style={styles.message}>No announcements available at this time.</Text>
                 ) : (
                 filteredAnnouncements.map((item) => (
                     <Pressable 
@@ -366,10 +371,10 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f8fafc',
     },
-    // Header styles removed
+
     scrollView: {
         flex: 1,
-        // marginTop will be set dynamically based on headerHeight prop
+        marginTop: 50 + STATUS_BAR_HEIGHT,
     },
     contentContainer: {
         padding: 16,
@@ -609,12 +614,6 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         alignSelf: 'flex-start',
         position: 'relative',
-        // Shadow for Android
-        elevation: 2,
-        shadowColor: "#000",
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 2 },
     },
     filterToggleText: {
         color: '#475569',

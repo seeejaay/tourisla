@@ -1,7 +1,29 @@
 import axios from "axios";
-import { getApiUrl, logApiRequest } from "./utils";
+import { getBaseUrl, API_ENDPOINTS, logApiRequest } from "./utils";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+/**
+ * Get the full URL for auth endpoints (which may not have the /api/v1 prefix)
+ * @param {string} endpoint - The API endpoint
+ * @returns {string} The full URL
+ */
+const getAuthUrl = (endpoint) => {
+  const baseUrl = getBaseUrl();
+  if (!baseUrl) {
+    throw new Error('API URL is not defined');
+  }
+  
+  // Ensure endpoint starts with a slash
+  const formattedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  
+  return `${baseUrl}${formattedEndpoint}`;
+};
+
+/**
+ * Login user with email and password
+ * @param {Object} userData - User credentials
+ * @returns {Promise<Object>} User data
+ */
 export const login = async (userData) => {
   try {
     // Ensure email is uppercase as backend expects
@@ -9,14 +31,15 @@ export const login = async (userData) => {
       userData.email = userData.email.toUpperCase();
     }
     
-    const url = getApiUrl('login');
+    // Use direct URL construction for login endpoint
+    const url = getAuthUrl(API_ENDPOINTS.LOGIN);
     console.log('Login request to:', url);
     console.log('Login data:', { ...userData, password: '***' });
     
-    // Add timeout and better error handling
+    logApiRequest('POST', url, { ...userData, password: '***' });
     const response = await axios.post(url, userData, {
       withCredentials: true,
-      timeout: 10000, // 10 second timeout
+      timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
@@ -24,29 +47,39 @@ export const login = async (userData) => {
     });
     
     console.log('Login response status:', response.status);
-    console.log('Login response headers:', response.headers);
-    console.log('Login response data:', response.data);
     
     if (response.status !== 200) {
-      console.error(`Failed login with status: ${response.status}`);
       throw new Error(`Failed to login. Server responded with status: ${response.status}`);
+    }
+    
+    // Store user data in AsyncStorage for offline access
+    try {
+      await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+    } catch (storageError) {
+      console.warn('Failed to store user data in AsyncStorage:', storageError);
     }
     
     return response.data;
   } catch (error) {
     console.error("Error during login:", error.response?.data || error.message);
-    console.error("Full error object:", JSON.stringify(error));
+    console.error("Warning: Full error object:", JSON.stringify(error));
     throw error;
   }
 };
 
+/**
+ * Register a new user
+ * @param {Object} userData - User registration data
+ * @returns {Promise<Object>} User data
+ */
 export const signup = async (userData) => {
   try {
-    const url = getApiUrl('signup');
+    const url = getFullUrl(API_ENDPOINTS.SIGNUP);
     logApiRequest('POST', url, userData);
     
     const response = await axios.post(url, userData, {
       withCredentials: true,
+      timeout: 10000
     });
     
     if (response.status !== 200 && response.status !== 201) {
@@ -60,17 +93,29 @@ export const signup = async (userData) => {
   }
 };
 
+/**
+ * Logout the current user
+ * @returns {Promise<Object>} Logout response
+ */
 export const logout = async () => {
   try {
-    const url = getApiUrl('logout');
+    const url = getAuthUrl(API_ENDPOINTS.LOGOUT);
     logApiRequest('POST', url);
     
     const response = await axios.post(url, {}, {
       withCredentials: true,
+      timeout: 10000
     });
     
     if (response.status !== 200) {
       throw new Error(`Failed to logout. Server responded with status: ${response.status}`);
+    }
+    
+    // Clear user data from AsyncStorage
+    try {
+      await AsyncStorage.removeItem('userData');
+    } catch (storageError) {
+      console.warn('Failed to clear user data from AsyncStorage:', storageError);
     }
     
     return response.data;
@@ -80,13 +125,19 @@ export const logout = async () => {
   }
 };
 
+/**
+ * Request password reset
+ * @param {string} email - User email
+ * @returns {Promise<Object>} Response data
+ */
 export const forgotPassword = async (email) => {
   try {
-    const url = getApiUrl('forgot-password');
+    const url = getAuthUrl(API_ENDPOINTS.FORGOT_PASSWORD);
     logApiRequest('POST', url, { email });
     
     const response = await axios.post(url, { email }, {
       withCredentials: true,
+      timeout: 10000
     });
     
     if (response.status !== 200) {

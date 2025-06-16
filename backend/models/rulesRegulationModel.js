@@ -10,6 +10,7 @@ const createRule = async (data) => {
     effective_date
   } = data;
 
+  // Let the database generate the ID automatically
   const result = await db.query(
     `INSERT INTO rules_regulations 
     (title, description, penalty, category, is_active, effective_date)
