@@ -28,7 +28,6 @@ export default function AdminProfile() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  const [showMenu, setShowMenu] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
   const params = useLocalSearchParams();
   const isFocused = useIsFocused();
@@ -154,14 +153,15 @@ export default function AdminProfile() {
     fetchUser();
   }, [fetchUser]);
 
-  const handleMenuToggle = () => setShowMenu(prev => !prev);
+  const handleSettings = () => {
+    router.push('/admin/profile/settings');
+  };
 
   const handleLogout = async () => {
     try {
       const response = await auth.logout();
       console.log("Logout response:", response);
       alert("Logged out successfully");
-      setShowMenu(false);
       router.replace('/login');
     } catch (error) {
       console.error("Logout error:", error);
@@ -170,7 +170,6 @@ export default function AdminProfile() {
   };
 
   const handleEditProfile = () => {
-    setShowMenu(false);
     router.push({
       pathname: '/admin/profile/edit_profile',
       params: {
@@ -181,12 +180,6 @@ export default function AdminProfile() {
         email: user?.email || ''
       }
     });
-  };
-
-  const handleAbout = () => {
-    setShowMenu(false);
-    // Navigate to the About page
-    router.push('/admin/profile/about');
   };
 
   if (loading) {
@@ -252,26 +245,12 @@ export default function AdminProfile() {
               <Feather name="bell" size={22} color="#fff" />
               <View style={styles.notificationDot} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleMenuToggle} style={styles.menuButton}>
+            <TouchableOpacity onPress={handleSettings} style={styles.menuButton}>
               <Feather name="menu" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
         </Animated.View>
       </LinearGradient>
-
-      {showMenu && (
-        <View style={[styles.dropdownMenu]}>
-          <TouchableOpacity style={[styles.menuItem]} onPress={handleAbout}>
-            <Feather name="info" size={20} color="#555" />
-            <Text style={styles.menuText}>About</Text>
-          </TouchableOpacity>
-          <View style={styles.menuDivider} />
-          <TouchableOpacity style={[styles.menuItem]} onPress={handleLogout}>
-            <Feather name="log-out" size={20} color="#d9534f" />
-            <Text style={[styles.menuText, { color: '#d9534f' }]}>Log Out</Text>
-          </TouchableOpacity>
-        </View>
-      )}
 
       {/* Scrollable Content with RefreshControl */}
       <Animated.ScrollView
