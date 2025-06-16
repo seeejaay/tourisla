@@ -179,24 +179,6 @@ export default function RulesViewScreen() {
               </Text>
             </View>
           )}
-
-          <View style={styles.actionButtons}>
-            <TouchableOpacity 
-              style={styles.editButton}
-              onPress={handleEdit}
-            >
-              <Feather name="edit" size={20} color="#fff" />
-              <Text style={styles.buttonText}>Edit</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.deleteButton}
-              onPress={handleDelete}
-            >
-              <Feather name="trash-2" size={20} color="#fff" />
-              <Text style={styles.buttonText}>Delete</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -298,37 +280,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#0f172a',
     lineHeight: 24,
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 24,
-  },
-  editButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#0f766e',
-    borderRadius: 8,
-    padding: 12,
-    flex: 1,
-    marginRight: 8,
-  },
-  deleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#dc2626',
-    borderRadius: 8,
-    padding: 12,
-    flex: 1,
-    marginLeft: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
-    marginLeft: 8,
   },
   loadingContainer: {
     flex: 1,
