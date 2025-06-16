@@ -1,9 +1,8 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import StaffHomeScreen from './home/staff_home';
-import StaffAnnouncementsScreen from './announcements/staff_announcements';
-import StaffHotlinesScreen from './hotlines/staff_hotlines';
-import StaffProfileScreen from './profile/staff_profile';
-import { Ionicons } from '@expo/vector-icons';
+import TouristHomeScreen from './home/staff_home';
+import TouristAnnouncementsScreen from './announcements/staff_announcements';
+import TouristProfileScreen from './profile/staff_profile';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { StyleSheet, View, Platform, TouchableOpacity, Image, Text, StatusBar, Dimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,6 +10,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
 import * as auth from '@/lib/api/auth';
+import TouristTouristSpotsScreen from './tourist_spots/staff_tourist_spots';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Tab = createBottomTabNavigator();
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -24,8 +25,10 @@ function ProfileHeader() {
     const fetchCurrentUser = async () => {
       try {
         setLoading(true);
+        
+        // First try to get the role from the API
         const response = await auth.currentUser();
-        console.log("User data response:", JSON.stringify(response));
+        console.log("API Response:", JSON.stringify(response));
         
         let userData = null;
         if (response && response.data && response.data.user) {
@@ -38,7 +41,20 @@ function ProfileHeader() {
           userData = response;
         }
         
-        console.log("Extracted user data:", userData);
+        // If no role in the API response, try to get it from AsyncStorage
+        if (userData && !userData.role) {
+          try {
+            const storedRole = await AsyncStorage.getItem('role');
+            if (storedRole) {
+              console.log("Using role from AsyncStorage:", storedRole);
+              userData.role = storedRole;
+            }
+          } catch (storageError) {
+            console.error("Failed to get role from storage:", storageError);
+          }
+        }
+        
+        console.log("Final user data with role:", JSON.stringify(userData));
         setCurrentUser(userData);
       } catch (error) {
         console.error("Failed to fetch user data:", error);
@@ -56,7 +72,6 @@ function ProfileHeader() {
     if (role === 'Tourist' || role === 'tourist') return 'Tourist';
     if (role === 'tour_guide') return 'Tour Guide';
     if (role === 'tour_operator') return 'Tour Operator';
-    if (role === 'Tourism Staff') return 'Tourism Staff';
     
     return role.split('_').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
@@ -106,7 +121,7 @@ function ProfileHeader() {
                     : 'Unknown User'}
                 </Text>
                 <Text style={styles.userRole}>
-                  {currentUser ? formatRole(currentUser.role) : 'Unknown Role'}
+                  {currentUser && currentUser.role ? formatRole(currentUser.role) : 'User'}
                 </Text>
               </>
             )}
@@ -150,11 +165,10 @@ function CustomTabBar({ state, descriptors, navigation }) {
             iconName = isFocused ? "home" : "home-outline";
           } else if (route.name === 'Announcements') {
             iconName = isFocused ? "megaphone" : "megaphone-outline";
-          } else if (route.name === 'Hotlines') {
-            iconName = isFocused ? "book" : "book-outline";
-          } else if (route.name === 'Profile') {
-            iconName = isFocused ? "person" : "person-outline";
+          } else if (route.name === 'Tourist Spots') {
+            iconName = isFocused ? "location" : "location-outline";
           }
+          // Removed Hotlines case
           
           const onPress = () => {
             const event = navigation.emit({
@@ -220,7 +234,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
   );
 }
 
-export default function StaffDashboard() {
+export default function TouristDashboard() {
   const { tab } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   
@@ -243,13 +257,13 @@ export default function StaffDashboard() {
           name="Home"
           options={{ tabBarLabel: 'Home' }}
         >
-          {() => <StaffHomeScreen headerHeight={headerHeight} />}
+          {() => <TouristHomeScreen headerHeight={headerHeight} />}
         </Tab.Screen>
         <Tab.Screen name="Announcements">
-          {() => <StaffAnnouncementsScreen headerHeight={headerHeight} />}
+          {() => <TouristAnnouncementsScreen headerHeight={headerHeight} />}
         </Tab.Screen>
-        <Tab.Screen name="Hotlines">
-          {() => <StaffHotlinesScreen headerHeight={headerHeight} />}
+        <Tab.Screen name="Tourist Spots">
+          {() => <TouristTouristSpotsScreen headerHeight={headerHeight} />}
         </Tab.Screen>
       </Tab.Navigator>
     </View>

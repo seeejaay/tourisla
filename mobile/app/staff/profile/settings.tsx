@@ -55,11 +55,11 @@ export default function Settings() {
   };
 
   const navigateToHotlines = () => {
-    router.push('/admin/profile/about/hotlines/admin_hotlines');
+    router.push('/staff/profile/about/hotlines/staff_hotlines');
   };
 
   const navigateToRules = () => {
-    router.push('/admin/profile/settings/rules/admin_rules');
+    router.push('/staff/profile/settings/rules/staff_rules');
   };
 
   const handleLogout = async () => {
