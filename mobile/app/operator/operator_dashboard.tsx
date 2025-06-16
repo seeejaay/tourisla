@@ -164,14 +164,11 @@ function CustomTabBar({ state, descriptors, navigation }) {
           
           if (route.name === 'Home') {
             iconName = isFocused ? "home" : "home-outline";
-          } else if (route.name === 'Map') {
+          } else if (route.name === 'Tours') {
             iconName = isFocused ? "map" : "map-outline";
-          } else if (route.name === 'Announcements') {
-            iconName = isFocused ? "megaphone" : "megaphone-outline";
-          } else if (route.name === 'Tourist Spots') {
-            iconName = isFocused ? "location" : "location-outline";
+          } else if (route.name === 'Bookings') {
+            iconName = isFocused ? "calendar" : "calendar-outline";
           }
-          // Removed Hotlines case
           
           const onPress = () => {
             const event = navigation.emit({
@@ -443,6 +440,8 @@ const styles = StyleSheet.create({
     color: 'rgba(148, 163, 184, 0.8)',
   },
 });
+
+
 
 
 
