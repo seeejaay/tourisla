@@ -54,7 +54,7 @@ const createBookingController = async (req, res) => {
 
     res.status(201).json({ message: "Booking created successfully", newBooking });
   } catch (err) {
-    console.error(err.message);
+    console.error("Booking Error:", err);
     res.status(500).json({ error: "Failed to create booking" });
   }
 };
@@ -80,6 +80,7 @@ const updateBookingStatusController = async (req, res) => {
       const tourPackage = await getTourPackageById(tour_package_id);
 
       const dateOnly = new Date(scheduled_date).toISOString().split("T")[0];
+      // this is to make sure that YYYY-MM-DD format is used, in order to build the calendar event correctly
 
       const event = {
         summary: tourPackage.package_name || "Tour Booking",
@@ -127,11 +128,11 @@ const updateBookingStatusController = async (req, res) => {
 
 const getTouristBookingsController = async (req, res) => {
   try {
-    const touristId = req.user.id;
+    const touristId = req.user?.id || 31; // 31 is hard coded for manual testing
     const bookings = await getBookingsByTourist(touristId);
     res.json(bookings);
   } catch (err) {
-    console.error(err.message);
+    console.error("Error fetching bookings:", err.stack);
     res.status(500).json({ error: "Failed to fetch bookings" });
   }
 };

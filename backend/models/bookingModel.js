@@ -9,7 +9,8 @@ const createBooking = async ({
   notes,
   proof_of_payment,
 }) => {
-  const result = await db.query(
+  // Insert the booking
+  const bookingResult = await db.query(
     `INSERT INTO bookings 
       (tourist_id, tour_package_id, scheduled_date, number_of_guests, total_price, notes, proof_of_payment)
      VALUES 
@@ -25,7 +26,17 @@ const createBooking = async ({
       proof_of_payment,
     ]
   );
-  return result.rows[0];
+
+  // Update the tour package available slots
+  await db.query(
+    `UPDATE tour_packages
+     SET available_slots = available_slots - $1,
+         updated_at = CURRENT_TIMESTAMP
+     WHERE id = $2`,
+    [number_of_guests, tour_package_id]
+  );
+
+  return bookingResult.rows[0];
 };
 
 // operator updates the booking status after payment confirmation
