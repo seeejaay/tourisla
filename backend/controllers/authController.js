@@ -7,7 +7,7 @@ const {
 
 const loginUser = async (req, res) => {
   let { email, password } = req.body;
-  email = email.toUpperCase();
+  email = email.toLowerCase();
   const ipAddress = req.headers["x-forwarded-for"]?.split(",")[0] || req.ip;
 
   try {

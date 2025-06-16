@@ -148,7 +148,13 @@ const {
   getTouristBookingsController,
   getBookingsByPackageController,
   getBookingByIdController,
+  getTouristBookingsFilteredController
 } = require("../controllers/bookingController.js");
+
+const {
+  markBookingAsFinishedController,
+  getTourGuideBookingsFilteredController
+} = require("../controllers/guideBookingsController.js");
 
 app.use(
   session({
@@ -489,6 +495,18 @@ app.get(
   googleCalendarCallbackController
 );
 
+// Routes for booking (Tour Guide's Side)
+app.patch(
+  "/api/v1/bookings/guide/:bookingId/finish",
+  // authenticateTourGuide,
+  markBookingAsFinishedController
+);
+app.get(
+  "/api/v1/bookings/guide",
+  authenticateTourGuide,
+  getTourGuideBookingsFilteredController
+);
+
 // Routes for Booking
 app.post(
   "/api/v1/bookings",
@@ -516,3 +534,22 @@ app.get(
   authenticateUser,
   getBookingByIdController
 );  
+app.get(
+  "api/v1/bookings/tourist/tourist?filter=PAST",
+  authenticateUser,
+  getTouristBookingsFilteredController
+);
+app.get(
+  "api/v1/bookings/tourist/tourist?filter=UPCOMING",
+  authenticateUser,
+  getTouristBookingsFilteredController
+);
+app.get(
+  "api/v1/bookings/tourist/tourist?filter=TODAY",
+  authenticateUser,
+  getTouristBookingsFilteredController
+);
+
+
+
+

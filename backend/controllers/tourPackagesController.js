@@ -5,7 +5,6 @@ const {
   deleteTourPackage,
   getAllTourPackagesByOperator,
   getTourPackageById,
-  getAssignedGuidesByPackage,
 } = require("../models/tourPackagesModel.js");
 
 // Tour Operator managing tour packages
@@ -24,6 +23,8 @@ const createTourPackageController = async (req, res) => {
       available_slots,
       date_start,
       date_end,
+      start_time,
+      end_time,
       assigned_guides,
     } = req.body;
 
@@ -60,6 +61,8 @@ const createTourPackageController = async (req, res) => {
       available_slots,
       date_start,
       date_end,
+      start_time, 
+      end_time,
       assigned_guides
     });
 
@@ -84,6 +87,10 @@ const updateTourPackageController = async (req, res) => {
       exclusions,
       available_slots,
       is_active,
+      date_start,
+      date_end,
+      start_time, 
+      end_time
     } = req.body;
 
     package_name = package_name.toUpperCase();
@@ -116,7 +123,9 @@ const updateTourPackageController = async (req, res) => {
       available_slots,
       is_active,
       date_start,
-      date_end
+      date_end,
+      start_time, 
+      end_time
     });
 
     if (!updated) return res.status(404).json({ message: "Tour package not found." });

@@ -12,13 +12,15 @@ const createTourPackage = async ({
   available_slots,
   date_start,
   date_end,
+  start_time, 
+  end_time,
   assigned_guides = []
 }) => {
   const result = await db.query(
     `INSERT INTO tour_packages 
-      (touroperator_id, package_name, location, description, price, duration_days, inclusions, exclusions, available_slots, date_start, date_end)
+      (touroperator_id, package_name, location, description, price, duration_days, inclusions, exclusions, available_slots, date_start, date_end, start_time, end_time)
      VALUES 
-      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
      RETURNING *`,
     [
       touroperator_id,
@@ -31,7 +33,9 @@ const createTourPackage = async ({
       exclusions,
       available_slots,
       date_start,
-      date_end
+      date_end,
+      start_time, 
+      end_time
     ]
   );
   const newPackage = result.rows[0];
@@ -66,14 +70,16 @@ const updateTourPackage = async (id, touroperator_id, packageData) => {
     is_active,
     date_start,
     date_end,
+    start_time,
+    end_time
   } = packageData;
 
   const result = await db.query(
     `UPDATE tour_packages 
      SET package_name = $1, location = $2, description = $3, price = $4, duration_days = $5,
          inclusions = $6, exclusions = $7, available_slots = $8, is_active = $9,
-         date_start = $10, date_end = $11, updated_at = NOW()
-     WHERE id = $12 AND touroperator_id = $13
+         date_start = $10, date_end = $11, start_time = $12, end_time = $13, updated_at = NOW()
+     WHERE id = $14 AND touroperator_id = $15
      RETURNING *`,
     [
       package_name,
@@ -87,6 +93,8 @@ const updateTourPackage = async (id, touroperator_id, packageData) => {
       is_active || true,
       date_start,
       date_end,
+      start_time, 
+      end_time,
       id,
       touroperator_id,
     ]
