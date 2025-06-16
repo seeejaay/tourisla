@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { 
   View, Text, StyleSheet, ScrollView, TouchableOpacity, 
-  Linking, SafeAreaView, Platform, StatusBar, ActivityIndicator 
+  Linking, SafeAreaView, Platform, StatusBar, ActivityIndicator, Alert
 } from 'react-native';
 import { Feather, FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { API_URL } from '@/lib/config';
+import { logout } from '@/lib/api/auth'; // Import the logout function
 
 const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 44;
 
@@ -59,6 +60,19 @@ export default function Settings() {
 
   const navigateToRules = () => {
     router.push('/admin/profile/settings/rules/admin_rules');
+  };
+
+  const handleLogout = async () => {
+    try {
+      const response = await logout();
+      console.log("Logout response:", response);
+      Alert.alert("Success", "Logged out successfully", [
+        { text: "OK", onPress: () => router.replace('/login') }
+      ]);
+    } catch (error) {
+      console.error("Logout error:", error);
+      Alert.alert("Error", "Failed to log out");
+    }
   };
 
   const faqs = [
@@ -281,6 +295,15 @@ export default function Settings() {
           <Text style={styles.versionText}>Tourisla v1.0.0</Text>
           <Text style={styles.copyrightText}>© 2023 Tourisla. All rights reserved.</Text>
         </View>
+        
+        {/* Logout Button */}
+        <TouchableOpacity 
+          style={styles.logoutButton}
+          onPress={handleLogout}
+        >
+          <Feather name="log-out" size={20} color="#fff" />
+          <Text style={styles.logoutButtonText}>Log Out</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -419,11 +442,30 @@ const styles = StyleSheet.create({
   versionText: {
     fontSize: 14,
     color: '#64748b',
-    marginBottom: 4,
+    textAlign: 'center',
   },
   copyrightText: {
     fontSize: 12,
     color: '#94a3b8',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  logoutButton: {
+    backgroundColor: '#ef4444',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginTop: 24,
+    marginBottom: 40,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
   },
 });
 

@@ -213,20 +213,13 @@ export default function AddRuleScreen() {
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Category</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={category}
-                onValueChange={(itemValue) => setCategory(itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="General" value="General" />
-                <Picker.Item label="Safety" value="Safety" />
-                <Picker.Item label="Environment" value="Environment" />
-                <Picker.Item label="Accommodation" value="Accommodation" />
-                <Picker.Item label="Transportation" value="Transportation" />
-                <Picker.Item label="Activities" value="Activities" />
-              </Picker>
-            </View>
+            <TextInput
+              style={styles.input}
+              value={category}
+              onChangeText={setCategory}
+              placeholder="Enter rule category"
+              placeholderTextColor="#94a3b8"
+            />
             {formErrors.category ? (
               <Text style={styles.errorText}>{formErrors.category}</Text>
             ) : null}
@@ -400,6 +393,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 });
+
 
 
 
