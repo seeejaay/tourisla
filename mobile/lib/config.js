@@ -1,5 +1,5 @@
 // API configuration
-export const API_URL = 'https://tourisla-api.onrender.com/api/';
+export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.135:3005/api/v1/';
 export const REQUEST_TIMEOUT = 30000;
 
 // API endpoints
@@ -18,4 +18,5 @@ export const APP_CONFIG = {
   VERSION: '1.0.0',
   REGION: 'Bohol, Philippines'
 };
+
 
