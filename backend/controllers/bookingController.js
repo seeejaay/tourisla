@@ -87,11 +87,11 @@ const updateBookingStatusController = async (req, res) => {
         location: tourPackage.location,
         description: `Booking ID ${id} - Tour for ${booking.number_of_guests} guest(s)`,
         start: {
-          dateTime: `${dateOnly}T09:00:00+08:00`,
+          dateTime: `${dateOnly}T${tourPackage.start_time}+08:00`,
           timeZone: "Asia/Manila",
         },
         end: {
-          dateTime: `${dateOnly}T17:00:00+08:00`,
+          dateTime: `${dateOnly}T${tourPackage.end_time}+08:00`,
           timeZone: "Asia/Manila",
         },
       };
@@ -160,10 +160,30 @@ const getBookingByIdController = async (req, res) => {
   }
 };
 
+const getTouristBookingsFilteredController = async (req, res) => {
+  try {
+    const touristId = req.user?.id || 31; // fallback for testing
+    const filter = req.query.filter?.toUpperCase(); // e.g. ?filter=PAST
+
+    const allowedFilters = ["PAST", "TODAY", "UPCOMING"];
+    if (filter && !allowedFilters.includes(filter)) {
+      return res.status(400).json({ error: "Invalid time filter" });
+    }
+
+    const bookings = await getFilteredBookingsByTourist(touristId, filter);
+    res.json(bookings);
+  } catch (err) {
+    console.error("Error filtering tourist bookings:", err.stack);
+    res.status(500).json({ error: "Failed to fetch filtered bookings" });
+  }
+};
+
+
 module.exports = {
   createBookingController,
   updateBookingStatusController,
   getTouristBookingsController,
   getBookingsByPackageController,
   getBookingByIdController,
+  getTouristBookingsFilteredController
 };

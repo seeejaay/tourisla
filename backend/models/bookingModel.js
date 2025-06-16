@@ -1,5 +1,6 @@
 const db = require("../db/index.js");
 
+// tourist creates booking for a tour package
 const createBooking = async ({
   tourist_id,
   tour_package_id,
@@ -27,7 +28,7 @@ const createBooking = async ({
     ]
   );
 
-  // Update the tour package available slots
+  // Update the tour package available slots (decrement)
   await db.query(
     `UPDATE tour_packages
      SET available_slots = available_slots - $1,
@@ -81,10 +82,40 @@ const getBookingById = async (id) => {
   return result.rows[0];
 };
 
+// tourist booking history based on date with filter 
+const getFilteredBookingsByTourist = async (touristId, timeFilter) => {
+  let baseQuery = `
+    SELECT *,
+      CASE 
+        WHEN scheduled_date::date < CURRENT_DATE THEN 'PAST'
+        WHEN scheduled_date::date = CURRENT_DATE THEN 'TODAY'
+        ELSE 'UPCOMING'
+      END AS time_status
+    FROM bookings
+    WHERE tourist_id = $1 AND status = 'APPROVED'
+  `;
+
+  if (timeFilter === "PAST") {
+    baseQuery += ` AND scheduled_date::date < CURRENT_DATE`;
+  } else if (timeFilter === "TODAY") {
+    baseQuery += ` AND scheduled_date::date = CURRENT_DATE`;
+  } else if (timeFilter === "UPCOMING") {
+    baseQuery += ` AND scheduled_date::date > CURRENT_DATE`;
+  }
+
+  baseQuery += ` ORDER BY scheduled_date DESC`;
+
+  const result = await db.query(baseQuery, [touristId]);
+  return result.rows;
+};
+
+
+
 module.exports = {
   createBooking,
   updateBookingStatus,
   getBookingsByTourist,
   getBookingsByPackage,
   getBookingById,
+  getFilteredBookingsByTourist
 };
