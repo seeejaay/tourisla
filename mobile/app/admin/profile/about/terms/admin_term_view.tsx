@@ -13,6 +13,10 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useTermsManager } from '@/lib/hooks/useTermsManager';
+import { LinearGradient } from 'expo-linear-gradient';
+
+// Add this constant at the top of your file
+const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 0;
 
 export default function AdminTermView() {
   const router = useRouter();
@@ -87,18 +91,19 @@ export default function AdminTermView() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
+      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
       
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Feather name="arrow-left" size={24} color="#333" />
+      {/* Updated Header */}
+      <LinearGradient
+        colors={['#0f172a', '#1e293b']}
+        style={styles.header}
+      >
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Feather name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Terms & Conditions</Text>
-        <View style={{ width: 24 }} />
-      </View>
+        <View style={styles.placeholder} />
+      </LinearGradient>
       
       {loading ? (
         <View style={styles.loadingContainer}>
@@ -139,23 +144,7 @@ export default function AdminTermView() {
               <Text style={styles.contentText}>{term.content}</Text>
             </View>
             
-            <View style={styles.actionButtons}>
-              <TouchableOpacity 
-                style={[styles.actionButton, styles.editButton]}
-                onPress={handleEdit}
-              >
-                <Feather name="edit-2" size={20} color="#fff" />
-                <Text style={styles.actionButtonText}>Edit</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.actionButton, styles.deleteButton]}
-                onPress={handleDelete}
-              >
-                <Feather name="trash-2" size={20} color="#fff" />
-                <Text style={styles.actionButtonText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
+            {/* Edit and Delete buttons removed */}
           </View>
         </ScrollView>
       ) : (
@@ -177,17 +166,15 @@ export default function AdminTermView() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f8fafc',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingTop: STATUS_BAR_HEIGHT,
+    paddingBottom: 16,
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   backButton: {
     padding: 8,
@@ -195,7 +182,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#fff',
+  },
+  placeholder: {
+    width: 40,
   },
   container: {
     flex: 1,
@@ -336,3 +326,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+
+
+

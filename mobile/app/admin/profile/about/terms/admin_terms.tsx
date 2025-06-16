@@ -8,14 +8,18 @@ import {
   ActivityIndicator,
   Alert,
   SafeAreaView,
-  StatusBar,
   RefreshControl,
+  StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useTermsManager } from '../../../../../lib/hooks/useTermsManager';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
+
+const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 0;
 
 export default function AdminTerms() {
   const router = useRouter();
@@ -115,97 +119,81 @@ export default function AdminTerms() {
     return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.termCard}
-      onPress={() => handleViewTerm(item.id)}
-    >
-      <View style={styles.termHeader}>
-        <Text style={styles.termTitle}>{formatPolicyType(item.type || item.title)}</Text>
-        <View style={[styles.badge, item.is_active ? styles.activeBadge : styles.inactiveBadge]}>
-          <Text style={styles.badgeText}>{item.is_active ? 'Active' : 'Inactive'}</Text>
+  const renderItem = ({ item }) => {
+    // Check if is_active exists and is a boolean, otherwise default to true
+    const isActive = typeof item.is_active === 'boolean' ? item.is_active : true;
+    
+    return (
+      <View style={styles.termCard}>
+        <View style={styles.termHeader}>
+          <Text style={styles.termTitle}>{formatPolicyType(item.type || item.title)}</Text>
+          <View style={[
+            styles.statusBadge, 
+            isActive ? styles.activeBadge : styles.inactiveBadge
+          ]}>
+            <Text style={styles.statusText}>
+              {isActive ? 'Active' : 'Inactive'}
+            </Text>
+          </View>
         </View>
-      </View>
-      
-      <View style={styles.termMeta}>
-        <View style={styles.metaItem}>
-          <Feather name="tag" size={14} color="#64748b" />
-          <Text style={styles.metaText}>v{item.version}</Text>
-        </View>
-        <View style={styles.metaItem}>
-          <Feather name="clock" size={14} color="#64748b" />
-          <Text style={styles.metaText}>
-            {new Date(item.updated_at || item.last_updated).toLocaleDateString()}
-          </Text>
-        </View>
-      </View>
-      
-      <Text style={styles.termPreview} numberOfLines={2}>
-        {item.content}
-      </Text>
-      
-      <View style={styles.actionButtons}>
-        <TouchableOpacity 
-          style={[styles.actionButton, styles.viewButton]}
-          onPress={() => handleViewTerm(item.id)}
-        >
-          <Feather name="eye" size={16} color="#fff" />
-          <Text style={styles.actionButtonText}>View</Text>
-        </TouchableOpacity>
         
-        <TouchableOpacity 
-          style={[styles.actionButton, styles.editButton]}
-          onPress={() => handleEditTerm(item.id)}
-        >
-          <Feather name="edit-2" size={16} color="#fff" />
-          <Text style={styles.actionButtonText}>Edit</Text>
-        </TouchableOpacity>
+        <Text style={styles.termCategory}>Version: {item.version || '1.0'}</Text>
+        <Text style={styles.termDescription} numberOfLines={2}>
+          {item.content || 'No content available'}
+        </Text>
         
-        <TouchableOpacity 
-          style={[styles.actionButton, styles.deleteButton]}
-          onPress={() => handleDeleteTerm(item.id)}
-        >
-          <Feather name="trash-2" size={16} color="#fff" />
-          <Text style={styles.actionButtonText}>Delete</Text>
-        </TouchableOpacity>
+        <View style={styles.actionButtons}>
+          <TouchableOpacity 
+            style={styles.viewButton}
+            onPress={() => handleViewTerm(item.id)}
+          >
+            <Feather name="eye" size={16} color="#fff" />
+            <Text style={styles.buttonText}>View</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.editButton}
+            onPress={() => handleEditTerm(item.id)}
+          >
+            <Feather name="edit-2" size={16} color="#fff" />
+            <Text style={styles.buttonText}>Edit</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.deleteButton}
+            onPress={() => handleDeleteTerm(item.id)}
+          >
+            <Feather name="trash-2" size={16} color="#fff" />
+            <Text style={styles.buttonText}>Delete</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </TouchableOpacity>
-  );
+    );
+  };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
+    <SafeAreaView style={styles.container}>
+      <ExpoStatusBar style="light" backgroundColor="#0f172a" />
       
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Feather name="arrow-left" size={24} color="#333" />
+      {/* Header */}
+      <LinearGradient
+        colors={['#0f172a', '#1e293b']}
+        style={styles.header}
+      >
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Feather name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Terms & Conditions</Text>
-        <TouchableOpacity 
-          style={styles.addButton}
-          onPress={handleAddTerm}
-        >
-          <Feather name="plus" size={24} color="#3498db" />
+        <Text style={styles.headerTitle}>Terms & Policies</Text>
+        <TouchableOpacity onPress={handleAddTerm} style={styles.addButton}>
+          <Feather name="plus" size={24} color="#fff" />
         </TouchableOpacity>
-      </View>
-      
-      {loading && !refreshing ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3498db" />
-          <Text style={styles.loadingText}>Loading terms...</Text>
-        </View>
-      ) : error ? (
+      </LinearGradient>
+
+      {error ? (
         <View style={styles.errorContainer}>
-          <Feather name="alert-circle" size={64} color="#e74c3c" />
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity 
-            style={styles.retryButton}
-            onPress={handleRefresh}
-          >
-            <Text style={styles.retryButtonText}>Retry</Text>
+          <Text style={styles.errorText}>Error: {error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={loadTerms}>
+            <Text style={styles.retryText}>Retry</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -218,21 +206,25 @@ export default function AdminTerms() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              colors={['#3498db']}
-              tintColor="#3498db"
+              colors={['#0f172a']}
+              tintColor="#0f172a"
             />
           }
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Feather name="file-text" size={64} color="#94a3b8" />
-              <Text style={styles.emptyText}>No terms & conditions found</Text>
-              <TouchableOpacity 
-                style={styles.addFirstButton}
-                onPress={handleAddTerm}
-              >
-                <Text style={styles.addFirstButtonText}>Add First Policy</Text>
-              </TouchableOpacity>
-            </View>
+            loading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#0f172a" />
+                <Text style={styles.loadingText}>Loading terms & policies...</Text>
+              </View>
+            ) : (
+              <View style={styles.emptyContainer}>
+                <Feather name="file-text" size={64} color="#cbd5e1" />
+                <Text style={styles.emptyText}>No terms & policies found</Text>
+                <TouchableOpacity style={styles.addFirstButton} onPress={handleAddTerm}>
+                  <Text style={styles.addFirstButtonText}>Add First Document</Text>
+                </TouchableOpacity>
+              </View>
+            )
           }
         />
       )}
@@ -241,19 +233,17 @@ export default function AdminTerms() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f8fafc',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingTop: STATUS_BAR_HEIGHT,
+    paddingBottom: 16,
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   backButton: {
     padding: 8,
@@ -261,25 +251,25 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#fff',
   },
   addButton: {
     padding: 8,
   },
   listContainer: {
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 80,
   },
   termCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
+    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3.84,
-    elevation: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   termHeader: {
     flexDirection: 'row',
@@ -290,141 +280,149 @@ const styles = StyleSheet.create({
   termTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: '#0f172a',
     flex: 1,
+    marginRight: 8,
   },
-  badge: {
+  statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
   activeBadge: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: '#27c93f',
   },
   inactiveBadge: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: '#ff5f56',
   },
-  badgeText: {
+  statusText: {
+    color: '#fff',
     fontSize: 12,
-    fontWeight: '500',
-    color: '#16a34a',
+    fontWeight: '700',
   },
-  termMeta: {
-    flexDirection: 'row',
-    marginBottom: 12,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  metaText: {
+  termCategory: {
     fontSize: 14,
     color: '#64748b',
-    marginLeft: 4,
+    marginBottom: 8,
   },
-  termPreview: {
+  termDescription: {
     fontSize: 14,
     color: '#334155',
-    marginBottom: 12,
+    marginBottom: 16,
   },
-  viewMore: {
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  viewButton: {
+    backgroundColor: '#0ea5e9',
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    flex: 1,
   },
-  viewMoreText: {
+  editButton: {
+    backgroundColor: '#f59e0b',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    flex: 1,
+  },
+  deleteButton: {
+    backgroundColor: '#ef4444',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    flex: 1,
+  },
+  buttonText: {
+    color: '#fff',
     fontSize: 14,
     fontWeight: '500',
-    color: '#3498db',
-    marginRight: 4,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#64748b',
+    marginLeft: 4,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
+    padding: 20,
   },
   errorText: {
-    fontSize: 18,
-    color: '#e74c3c',
-    marginTop: 16,
+    fontSize: 16,
+    color: '#ef4444',
     marginBottom: 16,
     textAlign: 'center',
   },
   retryButton: {
-    backgroundColor: '#3498db',
-    paddingHorizontal: 16,
+    backgroundColor: '#0ea5e9',
     paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
   },
-  retryButtonText: {
+  retryText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
+  loadingContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#64748b',
+  },
   emptyContainer: {
+    padding: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
   },
   emptyText: {
     fontSize: 16,
     color: '#64748b',
     marginTop: 16,
-    marginBottom: 16,
-    textAlign: 'center',
+    marginBottom: 24,
   },
   addFirstButton: {
-    backgroundColor: '#3498db',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+    backgroundColor: '#0ea5e9',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 6,
   },
   addFirstButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '500',
   },
-  actionButtons: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginTop: 12,
-    gap: 8,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    justifyContent: 'center',
-  },
-  viewButton: {
-    backgroundColor: '#3498db',
-  },
-  editButton: {
-    backgroundColor: '#f39c12',
-  },
-  deleteButton: {
-    backgroundColor: '#e74c3c',
-  },
-  actionButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '500',
-    marginLeft: 4,
-  },
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
