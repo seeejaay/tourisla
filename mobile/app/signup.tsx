@@ -1,6 +1,6 @@
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
 import CheckBox from 'expo-checkbox';
@@ -9,6 +9,7 @@ import selectFields from '@/static/selectFields';
 
 export default function SignUpScreen() {
   const { registerUser } = useUserManager();
+  const { role } = useLocalSearchParams();
   const nationalityOptions = selectFields().find(field => field.name === 'nationality')?.options || [];
   
   // Replace captcha with a simple verification
@@ -23,7 +24,7 @@ export default function SignUpScreen() {
     password: '',
     confirm_password: '',
     terms: false,
-    role: 'Tourist',
+    role: role || 'Tourist', // Use the role from params or default to Tourist
     status: 'Active',
   });
 

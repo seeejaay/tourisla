@@ -4,20 +4,38 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const login = async (userData) => {
   try {
-    const url = getApiUrl('login');
-    logApiRequest('POST', url, userData);
+    // Ensure email is uppercase as backend expects
+    if (userData.email) {
+      userData.email = userData.email.toUpperCase();
+    }
     
+    const url = getApiUrl('login');
+    console.log('Login request to:', url);
+    console.log('Login data:', { ...userData, password: '***' });
+    
+    // Add timeout and better error handling
     const response = await axios.post(url, userData, {
       withCredentials: true,
+      timeout: 10000, // 10 second timeout
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
     });
     
+    console.log('Login response status:', response.status);
+    console.log('Login response headers:', response.headers);
+    console.log('Login response data:', response.data);
+    
     if (response.status !== 200) {
+      console.error(`Failed login with status: ${response.status}`);
       throw new Error(`Failed to login. Server responded with status: ${response.status}`);
     }
     
     return response.data;
   } catch (error) {
     console.error("Error during login:", error.response?.data || error.message);
+    console.error("Full error object:", JSON.stringify(error));
     throw error;
   }
 };
