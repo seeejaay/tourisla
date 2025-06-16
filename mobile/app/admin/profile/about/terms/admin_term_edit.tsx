@@ -17,14 +17,12 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useTermsManager } from '../../../../../lib/hooks/useTermsManager';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Valid policy types based on the backend enum
+// Valid policy types based on the backend enum - limited to just TERMS and PRIVACY_POLICY
 const POLICY_TYPES = [
   'TERMS',
-  'PRIVACY_POLICY',
-  'REFUND_POLICY',
-  'COMMUNITY_GUIDELINES',
-  'TERMS_OF_SERVICE'
+  'PRIVACY_POLICY'
 ];
 
 export default function AdminTermEdit() {
@@ -121,6 +119,10 @@ export default function AdminTermEdit() {
       console.log('Updating term data:', termData);
       
       await editTerm(id, termData);
+      
+      // Set a flag to indicate terms were updated
+      await AsyncStorage.setItem('termsUpdated', 'true');
+      console.log('Set termsUpdated flag to true');
       
       Alert.alert(
         'Success',
@@ -341,6 +343,6 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: '#fff',
-    fontSize: 1,
+    fontSize: 16,
   },
 });
