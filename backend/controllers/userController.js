@@ -43,8 +43,6 @@ const createUserController = async (req, res) => {
     } else {
       // Verify captcha for web clients
       const secretKey = process.env.RECAPTCHA_SECRET_KEY;
-      console.log("Secret Key:", secretKey);
-      console.log("Captcha Token:", captchaToken);
 
       const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
       const captchaRes = await axios.post(verifyUrl);
@@ -219,7 +217,6 @@ const viewUserController = async (req, res) => {
       status: "success",
       data: { user },
     });
-    console.log("User data:", user);
   } catch (error) {
     console.error("Error fetching user:", error);
     res.status(500).json({ error: "Internal server error" });

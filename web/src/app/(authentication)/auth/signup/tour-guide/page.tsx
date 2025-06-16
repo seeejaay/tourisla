@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { useUserManager } from "@/hooks/useUserManager";
 import { useTourGuideManager } from "@/hooks/useTourGuideManager";
 import { useRouter } from "next/navigation";
+import { tourGuideSchema } from "@/app/static/tour-guide/useTourGuideManagerSchema";
+
 type TourGuideForm = {
   first_name: string;
   last_name: string;
@@ -15,6 +17,7 @@ type TourGuideForm = {
   password: string;
   confirmPassword: string;
   phone: string;
+  mobile_number: string; // Keeping this for compatibility, but not used in the form
   birth_date: string;
   sex: string;
   profile_picture: File | string;
@@ -34,6 +37,7 @@ export default function TourGuideRegister() {
     password: "",
     confirmPassword: "",
     phone: "",
+    mobile_number: "", // Keeping this for compatibility, but not used in the form
     birth_date: "",
     sex: "",
     profile_picture: "",
@@ -47,6 +51,7 @@ export default function TourGuideRegister() {
   const { registerUser, loading: userLoading } = useUserManager();
   const { createTourGuideApplicant, loading: guideLoading } =
     useTourGuideManager();
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -72,10 +77,21 @@ export default function TourGuideRegister() {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    // 1. Zod validation
+    const result = tourGuideSchema.safeParse(form);
+    if (!result.success) {
+      setError(result.error.errors[0].message); // Show the first error
+      return;
+    }
+
+    // 2. Password match check
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
+
+    // 3. reCAPTCHA check
     if (!captchaToken) {
       setError("Please complete the reCAPTCHA.");
       return;
@@ -89,7 +105,7 @@ export default function TourGuideRegister() {
         email: form.email,
         password: form.password,
         confirm_password: form.confirmPassword,
-        phone_number: form.phone,
+        phone_number: form.mobile_number,
         status: "Active" as const,
         role: "Tour Guide" as const,
         nationality: "Philippines",
@@ -106,10 +122,10 @@ export default function TourGuideRegister() {
         first_name: form.first_name,
         last_name: form.last_name,
         email: form.email,
-        birth_date: new Date(form.birth_date),
+        birth_date: form.birth_date,
         sex: form.sex as "MALE" | "FEMALE",
         reason_for_applying: form.reason_for_applying,
-        mobile_number: form.phone,
+        mobile_number: form.mobile_number,
         profile_picture:
           form.profile_picture instanceof File
             ? form.profile_picture
@@ -134,6 +150,7 @@ export default function TourGuideRegister() {
         password: "",
         confirmPassword: "",
         phone: "",
+        mobile_number: "",
         birth_date: "",
         sex: "",
         profile_picture: "",
@@ -245,7 +262,7 @@ export default function TourGuideRegister() {
                 Mobile Number
               </label>
               <input
-                type="tel"
+                type="text"
                 name="phone"
                 value={form.phone}
                 onChange={handleChange}

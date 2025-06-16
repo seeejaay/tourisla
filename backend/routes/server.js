@@ -159,11 +159,11 @@ const {
   editAccommodationLogController,
   deleteAccommodationLogController,
   getAllAccommodationLogsController,
-  getAccommodationLogByIdController
+  getAccommodationLogByIdController,
 } = require("../controllers/accommodationLogController.js");
 
 const {
-  exportAccommodationLogController
+  exportAccommodationLogController,
 } = require("../controllers/accommodationLogController");
 
 const {
@@ -345,11 +345,7 @@ app.get(
 );
 
 // Routes for Tour Operator Registration
-app.post(
-  "/api/v1/operatorRegis",
-  authenticateTourOperator,
-  createOperatorRegisController
-);
+app.post("/api/v1/operatorRegis", createOperatorRegisController);
 app.put(
   "/api/v1/operatorRegis/:operatorId",
   authenticateTourOperator,
@@ -557,7 +553,6 @@ app.get(
   viewTourPackageByIdController
 );
 
-
 // Accommodation Logs Routes
 app.post(
   "/api/v1/accommodation-logs",
@@ -571,7 +566,7 @@ app.put(
 );
 app.delete(
   "/api/v1/accommodation-logs/:logId",
- authenticateTourismStaff,
+  authenticateTourismStaff,
   deleteAccommodationLogController
 );
 //excel export for accommodation logs — MUST be placed before ":logId"
@@ -582,15 +577,17 @@ app.get("/api/v1/accommodation-logs/:logId", getAccommodationLogByIdController);
 // Policy Routes
 app.get("/api/v1/policies", getAllPoliciesController);
 app.get("/api/v1/policies/:policyId", getPolicyByIdController);
-app.get("/api/v1/policies/type/:type([a-zA-Z0-9-_]+)", getPoliciesByTypeController);
+app.get(
+  "/api/v1/policies/type/:type([a-zA-Z0-9-_]+)",
+  getPoliciesByTypeController
+);
 app.post("/api/v1/policies", authenticateAdmin, createPolicyController);
 app.put("/api/v1/policies/:policyId", authenticateAdmin, editPolicyController);
-app.delete("/api/v1/policies/:policyId", authenticateAdmin, deletePolicyController);
-
-
-
-
-
+app.delete(
+  "/api/v1/policies/:policyId",
+  authenticateAdmin,
+  deletePolicyController
+);
 
 //tripadvisors
 
