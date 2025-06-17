@@ -16,6 +16,8 @@ import axios from 'axios';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import { API_URL } from '@/lib/config';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 export default function OperatorApplicationScreen({ headerHeight }: { headerHeight: number }) {
   const router = useRouter();
@@ -33,57 +35,254 @@ export default function OperatorApplicationScreen({ headerHeight }: { headerHeig
   const [mobileNumber, setMobileNumber] = useState('');
   const [officeAddress, setOfficeAddress] = useState('');
 
+  // Add a function to check if the application exists by trying different endpoints
+  const checkApplicationExists = async (userId, token) => {
+    try {
+      // Try different possible endpoints
+      const possibleEndpoints = [
+        `${API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL}/operatorRegis/user/${userId}`,
+        `${API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL}/operatorRegis/byUser/${userId}`,
+        `${API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL}/operatorRegis?userId=${userId}`
+      ];
+      
+      for (const endpoint of possibleEndpoints) {
+        try {
+          console.log('Trying alternative endpoint:', endpoint);
+          const response = await axios.get(endpoint, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            timeout: 5000
+          });
+          
+          if (response.status === 200 && response.data) {
+            console.log('Found application using alternative endpoint:', response.data);
+            return response.data;
+          }
+        } catch (endpointError) {
+          console.log(`Endpoint ${endpoint} failed:`, endpointError.message);
+          // Continue to next endpoint
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error checking if application exists:', error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     const init = async () => {
-      // Check API connectivity first
-      await checkApiConnectivity();
-      checkApplicationStatus();
+      try {
+        await checkApplicationStatus();
+        
+        // If status is NOT_APPLIED but we think the user might have applied,
+        // try alternative endpoints
+        if (applicationStatus === 'NOT_APPLIED') {
+          const userDataString = await AsyncStorage.getItem('userData');
+          if (userDataString) {
+            const parsedUserData = JSON.parse(userDataString);
+            const applicationData = await checkApplicationExists(parsedUserData.id, parsedUserData.token);
+            
+            if (applicationData) {
+              // We found the application using an alternative endpoint
+              setApplicationStatus(applicationData.application_status || 'PENDING');
+              setOperatorId(applicationData.id);
+              
+              // Cache this data
+              const statusToCache = {
+                userId: parsedUserData.id,
+                status: applicationData.application_status || 'PENDING',
+                operatorId: applicationData.id,
+                operatorName: applicationData.operator_name || '',
+                representativeName: applicationData.representative_name || '',
+                email: applicationData.email || '',
+                mobileNumber: applicationData.mobile_number || '',
+                officeAddress: applicationData.office_address || '',
+                timestamp: new Date().toISOString()
+              };
+              
+              await AsyncStorage.setItem('operatorApplicationStatus', JSON.stringify(statusToCache));
+              console.log('Cached application status from alternative endpoint:', statusToCache);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error in initialization:', error);
+      }
     };
     
     init();
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      console.log('Screen focused, checking application status');
+      checkApplicationStatus();
+      
+      // No cleanup needed
+      return () => {};
+    }, [])
+  );
+
   const checkApplicationStatus = async () => {
     try {
+      setLoading(true);
       const userDataString = await AsyncStorage.getItem('userData');
       if (!userDataString) {
+        console.log('No user data found in AsyncStorage');
         setLoading(false);
         return;
       }
       
       const parsedUserData = JSON.parse(userDataString);
+      console.log('User data retrieved:', parsedUserData.id);
       setUserData(parsedUserData);
       
-      // Fix the URL - remove the duplicate api/v1/
-      const url = `${API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL}/operatorRegis/status/${parsedUserData.id}`;
-      console.log('Corrected API URL:', url);
-      
-      const response = await axios.get(
-        url,
-        {
-          headers: {
-            'Authorization': `Bearer ${parsedUserData.token}`
+      // First check if we have cached application status
+      const cachedStatusString = await AsyncStorage.getItem('operatorApplicationStatus');
+      if (cachedStatusString) {
+        const cachedStatus = JSON.parse(cachedStatusString);
+        console.log('Found cached application status:', cachedStatus);
+        
+        // If we have cached data and it's for the current user, use it
+        if (cachedStatus.userId === parsedUserData.id) {
+          console.log('Using cached application status for current user');
+          setApplicationStatus(cachedStatus.status);
+          setOperatorId(cachedStatus.operatorId);
+          setOperatorName(cachedStatus.operatorName || '');
+          setRepresentativeName(cachedStatus.representativeName || '');
+          setEmail(cachedStatus.email || '');
+          setMobileNumber(cachedStatus.mobileNumber || '');
+          setOfficeAddress(cachedStatus.officeAddress || '');
+          
+          // If the cached status is recent (less than 1 hour old), don't bother checking the API
+          const cachedTime = new Date(cachedStatus.timestamp).getTime();
+          const currentTime = new Date().getTime();
+          const oneHourInMs = 60 * 60 * 1000;
+          
+          if (currentTime - cachedTime < oneHourInMs) {
+            console.log('Cached status is recent, skipping API call');
+            setLoading(false);
+            return;
           }
         }
-      );
+      }
       
-      if (response.data) {
-        setApplicationStatus(response.data.application_status || 'NOT_APPLIED');
+      // Try to get the status from the API
+      try {
+        // Fix the URL - remove the duplicate api/v1/
+        const url = `${API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL}/operatorRegis/status/${parsedUserData.id}`;
+        console.log('Fetching application status from:', url);
         
-        if (response.data.id) {
-          setOperatorId(response.data.id);
-          setOperatorName(response.data.operator_name || '');
-          setRepresentativeName(response.data.representative_name || '');
-          setEmail(response.data.email || '');
-          setMobileNumber(response.data.mobile_number || '');
-          setOfficeAddress(response.data.office_address || '');
+        const response = await axios.get(
+          url,
+          {
+            headers: {
+              'Authorization': `Bearer ${parsedUserData.token}`
+            }
+          }
+        );
+        
+        console.log('Application status response:', response.data);
+        
+        if (response.data) {
+          const status = response.data.application_status || 'NOT_APPLIED';
+          setApplicationStatus(status);
+          
+          // Cache the application status
+          const statusToCache = {
+            userId: parsedUserData.id,
+            status: status,
+            operatorId: response.data.id,
+            operatorName: response.data.operator_name || '',
+            representativeName: response.data.representative_name || '',
+            email: response.data.email || '',
+            mobileNumber: response.data.mobile_number || '',
+            officeAddress: response.data.office_address || '',
+            timestamp: new Date().toISOString()
+          };
+          
+          await AsyncStorage.setItem('operatorApplicationStatus', JSON.stringify(statusToCache));
+          console.log('Cached application status:', statusToCache);
+          
+          if (response.data.id) {
+            setOperatorId(response.data.id);
+            setOperatorName(response.data.operator_name || '');
+            setRepresentativeName(response.data.representative_name || '');
+            setEmail(response.data.email || '');
+            setMobileNumber(response.data.mobile_number || '');
+            setOfficeAddress(response.data.office_address || '');
+          }
+        }
+      } catch (apiError) {
+        console.error('Error checking application status from API:', apiError);
+        
+        // If 404, check if we have a cached status that indicates the user has applied
+        if (apiError.response && apiError.response.status === 404) {
+          console.log('No application found (404) from API');
+          
+          // If we have a cached status that says the user has applied, trust it
+          // This handles the case where the backend returns 404 even though the user has applied
+          if (cachedStatusString) {
+            const cachedStatus = JSON.parse(cachedStatusString);
+            if (cachedStatus.userId === parsedUserData.id && cachedStatus.status !== 'NOT_APPLIED') {
+              console.log('Using cached status because API returned 404 but we have a cached application');
+              setApplicationStatus(cachedStatus.status);
+              setOperatorId(cachedStatus.operatorId);
+              setOperatorName(cachedStatus.operatorName || '');
+              setRepresentativeName(cachedStatus.representativeName || '');
+              setEmail(cachedStatus.email || '');
+              setMobileNumber(cachedStatus.mobileNumber || '');
+              setOfficeAddress(cachedStatus.officeAddress || '');
+              setLoading(false);
+              return;
+            }
+          }
+          
+          // If no cached status or cached status is NOT_APPLIED, set to NOT_APPLIED
+          setApplicationStatus('NOT_APPLIED');
+        } else {
+          // For other errors, try to use cached data if available
+          if (cachedStatusString) {
+            const cachedStatus = JSON.parse(cachedStatusString);
+            console.log('Using cached application status due to API error:', cachedStatus);
+            
+            if (cachedStatus.userId === parsedUserData.id) {
+              setApplicationStatus(cachedStatus.status);
+              setOperatorId(cachedStatus.operatorId);
+              setOperatorName(cachedStatus.operatorName || '');
+              setRepresentativeName(cachedStatus.representativeName || '');
+              setEmail(cachedStatus.email || '');
+              setMobileNumber(cachedStatus.mobileNumber || '');
+              setOfficeAddress(cachedStatus.officeAddress || '');
+            }
+          }
         }
       }
     } catch (error) {
-      console.error('Error checking application status:', error);
-      // If 404, assume the user hasn't applied yet
-      if (error.response && error.response.status === 404) {
-        setApplicationStatus('NOT_APPLIED');
+      console.error('Error in checkApplicationStatus:', error);
+      
+      // Try to use cached data as a last resort
+      try {
+        const cachedStatusString = await AsyncStorage.getItem('operatorApplicationStatus');
+        if (cachedStatusString) {
+          const cachedStatus = JSON.parse(cachedStatusString);
+          console.log('Using cached application status as last resort:', cachedStatus);
+          
+          if (cachedStatus.userId === userData?.id) {
+            setApplicationStatus(cachedStatus.status);
+            setOperatorId(cachedStatus.operatorId);
+            setOperatorName(cachedStatus.operatorName || '');
+            setRepresentativeName(cachedStatus.representativeName || '');
+            setEmail(cachedStatus.email || '');
+            setMobileNumber(cachedStatus.mobileNumber || '');
+            setOfficeAddress(cachedStatus.officeAddress || '');
+          }
+        }
+      } catch (cacheError) {
+        console.error('Error accessing cached status:', cacheError);
       }
     } finally {
       setLoading(false);
@@ -133,7 +332,7 @@ export default function OperatorApplicationScreen({ headerHeight }: { headerHeig
       
       // Fix the URL - remove the duplicate api/v1/
       const url = `${API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL}/operatorRegis`;
-      console.log('Corrected submission URL:', url);
+      console.log('Submitting application to:', url);
       console.log('Submitting application with data:', requestData);
       
       const response = await axios.post(
@@ -147,11 +346,29 @@ export default function OperatorApplicationScreen({ headerHeight }: { headerHeig
         }
       );
       
-      console.log('Response:', response.data);
+      console.log('Submission response:', response.data);
       
       if (response.data && response.data.id) {
-        setOperatorId(response.data.id);
+        const newOperatorId = response.data.id;
+        setOperatorId(newOperatorId);
         setApplicationStatus('PENDING');
+        
+        // Cache the application status
+        const statusToCache = {
+          userId: userData.id,
+          status: 'PENDING',
+          operatorId: newOperatorId,
+          operatorName: operatorName,
+          representativeName: representativeName,
+          email: email,
+          mobileNumber: mobileNumber,
+          officeAddress: officeAddress,
+          timestamp: new Date().toISOString()
+        };
+        
+        await AsyncStorage.setItem('operatorApplicationStatus', JSON.stringify(statusToCache));
+        console.log('Cached new application status:', statusToCache);
+        
         Alert.alert(
           'Application Submitted', 
           'Your application has been submitted. Please wait for approval from the admin.'
@@ -463,4 +680,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
   }
 });
+
+// Add a function to clear application cache on logout
+export const clearApplicationCache = async () => {
+  try {
+    await AsyncStorage.removeItem('operatorApplicationStatus');
+    console.log('Operator application status cache cleared');
+  } catch (error) {
+    console.error('Error clearing application cache:', error);
+  }
+};
+
+
+
+
 

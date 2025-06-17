@@ -114,6 +114,9 @@ export const logout = async () => {
     // Clear user data from AsyncStorage
     try {
       await AsyncStorage.removeItem('userData');
+      // Also clear application-specific caches
+      await AsyncStorage.removeItem('operatorApplicationStatus');
+      console.log('User data and application caches cleared');
     } catch (storageError) {
       console.warn('Failed to clear user data from AsyncStorage:', storageError);
     }
@@ -121,6 +124,16 @@ export const logout = async () => {
     return response.data;
   } catch (error) {
     console.error("Error during logout:", error.response?.data || error.message);
+    
+    // Even if the API call fails, try to clear local storage
+    try {
+      await AsyncStorage.removeItem('userData');
+      await AsyncStorage.removeItem('operatorApplicationStatus');
+      console.log('User data and application caches cleared despite API error');
+    } catch (storageError) {
+      console.warn('Failed to clear user data from AsyncStorage:', storageError);
+    }
+    
     throw error;
   }
 };
