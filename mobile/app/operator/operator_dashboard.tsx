@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import OperatorHomeScreen from './home/operator_home';
 import OperatorToursScreen from './tours/operator_tours';
+import OperatorApplicationScreen from './application/operator_application';
 import OperatorBookingsScreen from './bookings/operator_bookings';
 import OperatorProfileScreen from './profile/operator_profile';
 import { Ionicons } from '@expo/vector-icons';
@@ -264,6 +265,12 @@ export default function TouristDashboard() {
           options={{ tabBarLabel: 'Tours' }}
         >
           {() => <OperatorToursScreen headerHeight={headerHeight} />}
+        </Tab.Screen>
+        <Tab.Screen 
+          name="Application" 
+          options={{ tabBarLabel: 'Apply' }}
+        >
+          {() => <OperatorApplicationScreen headerHeight={headerHeight} />}
         </Tab.Screen>
         <Tab.Screen name="Bookings">
           {() => <OperatorBookingsScreen headerHeight={headerHeight} />}
