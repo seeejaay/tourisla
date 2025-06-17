@@ -189,6 +189,25 @@ const { exportVisitorLogController } = require("../controllers/exportVisitorLogC
 const { exportVisitorLogGroupController } = require("../controllers/exportVisitorLogGroupController");
 
 
+const {
+  authorizeGoogleCalendarController,
+  googleCalendarCallbackController
+} = require("../controllers/calendarController.js");
+
+const {
+  createBookingController,
+  updateBookingStatusController,
+  getTouristBookingsController,
+  getBookingsByPackageController,
+  getBookingByIdController,
+  getTouristBookingsFilteredController
+} = require("../controllers/bookingController.js");
+
+const {
+  markBookingAsFinishedController,
+  getTourGuideBookingsFilteredController
+} = require("../controllers/guideBookingsController.js");
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -567,6 +586,124 @@ app.get(
   viewTourPackageByIdController
 );
 
+// Routes for Google Calendar integration
+app.get(
+  "/api/v1/calendar/authorize",
+  // authenticateTourGuide,
+  authorizeGoogleCalendarController
+);
+app.get(
+  "/api/v1/calendar/auth/callback",
+  // authenticateTourGuide,
+  googleCalendarCallbackController
+);
+
+// Routes for booking (Tour Guide's Side)
+app.patch(
+  "/api/v1/bookings/guide/:bookingId/finish",
+  // authenticateTourGuide,
+  markBookingAsFinishedController
+);
+app.get(
+  "/api/v1/bookings/guide",
+  // authenticateTourGuide,
+  getTourGuideBookingsFilteredController
+);
+
+// Routes for Booking
+app.post(
+  "/api/v1/bookings",
+  // authenticateUser,
+  upload.single("proof_of_payment"),
+  createBookingController
+);
+app.put(
+  "/api/v1/bookings/:id/status",
+  // authenticateTourOperator,
+  updateBookingStatusController
+);
+app.get(
+  "/api/v1/bookings/tourist",
+  // authenticateUser,
+  getTouristBookingsController
+);
+app.get(
+  "/api/v1/bookings/package/:packageId",
+  authenticateTourOperator,
+  getBookingsByPackageController
+);
+app.get(
+  "/api/v1/bookings/:id",
+  authenticateUser,
+  getBookingByIdController
+);
+app.get(
+  "/api/v1/bookings/tourist/filtered",
+  // authenticateUser,
+  getTouristBookingsFilteredController
+);
+
+
+
+
+
+
+// Routes for Google Calendar integration
+app.get(
+  "/api/v1/calendar/authorize",
+  // authenticateTourGuide,
+  authorizeGoogleCalendarController
+);
+app.get(
+  "/api/v1/calendar/auth/callback",
+  // authenticateTourGuide,
+  googleCalendarCallbackController
+);
+
+// Routes for booking (Tour Guide's Side)
+app.patch(
+  "/api/v1/bookings/guide/:bookingId/finish",
+  // authenticateTourGuide,
+  markBookingAsFinishedController
+);
+app.get(
+  "/api/v1/bookings/guide",
+  // authenticateTourGuide,
+  getTourGuideBookingsFilteredController
+);
+
+// Routes for Booking
+app.post(
+  "/api/v1/bookings",
+  // authenticateUser,
+  upload.single("proof_of_payment"),
+  createBookingController
+);
+app.put(
+  "/api/v1/bookings/:id/status",
+  // authenticateTourOperator,
+  updateBookingStatusController
+);
+app.get(
+  "/api/v1/bookings/tourist",
+  // authenticateUser,
+  getTouristBookingsController
+);
+app.get(
+  "/api/v1/bookings/package/:packageId",
+  authenticateTourOperator,
+  getBookingsByPackageController
+);
+app.get(
+  "/api/v1/bookings/:id",
+  authenticateUser,
+  getBookingByIdController
+);
+app.get(
+  "/api/v1/bookings/tourist/filtered",
+  // authenticateUser,
+  getTouristBookingsFilteredController
+);
 
 // Accommodation Logs Routes
 app.post(
