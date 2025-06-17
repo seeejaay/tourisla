@@ -90,17 +90,18 @@ const updateBookingStatusController = async (req, res) => {
       let event;
       if (isOneDay) {
         const formattedDate = startDate.toISOString().split("T")[0];
+        const padTime = (t) => t.length === 5 ? `${t}:00` : t; // Adds :00 if missing
 
         event = {
           summary: tourPackage.package_name || "Tour Booking",
           location: tourPackage.location,
           description: `Booking ID ${id} - Tour for ${booking.number_of_guests} guest(s)`,
           start: {
-            dateTime: `${formattedDate}T${tourPackage.start_time}+08:00`,
+            dateTime: `${formattedDate}T${padTime(tourPackage.start_time)}+08:00`,
             timeZone: "Asia/Manila",
           },
           end: {
-            dateTime: `${formattedDate}T${tourPackage.end_time}+08:00`,
+            dateTime: `${formattedDate}T${padTime(tourPackage.end_time)}+08:00`,
             timeZone: "Asia/Manila",
           },
         };
