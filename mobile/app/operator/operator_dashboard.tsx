@@ -2,9 +2,10 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import OperatorHomeScreen from './home/operator_home';
 import OperatorToursScreen from './tours/operator_tours';
-import OperatorApplicationScreen from './application/operator_application';
+// import OperatorApplicationScreen from './application/operator_application';
 import OperatorBookingsScreen from './bookings/operator_bookings';
 import OperatorProfileScreen from './profile/operator_profile';
+import OperatorPackagesScreen from './packages/operator_packages'; // Import the new packages screen
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, View, Platform, TouchableOpacity, Image, Text, StatusBar, Dimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -156,6 +157,9 @@ function CustomTabBar({ state, descriptors, navigation }) {
       
       <View style={styles.tabButtonsContainer}>
         {state.routes.map((route, index) => {
+          // Skip rendering the Apply tab
+          if (route.name === 'Application') return null;
+          
           const { options } = descriptors[route.key];
           const label = options.tabBarLabel || options.title || route.name;
           const isFocused = state.index === index;
@@ -167,8 +171,12 @@ function CustomTabBar({ state, descriptors, navigation }) {
             iconName = isFocused ? "home" : "home-outline";
           } else if (route.name === 'Tours') {
             iconName = isFocused ? "map" : "map-outline";
+          } else if (route.name === 'Application') {
+            iconName = isFocused ? "document" : "document-outline";
           } else if (route.name === 'Bookings') {
             iconName = isFocused ? "calendar" : "calendar-outline";
+          } else if (route.name === 'Packages') {
+            iconName = isFocused ? "cube" : "cube-outline";
           }
           
           const onPress = () => {
@@ -266,11 +274,17 @@ export default function TouristDashboard() {
         >
           {() => <OperatorToursScreen headerHeight={headerHeight} />}
         </Tab.Screen>
-        <Tab.Screen 
+        {/* <Tab.Screen 
           name="Application" 
           options={{ tabBarLabel: 'Apply' }}
         >
           {() => <OperatorApplicationScreen headerHeight={headerHeight} />}
+        </Tab.Screen> */}
+        <Tab.Screen 
+          name="Packages"
+          options={{ tabBarLabel: 'Packages' }}
+        >
+          {() => <OperatorPackagesScreen headerHeight={headerHeight} />}
         </Tab.Screen>
         <Tab.Screen name="Bookings">
           {() => <OperatorBookingsScreen headerHeight={headerHeight} />}

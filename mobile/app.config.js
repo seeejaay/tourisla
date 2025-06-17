@@ -3,9 +3,9 @@ export default {
   slug: "your-app-slug",
   version: "1.0.0",
   orientation: "portrait",
-  icon: "./assets/icon.png",
+  icon: "./assets/images/icon.png",
   splash: {
-    image: "./assets/splash.png",
+    image: "./assets/images/splash.png",
     resizeMode: "contain",
     backgroundColor: "#ffffff"
   },
@@ -33,6 +33,7 @@ export default {
   plugins: [
     "expo-router"
   ],
+  scheme: "tourisla",
   // Add environment variables
   env: {
     EXPO_PUBLIC_API_URL: "http://192.168.0.135:3005"
