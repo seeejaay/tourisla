@@ -643,11 +643,6 @@ app.get(
   getTouristBookingsFilteredController
 );
 
-
-
-
-
-
 // Routes for Google Calendar integration
 app.get(
   "/api/v1/calendar/authorize",
