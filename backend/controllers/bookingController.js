@@ -85,45 +85,23 @@ const updateBookingStatusController = async (req, res) => {
       const endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + tourPackage.duration_days - 1);
 
-      const isOneDay = tourPackage.duration_days === 1;
+      const padTime = (t) => t.length === 5 ? `${t}:00` : t; // Adds :00 if missing
+      const formattedStart = startDate.toISOString().split("T")[0];
+      const formattedEnd = endDate.toISOString().split("T")[0];
 
-      let event;
-      if (isOneDay) {
-        const formattedDate = startDate.toISOString().split("T")[0];
-        const padTime = (t) => t.length === 5 ? `${t}:00` : t; // Adds :00 if missing
-
-        event = {
-          summary: tourPackage.package_name || "Tour Booking",
-          location: tourPackage.location,
-          description: `Booking ID ${id} - Tour for ${booking.number_of_guests} guest(s)`,
-          start: {
-            dateTime: `${formattedDate}T${padTime(tourPackage.start_time)}+08:00`,
-            timeZone: "Asia/Manila",
-          },
-          end: {
-            dateTime: `${formattedDate}T${padTime(tourPackage.end_time)}+08:00`,
-            timeZone: "Asia/Manila",
-          },
-        };
-      } else {
-        const formattedStart = startDate.toISOString().split("T")[0];
-        const formattedEnd = new Date(endDate.getTime() + 86400000).toISOString().split("T")[0]; // +1 day for exclusive end
-
-        event = {
-          summary: tourPackage.package_name || "Tour Booking",
-          location: tourPackage.location,
-          description: `Booking ID ${id} - Tour for ${booking.number_of_guests} guest(s)`,
-          start: {
-            date: formattedStart,
-            timeZone: "Asia/Manila",
-          },
-          end: {
-            date: formattedEnd,
-            timeZone: "Asia/Manila",
-          },
-        };
+      const event = {
+        summary: tourPackage.package_name || "Tour Booking",
+        location: tourPackage.location,
+        description: `Booking ID ${id} - Tour for ${booking.number_of_guests} guest(s)`,
+        start: {
+          dateTime: `${formattedStart}T${padTime(tourPackage.start_time)}+08:00`,
+          timeZone: "Asia/Manila",
+        },
+        end: {
+          dateTime: `${formattedEnd}T${padTime(tourPackage.end_time)}+08:00`,
+          timeZone: "Asia/Manila",
+        },
       };
-
 
       for (const guide of assignedGuides) {
         const tokens = await getGoogleTokens(guide.tourguide_id);
@@ -154,6 +132,7 @@ const updateBookingStatusController = async (req, res) => {
     res.status(500).json({ error: "Failed to update status" });
   }
 };
+
 
 const getTouristBookingsController = async (req, res) => {
   try {
