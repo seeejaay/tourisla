@@ -83,8 +83,13 @@ export default function LoginScreen() {
         return;
       }
 
+      const userData= {
+        ...res.user,
+        token: res.token, // 👈 include token in stored data
+      };
+
       // Store the exact role as returned by the API
-      await AsyncStorage.setItem('userData', JSON.stringify(res.user));
+      await AsyncStorage.setItem('userData', JSON.stringify(userData));
       await AsyncStorage.setItem('role', role);
 
       // Use the role directly from the response

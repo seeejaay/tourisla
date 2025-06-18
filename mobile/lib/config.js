@@ -2,15 +2,19 @@
 export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.135:3005/api/v1/';
 export const REQUEST_TIMEOUT = 30000;
 
-// API endpoints
+// API endpoints - updated with more complete endpoint structure
 export const ENDPOINTS = {
   TOURIST_SPOTS: 'tourist-spots',
   USERS: 'users',
+  CURRENT_USER: 'users/current',  // Added specific endpoint for current user
   AUTH: 'auth',
+  AUTH_USER: 'auth/user',        // Added auth user endpoint
   REVIEWS: 'reviews',
   FAVORITES: 'favorites',
-  LOGIN: 'login',
-  RULES: 'rules'  // We'll adjust this based on the test results
+  LOGIN: 'auth/login',           // More standard login endpoint
+  TOUR_PACKAGES: 'tour-packages',
+  RULES: 'rules',
+  APPLICATIONS: 'applications'   // Added based on your logs
 };
 
 // App configuration
@@ -20,17 +24,28 @@ export const APP_CONFIG = {
   REGION: 'Bohol, Philippines'
 };
 
-// Helper function to get the full API URL for an endpoint
-export function getApiEndpoint(endpoint) {
-  // Try different combinations until we find one that works
-  const possiblePaths = [
-    `${API_URL}${endpoint}`,
-    `${API_URL}api/${endpoint}`,
-    `${API_URL}api/v1/${endpoint}`,
-    `${API_URL}v1/${endpoint}`
-  ];
+// Simplified and more reliable endpoint resolver
+export function getApiEndpoint(endpointKey) {
+  // Get the endpoint path from our predefined endpoints
+  const endpointPath = ENDPOINTS[endpointKey];
   
-  console.log('Possible API paths:', possiblePaths);
-  return possiblePaths[0]; // Start with the first option
+  if (!endpointPath) {
+    console.error(`Endpoint ${endpointKey} not defined`);
+    throw new Error(`Unknown endpoint: ${endpointKey}`);
+  }
+
+  // Construct the full URL
+  const fullUrl = `${API_URL}${endpointPath}`;
+  console.log(`Resolved API endpoint for ${endpointKey}:`, fullUrl);
+  return fullUrl;
 }
 
+// Additional helper for auth endpoints
+export function getAuthEndpoint(endpointKey) {
+  return getApiEndpoint(endpointKey.startsWith('AUTH_') ? endpointKey : `AUTH_${endpointKey}`);
+}
+
+// Helper to check if URL ends with slash
+function ensureTrailingSlash(url) {
+  return url.endsWith('/') ? url : `${url}/`;
+}
