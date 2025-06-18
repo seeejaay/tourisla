@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   Text, 
@@ -9,164 +9,129 @@ import {
   Alert,
   RefreshControl,
   TextInput,
-  Modal
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_URL } from '../../../lib/config';
+import { useTourPackages } from '@/hooks/useTourPackages';
 import { router } from 'expo-router';
 
-export default function OperatorPackagesScreen({ headerHeight }: { headerHeight: number }) {
-  const [packages, setPackages] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [userData, setUserData] = useState(null);
+export default function OperatorPackagesScreen({ headerHeight }) {
+  const {
+    packages,
+    loading,
+    refreshing,
+    userData,
+    handleRefresh,
+    handleCreatePackage,
+    handleDeletePackage
+  } = useTourPackages();
+
   const [showCreateModal, setShowCreateModal] = useState(false);
-  
-  // Form state for creating a new package
-  const [packageName, setPackageName] = useState('');
-  const [location, setLocation] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [durationDays, setDurationDays] = useState('');
-  const [inclusions, setInclusions] = useState('');
-  const [exclusions, setExclusions] = useState('');
-  const [availableSlots, setAvailableSlots] = useState('');
+  const [formData, setFormData] = useState({
+    packageName: '',
+    location: '',
+    description: '',
+    price: '',
+    durationDays: '',
+    inclusions: '',
+    exclusions: '',
+    availableSlots: '',
+    dateStart: '',
+    dateEnd: '',
+    startTime: '',
+    endTime: ''
+  });
   const [submitting, setSubmitting] = useState(false);
 
-  // Load user data and fetch packages
-  useEffect(() => {
-    loadUserData();
-  }, []);
-
-  const loadUserData = async () => {
-    try {
-      const userDataString = await AsyncStorage.getItem('userData');
-      if (userDataString) {
-        const parsedUserData = JSON.parse(userDataString);
-        setUserData(parsedUserData);
-        fetchPackages(parsedUserData.token);
-      } else {
-        setLoading(false);
+  const validateForm = () => {
+    const requiredFields = [
+      'packageName', 'location', 'description', 'price', 
+      'durationDays', 'availableSlots', 'dateStart', 'startTime'
+    ];
+    
+    for (const field of requiredFields) {
+      if (!formData[field].trim()) {
+        Alert.alert('Error', `${field.replace(/([A-Z])/g, ' $1').trim()} is required`);
+        return false;
       }
-    } catch (error) {
-      console.error('Error loading user data:', error);
-      setLoading(false);
     }
+
+    if (isNaN(parseFloat(formData.price))) {
+      Alert.alert('Error', 'Valid price is required');
+      return false;
+    }
+
+    if (isNaN(parseInt(formData.durationDays))) {
+      Alert.alert('Error', 'Valid duration in days is required');
+      return false;
+    }
+
+    if (isNaN(parseInt(formData.availableSlots))) {
+      Alert.alert('Error', 'Valid number of available slots is required');
+      return false;
+    }
+
+    return true;
   };
 
-  const fetchPackages = async (token) => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`${API_URL}tour-packages`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      setPackages(response.data);
-    } catch (error) {
-      console.error('Error fetching packages:', error);
-      Alert.alert('Error', 'Failed to load tour packages. Please try again.');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    if (userData && userData.token) {
-      fetchPackages(userData.token);
-    } else {
-      setRefreshing(false);
-    }
-  }, [userData]);
-
-  const handleCreatePackage = async () => {
+  const handleSubmit = async () => {
     if (!validateForm()) return;
     
     try {
       setSubmitting(true);
       
       const packageData = {
-        package_name: packageName,
-        location: location,
-        description: description,
-        price: parseFloat(price),
-        duration_days: parseInt(durationDays),
-        inclusions: inclusions,
-        exclusions: exclusions,
-        available_slots: parseInt(availableSlots)
+        package_name: formData.packageName.trim().toUpperCase(),
+        location: formData.location.trim().toUpperCase(),
+        description: formData.description.trim().toUpperCase(),
+        price: parseFloat(formData.price),
+        duration_days: parseInt(formData.durationDays),
+        inclusions: formData.inclusions.trim().toUpperCase(),
+        exclusions: formData.exclusions.trim().toUpperCase(),
+        available_slots: parseInt(formData.availableSlots),
+        date_start: formData.dateStart,
+        date_end: formData.dateEnd || null,
+        start_time: formData.startTime,
+        end_time: formData.endTime,
+        operator_id: userData.id 
       };
+
+      const result = await handleCreatePackage(packageData);
       
-      const response = await axios.post(
-        `${API_URL}tour-packages`, 
-        packageData,
-        { headers: { 'Authorization': `Bearer ${userData.token}` } }
-      );
-      
-      if (response.data) {
+      if (result?.success) {
         Alert.alert('Success', 'Tour package created successfully');
         setShowCreateModal(false);
-        clearForm();
-        fetchPackages(userData.token);
+        setFormData({
+          packageName: '',
+          location: '',
+          description: '',
+          price: '',
+          durationDays: '',
+          inclusions: '',
+          exclusions: '',
+          availableSlots: '',
+          dateStart: '',
+          dateEnd: '',
+          startTime: '',
+          endTime: ''
+        });
       }
     } catch (error) {
-      console.error('Error creating package:', error);
-      Alert.alert('Error', 'Failed to create tour package. Please try again.');
+      console.error('Error:', error);
+      Alert.alert('Error', error.message || 'Failed to create package');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const validateForm = () => {
-    if (!packageName.trim()) {
-      Alert.alert('Error', 'Package name is required');
-      return false;
-    }
-    if (!location.trim()) {
-      Alert.alert('Error', 'Location is required');
-      return false;
-    }
-    if (!description.trim()) {
-      Alert.alert('Error', 'Description is required');
-      return false;
-    }
-    if (!price.trim() || isNaN(parseFloat(price))) {
-      Alert.alert('Error', 'Valid price is required');
-      return false;
-    }
-    if (!durationDays.trim() || isNaN(parseInt(durationDays))) {
-      Alert.alert('Error', 'Valid duration in days is required');
-      return false;
-    }
-    if (!availableSlots.trim() || isNaN(parseInt(availableSlots))) {
-      Alert.alert('Error', 'Valid number of available slots is required');
-      return false;
-    }
-    return true;
-  };
-
-  const clearForm = () => {
-    setPackageName('');
-    setLocation('');
-    setDescription('');
-    setPrice('');
-    setDurationDays('');
-    setInclusions('');
-    setExclusions('');
-    setAvailableSlots('');
-  };
-
   const handleEditPackage = (packageId) => {
-    // Navigate to edit package screen
     router.push({
       pathname: '/operator/packages/edit_package',
       params: { packageId }
     });
   };
 
-  const handleDeletePackage = async (packageId) => {
+  const confirmDeletePackage = (packageId) => {
     Alert.alert(
       'Confirm Delete',
       'Are you sure you want to delete this package?',
@@ -177,16 +142,10 @@ export default function OperatorPackagesScreen({ headerHeight }: { headerHeight:
           style: 'destructive',
           onPress: async () => {
             try {
-              await axios.delete(
-                `${API_URL}tour-packages/${packageId}`,
-                { headers: { 'Authorization': `Bearer ${userData.token}` } }
-              );
-              
+              await handleDeletePackage(packageId);
               Alert.alert('Success', 'Package deleted successfully');
-              fetchPackages(userData.token);
             } catch (error) {
-              console.error('Error deleting package:', error);
-              Alert.alert('Error', 'Failed to delete package. Please try again.');
+              Alert.alert('Error', 'Failed to delete package');
             }
           }
         }
@@ -194,178 +153,206 @@ export default function OperatorPackagesScreen({ headerHeight }: { headerHeight:
     );
   };
 
-  const renderCreatePackageModal = () => {
-    return (
-      <Modal
-        visible={showCreateModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowCreateModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Create Tour Package</Text>
-              <TouchableOpacity 
-                onPress={() => setShowCreateModal(false)}
-                style={styles.closeButton}
-              >
-                <Ionicons name="close" size={24} color="#64748b" />
-              </TouchableOpacity>
-            </View>
+  const renderCreatePackageModal = () => (
+    <Modal
+      visible={showCreateModal}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={() => setShowCreateModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Create Tour Package</Text>
+            <TouchableOpacity 
+              onPress={() => setShowCreateModal(false)}
+              style={styles.closeButton}
+            >
+              <Ionicons name="close" size={24} color="#64748b" />
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={styles.formContainer}>
+            <Text style={styles.inputLabel}>Package Name</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.packageName}
+              onChangeText={(text) => setFormData({...formData, packageName: text})}
+              placeholder="Enter package name"
+            />
             
-            <ScrollView style={styles.formContainer}>
-              <Text style={styles.inputLabel}>Package Name</Text>
-              <TextInput
-                style={styles.input}
-                value={packageName}
-                onChangeText={setPackageName}
-                placeholder="Enter package name"
-              />
-              
-              <Text style={styles.inputLabel}>Location</Text>
-              <TextInput
-                style={styles.input}
-                value={location}
-                onChangeText={setLocation}
-                placeholder="Enter location"
-              />
-              
-              <Text style={styles.inputLabel}>Description</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={description}
-                onChangeText={setDescription}
-                placeholder="Enter description"
-                multiline
-                numberOfLines={4}
-              />
-              
-              <Text style={styles.inputLabel}>Price (PHP)</Text>
-              <TextInput
-                style={styles.input}
-                value={price}
-                onChangeText={setPrice}
-                placeholder="Enter price"
-                keyboardType="numeric"
-              />
-              
-              <Text style={styles.inputLabel}>Duration (Days)</Text>
-              <TextInput
-                style={styles.input}
-                value={durationDays}
-                onChangeText={setDurationDays}
-                placeholder="Enter duration in days"
-                keyboardType="numeric"
-              />
-              
-              <Text style={styles.inputLabel}>Inclusions</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={inclusions}
-                onChangeText={setInclusions}
-                placeholder="Enter inclusions"
-                multiline
-                numberOfLines={3}
-              />
-              
-              <Text style={styles.inputLabel}>Exclusions</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={exclusions}
-                onChangeText={setExclusions}
-                placeholder="Enter exclusions"
-                multiline
-                numberOfLines={3}
-              />
-              
-              <Text style={styles.inputLabel}>Available Slots</Text>
-              <TextInput
-                style={styles.input}
-                value={availableSlots}
-                onChangeText={setAvailableSlots}
-                placeholder="Enter available slots"
-                keyboardType="numeric"
-              />
-              
-              <TouchableOpacity
-                style={styles.submitButton}
-                onPress={handleCreatePackage}
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <ActivityIndicator color="#fff" size="small" />
-                ) : (
-                  <Text style={styles.submitButtonText}>Create Package</Text>
-                )}
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-    );
-  };
+            <Text style={styles.inputLabel}>Location</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.location}
+              onChangeText={(text) => setFormData({...formData, location: text})}
+              placeholder="Enter location"
+            />
+            
+            <Text style={styles.inputLabel}>Description</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={formData.description}
+              onChangeText={(text) => setFormData({...formData, description: text})}
+              placeholder="Enter description"
+              multiline
+              numberOfLines={4}
+            />
+            
+            <Text style={styles.inputLabel}>Price (PHP)</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.price}
+              onChangeText={(text) => setFormData({...formData, price: text})}
+              placeholder="Enter price"
+              keyboardType="numeric"
+            />
+            
+            <Text style={styles.inputLabel}>Duration (Days)</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.durationDays}
+              onChangeText={(text) => setFormData({...formData, durationDays: text})}
+              placeholder="Enter duration in days"
+              keyboardType="numeric"
+            />
+            
+            <Text style={styles.inputLabel}>Inclusions</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={formData.inclusions}
+              onChangeText={(text) => setFormData({...formData, inclusions: text})}
+              placeholder="Enter inclusions"
+              multiline
+              numberOfLines={3}
+            />
+            
+            <Text style={styles.inputLabel}>Exclusions</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={formData.exclusions}
+              onChangeText={(text) => setFormData({...formData, exclusions: text})}
+              placeholder="Enter exclusions"
+              multiline
+              numberOfLines={3}
+            />
+            
+            <Text style={styles.inputLabel}>Available Slots</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.availableSlots}
+              onChangeText={(text) => setFormData({...formData, availableSlots: text})}
+              placeholder="Enter available slots"
+              keyboardType="numeric"
+            />
+            
+            <Text style={styles.inputLabel}>Start Date (YYYY-MM-DD)</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.dateStart}
+              onChangeText={(text) => setFormData({...formData, dateStart: text})}
+              placeholder="Enter start date (e.g., 2023-12-01)"
+            />
 
-  const renderPackageItem = (packageItem) => {
-    return (
-      <View key={packageItem.id} style={styles.packageCard}>
-        <View style={styles.packageHeader}>
-          <Text style={styles.packageName}>{packageItem.package_name}</Text>
-          <View style={styles.packageActions}>
-            <TouchableOpacity 
-              onPress={() => handleEditPackage(packageItem.id)}
-              style={styles.actionButton}
+            <Text style={styles.inputLabel}>End Date (YYYY-MM-DD) - Optional</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.dateEnd}
+              onChangeText={(text) => setFormData({...formData, dateEnd: text})}
+              placeholder="Enter end date (e.g., 2023-12-05)"
+            />
+
+            <Text style={styles.inputLabel}>Start Time (HH:MM)</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.startTime}
+              onChangeText={(text) => setFormData({...formData, startTime: text})}
+              placeholder="Enter start time (e.g., 08:00)"
+            />
+
+            <Text style={styles.inputLabel}>End Time (HH:MM)</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.endTime}
+              onChangeText={(text) => setFormData({...formData, endTime: text})}
+              placeholder="Enter end time (e.g., 17:00)"
+            />
+            
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleSubmit}
+              disabled={submitting}
             >
-              <Ionicons name="create-outline" size={20} color="#0ea5e9" />
+              {submitting ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.submitButtonText}>Create Package</Text>
+              )}
             </TouchableOpacity>
-            <TouchableOpacity 
-              onPress={() => handleDeletePackage(packageItem.id)}
-              style={styles.actionButton}
-            >
-              <Ionicons name="trash-outline" size={20} color="#ef4444" />
-            </TouchableOpacity>
-          </View>
-        </View>
-        
-        <View style={styles.packageDetails}>
-          <View style={styles.detailRow}>
-            <Ionicons name="location-outline" size={16} color="#64748b" />
-            <Text style={styles.detailText}>{packageItem.location}</Text>
-          </View>
-          
-          <View style={styles.detailRow}>
-            <Ionicons name="calendar-outline" size={16} color="#64748b" />
-            <Text style={styles.detailText}>{packageItem.duration_days} days</Text>
-          </View>
-          
-          <View style={styles.detailRow}>
-            <Ionicons name="cash-outline" size={16} color="#64748b" />
-            <Text style={styles.detailText}>₱{packageItem.price.toLocaleString()}</Text>
-          </View>
-          
-          <View style={styles.detailRow}>
-            <Ionicons name="people-outline" size={16} color="#64748b" />
-            <Text style={styles.detailText}>{packageItem.available_slots} slots available</Text>
-          </View>
-        </View>
-        
-        <Text style={styles.packageDescription}>{packageItem.description}</Text>
-        
-        <View style={styles.packageFooter}>
-          <Text style={styles.packageStatus}>
-            {packageItem.is_active ? 'Active' : 'Inactive'}
-          </Text>
+          </ScrollView>
         </View>
       </View>
-    );
-  };
+    </Modal>
+  );
+
+  const renderPackageItem = (packageItem) => (
+    <View key={packageItem.id} style={styles.packageCard}>
+      <View style={styles.packageHeader}>
+        <Text style={styles.packageName}>{packageItem.package_name}</Text>
+        <View style={styles.packageActions}>
+          <TouchableOpacity 
+            onPress={() => handleEditPackage(packageItem.id)}
+            style={styles.actionButton}
+          >
+            <Ionicons name="create-outline" size={20} color="#0ea5e9" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            onPress={() => confirmDeletePackage(packageItem.id)}
+            style={styles.actionButton}
+          >
+            <Ionicons name="trash-outline" size={20} color="#ef4444" />
+          </TouchableOpacity>
+        </View>
+      </View>
+      
+      <View style={styles.packageDetails}>
+        <View style={styles.detailRow}>
+          <Ionicons name="location-outline" size={16} color="#64748b" />
+          <Text style={styles.detailText}>{packageItem.location}</Text>
+        </View>
+        
+        <View style={styles.detailRow}>
+          <Ionicons name="calendar-outline" size={16} color="#64748b" />
+          <Text style={styles.detailText}>{packageItem.duration_days} days</Text>
+        </View>
+        
+        <View style={styles.detailRow}>
+          <Ionicons name="cash-outline" size={16} color="#64748b" />
+          <Text style={styles.detailText}>₱{packageItem.price.toLocaleString()}</Text>
+        </View>
+        
+        <View style={styles.detailRow}>
+          <Ionicons name="people-outline" size={16} color="#64748b" />
+          <Text style={styles.detailText}>{packageItem.available_slots} slots available</Text>
+        </View>
+      </View>
+      
+      <Text style={styles.packageDescription}>{packageItem.description}</Text>
+      
+      <View style={styles.packageFooter}>
+        <Text style={styles.packageStatus}>
+          {packageItem.is_active ? 'Active' : 'Inactive'}
+        </Text>
+      </View>
+    </View>
+  );
 
   return (
     <View style={[styles.container, { paddingTop: headerHeight }]}>
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       >
         <View style={styles.header}>
@@ -607,4 +594,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  // Additional styles for better visual hierarchy
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#334155',
+    marginVertical: 8,
+  },
+  statusActive: {
+    color: '#10b981',
+    fontWeight: '500',
+  },
+  statusInactive: {
+    color: '#ef4444',
+    fontWeight: '500',
+  },
+  detailIcon: {
+    color: '#64748b',
+  },
+  // Add responsive styles if needed
+  '@media (min-width: 768px)': {
+    modalContent: {
+      width: '60%',
+    }
+  }
 });
