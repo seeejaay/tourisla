@@ -334,12 +334,12 @@ app.put(
   editGuideUploadDocuController
 );
 app.get(
-  "/api/v1/guideUploadDocu/:docuId",
+  "/api/v1/guideUploadDocu/doc/:docuId",
   authenticateTourGuide,
   getGuideUploadDocuByIdController
 );
 app.get(
-  "/api/v1/guideUploadDocu/:userId",
+  "/api/v1/guideUploadDocu/user/:userId",
   authenticateTourGuide,
   getGuideUploadByUserIdController
 );

@@ -263,8 +263,8 @@ export default function TourGuideRegister() {
               </label>
               <input
                 type="text"
-                name="phone"
-                value={form.phone}
+                name="mobile_number"
+                value={form.mobile_number}
                 onChange={handleChange}
                 required
                 placeholder="+639XXXXXXXXX"

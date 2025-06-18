@@ -79,10 +79,10 @@ const getAllGuideRegis = async () => {
   return result.rows;
 };
 
-const getGuideRegisById = async (guideId) => {
+const getGuideRegisById = async (userId) => {
   const result = await db.query(
     "SELECT * FROM tourguide_applicants WHERE user_id = $1",
-    [guideId]
+    [userId]
   );
   return result.rows[0];
 };

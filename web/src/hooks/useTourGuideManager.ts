@@ -11,9 +11,6 @@ import {
   createTourGuideApplicant as apiCreateTourGuideApplicant,
   editTourGuideApplicant as apiEditTourGuideApplicant,
   deleteTourGuideApplicant as apiDeleteTourGuideApplicant,
-  fetchTourGuideDocument as apiFetchTourGuideDocument,
-  uploadTourGuideDocument as apiUploadTourGuideDocument,
-  editTourGuideDocument as apiEditTourGuideDocument,
   fetchAllTourGuideApplicants as apiFetchAllTourGuideApplicants,
   fetchOneTourGuideApplicant as apiFetchOneTourGuideApplicant,
   approveTourGuideApplicant as apiApproveTourGuideApplicant,
@@ -241,78 +238,7 @@ export const useTourGuideManager = () => {
     },
     []
   );
-  // Fetch tour guide document
-  const fetchTourGuideDocument = useCallback(
-    async (id: string): Promise<File | null> => {
-      setLoading(true);
-      setError("");
-      try {
-        const response = await apiFetchTourGuideDocument(id);
-        if (response.error) {
-          setError(response.error);
-          return null;
-        }
-        return response;
-      } catch (error) {
-        setError(
-          "An error occurred while fetching the tour guide document." +
-            (error instanceof Error ? error.message : String(error))
-        );
-        return null;
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
-  // Upload tour guide document
-  const uploadTourGuideDocument = useCallback(
-    async (id: string, document: File): Promise<TourGuide | null> => {
-      setLoading(true);
-      setError("");
-      try {
-        const response = await apiUploadTourGuideDocument(id, document);
-        if (response.error) {
-          setError(response.error);
-          return null;
-        }
-        return response;
-      } catch (error) {
-        setError(
-          "An error occurred while uploading the tour guide document." +
-            (error instanceof Error ? error.message : String(error))
-        );
-        return null;
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
-  // Edit tour guide document
-  const editTourGuideDocument = useCallback(
-    async (id: string, document: File): Promise<TourGuide | null> => {
-      setLoading(true);
-      setError("");
-      try {
-        const response = await apiEditTourGuideDocument(id, document);
-        if (response.error) {
-          setError(response.error);
-          return null;
-        }
-        return response;
-      } catch (error) {
-        setError(
-          "An error occurred while editing the tour guide document." +
-            (error instanceof Error ? error.message : String(error))
-        );
-        return null;
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
+
   return {
     tourGuideApplicants,
     loading,
@@ -326,8 +252,5 @@ export const useTourGuideManager = () => {
     fetchOneTourGuideApplicant,
     approveTourGuideApplicant,
     rejectTourGuideApplicant,
-    fetchTourGuideDocument,
-    uploadTourGuideDocument,
-    editTourGuideDocument,
   };
 };
