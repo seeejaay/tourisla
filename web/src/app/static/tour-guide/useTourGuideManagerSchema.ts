@@ -16,16 +16,16 @@ const tourGuideSchema = z.object({
     .regex(/^[a-zA-Z\s]+$/, {
       message: "Last name can only contain letters and spaces.",
     }),
-  birth_date: z.date({
-    required_error: "Birth date is required.",
-    invalid_type_error: "Birth date must be a valid date",
-  }),
+  birth_date: z.string().refine((date) => {
+    const parsedDate = new Date(date);
+    return !isNaN(parsedDate.getTime()) && parsedDate <= new Date();
+  }, {}),
   sex: z.enum(["MALE", "FEMALE"], {
     message: "Sex is required.",
   }),
   mobile_number: z
     .string()
-    .min(10, { message: "Mobile number must be at least 10 characters." })
+    .min(1, { message: "Mobile number must be at least 1 characters." })
     .max(15, { message: "Mobile number must be less than 15 characters." })
     .regex(/^\+?[0-9]+$/, {
       message:
@@ -53,7 +53,7 @@ const tourGuideSchema = z.object({
     .optional(),
   reason_for_applying: z
     .string()
-    .min(10, { message: "Reason for applying is required." })
+    .min(10, { message: "Reason for applying is required. " })
     .max(500, {
       message: "Reason for applying must be less than 500 characters.",
     })

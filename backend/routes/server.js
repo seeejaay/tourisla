@@ -163,11 +163,11 @@ const {
   editAccommodationLogController,
   deleteAccommodationLogController,
   getAllAccommodationLogsController,
-  getAccommodationLogByIdController
+  getAccommodationLogByIdController,
 } = require("../controllers/accommodationLogController.js");
 
 const {
-  exportAccommodationLogController
+  exportAccommodationLogController,
 } = require("../controllers/accommodationLogController");
 
 const {
@@ -372,22 +372,18 @@ app.put(
   editGuideUploadDocuController
 );
 app.get(
-  "/api/v1/guideUploadDocu/:docuId",
+  "/api/v1/guideUploadDocu/doc/:docuId",
   authenticateTourGuide,
   getGuideUploadDocuByIdController
 );
 app.get(
-  "/api/v1/guideUploadDocu/:userId",
+  "/api/v1/guideUploadDocu/user/:userId",
   authenticateTourGuide,
   getGuideUploadByUserIdController
 );
 
 // Routes for Tour Operator Registration
-app.post(
-  "/api/v1/operatorRegis",
-  authenticateTourOperator,
-  createOperatorRegisController
-);
+app.post("/api/v1/operatorRegis", createOperatorRegisController);
 app.put(
   "/api/v1/operatorRegis/:operatorId",
   authenticateTourOperator,
@@ -607,109 +603,6 @@ app.get(
   // authenticateTourGuide,
   googleCalendarCallbackController
 );
-
-// Routes for booking (Tour Guide's Side)
-app.patch(
-  "/api/v1/bookings/guide/:bookingId/finish",
-  // authenticateTourGuide,
-  markBookingAsFinishedController
-);
-app.get(
-  "/api/v1/bookings/guide",
-  // authenticateTourGuide,
-  getTourGuideBookingsFilteredController
-);
-
-// Routes for Booking
-app.post(
-  "/api/v1/bookings",
-  // authenticateUser,
-  upload.single("proof_of_payment"),
-  createBookingController
-);
-app.put(
-  "/api/v1/bookings/:id/status",
-  // authenticateTourOperator,
-  updateBookingStatusController
-);
-app.get(
-  "/api/v1/bookings/tourist",
-  // authenticateUser,
-  getTouristBookingsController
-);
-app.get(
-  "/api/v1/bookings/package/:packageId",
-  authenticateTourOperator,
-  getBookingsByPackageController
-);
-app.get(
-  "/api/v1/bookings/:id",
-  authenticateUser,
-  getBookingByIdController
-);
-app.get(
-  "/api/v1/bookings/tourist/filtered",
-  // authenticateUser,
-  getTouristBookingsFilteredController
-);
-
-// Routes for Google Calendar integration
-app.get(
-  "/api/v1/calendar/authorize",
-  // authenticateTourGuide,
-  authorizeGoogleCalendarController
-);
-app.get(
-  "/api/v1/calendar/auth/callback",
-  // authenticateTourGuide,
-  googleCalendarCallbackController
-);
-
-// Routes for booking (Tour Guide's Side)
-app.patch(
-  "/api/v1/bookings/guide/:bookingId/finish",
-  // authenticateTourGuide,
-  markBookingAsFinishedController
-);
-app.get(
-  "/api/v1/bookings/guide",
-  // authenticateTourGuide,
-  getTourGuideBookingsFilteredController
-);
-
-// Routes for Booking
-app.post(
-  "/api/v1/bookings",
-  // authenticateUser,
-  upload.single("proof_of_payment"),
-  createBookingController
-);
-app.put(
-  "/api/v1/bookings/:id/status",
-  // authenticateTourOperator,
-  updateBookingStatusController
-);
-app.get(
-  "/api/v1/bookings/tourist",
-  // authenticateUser,
-  getTouristBookingsController
-);
-app.get(
-  "/api/v1/bookings/package/:packageId",
-  authenticateTourOperator,
-  getBookingsByPackageController
-);
-app.get(
-  "/api/v1/bookings/:id",
-  authenticateUser,
-  getBookingByIdController
-);
-app.get(
-  "/api/v1/bookings/tourist/filtered",
-  // authenticateUser,
-  getTouristBookingsFilteredController
-);
-
 // Accommodation Logs Routes
 app.post(
   "/api/v1/accommodation-logs",
@@ -723,7 +616,7 @@ app.put(
 );
 app.delete(
   "/api/v1/accommodation-logs/:logId",
- authenticateTourismStaff,
+  authenticateTourismStaff,
   deleteAccommodationLogController
 );
 //excel export for accommodation logs — MUST be placed before ":logId"
@@ -734,22 +627,24 @@ app.get("/api/v1/accommodation-logs/:logId", getAccommodationLogByIdController);
 // Policy Routes
 app.get("/api/v1/policies", getAllPoliciesController);
 app.get("/api/v1/policies/:policyId", getPolicyByIdController);
-app.get("/api/v1/policies/type/:type([a-zA-Z0-9-_]+)", getPoliciesByTypeController);
+app.get(
+  "/api/v1/policies/type/:type([a-zA-Z0-9-_]+)",
+  getPoliciesByTypeController
+);
 app.post("/api/v1/policies", authenticateAdmin, createPolicyController);
 app.put("/api/v1/policies/:policyId", authenticateAdmin, editPolicyController);
-app.delete("/api/v1/policies/:policyId", authenticateAdmin, deletePolicyController);
-
+app.delete(
+  "/api/v1/policies/:policyId",
+  authenticateAdmin,
+  deletePolicyController
+);
 
 //tripadvisors
-
 app.get("/tripadvisor/hotels", getTripadvisorHotelsWithPhotos);
-
 //Individual Visitor Log Export
 app.get("/api/v1/visitor-logs/export", exportVisitorLogController);
-
 //Visitor Summary Grouped by Month Export
 app.get("/api/v1/visitor-summary/export", exportVisitorLogGroupController);
-
 
 
 // Tourist submits feedback for guide/operator/spot
