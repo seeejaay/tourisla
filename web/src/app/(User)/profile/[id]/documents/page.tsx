@@ -2,49 +2,110 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDocumentManager } from "@/hooks/useDocumentManager";
+import { useRouter } from "next/navigation";
+
+import AddGuideDocument from "@/components/custom/document/addGuideDocument";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
+
+import { Button } from "@/components/ui/button";
 
 export default function TourGuideDocumentsPage() {
-  const { loading: authLoading, error: authError } = useAuth();
-  const {
-    loading: docLoading,
-    error: docError,
-    fetchGuideDocumentsById,
-  } = useDocumentManager();
+  const router = useRouter();
 
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [documents, setDocuments] = useState<any[]>([]);
+  const [guideId, setGuideId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const { loggedInUser } = useAuth();
+  const { fetchGuideDocumentsById } = useDocumentManager();
+
+  // Fetch guideId and documents
   useEffect(() => {
-    async function fetchDocs() {
+    async function fetchUserAndDocs() {
       setLoading(true);
       setError(null);
       try {
         // Get the current user
-        const res = await import("@/lib/api/auth").then((m) => m.currentUser());
-        const guideId = res?.data?.user?.id; // Adjust if your user object is different
-        if (!guideId) throw new Error("No tour guide ID found.");
+        const res = await loggedInUser(router);
+        const userId = res.data.user.user_id;
+        if (!userId) throw new Error("No tour guide ID found.");
+        setGuideId(userId);
+
         // Fetch documents for this guide
-        const docs = await fetchGuideDocumentsById(guideId);
+        const docs = await fetchGuideDocumentsById(userId);
         setDocuments(Array.isArray(docs) ? docs : []);
-      } catch (err: any) {
-        setError(err.message || "Failed to load documents.");
+      } catch (error) {
+        setError(error + " Failed to load documents.");
       } finally {
         setLoading(false);
       }
     }
-    fetchDocs();
-  }, [fetchGuideDocumentsById]);
+    fetchUserAndDocs();
+    // Only run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  if (loading || authLoading || docLoading)
-    return <div>Loading documents...</div>;
-  if (error || authError || docError)
-    return <div>Error: {error || authError || docError}</div>;
+  // Refetch documents after adding a new one
+  const handleSuccess = async () => {
+    setDialogOpen(false);
+    if (!guideId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const docs = await fetchGuideDocumentsById(guideId);
+      setDocuments(Array.isArray(docs) ? docs : []);
+    } catch (error) {
+      setError(error + " Failed to load documents.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div>
+    <div className="flex items-center justify-center flex-col">
       <h1>Your Uploaded Documents</h1>
-      {documents.length === 0 ? (
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogTrigger asChild>
+          <Button>Add Document</Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Tour Guide Document</DialogTitle>
+            <DialogDescription>
+              Fill in the details to upload a new document.
+            </DialogDescription>
+          </DialogHeader>
+          <AddGuideDocument
+            guideId={guideId}
+            onSuccess={handleSuccess}
+            onCancel={() => setDialogOpen(false)}
+          />
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Cancel
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {loading ? (
+        <div>Loading documents...</div>
+      ) : error ? (
+        <div className="text-red-600">{error}</div>
+      ) : documents.length === 0 ? (
         <div>No documents uploaded yet.</div>
       ) : (
         <ul>
