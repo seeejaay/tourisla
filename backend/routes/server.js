@@ -208,6 +208,16 @@ const {
   getTourGuideBookingsFilteredController
 } = require("../controllers/guideBookingsController.js");
 
+const {
+  submitFeedbackController,
+  viewFeedbackGroupAnswersController,
+  viewAllFeedbackForEntityController,
+  createQuestionController,
+  editQuestionController,
+  deleteQuestionController,
+  viewQuestionsByTypeController
+} = require("../controllers/feedbackController.js");
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -739,3 +749,54 @@ app.get("/api/v1/visitor-logs/export", exportVisitorLogController);
 
 //Visitor Summary Grouped by Month Export
 app.get("/api/v1/visitor-summary/export", exportVisitorLogGroupController);
+
+
+
+// Tourist submits feedback for guide/operator/spot
+app.post(
+  "/api/v1/feedback/submit",
+  authenticateUser, // Tourist only
+  submitFeedbackController
+);
+
+// 2. Tourism Officer views detailed answers of a feedback group (submitted set)
+app.get(
+  "/api/v1/feedback/group/:group_id",
+  authenticateTourismOfficer,
+  viewFeedbackGroupAnswersController
+);
+
+// 3. View all feedback for a specific entity (by ref_id & type)
+// - Officer: can view all (spot, guide, operator)
+// - Operator: can view feedback for them and their guides
+// - Guide: can view feedback for themselves
+// - Staff: can view feedback about them
+app.get(
+  "/api/v1/feedback/entity",
+  authenticateTourismOfficer, // <- You can add custom middleware to switch dynamically
+  viewAllFeedbackForEntityController
+);
+
+// 4. Officer or Operator manages feedback questions (add/edit/delete)
+app.post(
+  "/api/v1/feedback/questions",
+  authenticateTourismOfficer, // Or combine into authenticateOperatorOrOfficer
+  createQuestionController
+);
+app.put(
+  "/api/v1/feedback/questions/:id",
+  authenticateTourismOfficer,
+  editQuestionController
+);
+app.delete(
+  "/api/v1/feedback/questions/:id",
+  authenticateTourismOfficer,
+  deleteQuestionController
+);
+
+// 5. Anyone can view feedback questions (for form rendering)
+app.get(
+  "/api/v1/feedback/questions/:type",
+  viewQuestionsByTypeController
+);
+
