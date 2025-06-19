@@ -68,16 +68,10 @@ export const touristSpotFields: TouristSpotField[] = [
     placeholder: "Cebu",
   },
   {
-    name: "longitude",
-    label: "Longitude",
+    name: "location",
+    label: "Location ",
     type: "text",
-    placeholder: "123.456789",
-  },
-  {
-    name: "latitude",
-    label: "Latitude",
-    type: "text",
-    placeholder: "12.345678",
+    placeholder: "https://example.com/location ",
   },
   {
     name: "opening_time",
@@ -94,17 +88,8 @@ export const touristSpotFields: TouristSpotField[] = [
   {
     name: "days_open",
     label: "Days Open",
-    type: "select",
-    placeholder: "Select days open",
-    options: [
-      { value: "MONDAY", label: "M" },
-      { value: "TUESDAY", label: "T" },
-      { value: "WEDNESDAY", label: "W" },
-      { value: "THURSDAY", label: "Th" },
-      { value: "FRIDAY", label: "F" },
-      { value: "SATURDAY", label: "S" },
-      { value: "SUNDAY", label: "S" },
-    ],
+    type: "text",
+    placeholder: "e.g., Monday to Sunday",
   },
   {
     name: "entrance_fee",

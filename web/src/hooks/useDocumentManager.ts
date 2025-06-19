@@ -76,6 +76,7 @@ export const useDocumentManager = () => {
 
   // Guide: Fetch by ID
   const fetchGuideDocument = useCallback(async (docuId: string) => {
+    console.log("Fetching guide document by ID:", docuId);
     setLoading(true);
     setError(null);
     try {

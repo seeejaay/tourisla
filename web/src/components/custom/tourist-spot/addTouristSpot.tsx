@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 export default function AddTouristSpot({
   onSuccess,
   onCancel,
@@ -154,50 +153,29 @@ export default function AddTouristSpot({
                   className="w-full text-sm bg-gray-100 text-gray-600"
                 />
               ) : field.name === "days_open" ? (
-                <fieldset className="w-full">
-                  <legend className="sr-only">{field.label}</legend>
-                  <div className="flex flex-row justify-center gap-1">
-                    {field.options?.map((option) => {
-                      const checked =
-                        Array.isArray(form.days_open) &&
-                        form.days_open.includes(option.value);
-                      return (
-                        <label
-                          key={option.value}
-                          className={`flex items-center justify-center w-8 h-8 rounded-md border text-base font-medium cursor-pointer transition-colors
-              ${
-                checked
-                  ? "bg-blue-600 text-white border-blue-600 shadow"
-                  : "bg-white text-gray-700 border-gray-300 hover:border-blue-400"
-              }`}
-                          htmlFor={`days_open_${option.value}`}
-                        >
-                          <Checkbox
-                            checked={checked}
-                            onCheckedChange={(checked) => {
-                              setForm((prev) => {
-                                const days = Array.isArray(prev.days_open)
-                                  ? prev.days_open
-                                  : [];
-                                return {
-                                  ...prev,
-                                  days_open: checked
-                                    ? [...days, option.value]
-                                    : days.filter(
-                                        (v: string) => v !== option.value
-                                      ),
-                                };
-                              });
-                            }}
-                            id={`days_open_${option.value}`}
-                            className="sr-only"
-                          />
-                          {option.label}
-                        </label>
-                      );
-                    })}
-                  </div>
-                </fieldset>
+                <div className="mb-4">
+                  <Label
+                    htmlFor={field.name}
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  ></Label>
+                  <Input
+                    id={field.name}
+                    name={field.name}
+                    type="text"
+                    placeholder="e.g. Monday to Friday"
+                    value={form[field.name]}
+                    onChange={(e) => {
+                      setForm((prev) => ({
+                        ...prev,
+                        [field.name]: e.target.value,
+                      }));
+                    }}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Enter the days when this spot is open to visitors
+                  </p>
+                </div>
               ) : field.type === "select" ? (
                 <select
                   id={field.name}
