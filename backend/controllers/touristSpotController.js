@@ -4,9 +4,9 @@ const {
   deleteTouristSpot,
   getAllTouristSpots,
   getTouristSpotById,
-  uploadTouristSpotImages,
   deleteTouristSpotImages,
   getTouristSpotImages,
+  addTouristSpotImages,
 } = require("../models/touristSpotModel");
 
 const {
@@ -72,10 +72,24 @@ const createTouristSpotController = async (req, res) => {
       email,
       facebook_page,
       rules: rules?.toUpperCase(),
-      images: imageUrls, // Add images directly to the tourist spot
+      // Add images directly to the tourist spot
     });
 
-    res.json(spot);
+    let spotImages = [];
+    if (imageUrls.length > 0) {
+      spotImages = await addTouristSpotImages(spot.id, imageUrls);
+    }
+
+    return res.status(201).json({
+      status: "success",
+      message: "Tourist spot created successfully",
+      data: {
+        touristSpot: {
+          ...spot,
+          images: spotImages.map((img) => img.image_url), // Return only image URLs
+        },
+      },
+    });
   } catch (err) {
     console.log(err.message);
     res.status(500).send(err.message);
@@ -175,7 +189,7 @@ const deleteTouristSpotController = async (req, res) => {
 
     // Get the tourist spot to access its images
     const spot = await getTouristSpotById(touristSpotId);
-    
+
     // Delete images from S3 if they exist
     if (spot.images && spot.images.length > 0) {
       for (const imageUrl of spot.images) {
@@ -216,11 +230,11 @@ const viewTouristSpotByIdController = async (req, res) => {
   try {
     const { touristSpotId } = req.params;
     const spot = await getTouristSpotById(touristSpotId);
-    
+
     if (!spot) {
       return res.status(404).json({ error: "Tourist spot not found" });
     }
-    
+
     res.json(spot);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch tourist spot" });
