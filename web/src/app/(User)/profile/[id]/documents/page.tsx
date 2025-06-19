@@ -91,6 +91,12 @@ export default function TourGuideDocumentsPage() {
     setDialogOpen(true);
   };
 
+  // Find the selected document for editing
+  const selectedDoc =
+    dialogMode === "edit" && selectedDocId
+      ? documents.find((d) => d.id === selectedDocId)
+      : null;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col items-center py-12 px-4 sm:px-6 w-full">
       <div className="w-full pl-24 space-y-8">
@@ -137,14 +143,22 @@ export default function TourGuideDocumentsPage() {
                 onCancel={() => setDialogOpen(false)}
               />
             )}
-            {dialogMode === "edit" && selectedDocId && (
-              <EditGuideDocument
-                docuId={selectedDocId}
-                guideId={guideId}
-                onSuccess={handleSuccess}
-                onCancel={() => setDialogOpen(false)}
-              />
-            )}
+            {dialogMode === "edit" &&
+              selectedDocId &&
+              (selectedDoc ? (
+                <EditGuideDocument
+                  docuId={selectedDocId}
+                  initialData={{
+                    document_type: selectedDoc.document_type,
+                    requirements: selectedDoc.requirements || [],
+                    file_path: selectedDoc.file_path,
+                  }}
+                  onSuccess={handleSuccess}
+                  onCancel={() => setDialogOpen(false)}
+                />
+              ) : (
+                <div className="text-center py-8">Loading document...</div>
+              ))}
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>

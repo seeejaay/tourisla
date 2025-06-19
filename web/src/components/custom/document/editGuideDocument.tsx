@@ -1,46 +1,34 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useDocumentManager } from "@/hooks/useDocumentManager";
 import { tourGuideDocuFields } from "@/app/static/tour-guide/tourguide";
 
 type EditGuideDocumentProps = {
-  guideId: string;
   docuId: string;
+  initialData: {
+    document_type: string;
+    requirements: string[];
+    // You may add more fields as needed
+    file_path?: string;
+  };
   onSuccess?: () => void;
   onCancel?: () => void;
 };
 
 const EditGuideDocument: React.FC<EditGuideDocumentProps> = ({
   docuId,
+  initialData,
   onSuccess,
   onCancel,
 }) => {
-  const { editGuideDocument, fetchGuideDocument, loading, error } =
-    useDocumentManager();
+  const { editGuideDocument, loading, error } = useDocumentManager();
 
   const [file, setFile] = useState<File | null>(null);
   const [form, setForm] = useState({
-    document_type: "",
-    requirements: [] as string[],
-    file_path: "",
+    document_type: initialData.document_type || "",
+    requirements: initialData.requirements || [],
   });
   const [formError, setFormError] = useState<string | null>(null);
-
-  // Fetch existing document data
-  useEffect(() => {
-    const fetchData = async () => {
-      const doc = await fetchGuideDocument(docuId);
-      if (doc) {
-        setForm({
-          document_type: doc.document_type || "",
-          requirements: doc.requirements || [],
-          file_path: doc.file_path || "",
-        });
-      }
-    };
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [docuId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -76,22 +64,19 @@ const EditGuideDocument: React.FC<EditGuideDocumentProps> = ({
       return;
     }
 
-    // Build document data
-    const documentData: any = {
-      document_type: form.document_type,
-      requirements: form.requirements,
-    };
-
-    // If a new file is selected, you may need to handle file upload separately in your API
+    // File is optional for edit, only send if changed
+    const formData = new FormData();
     if (file) {
-      documentData.file = file;
+      formData.append("document", file);
     }
+    formData.append("document_type", form.document_type);
+    form.requirements.forEach((req) => formData.append("requirements", req));
 
     try {
-      const result = await editGuideDocument(docuId, documentData);
+      const result = await editGuideDocument(docuId, formData);
       if (result && onSuccess) onSuccess();
     } catch (error) {
-      setFormError(error + "Failed to update document.");
+      setFormError("Failed to update document." + error);
     }
   };
 
@@ -129,15 +114,24 @@ const EditGuideDocument: React.FC<EditGuideDocumentProps> = ({
                 onChange={handleChange}
                 className="w-full border px-2 py-1 rounded"
               />
-              {file ? (
+              {file && (
                 <div className="text-xs text-gray-500 mt-1">
                   Selected: {file.name}
                 </div>
-              ) : form.file_path ? (
+              )}
+              {!file && initialData.file_path && (
                 <div className="text-xs text-gray-500 mt-1">
-                  Current: {form.file_path.split("/").pop()}
+                  Current:{" "}
+                  <a
+                    href={initialData.file_path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    {initialData.file_path.split("/").pop()}
+                  </a>
                 </div>
-              ) : null}
+              )}
             </div>
           );
         }
@@ -186,7 +180,7 @@ const EditGuideDocument: React.FC<EditGuideDocumentProps> = ({
           disabled={loading}
           className="bg-blue-600 text-white px-4 py-2 rounded"
         >
-          {loading ? "Saving..." : "Update Document"}
+          {loading ? "Saving..." : "Save Changes"}
         </button>
         {onCancel && (
           <button
