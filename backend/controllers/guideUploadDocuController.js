@@ -107,8 +107,8 @@ const editGuideUploadDocuController = async (req, res) => {
   try {
     const { docuId } = req.params;
     let { document_type } = req.body;
-
-    document_type = document_type.toUpperCase();
+    console.log(req.body);
+    const newDocument_type = document_type.toUpperCase();
 
     const allowedTypes = [
       "GOV_ID",
@@ -120,7 +120,7 @@ const editGuideUploadDocuController = async (req, res) => {
       "RESUME",
     ];
 
-    if (!allowedTypes.includes(document_type)) {
+    if (!allowedTypes.includes(newDocument_type)) {
       return res.status(400).json({ error: "Invalid document type" });
     }
 

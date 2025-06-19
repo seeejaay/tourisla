@@ -57,9 +57,10 @@ export const useDocumentManager = () => {
 
   // Guide: Edit
   const editGuideDocument = useCallback(
-    async (docuId: string, documentData: GuideDocument) => {
+    async (docuId: string, documentData: FormData) => {
       setLoading(true);
       setError(null);
+      console.log("Sending document data for edit:", docuId, documentData);
       try {
         const doc = await apiEditGuideDocument(docuId, documentData);
         setGuideDocument(doc);

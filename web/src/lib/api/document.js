@@ -23,31 +23,16 @@ export const uploadGuideDocument = async (guideId, formData) => {
 };
 
 // Edit a guide's uploaded document
-export const editGuideDocument = async (docuId, documentFile) => {
-  try {
-    const formData = new FormData();
-    formData.append("document", documentFile);
-
-    const response = await axios.put(
-      `${API_URL}guideUploadDocu/${docuId}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        withCredentials: true,
-      }
-    );
-    if (response.status !== 200) {
-      throw new Error(
-        `Failed to edit guide document. Server responded with status: ${response.status}`
-      );
+export const editGuideDocument = async (docuId, formData) => {
+  const response = await axios.put(
+    `${API_URL}guideUploadDocu/${docuId}`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+      withCredentials: true,
     }
-    return response.data;
-  } catch (error) {
-    console.error("Error editing guide document:", error);
-    throw error;
-  }
+  );
+  return response.data;
 };
 
 // Get a guide's uploaded document by document ID
