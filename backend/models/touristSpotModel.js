@@ -84,13 +84,24 @@ const editTouristSpot = async (id, data) => {
   } = data;
 
   const result = await db.query(
-    `UPDATE tourist_spots 
-    (name, type, description, barangay, municipality, province, location,
-    opening_time, closing_time, days_open, entrance_fee, other_fees, 
-    contact_number, email, facebook_page, rules) 
-    VALUES 
-    ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 
-    $16) 
+    `UPDATE tourist_spots SET
+      name = $1,
+      type = $2,
+      description = $3,
+      barangay = $4,
+      municipality = $5,
+      province = $6,
+      location = $7,
+      opening_time = $8,
+      closing_time = $9,
+      days_open = $10,
+      entrance_fee = $11,
+      other_fees = $12,
+      contact_number = $13,
+      email = $14,
+      facebook_page = $15,
+      rules = $16
+    WHERE id = $17
     RETURNING *`,
     [
       name,
@@ -109,9 +120,9 @@ const editTouristSpot = async (id, data) => {
       email,
       facebook_page,
       rules,
+      id,
     ]
   );
-
   return result.rows[0];
 };
 
@@ -138,6 +149,14 @@ const getTouristSpotById = async (id) => {
   return result.rows[0];
 };
 
+const getTouristSpotImages = async (spotId) => {
+  const result = await db.query(
+    `SELECT * FROM tourist_spot_images WHERE tourist_spot_id = $1`,
+    [spotId]
+  );
+  return result.rows;
+};
+
 module.exports = {
   createTouristSpot,
   editTouristSpot,
@@ -145,4 +164,5 @@ module.exports = {
   getAllTouristSpots,
   getTouristSpotById,
   addTouristSpotImages,
+  getTouristSpotImages,
 };

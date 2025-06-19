@@ -174,7 +174,7 @@ const editTouristSpotController = async (req, res) => {
         const imageUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
         imageUrls.push(imageUrl);
       }
-      await uploadTouristSpotImages(spot.id, imageUrls);
+      await addTouristSpotImages(spot.id, imageUrls);
     }
     res.json(spot);
   } catch (err) {
@@ -218,8 +218,24 @@ const deleteTouristSpotController = async (req, res) => {
 
 const viewTouristSpotsController = async (req, res) => {
   try {
+    // Get all tourist spots
     const spots = await getAllTouristSpots();
-    res.json(spots);
+
+    // For each spot, fetch its images
+    const spotsWithImages = await Promise.all(
+      spots.map(async (spot) => {
+        const images = await getTouristSpotImages(spot.id);
+
+        // Return the spot with images attached
+        return {
+          ...spot,
+          images: images,
+        };
+      })
+    );
+
+    // Return the spots with their images
+    res.json(spotsWithImages);
   } catch (err) {
     console.log(err.message);
     res.status(500).send(err.message);
