@@ -1,5 +1,17 @@
 const db = require("../db/index");
 
+const addTouristSpotImages = async (spotId, imageUrls) => {
+  const promises = imageUrls.map((url) => {
+    return db.query(
+      "INSERT INTO tourist_spot_images (tourist_spot_id, image_url) VALUES ($1, $2) RETURNING *",
+      [spotId, url]
+    );
+  });
+
+  const results = await Promise.all(promises);
+  return results.map((result) => result.rows[0]);
+};
+
 const createTouristSpot = async (data) => {
   const {
     name,
@@ -132,4 +144,5 @@ module.exports = {
   deleteTouristSpot,
   getAllTouristSpots,
   getTouristSpotById,
+  addTouristSpotImages,
 };
