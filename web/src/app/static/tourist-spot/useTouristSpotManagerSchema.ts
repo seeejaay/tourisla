@@ -41,14 +41,13 @@ const touristSpotSchema = z.object({
   province: z.literal("CEBU", {
     message: "Province must be Cebu.",
   }),
-  longitude: z
-    .number()
-    .min(1, { message: "Longitude is required." })
-    .max(180, { message: "Longitude must be less than  100 characters." }),
-  latitude: z
-    .number()
-    .min(1, { message: "Latitude is required." })
-    .max(50, { message: "Latitude must be less than 100 characters." }),
+  location: z
+    .string()
+    .min(5, { message: "Location is required." })
+    .max(255, { message: "Location must be less than 255 characters." }) // URLs can be longer
+    .regex(/^(https?:\/\/)?[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/, {
+      message: "Please enter a valid location or URL.",
+    }),
   opening_time: z
     .string()
     .min(5, { message: "Opening hours are required." })
@@ -66,19 +65,12 @@ const touristSpotSchema = z.object({
         "Only A, P, M, numbers, colon (:), dot (.), and spaces are allowed.",
     }),
   days_open: z
-    .array(
-      z.enum([
-        "MONDAY",
-        "TUESDAY",
-        "WEDNESDAY",
-        "THURSDAY",
-        "FRIDAY",
-        "SATURDAY",
-        "SUNDAY",
-      ])
-    )
-    .min(1, { message: "At least one day must be selected." })
-    .max(7, { message: "Days open must be less than 8 days." }),
+    .string()
+    .min(6, { message: "Days open information is required." })
+    .max(100, { message: "Days open text is too long." })
+    .regex(/^[a-zA-Z\s,]+$/, {
+      message: "Days open can only contain letters, spaces, and commas.",
+    }),
 
   entrance_fee: z
     .string()

@@ -53,9 +53,12 @@ export const editGuideDocument = async (docuId, documentFile) => {
 // Get a guide's uploaded document by document ID
 export const getGuideDocumentById = async (docuId) => {
   try {
-    const response = await axios.get(`${API_URL}guideUploadDocu/${docuId}`, {
-      withCredentials: true,
-    });
+    const response = await axios.get(
+      `${API_URL}guideUploadDocu/doc/${docuId}`,
+      {
+        withCredentials: true,
+      }
+    );
 
     if (response.status !== 200) {
       throw new Error(

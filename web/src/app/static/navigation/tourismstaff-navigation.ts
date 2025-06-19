@@ -47,6 +47,12 @@ const tourismStaffNavigation = (): NavItem[] => {
       title: "Tourist Spot",
       icon: TreePalm,
     },
+    {
+      name: "Tour Guides",
+      href: `/tourism-staff/tour-guides`,
+      title: "Tour Guides",
+      icon: Hotel,
+    },
   ];
 };
 

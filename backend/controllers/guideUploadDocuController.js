@@ -159,11 +159,13 @@ const getGuideUploadDocuByIdController = async (req, res) => {
     const currentUserId = req.session.user.id; // current user ID from session
     const guideUploadDocu = await getGuideUploadDocuById(docuId);
 
+    const guideReg = await getGuideRegisById(currentUserId);
+    const tourguide_id = guideReg.id;
     if (!guideUploadDocu) {
       return res.status(404).json({ error: "Document not found" });
     }
 
-    if (guideUploadDocu.tourguide_id !== currentUserId) {
+    if (guideUploadDocu.tourguide_id !== tourguide_id) {
       return res.status(403).json({ error: "Forbidden: Access denied" });
     }
 
