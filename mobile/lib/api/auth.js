@@ -200,7 +200,7 @@ export const currentUser = async () => {
     // Try each endpoint until one works
     for (const endpoint of possibleEndpoints) {
       try {
-        getApiEndpoint('TOUR_PACKAGES')
+        const url = getAuthUrl(endpoint); 
         console.log(`Trying to fetch user from: ${url}`);
         
         const response = await axios.get(url, {
