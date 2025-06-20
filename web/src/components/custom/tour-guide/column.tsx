@@ -103,7 +103,7 @@ export function columns(
               <DropdownMenuItem
                 onClick={() =>
                   router.push(
-                    `/tourism-staff/tour-guides/${guide.id}/documents`
+                    `/tourism-staff/tour-guides/${guide.user_id}/documents`
                   )
                 }
               >
