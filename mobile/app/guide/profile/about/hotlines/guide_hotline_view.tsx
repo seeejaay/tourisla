@@ -58,7 +58,7 @@ const getTypeColor = (type: string) => {
     }
 };
 
-export default function TouristHotlineViewScreen() {
+export default function StaffHotlineViewScreen() {
     const router = useRouter();
     const { id } = useLocalSearchParams<{ id: string }>();
     const { viewHotline, loading, error } = useHotlineManager();
