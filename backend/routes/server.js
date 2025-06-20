@@ -163,11 +163,11 @@ const {
   editAccommodationLogController,
   deleteAccommodationLogController,
   getAllAccommodationLogsController,
-  getAccommodationLogByIdController
+  getAccommodationLogByIdController,
 } = require("../controllers/accommodationLogController.js");
 
 const {
-  exportAccommodationLogController
+  exportAccommodationLogController,
 } = require("../controllers/accommodationLogController");
 
 const {
@@ -207,6 +207,16 @@ const {
   markBookingAsFinishedController,
   getTourGuideBookingsFilteredController
 } = require("../controllers/guideBookingsController.js");
+
+const {
+  submitFeedbackController,
+  viewFeedbackGroupAnswersController,
+  viewAllFeedbackForEntityController,
+  createQuestionController,
+  editQuestionController,
+  deleteQuestionController,
+  viewQuestionsByTypeController
+} = require("../controllers/feedbackController.js");
 
 app.use(
   session({
@@ -362,22 +372,18 @@ app.put(
   editGuideUploadDocuController
 );
 app.get(
-  "/api/v1/guideUploadDocu/:docuId",
+  "/api/v1/guideUploadDocu/doc/:docuId",
   authenticateTourGuide,
   getGuideUploadDocuByIdController
 );
 app.get(
-  "/api/v1/guideUploadDocu/:userId",
+  "/api/v1/guideUploadDocu/user/:userId",
   authenticateTourGuide,
   getGuideUploadByUserIdController
 );
 
 // Routes for Tour Operator Registration
-app.post(
-  "/api/v1/operatorRegis",
-  authenticateTourOperator,
-  createOperatorRegisController
-);
+app.post("/api/v1/operatorRegis", createOperatorRegisController);
 app.put(
   "/api/v1/operatorRegis/:operatorId",
   authenticateTourOperator,
@@ -567,22 +573,26 @@ app.post("/api/v1/register/manual-check-in", manualCheckInController);
 app.post("/api/v1/tour-packages", createTourPackageController);
 app.put(
   "/api/v1/tour-packages/:id",
-  authenticateTourOperator,
+  // authenticateTourOperator,
+  allowedRoles(["Tour Guide", "Tour Operator"]),
   updateTourPackageController
 );
 app.delete(
   "/api/v1/tour-packages/:id",
-  authenticateTourOperator,
+  // authenticateTourOperator,
+  allowedRoles(["Tour Guide", "Tour Operator"]),
   deleteTourPackageController
 );
 app.get(
   "/api/v1/tour-packages",
-  authenticateTourOperator,
+  // authenticateTourOperator,
+  allowedRoles(["Tour Guide", "Tour Operator"]),
   viewTourPackagesController
 );
 app.get(
   "/api/v1/tour-packages/:id",
-  authenticateTourOperator,
+  // authenticateTourOperator,
+  allowedRoles(["Tour Guide", "Tour Operator"]),
   viewTourPackageByIdController
 );
 
@@ -597,52 +607,6 @@ app.get(
   // authenticateTourGuide,
   googleCalendarCallbackController
 );
-
-// Routes for booking (Tour Guide's Side)
-app.patch(
-  "/api/v1/bookings/guide/:bookingId/finish",
-  // authenticateTourGuide,
-  markBookingAsFinishedController
-);
-app.get(
-  "/api/v1/bookings/guide",
-  // authenticateTourGuide,
-  getTourGuideBookingsFilteredController
-);
-
-// Routes for Booking
-app.post(
-  "/api/v1/bookings",
-  // authenticateUser,
-  upload.single("proof_of_payment"),
-  createBookingController
-);
-app.put(
-  "/api/v1/bookings/:id/status",
-  // authenticateTourOperator,
-  updateBookingStatusController
-);
-app.get(
-  "/api/v1/bookings/tourist",
-  // authenticateUser,
-  getTouristBookingsController
-);
-app.get(
-  "/api/v1/bookings/package/:packageId",
-  authenticateTourOperator,
-  getBookingsByPackageController
-);
-app.get(
-  "/api/v1/bookings/:id",
-  authenticateUser,
-  getBookingByIdController
-);
-app.get(
-  "/api/v1/bookings/tourist/filtered",
-  // authenticateUser,
-  getTouristBookingsFilteredController
-);
-
 // Accommodation Logs Routes
 app.post(
   "/api/v1/accommodation-logs",
@@ -656,7 +620,7 @@ app.put(
 );
 app.delete(
   "/api/v1/accommodation-logs/:logId",
- authenticateTourismStaff,
+  authenticateTourismStaff,
   deleteAccommodationLogController
 );
 //excel export for accommodation logs — MUST be placed before ":logId"
@@ -667,18 +631,71 @@ app.get("/api/v1/accommodation-logs/:logId", getAccommodationLogByIdController);
 // Policy Routes
 app.get("/api/v1/policies", getAllPoliciesController);
 app.get("/api/v1/policies/:policyId", getPolicyByIdController);
-app.get("/api/v1/policies/type/:type([a-zA-Z0-9-_]+)", getPoliciesByTypeController);
+app.get(
+  "/api/v1/policies/type/:type([a-zA-Z0-9-_]+)",
+  getPoliciesByTypeController
+);
 app.post("/api/v1/policies", authenticateAdmin, createPolicyController);
 app.put("/api/v1/policies/:policyId", authenticateAdmin, editPolicyController);
-app.delete("/api/v1/policies/:policyId", authenticateAdmin, deletePolicyController);
-
+app.delete(
+  "/api/v1/policies/:policyId",
+  authenticateAdmin,
+  deletePolicyController
+);
 
 //tripadvisors
-
 app.get("/tripadvisor/hotels", getTripadvisorHotelsWithPhotos);
-
 //Individual Visitor Log Export
 app.get("/api/v1/visitor-logs/export", exportVisitorLogController);
-
 //Visitor Summary Grouped by Month Export
 app.get("/api/v1/visitor-summary/export", exportVisitorLogGroupController);
+
+
+// Tourist submits feedback for guide/operator/spot
+app.post(
+  "/api/v1/feedback/submit",
+  authenticateUser, // Tourist only
+  submitFeedbackController
+);
+
+// 2. Tourism Officer views detailed answers of a feedback group (submitted set)
+app.get(
+  "/api/v1/feedback/group/:group_id",
+  authenticateTourismOfficer,
+  viewFeedbackGroupAnswersController
+);
+
+// 3. View all feedback for a specific entity (by ref_id & type)
+// - Officer: can view all (spot, guide, operator)
+// - Operator: can view feedback for them and their guides
+// - Guide: can view feedback for themselves
+// - Staff: can view feedback about them
+app.get(
+  "/api/v1/feedback/entity",
+  authenticateTourismOfficer, // <- You can add custom middleware to switch dynamically
+  viewAllFeedbackForEntityController
+);
+
+// 4. Officer or Operator manages feedback questions (add/edit/delete)
+app.post(
+  "/api/v1/feedback/questions",
+  authenticateTourismOfficer, // Or combine into authenticateOperatorOrOfficer
+  createQuestionController
+);
+app.put(
+  "/api/v1/feedback/questions/:id",
+  authenticateTourismOfficer,
+  editQuestionController
+);
+app.delete(
+  "/api/v1/feedback/questions/:id",
+  authenticateTourismOfficer,
+  deleteQuestionController
+);
+
+// 5. Anyone can view feedback questions (for form rendering)
+app.get(
+  "/api/v1/feedback/questions/:type",
+  viewQuestionsByTypeController
+);
+

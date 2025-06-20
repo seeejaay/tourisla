@@ -20,15 +20,32 @@ export default function TouristHome() {
   useEffect(() => {
     const getUserName = async () => {
       try {
-        const user = await auth.getCurrentUser();
-        if (user && user.name) {
-          setUserName(user.name.split(' ')[0]); // Get first name
+        const response = await auth.currentUser();
+        
+        let userData = null;
+        if (response && response.data && response.data.user) {
+          userData = response.data.user;
+        } else if (response && response.user) {
+          userData = response.user;
+        } else if (response && response.data) {
+          userData = response.data;
+        } else if (typeof response === 'object' && response !== null) {
+          userData = response;
         }
+  
+        if (userData && userData.name) {
+          setUserName(userData.name.split(' ')[0]);
+        } else if (userData && userData.first_name) {
+          setUserName(userData.first_name);
+        } else if (userData && userData.email) {
+          setUserName(userData.email.split('@')[0]);
+        }
+  
       } catch (error) {
         console.error('Error getting user name:', error);
       }
     };
-    
+  
     getUserName();
   }, []);
 

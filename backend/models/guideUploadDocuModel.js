@@ -3,7 +3,7 @@ const db = require("../db/index.js");
 const createGuideUploadDocu = async (guideUploadDocuData) => {
   const { tourguide_id, document_type, file_path, requirements } =
     guideUploadDocuData;
-
+  console.log("Creating in Model:", guideUploadDocuData);
   const result = await db.query(
     "INSERT INTO tourguide_documents (tourguide_id, document_type, file_path, uploaded_at, requirements) VALUES ($1, $2, $3, NOW(), $4) RETURNING *",
     [tourguide_id, document_type, file_path, requirements]
@@ -30,10 +30,10 @@ const getGuideUploadDocuById = async (docuId) => {
   return result.rows[0];
 };
 
-const getGuideUploadByUserId = async (userId) => {
+const getGuideUploadByUserId = async (tourGuideId) => {
   const result = await db.query(
-    "SELECT * FROM tourguide_documents WHERE user_id = $1",
-    [userId]
+    "SELECT * FROM tourguide_documents WHERE tourguide_id = $1",
+    [tourGuideId]
   );
   return result.rows;
 };
@@ -44,3 +44,5 @@ module.exports = {
   getGuideUploadDocuById,
   getGuideUploadByUserId,
 };
+
+
