@@ -14,13 +14,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export type Applicant = {
-  id?: number;
+  id: number;
   first_name: string;
   last_name: string;
   email: string;
   mobile_number: string;
   reason_for_applying: string;
   application_status: string;
+  user_id: string; // Assuming this is the ID of the applicant
 };
 
 export function columns(
