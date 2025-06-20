@@ -336,12 +336,12 @@ app.put(
 );
 app.get(
   "/api/v1/guideUploadDocu/doc/:docuId",
-  authenticateTourGuide,
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
   getGuideUploadDocuByIdController
 );
 app.get(
   "/api/v1/guideUploadDocu/user/:userId",
-  authenticateTourGuide,
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
   getGuideUploadByUserIdController
 );
 

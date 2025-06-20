@@ -100,8 +100,10 @@ export const useDocumentManager = () => {
     setLoading(true);
     setError(null);
     try {
+      console.log("Fetching guide documents by user ID:", guideId);
       const docs = await getGuideDocumentsByUserId(guideId);
       setGuideDocument(docs);
+      console.log("Fetched guide documents:", docs);
       return docs;
     } catch (error) {
       setError(error + "Unknown error");
