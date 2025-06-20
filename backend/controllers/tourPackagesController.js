@@ -1,17 +1,17 @@
 const e = require("express");
 const {
-  getAllTourPackagesByOperator,
-  getTourPackageById,
   createTourPackage,
   updateTourPackage,
   deleteTourPackage,
+  getAllTourPackagesByOperator,
+  getTourPackageById,
 } = require("../models/tourPackagesModel.js");
 
 // Tour Operator managing tour packages
 
 const createTourPackageController = async (req, res) => {
   try {
-    const touroperator_id = req.user.id;
+    const touroperator_id = 1;
     let {
       package_name,
       location,
@@ -21,6 +21,11 @@ const createTourPackageController = async (req, res) => {
       inclusions,
       exclusions,
       available_slots,
+      date_start,
+      date_end,
+      start_time,
+      end_time,
+      assigned_guides,
     } = req.body;
 
     package_name = package_name.toUpperCase();
@@ -30,7 +35,7 @@ const createTourPackageController = async (req, res) => {
     exclusions = exclusions.toUpperCase();
 
     // Validate required fields
-    if (!package_name || !location || !description || !price || !duration_days || !available_slots) {
+    if (!package_name || !location || !description || !price || !duration_days || !available_slots || !date_start) {
       return res.status(400).json({ error: "All fields are required" });
     };
 
@@ -38,6 +43,8 @@ const createTourPackageController = async (req, res) => {
     if (isNaN(price) || isNaN(duration_days) || isNaN(available_slots)) {
         return res.status(400).json({ error: "Price, duration_days, and available_slots must be numbers" });
     }
+
+    // Ensure date_start and date_end are valid dates
     if (available_slots < 0) {
         return res.status(400).json({ error: "Available slots cannot be negative" });
     };
@@ -52,6 +59,11 @@ const createTourPackageController = async (req, res) => {
       inclusions,
       exclusions,
       available_slots,
+      date_start,
+      date_end,
+      start_time, 
+      end_time,
+      assigned_guides
     });
 
     res.status(201).json({ message: "Tour package created", tourPackage: newPackage });
@@ -75,6 +87,10 @@ const updateTourPackageController = async (req, res) => {
       exclusions,
       available_slots,
       is_active,
+      date_start,
+      date_end,
+      start_time, 
+      end_time
     } = req.body;
 
     package_name = package_name.toUpperCase();
@@ -84,7 +100,7 @@ const updateTourPackageController = async (req, res) => {
     exclusions = exclusions.toUpperCase();
 
     // Validate required fields
-    if (!package_name || !location || !description || !price || !duration_days || !available_slots) {
+    if (!package_name || !location || !description || !price || !duration_days || !available_slots || !date_start) {
       return res.status(400).json({ error: "All fields are required" });
     };
 
@@ -106,6 +122,10 @@ const updateTourPackageController = async (req, res) => {
       exclusions,
       available_slots,
       is_active,
+      date_start,
+      date_end,
+      start_time, 
+      end_time
     });
 
     if (!updated) return res.status(404).json({ message: "Tour package not found." });
@@ -157,7 +177,6 @@ const viewTourPackageByIdController = async (req, res) => {
     res.send(err.message);
   }
 };
-
 
 module.exports = {
   createTourPackageController,

@@ -66,19 +66,28 @@ export default function LoginScreen() {
     try {
       console.log('Attempting login with email:', trimmedEmail);
       
-      const res = await login({ email: trimmedEmail, password: trimmedPassword });
+      const res = await login({ email: trimmedEmail, password: trimmedPassword }) as { token: string; user: any };
       console.log('Login response:', JSON.stringify(res));
       
-      const { role, ...userData } = res.user;
+      // Make sure we're getting the correct role
+      if (!res || !res.user) {
+        setError('Invalid login response');
+        return;
+      }
+      
+      const { role } = res.user;
+      console.log('User role from login:', role);
 
       if (!role) {
         setError('No role returned. Cannot proceed.');
         return;
       }
 
-      await AsyncStorage.setItem('userData', JSON.stringify(userData));
+      // Store the exact role as returned by the API
+      await AsyncStorage.setItem('userData', JSON.stringify(res.user));
       await AsyncStorage.setItem('role', role);
 
+      // Use the role directly from the response
       switch (role) {
         case 'Admin':
           router.replace('/admin/admin_dashboard');
@@ -87,9 +96,11 @@ export default function LoginScreen() {
           router.replace('/tourist/tourist_dashboard');
           break;
         case 'Tour Guide':
-          router.replace('/guide_home');
+        case 'tour_guide':
+          router.replace('/guide/guide_dashboard');
           break;
         case 'Tour Operator':
+        case 'tour_operator':
           router.replace('/operator/operator_dashboard');
           break;
         case 'Tourism Staff':
