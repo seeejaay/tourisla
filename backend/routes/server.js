@@ -607,6 +607,52 @@ app.get(
   // authenticateTourGuide,
   googleCalendarCallbackController
 );
+
+// Routes for booking (Tour Guide's Side)
+app.patch(
+  "/api/v1/bookings/guide/:bookingId/finish",
+  // authenticateTourGuide,
+  markBookingAsFinishedController
+);
+app.get(
+  "/api/v1/bookings/guide",
+  // authenticateTourGuide,
+  getTourGuideBookingsFilteredController
+);
+
+// Routes for Booking
+app.post(
+  "/api/v1/bookings",
+  // authenticateUser,
+  upload.single("proof_of_payment"),
+  createBookingController
+);
+app.put(
+  "/api/v1/bookings/:id/status",
+  // authenticateTourOperator,
+  updateBookingStatusController
+);
+app.get(
+  "/api/v1/bookings/tourist",
+  // authenticateUser,
+  getTouristBookingsController
+);
+app.get(
+  "/api/v1/bookings/package/:packageId",
+  authenticateTourOperator,
+  getBookingsByPackageController
+);
+app.get(
+  "/api/v1/bookings/:id",
+  authenticateUser,
+  getBookingByIdController
+);
+app.get(
+  "/api/v1/bookings/tourist/filtered",
+  // authenticateUser,
+  getTouristBookingsFilteredController
+);
+
 // Accommodation Logs Routes
 app.post(
   "/api/v1/accommodation-logs",
