@@ -224,6 +224,10 @@ const {
   viewIncidentReportByUserController
 } = require("../controllers/incidentRepController.js");
 
+const {
+  uploadOperatorQrController
+} = require("../controllers/operatorQRController.js");
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -766,4 +770,12 @@ app.get(
   "/api/v1/incident-report/user/:userId",
   authenticateTourismOfficer,
   viewIncidentReportByUserController
+);
+
+// Route for Tour Operator QR Code Upload
+app.post(
+  "/api/v1/operator-qr",
+  upload.single("qr_image"),
+  authenticateTourOperator,
+  uploadOperatorQrController
 );
