@@ -76,3 +76,81 @@ export const getGuideDocumentsByUserId = async (userId) => {
     throw error;
   }
 };
+
+export const uploadOperatorDocument = async (operatorId, formData) => {
+  try {
+    console.log("Uploading operator document with formData:", formData);
+    const response = await axios.post(
+      `${API_URL}operatorUploadDocu/${operatorId}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
+      }
+    );
+    console.log("Upload Response:", response);
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading operator document:", error);
+    throw error;
+  }
+};
+
+export const editOperatorDocument = async (docuId, formData) => {
+  try {
+    console.log("Editing operator document with formData:", formData);
+
+    const response = await axios.put(
+      `${API_URL}operatorUploadDocu/${docuId}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error editing operator document:", error);
+    throw error;
+  }
+};
+
+export const getOperatorDocumentById = async (docuId) => {
+  try {
+    const response = await axios.get(
+      `${API_URL}operatorUploadDocu/doc/${docuId}`,
+      {
+        withCredentials: true,
+      }
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Failed to fetch operator document. Server responded with status: ${response.status}`
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching operator document:", error);
+    throw error;
+  }
+};
+
+export const getOperatorDocumentsByUserId = async (userId) => {
+  try {
+    const response = await axios.get(
+      `${API_URL}operatorUploadDocu/user/${userId}`,
+      { withCredentials: true }
+    );
+    if (response.status !== 200) {
+      throw new Error(
+        `Failed to fetch operator documents. Server responded with status: ${response.status}`
+      );
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching operator documents:", error);
+    throw error;
+  }
+};

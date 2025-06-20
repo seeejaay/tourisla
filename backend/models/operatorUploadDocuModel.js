@@ -28,10 +28,10 @@ const getOperatorUploadById = async (documentId) => {
   return result.rows[0];
 };
 
-const getOperatorUploadByUserId = async (userId) => {
+const getOperatorUploadByUserId = async (tourOperatorId) => {
   const result = await db.query(
-    "SELECT * FROM touroperator_documents WHERE user_id = $1",
-    [userId]
+    "SELECT * FROM touroperator_documents WHERE touroperator_id = $1",
+    [tourOperatorId]
   );
   return result.rows;
 };

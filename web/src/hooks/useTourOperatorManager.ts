@@ -11,6 +11,8 @@ import {
   editTourOperatorApplicant as apieditApplicant,
   createTourOperatorApplicant as apicreateApplicant,
   deleteTourOperatorApplicant as apideleteApplicant,
+  approveTourOperatorApplicant as apiapproveApplicant,
+  rejectTourOperatorApplicant as apirejectApplicant,
 } from "@/lib/api/tour-operator";
 
 export const useTourOperatorManager = () => {
@@ -124,6 +126,54 @@ export const useTourOperatorManager = () => {
     }
   }, []);
 
+  const approveApplicant = useCallback(
+    async (id: number): Promise<TourOperator | null> => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const approvedApplicant = await apiapproveApplicant(id);
+        setOperatorApplicants((prev) =>
+          prev.map((applicant) =>
+            applicant.id === id ? approvedApplicant : applicant
+          )
+        );
+        return approvedApplicant;
+      } catch (err) {
+        setError("Failed to approve tour operator applicant.");
+        console.error(err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const rejectApplicant = useCallback(
+    async (id: number): Promise<TourOperator | null> => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const rejectedApplicant = await apirejectApplicant(id);
+        setOperatorApplicants((prev) =>
+          prev.map((applicant) =>
+            applicant.id === id ? rejectedApplicant : applicant
+          )
+        );
+        return rejectedApplicant;
+      } catch (err) {
+        setError("Failed to reject tour operator applicant.");
+        console.error(err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   return {
     OperatorApplicants,
     loading,
@@ -133,5 +183,7 @@ export const useTourOperatorManager = () => {
     editApplicant,
     createApplicant,
     deleteApplicant,
+    approveApplicant,
+    rejectApplicant,
   };
 };

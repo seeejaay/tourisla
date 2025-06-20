@@ -90,6 +90,7 @@ const {
   createOperatorUploadDocuController,
   editOperatorUploadDocuController,
   getOperatorUploadDocuByIdController,
+  getOperatorUploadByUserIdController,
 } = require("../controllers/operatorUploadDocuController.js");
 
 const {
@@ -316,7 +317,7 @@ app.delete(
 app.get("/api/v1/guideRegis", authenticateTourGuide, viewGuideRegisController);
 app.get(
   "/api/v1/guideRegis/:guideId",
-  authenticateTourGuide,
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
   viewGuideRegisByIdController
 );
 
@@ -381,30 +382,36 @@ app.put(
   editOperatorUploadDocuController
 );
 app.get(
-  "/api/v1/operatorUploadDocu/:documentId",
+  "/api/v1/operatorUploadDocu/doc/:documentId",
   authenticateTourOperator,
   getOperatorUploadDocuByIdController
+);
+
+app.get(
+  "/api/v1/operatorUploadDocu/user/:userId",
+  authenticateTourOperator,
+  getOperatorUploadByUserIdController
 );
 
 // Routes for Admin verifying applicants
 app.get(
   "/api/v1/guideApplicants",
-  authenticateAdmin,
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
   viewTourGuideApplicantsController
 );
 app.get(
   "/api/v1/guideApplicants/:applicantId",
-  authenticateAdmin,
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
   viewTourGuideApplicantDetailsController
 );
 app.put(
   "/api/v1/guideApplicants/:applicantId/approve",
-  authenticateAdmin,
+  allowedRoles(["Tourism Staff", "Tourism Officer"]),
   approveTourGuideApplicantController
 );
 app.put(
   "/api/v1/guideApplicants/:applicantId/reject",
-  authenticateAdmin,
+  allowedRoles(["Tourism Staff", "Tourism Officer"]),
   rejectTourGuideApplicantController
 );
 app.get(

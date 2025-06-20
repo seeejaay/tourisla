@@ -138,6 +138,7 @@ const viewGuideRegisController = async (req, res) => {
 const viewGuideRegisByIdController = async (req, res) => {
   try {
     const { guideId } = req.params;
+
     const guideRegis = await getGuideRegisById(guideId);
 
     res.json(guideRegis);
