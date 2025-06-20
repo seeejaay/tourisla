@@ -66,7 +66,7 @@ export default function LoginScreen() {
     try {
       console.log('Attempting login with email:', trimmedEmail);
       
-      const res = await login({ email: trimmedEmail, password: trimmedPassword });
+      const res = await login({ email: trimmedEmail, password: trimmedPassword }) as { token: string; user: any };
       console.log('Login response:', JSON.stringify(res));
       
       // Make sure we're getting the correct role
@@ -83,13 +83,8 @@ export default function LoginScreen() {
         return;
       }
 
-      const userData= {
-        ...res.user,
-        token: res.token, // 👈 include token in stored data
-      };
-
       // Store the exact role as returned by the API
-      await AsyncStorage.setItem('userData', JSON.stringify(userData));
+      await AsyncStorage.setItem('userData', JSON.stringify(res.user));
       await AsyncStorage.setItem('role', role);
 
       // Use the role directly from the response

@@ -573,22 +573,26 @@ app.post("/api/v1/register/manual-check-in", manualCheckInController);
 app.post("/api/v1/tour-packages", createTourPackageController);
 app.put(
   "/api/v1/tour-packages/:id",
-  authenticateTourOperator,
+  // authenticateTourOperator,
+  allowedRoles(["Tour Guide", "Tour Operator"]),
   updateTourPackageController
 );
 app.delete(
   "/api/v1/tour-packages/:id",
-  authenticateTourOperator,
+  // authenticateTourOperator,
+  allowedRoles(["Tour Guide", "Tour Operator"]),
   deleteTourPackageController
 );
 app.get(
   "/api/v1/tour-packages",
-  authenticateTourOperator,
+  // authenticateTourOperator,
+  allowedRoles(["Tour Guide", "Tour Operator"]),
   viewTourPackagesController
 );
 app.get(
   "/api/v1/tour-packages/:id",
-  authenticateTourOperator,
+  // authenticateTourOperator,
+  allowedRoles(["Tour Guide", "Tour Operator"]),
   viewTourPackageByIdController
 );
 
