@@ -138,6 +138,7 @@ export const useTourGuideManager = () => {
           setError(response.error);
           return null;
         }
+
         return response;
       } catch (error) {
         setError(
@@ -159,6 +160,7 @@ export const useTourGuideManager = () => {
     setError("");
     try {
       const data = await apiFetchAllTourGuideApplicants();
+      console.log("Fetched all tour guide applicants:", data);
       return data;
     } catch (error) {
       setError(
@@ -192,14 +194,14 @@ export const useTourGuideManager = () => {
   );
   // Approve a tour guide applicant
   const approveTourGuideApplicant = useCallback(
-    async (id: string): Promise<TourGuide | null> => {
+    async (id: number): Promise<TourGuide | null> => {
       setLoading(true);
       setError("");
       try {
         const response = await apiApproveTourGuideApplicant(id);
         if (response.error) {
           setError(response.error);
-          return null;
+          return response;
         }
         return response;
       } catch (error) {

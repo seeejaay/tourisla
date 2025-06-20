@@ -18,7 +18,7 @@ const createGuideUploadDocuController = async (req, res) => {
     console.log("req.body:", req.body);
     console.log("req.params:", req.params);
     // Get the userId from session or params
-    const userId = req.session.user.id; // or req.params.guideId if you use the URL param
+    const userId = req.params.guideId; // or req.params.guideId if you use the URL param
 
     // Await the DB call to get the guide registration
     const guideReg = await getGuideRegisById(userId);

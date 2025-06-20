@@ -12,7 +12,7 @@ const operatorNavigation = (userId: string): NavItem[] => {
     },
     {
       name: "Documents",
-      href: `profile/${userId}/documents`,
+      href: `${userId}/documents/tour-operator`,
       title: "Documents",
       icon: FileText,
     },

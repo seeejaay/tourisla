@@ -4,6 +4,10 @@ import {
   editGuideDocument as apiEditGuideDocument,
   getGuideDocumentById,
   getGuideDocumentsByUserId,
+  uploadOperatorDocument,
+  editOperatorDocument as editOperatorUploadDocu,
+  getOperatorDocumentById,
+  getOperatorDocumentsByUserId,
 } from "@/lib/api/document";
 
 type GuideDocument = {
@@ -107,63 +111,83 @@ export const useDocumentManager = () => {
     }
   }, []);
 
-  // // Operator: Create
-  // const createOperatorDocument = useCallback(
-  //   async (operatorId: string, documentData: OperatorDocument, file: File) => {
-  //     setLoading(true);
-  //     setError(null);
-  //     try {
-  //       const doc = await createOperatorUploadDocu(
-  //         operatorId,
-  //         documentData,
-  //         file
-  //       );
-  //       setOperatorDocument(doc);
-  //       return doc;
-  //     } catch (error) {
-  //       setError(error + "Unknown error");
-  //       return null;
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   },
-  //   []
-  // );
+  const createOperatorDocument = useCallback(
+    async (operatorId: string, formData: FormData) => {
+      setLoading(true);
+      setError(null);
+      try {
+        console.log("Creating document for operator");
+        const doc = await uploadOperatorDocument(operatorId, formData);
+        // setOperatorDocument(doc); // Uncomment if you want to store operator document
+        console.log("Operator document created:", doc);
+        return doc;
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError("Unknown error");
+        }
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
-  // // Operator: Edit
-  // const editOperatorDocument = useCallback(
-  //   async (docuId: string, documentData: OperatorDocument, file?: File) => {
-  //     setLoading(true);
-  //     setError(null);
-  //     try {
-  //       const doc = await editOperatorUploadDocu(docuId, documentData, file);
-  //       setOperatorDocument(doc);
-  //       return doc;
-  //     } catch (error) {
-  //       setError(error + "Unknown error");
-  //       return null;
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   },
-  //   []
-  // );
+  const editOperatorDocument = useCallback(
+    async (docuId: string, documentData: FormData) => {
+      setLoading(true);
+      setError(null);
+      console.log(
+        "Sending operator document data for edit:",
+        docuId,
+        documentData
+      );
+      try {
+        const doc = await editOperatorUploadDocu(docuId, documentData);
+        // setOperatorDocument(doc); // Uncomment if you want to store operator document
+        return doc;
+      } catch (error) {
+        setError(error + "Unknown error");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
-  // // Operator: Fetch by ID
-  // const fetchOperatorDocument = useCallback(async (docuId: string) => {
-  //   setLoading(true);
-  //   setError(null);
-  //   try {
-  //     const doc = await fetchOperatorUploadDocuById(docuId);
-  //     setOperatorDocument(doc);
-  //     return doc;
-  //   } catch (error) {
-  //     setError(error + "Unknown error");
-  //     return null;
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, []);
+  const fetchOperatorDocument = useCallback(async (docuId: string) => {
+    console.log("Fetching operator document by ID:", docuId);
+    setLoading(true);
+    setError(null);
+    try {
+      const doc = await getOperatorDocumentById(docuId);
+      // setOperatorDocument(doc); // Uncomment if you want to store operator document
+      return doc;
+    } catch (error) {
+      setError(error + "Unknown error");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchOperatorDocumentsById = useCallback(async (operatorId: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const docs = await getOperatorDocumentsByUserId(operatorId);
+      // setOperatorDocument(docs); // Uncomment if you want to store operator document
+      return docs;
+    } catch (error) {
+      setError(error + "Unknown error");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   return {
     loading,
@@ -174,8 +198,9 @@ export const useDocumentManager = () => {
     editGuideDocument,
     fetchGuideDocument,
     fetchGuideDocumentsById,
-    // createOperatorDocument,
-    // editOperatorDocument,
-    // fetchOperatorDocument,
+    createOperatorDocument,
+    editOperatorDocument,
+    fetchOperatorDocument,
+    fetchOperatorDocumentsById,
   };
 };
