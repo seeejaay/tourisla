@@ -218,6 +218,12 @@ const {
   viewQuestionsByTypeController
 } = require("../controllers/feedbackController.js");
 
+const {
+  createIncidentReportController,
+  viewAllIncidentReportsController,
+  viewIncidentReportByUserController
+} = require("../controllers/incidentRepController.js");
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -745,3 +751,19 @@ app.get(
   viewQuestionsByTypeController
 );
 
+// Routes for Incident Reports
+app.post(
+  "/api/v1/incident-report",
+  upload.single("photo"),
+  createIncidentReportController
+);
+app.get(
+  "/api/v1/incident-report",
+  authenticateTourismOfficer,
+  viewAllIncidentReportsController
+);
+app.get(
+  "/api/v1/incident-report/user/:userId",
+  authenticateTourismOfficer,
+  viewIncidentReportByUserController
+);
