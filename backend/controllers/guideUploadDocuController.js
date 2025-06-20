@@ -6,17 +6,39 @@ const {
   getGuideUploadByUserId,
 } = require("../models/guideUploadDocuModel.js");
 
+const { getGuideRegisById } = require("../models/guideRegisModel.js"); // Adjust the path as necessary
+
 const { s3Client, PutObjectCommand } = require("../utils/s3.js"); // Adjust the path as necessary
 
 // from tour guide's end: can upload (create), update, and view their own documents only
 
 const createGuideUploadDocuController = async (req, res) => {
   try {
-    const { guideId } = req.params;
+    console.log("req.file:", req.file);
+    console.log("req.body:", req.body);
+    console.log("req.params:", req.params);
+    // Get the userId from session or params
+    const userId = req.params.guideId; // or req.params.guideId if you use the URL param
+
+    // Await the DB call to get the guide registration
+    const guideReg = await getGuideRegisById(userId);
+    console.log("Guide ID:", guideReg);
+    if (!guideReg) {
+      return res
+        .status(404)
+        .json({ error: "Tour guide not found for this user." });
+    }
+    const tourguide_id = guideReg.id;
+
     let { document_type, requirements } = req.body;
 
-    document_type = document_type.toUpperCase();
-    requirements = requirements.map((req) => req.toUpperCase());
+    // Handle requirements being a string (from FormData) or array
+    if (typeof requirements === "string") {
+      requirements = [requirements];
+    }
+
+    const doc_type = document_type.toUpperCase();
+    const newrequirements = requirements.map((req) => req.toUpperCase());
 
     const allowedTypes = [
       "GOV_ID",
@@ -28,7 +50,7 @@ const createGuideUploadDocuController = async (req, res) => {
       "RESUME",
     ];
 
-    if (!allowedTypes.includes(document_type)) {
+    if (!allowedTypes.includes(doc_type)) {
       return res.status(400).json({ error: "Invalid document type" });
     }
 
@@ -42,7 +64,7 @@ const createGuideUploadDocuController = async (req, res) => {
     ];
 
     const isComplete = requiredFlags.every((flag) =>
-      requirements.includes(flag)
+      newrequirements.includes(flag)
     );
 
     if (!isComplete) {
@@ -50,12 +72,12 @@ const createGuideUploadDocuController = async (req, res) => {
         .status(400)
         .json({ error: "All qualifications must be checked." });
     }
-
+    console.log("Uploading Document");
     // Handle file upload for the tour guide's document
     let file_path = null;
     if (req.file) {
       const file = req.file;
-      const s3Key = `guides/${guideId}/${Date.now()}_${file.originalname}`;
+      const s3Key = `guides/${tourguide_id}/${Date.now()}_${file.originalname}`;
       const uploadParams = {
         Bucket: process.env.AWS_S3_BUCKET,
         Key: s3Key,
@@ -69,25 +91,24 @@ const createGuideUploadDocuController = async (req, res) => {
     }
 
     const guideUploadDocu = await createGuideUploadDocu({
-      tourguide_id: guideId,
-      document_type,
+      tourguide_id: tourguide_id,
+      document_type: doc_type,
       file_path,
-      requirements: JSON.stringify(requirements),
+      requirements: JSON.stringify(newrequirements),
     });
-
+    console.log("Document Created");
     res.json(guideUploadDocu);
   } catch (err) {
     console.log(err.message);
-    res.send(err.message);
+    res.status(500).send(err.message);
   }
 };
-
 const editGuideUploadDocuController = async (req, res) => {
   try {
     const { docuId } = req.params;
     let { document_type } = req.body;
-
-    document_type = document_type.toUpperCase();
+    console.log(req.body);
+    const newDocument_type = document_type.toUpperCase();
 
     const allowedTypes = [
       "GOV_ID",
@@ -99,7 +120,7 @@ const editGuideUploadDocuController = async (req, res) => {
       "RESUME",
     ];
 
-    if (!allowedTypes.includes(document_type)) {
+    if (!allowedTypes.includes(newDocument_type)) {
       return res.status(400).json({ error: "Invalid document type" });
     }
 
@@ -138,11 +159,13 @@ const getGuideUploadDocuByIdController = async (req, res) => {
     const currentUserId = req.session.user.id; // current user ID from session
     const guideUploadDocu = await getGuideUploadDocuById(docuId);
 
+    const guideReg = await getGuideRegisById(currentUserId);
+    const tourguide_id = guideReg.id;
     if (!guideUploadDocu) {
       return res.status(404).json({ error: "Document not found" });
     }
 
-    if (guideUploadDocu.tourguide_id !== currentUserId) {
+    if (guideUploadDocu.tourguide_id !== tourguide_id) {
       return res.status(403).json({ error: "Forbidden: Access denied" });
     }
 
@@ -155,8 +178,17 @@ const getGuideUploadDocuByIdController = async (req, res) => {
 
 const getGuideUploadByUserIdController = async (req, res) => {
   try {
-    const currentUserId = req.session.user.id; // current user ID from session
-    const guideUploads = await getGuideUploadByUserId(currentUserId);
+    const currentUserId = req.params.userId;
+    const guideReg = await getGuideRegisById(currentUserId);
+    if (!guideReg) {
+      return res
+        .status(404)
+        .json({ error: "Tour guide not found for this user." });
+    }
+
+    const tourguide_id = guideReg.id;
+    // current user ID from session
+    const guideUploads = await getGuideUploadByUserId(tourguide_id);
 
     if (!guideUploads || guideUploads.length === 0) {
       return res

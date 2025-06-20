@@ -66,7 +66,7 @@ export default function LoginScreen() {
     try {
       console.log('Attempting login with email:', trimmedEmail);
       
-      const res = await login({ email: trimmedEmail, password: trimmedPassword });
+      const res = await login({ email: trimmedEmail, password: trimmedPassword }) as { token: string; user: any };
       console.log('Login response:', JSON.stringify(res));
       
       // Make sure we're getting the correct role

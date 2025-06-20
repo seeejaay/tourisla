@@ -1,6 +1,7 @@
 import axios from "axios";
 import { getBaseUrl, API_ENDPOINTS, logApiRequest } from "./utils";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getApiEndpoint } from '../config';
 
 /**
  * Get the full URL for auth endpoints (which may not have the /api/v1 prefix)
@@ -199,7 +200,7 @@ export const currentUser = async () => {
     // Try each endpoint until one works
     for (const endpoint of possibleEndpoints) {
       try {
-        const url = getApiUrl(endpoint);
+        const url = getAuthUrl(endpoint); 
         console.log(`Trying to fetch user from: ${url}`);
         
         const response = await axios.get(url, {
