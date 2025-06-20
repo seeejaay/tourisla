@@ -59,7 +59,7 @@ export default function TourGuideApplicationsPage() {
       setLoading(true);
       setError(null);
       try {
-        const applications = await fetchApplications(operatorId);
+        const applications = await fetchApplications(operatorId || "");
         setData(applications || []);
       } catch (error) {
         setError("Failed to load applications." + error);

@@ -34,7 +34,7 @@ export default function ApplicantDocumentsPage() {
       setLoading(true);
       setError(null);
       try {
-        const docs = await fetchGuideDocumentsById(guideId);
+        const docs = await fetchGuideDocumentsById(guideId || "");
         setDocuments(Array.isArray(docs) ? docs : []);
         if (!docs || docs.length === 0) {
           setError("No documents found for this applicant.");
