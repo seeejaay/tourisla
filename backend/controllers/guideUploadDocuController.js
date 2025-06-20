@@ -18,7 +18,7 @@ const createGuideUploadDocuController = async (req, res) => {
     console.log("req.body:", req.body);
     console.log("req.params:", req.params);
     // Get the userId from session or params
-    const userId = req.session.user.id; // or req.params.guideId if you use the URL param
+    const userId = req.params.guideId; // or req.params.guideId if you use the URL param
 
     // Await the DB call to get the guide registration
     const guideReg = await getGuideRegisById(userId);
@@ -107,8 +107,8 @@ const editGuideUploadDocuController = async (req, res) => {
   try {
     const { docuId } = req.params;
     let { document_type } = req.body;
-
-    document_type = document_type.toUpperCase();
+    console.log(req.body);
+    const newDocument_type = document_type.toUpperCase();
 
     const allowedTypes = [
       "GOV_ID",
@@ -120,7 +120,7 @@ const editGuideUploadDocuController = async (req, res) => {
       "RESUME",
     ];
 
-    if (!allowedTypes.includes(document_type)) {
+    if (!allowedTypes.includes(newDocument_type)) {
       return res.status(400).json({ error: "Invalid document type" });
     }
 
@@ -159,11 +159,13 @@ const getGuideUploadDocuByIdController = async (req, res) => {
     const currentUserId = req.session.user.id; // current user ID from session
     const guideUploadDocu = await getGuideUploadDocuById(docuId);
 
+    const guideReg = await getGuideRegisById(currentUserId);
+    const tourguide_id = guideReg.id;
     if (!guideUploadDocu) {
       return res.status(404).json({ error: "Document not found" });
     }
 
-    if (guideUploadDocu.tourguide_id !== currentUserId) {
+    if (guideUploadDocu.tourguide_id !== tourguide_id) {
       return res.status(403).json({ error: "Forbidden: Access denied" });
     }
 
