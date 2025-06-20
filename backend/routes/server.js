@@ -200,7 +200,8 @@ const {
   getTouristBookingsController,
   getBookingsByPackageController,
   getBookingByIdController,
-  getTouristBookingsFilteredController
+  getTouristBookingsFilteredController,
+  cancelBookingController
 } = require("../controllers/bookingController.js");
 
 const {
@@ -661,6 +662,11 @@ app.get(
   "/api/v1/bookings/tourist/filtered",
   // authenticateUser,
   getTouristBookingsFilteredController
+);
+app.put(
+  "/api/v1/bookings/:id/cancel",
+  authenticateUser,
+  cancelBookingController
 );
 
 // Accommodation Logs Routes
