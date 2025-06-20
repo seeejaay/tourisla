@@ -33,11 +33,14 @@ export default function TourOperatorListPage() {
       setData(
         (operators || []).map((op) => ({
           id: op.id,
-          name: op.operator_name, // map to 'name'
+          operator_name: op.operator_name,
           email: op.email,
-          contact_number: op.phone_number || op.mobile_number, // map to 'contact_number'
-          address: op.office_address, // map to 'address'
-          application_status: op.application_status,
+          mobile_number: op.mobile_number,
+          office_address: op.office_address,
+          application_status: (
+            op.application_status || "pending"
+          ).toLowerCase(),
+          user_id: Number(op.user_id ?? op.id ?? 0), // fallback if user_id is missing
         }))
       );
     }
@@ -46,28 +49,62 @@ export default function TourOperatorListPage() {
 
   // Handler for viewing a tour operator (fetches latest data)
   const handleViewTourOperator = async (operator: TourOperator | null) => {
-    if (!operator?.id) return;
-    const freshOperator = await fetchApplicant(operator.id);
-    setDialogTourOperator(freshOperator);
+    if (!operator?.user_id) return;
+    const freshOperator = await fetchApplicant(operator.user_id);
+    if (!freshOperator) {
+      setDialogTourOperator(null);
+      return;
+    }
+    setDialogTourOperator({
+      id: freshOperator.id,
+      operator_name: freshOperator.operator_name,
+      email: freshOperator.email,
+      mobile_number: freshOperator.mobile_number,
+      office_address: freshOperator.office_address,
+      application_status: (
+        freshOperator.application_status || "pending"
+      ).toLowerCase(),
+      user_id: Number(freshOperator.user_id ?? freshOperator.id ?? 0), // fallback if user_id is missing
+    });
   };
 
   // Handler for viewing documents (if applicable)
   const handleViewDocuments = (operator: TourOperator) => {
-    router.push(`/tour-operators/${operator.id}/documents`);
+    router.push(`/tour-operators/${operator.user_id}/documents`);
   };
 
   // Handler for approving a tour operator
   const handleApprove = async (operator: TourOperator) => {
     await approveApplicant(operator.id);
     const operators = await fetchApplicants();
-    setData(operators || []);
+    setData(
+      (operators || []).map((op) => ({
+        id: op.id,
+        operator_name: op.operator_name,
+        email: op.email,
+        mobile_number: op.mobile_number,
+        office_address: op.office_address,
+        application_status: (op.application_status || "pending").toLowerCase(),
+        user_id: Number(op.user_id ?? op.id ?? 0),
+      })) as TourOperator[]
+    );
   };
 
   // Handler for rejecting a tour operator
   const handleReject = async (operator: TourOperator) => {
     await rejectApplicant(operator.id);
     const operators = await fetchApplicants();
-    setData(operators || []);
+    setData(
+      (operators || []).map((op) => ({
+        id: op.id,
+        operator_name: op.operator_name,
+        email: op.email,
+        mobile_number: op.mobile_number,
+        office_address: op.office_address,
+        application_status: (op.application_status || "pending").toLowerCase(),
+        user_id: Number(op.user_id ?? op.id ?? 0),
+      })) as TourOperator[]
+    );
   };
 
   return (
@@ -78,7 +115,8 @@ export default function TourOperatorListPage() {
           handleViewTourOperator,
           handleViewDocuments,
           handleApprove,
-          handleReject
+          handleReject,
+          router
         )}
         data={data}
         searchPlaceholder="Search by name..."

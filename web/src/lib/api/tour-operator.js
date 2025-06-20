@@ -24,6 +24,7 @@ export const fetchTourOperatorApplicants = async () => {
 // Fetch one operator applicant by ID
 export const fetchTourOperatorApplicant = async (operatorId) => {
   try {
+    console.log("Fetching Tour Operator Applicant with ID:", operatorId);
     const response = await axios.get(`${API_URL}operatorRegis/${operatorId}`, {
       withCredentials: true,
     });

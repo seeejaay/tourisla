@@ -147,8 +147,8 @@ const {
   registerVisitorController,
 } = require("../controllers/visitorRegistrationController");
 
-const { 
-  manualCheckInController 
+const {
+  manualCheckInController,
 } = require("../controllers/visitorRegistrationController");
 
 const {
@@ -186,13 +186,16 @@ const {
   getTripadvisorHotelsWithPhotos,
 } = require("../controllers/tripadvisorController.js");
 
-const { exportVisitorLogController } = require("../controllers/exportVisitorLogController");
-const { exportVisitorLogGroupController } = require("../controllers/exportVisitorLogGroupController");
-
+const {
+  exportVisitorLogController,
+} = require("../controllers/exportVisitorLogController");
+const {
+  exportVisitorLogGroupController,
+} = require("../controllers/exportVisitorLogGroupController");
 
 const {
   authorizeGoogleCalendarController,
-  googleCalendarCallbackController
+  googleCalendarCallbackController,
 } = require("../controllers/calendarController.js");
 
 const {
@@ -201,12 +204,12 @@ const {
   getTouristBookingsController,
   getBookingsByPackageController,
   getBookingByIdController,
-  getTouristBookingsFilteredController
+  getTouristBookingsFilteredController,
 } = require("../controllers/bookingController.js");
 
 const {
   markBookingAsFinishedController,
-  getTourGuideBookingsFilteredController
+  getTourGuideBookingsFilteredController,
 } = require("../controllers/guideBookingsController.js");
 
 const {
@@ -216,7 +219,7 @@ const {
   createQuestionController,
   editQuestionController,
   deleteQuestionController,
-  viewQuestionsByTypeController
+  viewQuestionsByTypeController,
 } = require("../controllers/feedbackController.js");
 
 app.use(
@@ -374,12 +377,18 @@ app.put(
 );
 app.get(
   "/api/v1/guideUploadDocu/doc/:docuId",
-  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin", "Tour Guide"]),
   getGuideUploadDocuByIdController
 );
 app.get(
   "/api/v1/guideUploadDocu/user/:userId",
-  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
+  allowedRoles([
+    "Tourism Staff",
+    "Tourism Officer",
+    "Admin",
+    "Tour Guide",
+    "Tour Operator",
+  ]),
   getGuideUploadByUserIdController
 );
 
@@ -397,12 +406,24 @@ app.delete(
 );
 app.get(
   "/api/v1/operatorRegis",
-  authenticateTourOperator,
+  allowedRoles([
+    "Tourism Staff",
+    "Tourism Officer",
+    "Admin",
+    "Tour Guide",
+    "Tour Operator",
+  ]),
   viewAllOperatorRegisController
 );
 app.get(
   "/api/v1/operatorRegis/:operatorId",
-  authenticateTourOperator,
+  allowedRoles([
+    "Tourism Staff",
+    "Tourism Officer",
+    "Admin",
+    "Tour Guide",
+    " Tour Operator",
+  ]),
   viewOperatorRegisByIdController
 );
 
@@ -427,7 +448,7 @@ app.get(
 
 app.get(
   "/api/v1/operatorUploadDocu/user/:userId",
-  authenticateTourOperator,
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Tour Operator"]),
   getOperatorUploadByUserIdController
 );
 
@@ -464,19 +485,19 @@ app.get(
 );
 app.put(
   "/api/v1/operatorApplicants/:applicantId/approve",
-  authenticateAdmin,
+  allowedRoles(["Tourism Staff", "Tourism Officer"]),
   approveTourOperatorApplicantController
 );
 app.put(
   "/api/v1/operatorApplicants/:applicantId/reject",
-  authenticateAdmin,
+  allowedRoles(["Tourism Staff", "Tourism Officer"]),
   rejectTourOperatorApplicantController
 );
 
 // Routes for Tour Guides applying to Tour Operators
 app.post(
   "/api/v1/applyToOperator",
-  authenticateTourGuide,
+  allowedRoles(["Tour Guide"]),
   applyToTourOperatorController
 );
 app.get(
@@ -657,7 +678,6 @@ app.get("/api/v1/visitor-logs/export", exportVisitorLogController);
 //Visitor Summary Grouped by Month Export
 app.get("/api/v1/visitor-summary/export", exportVisitorLogGroupController);
 
-
 // Tourist submits feedback for guide/operator/spot
 app.post(
   "/api/v1/feedback/submit",
@@ -701,8 +721,4 @@ app.delete(
 );
 
 // 5. Anyone can view feedback questions (for form rendering)
-app.get(
-  "/api/v1/feedback/questions/:type",
-  viewQuestionsByTypeController
-);
-
+app.get("/api/v1/feedback/questions/:type", viewQuestionsByTypeController);

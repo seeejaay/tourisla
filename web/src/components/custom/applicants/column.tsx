@@ -12,28 +12,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
-// Adjust this type to match your TourOperator model
-export type TourOperator = {
-  id: number;
-  operator_name: string;
+
+export type Applicant = {
+  id?: number;
+  first_name: string;
+  last_name: string;
   email: string;
   mobile_number: string;
-  office_address: string;
+  reason_for_applying: string;
   application_status: string;
-  user_id: number;
 };
 
 export function columns(
-  setDialogTourOperator: (operator: TourOperator | null) => void,
-  onViewDocuments: (operator: TourOperator) => void,
-  onApprove: (operator: TourOperator) => void,
-  onReject: (operator: TourOperator) => void,
-  router: ReturnType<typeof useRouter>
-): ColumnDef<TourOperator>[] {
+  onApprove: (applicant: Applicant) => void,
+  onReject: (applicant: Applicant) => void,
+  onViewDocuments: (applicant: Applicant) => void
+): ColumnDef<Applicant>[] {
   return [
     {
-      accessorKey: "name",
+      accessorKey: "first_name",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -45,7 +42,9 @@ export function columns(
         </Button>
       ),
       cell: ({ row }) => (
-        <span className="uppercase">{row.original.operator_name}</span>
+        <span className="uppercase">
+          {row.original.first_name} {row.original.last_name}
+        </span>
       ),
       enableSorting: true,
     },
@@ -65,23 +64,28 @@ export function columns(
       enableSorting: true,
     },
     {
-      accessorKey: "application_status",
-      header: () => <span className="font-bold">Application Status</span>,
-      cell: ({ row }) => {
-        const status = row.original.application_status || "Pending";
-        return (
-          <span className="capitalize">
-            {status === "approved" ? "Approved" : status}
-          </span>
-        );
-      },
+      accessorKey: "mobile_number",
+      header: () => <span className="font-bold">Mobile</span>,
+      cell: ({ row }) => <span>{row.original.mobile_number}</span>,
     },
-
+    {
+      accessorKey: "reason_for_applying",
+      header: () => <span className="font-bold">Reason</span>,
+      cell: ({ row }) => <span>{row.original.reason_for_applying}</span>,
+    },
+    {
+      accessorKey: "application_status",
+      header: () => <span className="font-bold">Status</span>,
+      cell: ({ row }) => (
+        <span className="capitalize">{row.original.application_status}</span>
+      ),
+    },
     {
       accessorKey: "actions",
       header: () => <span className="font-bold">Actions</span>,
       cell: ({ row }) => {
-        const operator = row.original;
+        const applicant = row.original;
+
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -92,26 +96,23 @@ export function columns(
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setDialogTourOperator(operator)}>
-                View
-              </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() =>
-                  router.push(
-                    `/tourism-staff/tour-operators/${operator.user_id}/documents`
-                  )
-                }
+                onClick={() => onApprove(applicant)}
+                className="cursor-pointer"
               >
-                View Documents
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onApprove(operator)}>
                 Approve
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => onReject(operator)}
-                className="text-red-500"
+                onClick={() => onReject(applicant)}
+                className="cursor-pointer text-red-600"
               >
                 Reject
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onViewDocuments(applicant)}
+                className="cursor-pointer"
+              >
+                View Documents
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
