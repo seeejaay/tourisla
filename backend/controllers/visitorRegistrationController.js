@@ -225,7 +225,64 @@ const registerVisitorController = async (req, res) => {
   }
 };
 
-// ✅ Manual Check-in using registration_id
+// // ✅ Manual Check-in using registration_id
+// const manualCheckInController = async (req, res) => {
+//   try {
+//     const { unique_code } = req.body;
+
+//     const userId = req.session.user?.user_id ?? req.session.user?.id;
+
+//     if (!userId) {
+//       return res.status(403).json({ error: "Invalid session: missing user ID." });
+//     }
+
+//     const attractionId = await getUserAttractionId(userId);
+
+//     if (!attractionId) {
+//       return res.status(403).json({ error: "Missing attraction ID for the user." });
+//     }
+
+//     if (!unique_code) {
+//       return res.status(400).json({ error: "Unique code is required." });
+//     }
+
+//     const registration = await getVisitorByUniqueCode(unique_code.trim().toUpperCase());
+
+//     if (!registration) {
+//       return res.status(404).json({ error: "Visitor not found with that code." });
+//     }
+
+//     const today = new Date().toISOString().split('T')[0];
+//     const { rows } = await db.query(
+//       `SELECT 1 FROM attraction_visitor_logs 
+//        WHERE registration_id = $1 
+//          AND tourist_spot_id = $2 
+//          AND DATE(visit_date) = $3
+//        LIMIT 1`,
+//       [registration.id, attractionId, today]
+//     );
+
+//     if (rows.length > 0) {
+//       return res.status(409).json({ error: "This group has already checked in today." });
+//     }
+
+//     const log = await logAttractionVisitByRegistration({
+//       registrationId: registration.id,
+//       scannedByUserId: userId,
+//       touristSpotId: attractionId,
+//     });
+
+//     return res.status(200).json({
+//       message: "Visitor group checked in manually.",
+//       registration,
+//       log,
+//     });
+//   } catch (error) {
+//     console.error("Manual check-in error:", error);
+//     res.status(500).json({ error: "Internal server error during check-in." });
+//   }
+// };
+
 const manualCheckInController = async (req, res) => {
   try {
     const { unique_code } = req.body;
@@ -252,22 +309,35 @@ const manualCheckInController = async (req, res) => {
       return res.status(404).json({ error: "Visitor not found with that code." });
     }
 
+    // Get group members from that registration
+    const membersResult = await db.query(
+      `SELECT * FROM visitor_group_members WHERE registration_id = $1`,
+      [registration.id]
+    );
+    const groupMembers = membersResult.rows;
+
+    if (groupMembers.length === 0) {
+      return res.status(404).json({ error: "No group members found for this registration." });
+    }
+
+    // Check if any member has already checked in today
     const today = new Date().toISOString().split('T')[0];
-    const { rows } = await db.query(
+    const existingLogCheck = await db.query(
       `SELECT 1 FROM attraction_visitor_logs 
-       WHERE registration_id = $1 
+       WHERE group_member_id = ANY($1::int[]) 
          AND tourist_spot_id = $2 
          AND DATE(visit_date) = $3
        LIMIT 1`,
-      [registration.id, attractionId, today]
+      [groupMembers.map((m) => m.id), attractionId, today]
     );
 
-    if (rows.length > 0) {
+    if (existingLogCheck.rows.length > 0) {
       return res.status(409).json({ error: "This group has already checked in today." });
     }
 
-    const log = await logAttractionVisitByRegistration({
-      registrationId: registration.id,
+    // Insert logs for all members
+    const logs = await logAttractionVisitByRegistration({
+      groupMembers,
       scannedByUserId: userId,
       touristSpotId: attractionId,
     });
@@ -275,13 +345,14 @@ const manualCheckInController = async (req, res) => {
     return res.status(200).json({
       message: "Visitor group checked in manually.",
       registration,
-      log,
+      logs,
     });
   } catch (error) {
     console.error("Manual check-in error:", error);
     res.status(500).json({ error: "Internal server error during check-in." });
   }
 };
+
 
 module.exports = {
   registerVisitorController,
