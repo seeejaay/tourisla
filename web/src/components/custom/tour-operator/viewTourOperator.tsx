@@ -15,7 +15,7 @@ export default function ViewTourOperator({
           Name
         </Label>
         <span className="text-2xl font-bold text-blue-800 text-center">
-          {tourOperator.name}
+          {tourOperator.operator_name}
         </span>
       </div>
 
@@ -38,7 +38,7 @@ export default function ViewTourOperator({
               Contact Number
             </Label>
             <span>
-              {tourOperator.contact_number || (
+              {tourOperator.mobile_number || (
                 <span className="italic text-muted-foreground">N/A</span>
               )}
             </span>
@@ -52,7 +52,7 @@ export default function ViewTourOperator({
               Address
             </Label>
             <span>
-              {tourOperator.address || (
+              {tourOperator.office_address || (
                 <span className="italic text-muted-foreground">N/A</span>
               )}
             </span>

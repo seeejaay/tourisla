@@ -12,23 +12,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
+import { useRouter } from "next/navigation";
 // Adjust this type to match your TourOperator model
 export type TourOperator = {
-  id?: number;
-  name: string;
+  id: number;
+  operator_name: string;
   email: string;
-  contact_number: string;
-  address: string;
-  application_status: "pending" | "approved" | "rejected";
-  // Add more fields as needed
+  mobile_number: string;
+  office_address: string;
+  application_status: string;
+  user_id: number;
 };
 
 export function columns(
   setDialogTourOperator: (operator: TourOperator | null) => void,
   onViewDocuments: (operator: TourOperator) => void,
   onApprove: (operator: TourOperator) => void,
-  onReject: (operator: TourOperator) => void
+  onReject: (operator: TourOperator) => void,
+  router: ReturnType<typeof useRouter>
 ): ColumnDef<TourOperator>[] {
   return [
     {
@@ -43,7 +44,9 @@ export function columns(
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <span className="uppercase">{row.original.name}</span>,
+      cell: ({ row }) => (
+        <span className="uppercase">{row.original.operator_name}</span>
+      ),
       enableSorting: true,
     },
     {
@@ -62,11 +65,6 @@ export function columns(
       enableSorting: true,
     },
     {
-      accessorKey: "contact_number",
-      header: () => <span className="font-bold">Contact Number</span>,
-      cell: ({ row }) => <span>{row.original.contact_number}</span>,
-    },
-    {
       accessorKey: "application_status",
       header: () => <span className="font-bold">Application Status</span>,
       cell: ({ row }) => {
@@ -78,6 +76,7 @@ export function columns(
         );
       },
     },
+
     {
       accessorKey: "actions",
       header: () => <span className="font-bold">Actions</span>,
@@ -96,7 +95,13 @@ export function columns(
               <DropdownMenuItem onClick={() => setDialogTourOperator(operator)}>
                 View
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onViewDocuments(operator)}>
+              <DropdownMenuItem
+                onClick={() =>
+                  router.push(
+                    `/tourism-staff/tour-operators/${operator.user_id}/documents`
+                  )
+                }
+              >
                 View Documents
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onApprove(operator)}>

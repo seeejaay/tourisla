@@ -1,10 +1,8 @@
 import { useState, useCallback } from "react";
 
-import type {
-  TourOperatorSchema,
-  TourOperator,
-} from "@/app/static/tour-operator/useTourOperatorManagerSchema";
+import type { TourOperatorSchema } from "@/app/static/tour-operator/useTourOperatorManagerSchema";
 
+import type { TourOperator } from "@/components/custom/tour-operator/column";
 import {
   fetchTourOperatorApplicants as apifetchApplicants,
   fetchTourOperatorApplicant as apifetchApplicant,
@@ -30,6 +28,7 @@ export const useTourOperatorManager = () => {
     try {
       const applicants = await apifetchApplicants();
       setOperatorApplicants(applicants);
+      console.log("Fetched tour operator applicants:", applicants);
       return applicants;
     } catch (err) {
       setError("Failed to fetch tour operator applicants.");
@@ -44,9 +43,10 @@ export const useTourOperatorManager = () => {
     async (id: number): Promise<TourOperator | null> => {
       setLoading(true);
       setError("");
-
+      console.log("Fetching tour operator applicant with ID:", id);
       try {
         const applicant = await apifetchApplicant(id);
+        console.log("Fetched tour operator applicants:", applicant);
         return applicant;
       } catch (err) {
         setError("Failed to fetch tour operator applicant.");
