@@ -1,115 +1,49 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  FlatList,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, FlatList } from "react-native";
 import { useRouter } from "expo-router";
-import axios from "axios";
+import { useTourGuideAssignments } from "@/hooks/useTourGuideAssignments"; 
+import { currentUser } from "@/lib/api/auth"; 
+
 
 export default function GuideHome() {
   const router = useRouter();
-  const [userName, setUserName] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  type Package = {
-    id: number;
-    package_name: string;
-    location: string;
-    price: number;
-    duration_days: number;
-  };
-
-  const [assignedPackages, setAssignedPackages] = useState<Package[]>([]);
+  const [userName, setemail] = useState("");
+  const [userId, setUserId] = useState(null); 
+  const { packages: assignedPackages, loading, error } = useTourGuideAssignments(userId); // ✅ Our hook
 
   useEffect(() => {
-    const fetchAssignedPackages = async () => {
+    const fetchCurrentUser = async () => {
       try {
-        setLoading(true);
-        setError(null);
-
-        // Step 1: Fetch the currently logged-in user
-        const userResponse = await axios.get(`${API_URL}/api/v1/user`, {
-          withCredentials: true,
-        });
-        const user = userResponse.data.data.user; // ✅ correctly access user
-        const userId = user.user_id;              // ✅ use user_id
-        setUserName(user.first_name);             // ✅ first_name is already available
-        console.log("User ID:", userId);
-
-        // Step 2: Get the tourguide_id from the tourguide_applicants table
-        const guideResponse = await axios.get(
-          `${API_URL}/api/v1/guideApplicants?user_id=${userId}`,
-          { withCredentials: true }
-        );
-        const guide = guideResponse.data;
-        const tourguideId = guide.id;
-        console.log("Tour Guide ID:", tourguideId);
-
-        // Step 3: Get the assigned tour_package_id from the tourguide_assignments table
-        const assignmentsResponse = await axios.get(
-          `${API_URL}/api/v1/tourguide_assignments?tourguide_id=${tourguideId}`,
-          { withCredentials: true }
-        );
-        const assignments = assignmentsResponse.data;
-        type Assignment = { tour_package_id: number }; // Define the type for assignments
-        const packageIds = assignments.map((assignment: Assignment) => assignment.tour_package_id);
-        console.log("Assigned Package IDs:", packageIds);
-
-        // Step 4: Fetch the tour package details from the tour_packages table
-        const packagePromises = packageIds.map((packageId: number) =>
-          axios.get(`${API_URL}/api/v1/tour_packages/${packageId}`, {
-            withCredentials: true,
-          })
-        );
-        const packageResponses = await Promise.all(packagePromises);
-        const packages = packageResponses.map((response) => response.data);
-        console.log("Assigned Packages:", packages);
-
-        setAssignedPackages(packages);
+        const user = await currentUser(); // Fetch the current user
+        console.log("Current User:", user);
+        setemail(user.data.user.email);
+        console.log("User Email:", user.data.user.email);
+        setUserId(user.data.user.user_id);      // Set user_id
+        console.log("User ID:", user.data.user.user_id);
       } catch (err) {
-        console.error("Error fetching assigned packages:", err);
-        setError("Failed to load your assigned tour packages.");
-      } finally {
-        setLoading(false);
+        console.error("Error fetching current user:", err);
       }
     };
-
-    fetchAssignedPackages();
+    fetchCurrentUser();
   }, []);
 
   const renderPackageItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.packageCard}
-      onPress={() => router.push(`/guide/packages/${item.id}`)}
-    >
+    <TouchableOpacity style={styles.packageCard} onPress={() => router.push(`/guide/packages/${item.id}`)}>
       <Text style={styles.packageName}>{item.package_name}</Text>
       <Text style={styles.packageDetails}>Location: {item.location}</Text>
       <Text style={styles.packageDetails}>Price: ₱{item.price}</Text>
-      <Text style={styles.packageDetails}>
-        Duration: {item.duration_days} day(s)
-      </Text>
+      <Text style={styles.packageDetails}>Duration: {item.duration_days} day(s)</Text>
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Welcome Section */}
         <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeText}>
-            Welcome{userName ? `, ${userName}` : ""}!
-          </Text>
-          <Text style={styles.welcomeSubtext}>
-            Discover the beauty of Cebu
-          </Text>
+          <Text style={styles.welcomeText}>Welcome{userName ? `, ${userName}` : ""}!</Text>
+          <Text style={styles.welcomeSubtext}>Discover the beauty of Cebu</Text>
         </View>
 
-        {/* Assigned Tour Packages Section */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Your Assigned Tour Packages</Text>
 
@@ -118,9 +52,7 @@ export default function GuideHome() {
           ) : error ? (
             <Text style={styles.errorText}>{error}</Text>
           ) : assignedPackages.length === 0 ? (
-            <Text style={styles.emptyText}>
-              You don't have any assigned tour packages yet.
-            </Text>
+            <Text style={styles.emptyText}>You don't have any assigned tour packages yet.</Text>
           ) : (
             <FlatList
               data={assignedPackages}
@@ -179,7 +111,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   packageCard: {
-    backgroundColor: "white",
+    backgroundColor: "#ffffff",
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -201,3 +133,4 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 });
+
