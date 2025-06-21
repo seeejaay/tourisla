@@ -6,6 +6,7 @@ const {
   getAllTourPackagesByOperator,
   getTourPackageById,
   getAssignedGuidesByPackage,
+  getTourPackagesByTourGuide,
 } = require("../models/tourPackagesModel.js");
 
 const { getOperatorRegisById } = require("../models/operatorRegisModel.js");
@@ -13,8 +14,8 @@ const { getOperatorRegisById } = require("../models/operatorRegisModel.js");
 
 const createTourPackageController = async (req, res) => {
   try {
-    console.log("BackEnd Creating Tour Package with data:", req.body);
 
+    console.log("BackEnd Creating Tour Package with data:", req.body);
     let {
       package_name,
       location,
@@ -32,6 +33,7 @@ const createTourPackageController = async (req, res) => {
       touroperator_id,
       cancellation_days,
       cancellation_note,
+
     } = req.body;
 
     package_name = package_name.toUpperCase();
@@ -89,6 +91,7 @@ const createTourPackageController = async (req, res) => {
       assigned_guides,
       cancellation_days,
       cancellation_note,
+
     });
 
     res
@@ -120,6 +123,7 @@ const updateTourPackageController = async (req, res) => {
       end_time,
       cancellation_days,
       cancellation_note,
+
     } = req.body;
 
     package_name = package_name.toUpperCase();
@@ -257,6 +261,20 @@ const viewAssignedGuidesController = async (req, res) => {
   }
 };
 
+const getTourPackagesByGuideController = async (req, res) => {
+  try {
+    const { tourguide_id } = req.params;
+
+    const packages = await getTourPackagesByTourGuide(tourguide_id);
+
+    res.status(200).json({ tourPackages: packages });
+  } catch (err) {
+    console.error("Error fetching tour packages for guide:", err);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+
 module.exports = {
   createTourPackageController,
   updateTourPackageController,
@@ -264,4 +282,5 @@ module.exports = {
   viewTourPackagesController,
   viewTourPackageByIdController,
   viewAssignedGuidesController,
+  getTourPackagesByGuideController,
 };
