@@ -157,7 +157,6 @@ const {
   deleteTourPackageController,
   viewTourPackagesController,
   viewTourPackageByIdController,
-  viewAssignedGuidesController,
 } = require("../controllers/tourPackagesController.js");
 
 const {
@@ -206,6 +205,7 @@ const {
   getBookingsByPackageController,
   getBookingByIdController,
   getTouristBookingsFilteredController,
+  cancelBookingController
 } = require("../controllers/bookingController.js");
 
 const {
@@ -222,6 +222,16 @@ const {
   deleteQuestionController,
   viewQuestionsByTypeController,
 } = require("../controllers/feedbackController.js");
+
+const {
+  createIncidentReportController,
+  viewAllIncidentReportsController,
+  viewIncidentReportByUserController
+} = require("../controllers/incidentRepController.js");
+
+const {
+  uploadOperatorQrController
+} = require("../controllers/operatorQRController.js");
 
 app.use(
   session({
@@ -629,11 +639,6 @@ app.get(
   viewTourPackageByIdController
 );
 
-app.get(
-  "/api/v1/tour-packages/:id/assigned-guides",
-  viewAssignedGuidesController
-);
-
 // Routes for Google Calendar integration
 app.get(
   "/api/v1/calendar/authorize",
@@ -645,6 +650,57 @@ app.get(
   // authenticateTourGuide,
   googleCalendarCallbackController
 );
+
+// Routes for booking (Tour Guide's Side)
+app.patch(
+  "/api/v1/bookings/guide/:bookingId/finish",
+  // authenticateTourGuide,
+  markBookingAsFinishedController
+);
+app.get(
+  "/api/v1/bookings/guide",
+  // authenticateTourGuide,
+  getTourGuideBookingsFilteredController
+);
+
+// Routes for Booking
+app.post(
+  "/api/v1/bookings",
+  // authenticateUser,
+  upload.single("proof_of_payment"),
+  createBookingController
+);
+app.put(
+  "/api/v1/bookings/:id/status",
+  // authenticateTourOperator,
+  updateBookingStatusController
+);
+app.get(
+  "/api/v1/bookings/tourist",
+  // authenticateUser,
+  getTouristBookingsController
+);
+app.get(
+  "/api/v1/bookings/package/:packageId",
+  authenticateTourOperator,
+  getBookingsByPackageController
+);
+app.get(
+  "/api/v1/bookings/:id",
+  authenticateUser,
+  getBookingByIdController
+);
+app.get(
+  "/api/v1/bookings/tourist/filtered",
+  // authenticateUser,
+  getTouristBookingsFilteredController
+);
+app.put(
+  "/api/v1/bookings/:id/cancel",
+  authenticateUser,
+  cancelBookingController
+);
+
 // Accommodation Logs Routes
 app.post(
   "/api/v1/accommodation-logs",
@@ -731,4 +787,35 @@ app.delete(
 );
 
 // 5. Anyone can view feedback questions (for form rendering)
+
 app.get("/api/v1/feedback/questions/:type", viewQuestionsByTypeController);
+app.get(
+  "/api/v1/feedback/questions/:type",
+  viewQuestionsByTypeController
+);
+
+// Routes for Incident Reports
+app.post(
+  "/api/v1/incident-report",
+  upload.single("photo"),
+  createIncidentReportController
+);
+app.get(
+  "/api/v1/incident-report",
+  authenticateTourismOfficer,
+  viewAllIncidentReportsController
+);
+app.get(
+  "/api/v1/incident-report/user/:userId",
+  authenticateTourismOfficer,
+  viewIncidentReportByUserController
+);
+
+// Route for Tour Operator QR Code Upload
+app.post(
+  "/api/v1/operator-qr",
+  upload.single("qr_image"),
+  authenticateTourOperator,
+  uploadOperatorQrController
+);
+
