@@ -12,7 +12,7 @@ import {
   Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTourPackages } from '@/hooks/useTourPackages';
+import { useTourPackages } from '@/hooks/useTourPackagesManager';
 import { router } from 'expo-router';
 
 export default function OperatorPackagesScreen({ headerHeight }) {
