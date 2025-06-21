@@ -3,7 +3,7 @@ const db = require("../db/index");
 // ✅ Create new island entry registration
 const createIslandEntryRegistration = async ({ unique_code, qr_code_url }) => {
   const result = await db.query(
-    `INSERT INTO island_entry_registrations (unique_code, qr_code_url) 
+    `INSERT INTO island_entry_registration (unique_code, qr_code_url) 
      VALUES ($1, $2) RETURNING *`,
     [unique_code, qr_code_url]
   );
@@ -36,7 +36,7 @@ const createIslandEntryMembers = async (registrationId, members) => {
 // ✅ Check if code exists
 const isIslandCodeTaken = async (uniqueCode) => {
   const result = await db.query(
-    `SELECT 1 FROM island_entry_registrations WHERE unique_code = $1 LIMIT 1`,
+    `SELECT 1 FROM island_entry_registration WHERE unique_code = $1 LIMIT 1`,
     [uniqueCode]
   );
   return result.rowCount > 0;
@@ -45,7 +45,7 @@ const isIslandCodeTaken = async (uniqueCode) => {
 // ✅ Get by code
 const getIslandEntryByCode = async (uniqueCode) => {
   const result = await db.query(
-    `SELECT * FROM island_entry_registrations WHERE unique_code = $1`,
+    `SELECT * FROM island_entry_registration WHERE unique_code = $1`,
     [uniqueCode]
   );
   return result.rows[0];
@@ -61,21 +61,20 @@ const getUserPortId = async (userId) => {
 };
 
 // ✅ Log island entry
-const logIslandEntryByRegistration = async ({ groupMembers, scannedByUserId, portId }) => {
-  const logs = await Promise.all(
-    groupMembers.map((member) =>
-      db.query(
-        `INSERT INTO island_entry_registration_logs 
-          (group_member_id, scanned_by_user_id, port_id, entry_date)
-         VALUES ($1, $2, $3, CURRENT_DATE)
-         RETURNING *`,
-        [member.id, scannedByUserId, portId]
-      )
-    )
+const logIslandEntryByRegistration = async ({ registrationId, scannedByUserId }) => {
+  const result = await db.query(
+    `INSERT INTO island_entry_registration_logs 
+      (registration_id, scanned_by_user_id, visit_date)
+     VALUES ($1, $2, CURRENT_DATE)
+     RETURNING *`,
+    [registrationId, scannedByUserId]
   );
 
-  return logs.map((r) => r.rows[0]);
+  return result.rows[0];
 };
+
+
+
 
 module.exports = {
   createIslandEntryRegistration,

@@ -152,7 +152,7 @@ const {
 const {
   registerIslandEntryController,
   manualIslandEntryCheckInController,
-} = require("./controllers/islandEntryRegisController");
+} = require("../controllers/islandEntryRegisController");
 
 const {
   createTourPackageController,
