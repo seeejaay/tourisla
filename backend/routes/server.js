@@ -157,6 +157,7 @@ const {
   deleteTourPackageController,
   viewTourPackagesController,
   viewTourPackageByIdController,
+  getTourPackagesByGuideController,
 } = require("../controllers/tourPackagesController.js");
 
 const {
@@ -466,7 +467,7 @@ app.get(
 // Routes for Admin verifying applicants
 app.get(
   "/api/v1/guideApplicants",
-  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin", "Tour Operator"]),
   viewTourGuideApplicantsController
 );
 app.get(
@@ -638,11 +639,16 @@ app.get(
   allowedRoles(["Tour Guide", "Tour Operator"]),
   viewTourPackageByIdController
 );
+app.get(
+  "/api/v1/tour-packages/by-guide/:tourguide_id",
+  // allowedRoles(["Tour Guide", "Tour Operator"]), // Optional
+  getTourPackagesByGuideController
+);
 
 // Routes for Google Calendar integration
 app.get(
   "/api/v1/calendar/authorize",
-  // authenticateTourGuide,
+  allowedRoles(["Tour Guide", "Tourist"]),
   authorizeGoogleCalendarController
 );
 app.get(
