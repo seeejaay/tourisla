@@ -4,7 +4,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const createTourPackage = async (packageData) => {
   try {
-    console.log("Creating Tour Package with data:", packageData);
+    console.log("API Creating Tour Package with data:", packageData);
     const response = await axios.post(`${API_URL}tour-packages`, packageData, {
       headers: {
         "Content-Type": "application/json",

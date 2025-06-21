@@ -58,10 +58,10 @@ export const useTourPackageManager = () => {
     async (data: Partial<TourPackage>): Promise<TourPackage | null> => {
       setLoading(true);
       setError("");
-      console.log("Creating tour package with data:", data);
+      console.log("Front end Creating tour package with data:", data);
       try {
         const validated = tourPackageSchema.parse(data);
-        const newPackage = await createTourPackage(validated);
+        const newPackage = await createTourPackage(data);
         setTourPackages((prev) => [...prev, newPackage]);
         return newPackage;
       } catch (err) {

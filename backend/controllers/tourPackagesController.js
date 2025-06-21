@@ -13,7 +13,7 @@ const { getOperatorRegisById } = require("../models/operatorRegisModel.js");
 
 const createTourPackageController = async (req, res) => {
   try {
-    const touroperator_id = 1;
+    console.log("BackEnd Creating Tour Package with data:", req.body);
     let {
       package_name,
       location,
@@ -28,6 +28,7 @@ const createTourPackageController = async (req, res) => {
       start_time,
       end_time,
       assigned_guides,
+      touroperator_id,
     } = req.body;
 
     package_name = package_name.toUpperCase();
@@ -62,7 +63,12 @@ const createTourPackageController = async (req, res) => {
         .status(400)
         .json({ error: "Available slots cannot be negative" });
     }
-
+    console.log(touroperator_id);
+    const operatorRegis = await getOperatorRegisById(touroperator_id);
+    if (!operatorRegis) {
+      return res.status(404).json({ message: "Tour operator not found." });
+    }
+    touroperator_id = operatorRegis.id;
     const newPackage = await createTourPackage({
       touroperator_id,
       package_name,
@@ -185,7 +191,7 @@ const deleteTourPackageController = async (req, res) => {
 const viewTourPackagesController = async (req, res) => {
   try {
     const tourOperator_Id = req.user.id;
-    console.log("Tour Operator ID:", tourOperator_Id);
+
     const operatorRegis = await getOperatorRegisById(tourOperator_Id);
     if (!operatorRegis) {
       return res.status(404).json({ message: "Tour operator not found." });
