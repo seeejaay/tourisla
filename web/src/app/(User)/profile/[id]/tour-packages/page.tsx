@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
+import AddTourPackage from "@/components/custom/tour-package/addTourPackage";
 import { Loader2, AlertTriangle, Plus } from "lucide-react";
 import { useParams } from "next/navigation";
 import {
@@ -79,13 +80,11 @@ export default function TourPackagesPage() {
                 Create Tour Package
               </DialogTitle>
             </DialogHeader>
-            {/* 
-            <CreateTourPackageForm
+            <AddTourPackage
               onSuccess={handleCreateSuccess}
               onCancel={() => setDialogOpen(false)}
               operatorId={id}
             />
-            */}
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
@@ -150,6 +149,17 @@ export default function TourPackagesPage() {
                   </div>
                   <div className="text-sm text-gray-500">
                     Slots: {pkg.available_slots}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Tour Guide:
+                    {pkg.assigned_guides.length === 0
+                      ? " None"
+                      : pkg.assigned_guides.map((g, i) => (
+                          <span key={g.tourguide_id}>
+                            {i > 0 && ", "}
+                            {g.first_name} {g.last_name}
+                          </span>
+                        ))}
                   </div>
                 </CardContent>
                 <CardFooter>

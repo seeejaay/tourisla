@@ -4,7 +4,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const createTourPackage = async (packageData) => {
   try {
-    console.log("Creating Tour Package with data:", packageData);
+    console.log("API Creating Tour Package with data:", packageData);
     const response = await axios.post(`${API_URL}tour-packages`, packageData, {
       headers: {
         "Content-Type": "application/json",
@@ -79,13 +79,13 @@ export const deleteTourPackage = async (packageId) => {
 
 export const fetchTourPackages = async () => {
   try {
-    console.log("Fetching Tour Packages");
     const response = await axios.get(`${API_URL}tour-packages`, {
       withCredentials: true,
     });
     if (response.status < 200 || response.status >= 300) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
     }
+    console.log("Fetched Tour Packages:", response.data);
     return response.data;
   } catch (error) {
     console.error(
