@@ -1,0 +1,131 @@
+import { useState, useCallback } from "react";
+import {
+  createTourPackage,
+  editTourPackage,
+  deleteTourPackage,
+  fetchTourPackages,
+  fetchTourPackage,
+} from "@/lib/api/tour-packages";
+import tourPackageSchema, {
+  TourPackage,
+} from "@/app/static/tour-packages/tour-packageSchema";
+
+export const useTourPackageManager = () => {
+  const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+
+  // Fetch all tour packages
+  const fetchAll = useCallback(async (): Promise<TourPackage[]> => {
+    setLoading(true);
+    setError("");
+    try {
+      console.log("Fetching tour packages...");
+      const packages = await fetchTourPackages();
+      setTourPackages(packages);
+      return packages;
+    } catch (err) {
+      setError("Failed to fetch tour packages.");
+      console.error(err);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch single tour package
+  const fetchOne = useCallback(
+    async (id: number | string): Promise<TourPackage | null> => {
+      setLoading(true);
+      setError("");
+      try {
+        console.log(`Fetching tour package with ID: ${id}`);
+        const pkg = await fetchTourPackage(id);
+        return pkg;
+      } catch (err) {
+        setError("Failed to fetch tour package.");
+        console.error(err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  // Create tour package
+  const create = useCallback(
+    async (data: Partial<TourPackage>): Promise<TourPackage | null> => {
+      setLoading(true);
+      setError("");
+      try {
+        const validated = tourPackageSchema.parse(data);
+        const newPackage = await createTourPackage(validated);
+        setTourPackages((prev) => [...prev, newPackage]);
+        return newPackage;
+      } catch (err) {
+        setError(err + "Failed to create tour package.");
+        console.error(err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  // Edit tour package
+  const edit = useCallback(
+    async (
+      id: number | string,
+      data: Partial<TourPackage>
+    ): Promise<TourPackage | null> => {
+      setLoading(true);
+      setError("");
+      try {
+        const validated = tourPackageSchema.parse(data);
+        const updatedPackage = await editTourPackage(id, validated);
+        setTourPackages((prev) =>
+          prev.map((pkg) => (pkg.id === id ? updatedPackage : pkg))
+        );
+        return updatedPackage;
+      } catch (err) {
+        setError(err + "Failed to edit tour package.");
+        console.error(err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  // Delete tour package
+  const remove = useCallback(async (id: number | string): Promise<boolean> => {
+    setLoading(true);
+    setError("");
+    try {
+      await deleteTourPackage(id);
+      setTourPackages((prev) => prev.filter((pkg) => pkg.id !== id));
+      return true;
+    } catch (err) {
+      setError("Failed to delete tour package.");
+      console.error(err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    tourPackages,
+    loading,
+    error,
+    fetchAll,
+    fetchOne,
+    create,
+    edit,
+    remove,
+    setTourPackages, // Exposed for manual updates if needed
+  };
+};

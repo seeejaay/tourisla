@@ -6,7 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserManager } from "@/hooks/useUserManager";
 import countries from "@/app/static/countries.json"; // Adjust path as needed
 
-import Header from "@/components/custom/header";
 interface UserProfile {
   user_id: number;
   first_name: string;
@@ -130,8 +129,7 @@ export default function ProfilePage() {
 
   return (
     <>
-      <Header />
-      <div className="flex items-center justify-center min-h-[calc(100vh-6rem)] bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden">
         <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full border border-indigo-100">
           <div className="flex flex-col items-center mb-8">
             <div className="w-24 h-24 rounded-full bg-indigo-100 flex items-center justify-center mb-4 shadow-lg">

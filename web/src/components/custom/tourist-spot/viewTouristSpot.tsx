@@ -115,11 +115,18 @@ export default function ViewTouristSpot({
 
             <div className="flex flex-col gap-1">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-                Location (Lat, Long)
+                Location
               </Label>
               <span>
-                {touristSpot.latitude && touristSpot.longitude ? (
-                  `${touristSpot.latitude}, ${touristSpot.longitude}`
+                {touristSpot.location ? (
+                  <a
+                    href={touristSpot.location}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    View on map
+                  </a>
                 ) : (
                   <span className="italic text-muted-foreground">N/A</span>
                 )}

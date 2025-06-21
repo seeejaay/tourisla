@@ -73,28 +73,7 @@ export function columns(
       },
       enableSorting: false,
     },
-    {
-      id: "location",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="w-40 font-bold text-left flex justify-start"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Location
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const { latitude, longitude } = row.original;
-        return (
-          <span>
-            {latitude && longitude ? `${latitude}, ${longitude}` : "N/A"}
-          </span>
-        );
-      },
-      enableSorting: false,
-    },
+
     {
       accessorKey: "actions",
       header: () => <span className="font-bold">Actions</span>,
