@@ -7,6 +7,7 @@ const {
   getTourPackageById,
 } = require("../models/tourPackagesModel.js");
 
+const { getOperatorRegisById } = require("../models/operatorRegisModel.js");
 // Tour Operator managing tour packages
 
 const createTourPackageController = async (req, res) => {
@@ -35,19 +36,31 @@ const createTourPackageController = async (req, res) => {
     exclusions = exclusions.toUpperCase();
 
     // Validate required fields
-    if (!package_name || !location || !description || !price || !duration_days || !available_slots || !date_start) {
+    if (
+      !package_name ||
+      !location ||
+      !description ||
+      !price ||
+      !duration_days ||
+      !available_slots ||
+      !date_start
+    ) {
       return res.status(400).json({ error: "All fields are required" });
-    };
+    }
 
     // Ensure price and duration_days are numbers
     if (isNaN(price) || isNaN(duration_days) || isNaN(available_slots)) {
-        return res.status(400).json({ error: "Price, duration_days, and available_slots must be numbers" });
+      return res.status(400).json({
+        error: "Price, duration_days, and available_slots must be numbers",
+      });
     }
 
     // Ensure date_start and date_end are valid dates
     if (available_slots < 0) {
-        return res.status(400).json({ error: "Available slots cannot be negative" });
-    };
+      return res
+        .status(400)
+        .json({ error: "Available slots cannot be negative" });
+    }
 
     const newPackage = await createTourPackage({
       touroperator_id,
@@ -61,12 +74,14 @@ const createTourPackageController = async (req, res) => {
       available_slots,
       date_start,
       date_end,
-      start_time, 
+      start_time,
       end_time,
-      assigned_guides
+      assigned_guides,
     });
 
-    res.status(201).json({ message: "Tour package created", tourPackage: newPackage });
+    res
+      .status(201)
+      .json({ message: "Tour package created", tourPackage: newPackage });
   } catch (err) {
     console.log(err.message);
     res.send(err.message);
@@ -89,8 +104,8 @@ const updateTourPackageController = async (req, res) => {
       is_active,
       date_start,
       date_end,
-      start_time, 
-      end_time
+      start_time,
+      end_time,
     } = req.body;
 
     package_name = package_name.toUpperCase();
@@ -100,17 +115,29 @@ const updateTourPackageController = async (req, res) => {
     exclusions = exclusions.toUpperCase();
 
     // Validate required fields
-    if (!package_name || !location || !description || !price || !duration_days || !available_slots || !date_start) {
+    if (
+      !package_name ||
+      !location ||
+      !description ||
+      !price ||
+      !duration_days ||
+      !available_slots ||
+      !date_start
+    ) {
       return res.status(400).json({ error: "All fields are required" });
-    };
+    }
 
     // Ensure price and duration_days are numbers
     if (isNaN(price) || isNaN(duration_days) || isNaN(available_slots)) {
-        return res.status(400).json({ error: "Price, duration_days, and available_slots must be numbers" });
-    };
+      return res.status(400).json({
+        error: "Price, duration_days, and available_slots must be numbers",
+      });
+    }
     if (available_slots < 0) {
-        return res.status(400).json({ error: "Available slots cannot be negative" });
-    };
+      return res
+        .status(400)
+        .json({ error: "Available slots cannot be negative" });
+    }
 
     const updated = await updateTourPackage(id, touroperator_id, {
       package_name,
@@ -124,11 +151,12 @@ const updateTourPackageController = async (req, res) => {
       is_active,
       date_start,
       date_end,
-      start_time, 
-      end_time
+      start_time,
+      end_time,
     });
 
-    if (!updated) return res.status(404).json({ message: "Tour package not found." });
+    if (!updated)
+      return res.status(404).json({ message: "Tour package not found." });
 
     res.json({ message: "Tour package updated", tourPackage: updated });
   } catch (err) {
@@ -143,7 +171,8 @@ const deleteTourPackageController = async (req, res) => {
     const touroperator_id = req.user.id;
 
     const deleted = await deleteTourPackage(id, touroperator_id);
-    if (!deleted) return res.status(404).json({ message: "Tour package not found." });
+    if (!deleted)
+      return res.status(404).json({ message: "Tour package not found." });
 
     res.json({ message: "Tour package deleted" });
   } catch (err) {
@@ -154,7 +183,14 @@ const deleteTourPackageController = async (req, res) => {
 
 const viewTourPackagesController = async (req, res) => {
   try {
-    const tourOperatorId = req.user.id; 
+    const tourOperator_Id = req.user.id;
+    console.log("Tour Operator ID:", tourOperator_Id);
+    const operatorRegis = await getOperatorRegisById(tourOperator_Id);
+    if (!operatorRegis) {
+      return res.status(404).json({ message: "Tour operator not found." });
+    }
+    const tourOperatorId = operatorRegis.id;
+
     const packages = await getAllTourPackagesByOperator(tourOperatorId);
     res.json(packages);
   } catch (err) {
@@ -166,10 +202,9 @@ const viewTourPackagesController = async (req, res) => {
 const viewTourPackageByIdController = async (req, res) => {
   try {
     const { id } = req.params;
-    const tourOperatorId = req.user.id;
-
     const tourPackage = await getTourPackageById(id, tourOperatorId);
-    if (!tourPackage) return res.status(404).json({ message: "Tour package not found." });
+    if (!tourPackage)
+      return res.status(404).json({ message: "Tour package not found." });
 
     res.json(tourPackage);
   } catch (err) {

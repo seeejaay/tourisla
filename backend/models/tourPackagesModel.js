@@ -12,9 +12,9 @@ const createTourPackage = async ({
   available_slots,
   date_start,
   date_end,
-  start_time, 
+  start_time,
   end_time,
-  assigned_guides = []
+  assigned_guides = [],
 }) => {
   const result = await db.query(
     `INSERT INTO tour_packages 
@@ -34,8 +34,8 @@ const createTourPackage = async ({
       available_slots,
       date_start,
       date_end,
-      start_time, 
-      end_time
+      start_time,
+      end_time,
     ]
   );
   const newPackage = result.rows[0];
@@ -71,7 +71,7 @@ const updateTourPackage = async (id, touroperator_id, packageData) => {
     date_start,
     date_end,
     start_time,
-    end_time
+    end_time,
   } = packageData;
 
   const result = await db.query(
@@ -93,7 +93,7 @@ const updateTourPackage = async (id, touroperator_id, packageData) => {
       is_active || true,
       date_start,
       date_end,
-      start_time, 
+      start_time,
       end_time,
       id,
       touroperator_id,
@@ -131,10 +131,9 @@ const getTourPackageByIdForOperator = async (id, touroperator_id) => {
 };
 
 const getTourPackageById = async (id) => {
-  const result = await db.query(
-    `SELECT * FROM tour_packages WHERE id = $1`,
-    [id]
-  );
+  const result = await db.query(`SELECT * FROM tour_packages WHERE id = $1`, [
+    id,
+  ]);
   return result.rows[0];
 };
 
