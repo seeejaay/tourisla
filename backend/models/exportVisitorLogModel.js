@@ -20,7 +20,7 @@ const exportVisitorLog = async (filter) => {
       vgm.province AS local_province
     FROM attraction_visitor_logs avl
     JOIN tourist_spots ts ON avl.tourist_spot_id = ts.id
-    JOIN visitor_group_members vgm ON avl.registration_id = vgm.registration_id
+    JOIN visitor_group_members vgm ON avl.group_member_id = vgm.id
     WHERE 1=1
   `;
 
