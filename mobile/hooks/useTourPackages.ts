@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { Alert } from 'react-native';
 import { fetchPackages, createPackage, deletePackage } from '../lib/api/tourPackages';
-import { API_URL } from '@/lib/config';
 
 export const useTourPackages = () => {
   const [packages, setPackages] = useState([]);
