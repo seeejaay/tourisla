@@ -5,6 +5,7 @@ const {
   deleteTourPackage,
   getAllTourPackagesByOperator,
   getTourPackageById,
+  getAssignedGuidesByPackage,
 } = require("../models/tourPackagesModel.js");
 
 const { getOperatorRegisById } = require("../models/operatorRegisModel.js");
@@ -12,7 +13,7 @@ const { getOperatorRegisById } = require("../models/operatorRegisModel.js");
 
 const createTourPackageController = async (req, res) => {
   try {
-    const touroperator_id = req.user.id;
+    const touroperator_id = 1;
     let {
       package_name,
       location,
@@ -27,8 +28,6 @@ const createTourPackageController = async (req, res) => {
       start_time,
       end_time,
       assigned_guides,
-      cancellation_days,
-      cancellation_note
     } = req.body;
 
     package_name = package_name.toUpperCase();
@@ -79,8 +78,6 @@ const createTourPackageController = async (req, res) => {
       start_time,
       end_time,
       assigned_guides,
-      cancellation_days,
-      cancellation_note
     });
 
     res
@@ -110,8 +107,6 @@ const updateTourPackageController = async (req, res) => {
       date_end,
       start_time,
       end_time,
-      cancellation_days,
-      cancellation_note
     } = req.body;
 
     package_name = package_name.toUpperCase();
@@ -157,10 +152,8 @@ const updateTourPackageController = async (req, res) => {
       is_active,
       date_start,
       date_end,
-      start_time, 
+      start_time,
       end_time,
-      cancellation_days,
-      cancellation_note
     });
 
     if (!updated)
@@ -200,7 +193,19 @@ const viewTourPackagesController = async (req, res) => {
     const tourOperatorId = operatorRegis.id;
 
     const packages = await getAllTourPackagesByOperator(tourOperatorId);
-    res.json(packages);
+
+    // Fetch assigned guides for each package in parallel
+    const packagesWithGuides = await Promise.all(
+      packages.map(async (pkg) => {
+        const assigned_guides = await getAssignedGuidesByPackage(pkg.id);
+        return {
+          ...pkg,
+          assigned_guides, // array of guides (can be empty)
+        };
+      })
+    );
+
+    res.json(packagesWithGuides);
   } catch (err) {
     console.log(err.message);
     res.send(err.message);
@@ -221,10 +226,27 @@ const viewTourPackageByIdController = async (req, res) => {
   }
 };
 
+const viewAssignedGuidesController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const assignedGuides = await getAssignedGuidesByPackage(id);
+    if (!assignedGuides || assignedGuides.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No guides assigned to this package." });
+    }
+    res.json(assignedGuides);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+};
+
 module.exports = {
   createTourPackageController,
   updateTourPackageController,
   deleteTourPackageController,
   viewTourPackagesController,
   viewTourPackageByIdController,
+  viewAssignedGuidesController,
 };
