@@ -751,6 +751,7 @@ app.delete(
 
 //tripadvisors
 app.get("/tripadvisor/hotels", getTripadvisorHotelsWithPhotos);
+
 //Individual Visitor Log Export
 app.get("/api/v1/visitor-logs/export", exportVisitorLogController);
 //Visitor Summary Grouped by Month Export

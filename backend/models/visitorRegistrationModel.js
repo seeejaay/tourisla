@@ -60,14 +60,20 @@ const getUserAttractionId = async (userId) => {
   return result.rows[0]?.attraction_id || null;
 };
 
-// ✅ Log attraction visit using registration ID (renamed for clarity)
-const logAttractionVisitByRegistration = async ({ registrationId, scannedByUserId, touristSpotId }) => {
-  const result = await db.query(
-    `INSERT INTO attraction_visitor_logs (registration_id, scanned_by_user_id, tourist_spot_id, visit_date)
-     VALUES ($1, $2, $3, CURRENT_DATE) RETURNING *`,
-    [registrationId, scannedByUserId, touristSpotId]
+// ✅ Log visit for ALL group members
+const logAttractionVisitByRegistration = async ({ groupMembers, scannedByUserId, touristSpotId }) => {
+  const logs = await Promise.all(
+    groupMembers.map((member) =>
+      db.query(
+        `INSERT INTO attraction_visitor_logs (group_member_id, scanned_by_user_id, tourist_spot_id, visit_date)
+         VALUES ($1, $2, $3, CURRENT_DATE)
+         RETURNING *`,
+        [member.id, scannedByUserId, touristSpotId]
+      )
+    )
   );
-  return result.rows[0];
+
+  return logs.map((r) => r.rows[0]);
 };
 
 module.exports = {
