@@ -1,16 +1,16 @@
 import { useState, useCallback } from "react";
 
-import type {
-  TourOperatorSchema,
-  TourOperator,
-} from "@/app/static/tour-operator/useTourOperatorManagerSchema";
+import type { TourOperatorSchema } from "@/app/static/tour-operator/useTourOperatorManagerSchema";
 
+import type { TourOperator } from "@/components/custom/tour-operator/column";
 import {
   fetchTourOperatorApplicants as apifetchApplicants,
   fetchTourOperatorApplicant as apifetchApplicant,
   editTourOperatorApplicant as apieditApplicant,
   createTourOperatorApplicant as apicreateApplicant,
   deleteTourOperatorApplicant as apideleteApplicant,
+  approveTourOperatorApplicant as apiapproveApplicant,
+  rejectTourOperatorApplicant as apirejectApplicant,
 } from "@/lib/api/tour-operator";
 
 export const useTourOperatorManager = () => {
@@ -28,6 +28,7 @@ export const useTourOperatorManager = () => {
     try {
       const applicants = await apifetchApplicants();
       setOperatorApplicants(applicants);
+      console.log("Fetched tour operator applicants:", applicants);
       return applicants;
     } catch (err) {
       setError("Failed to fetch tour operator applicants.");
@@ -42,9 +43,10 @@ export const useTourOperatorManager = () => {
     async (id: number): Promise<TourOperator | null> => {
       setLoading(true);
       setError("");
-
+      console.log("Fetching tour operator applicant with ID:", id);
       try {
         const applicant = await apifetchApplicant(id);
+        console.log("Fetched tour operator applicants:", applicant);
         return applicant;
       } catch (err) {
         setError("Failed to fetch tour operator applicant.");
@@ -124,6 +126,54 @@ export const useTourOperatorManager = () => {
     }
   }, []);
 
+  const approveApplicant = useCallback(
+    async (id: number): Promise<TourOperator | null> => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const approvedApplicant = await apiapproveApplicant(id);
+        setOperatorApplicants((prev) =>
+          prev.map((applicant) =>
+            applicant.id === id ? approvedApplicant : applicant
+          )
+        );
+        return approvedApplicant;
+      } catch (err) {
+        setError("Failed to approve tour operator applicant.");
+        console.error(err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const rejectApplicant = useCallback(
+    async (id: number): Promise<TourOperator | null> => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const rejectedApplicant = await apirejectApplicant(id);
+        setOperatorApplicants((prev) =>
+          prev.map((applicant) =>
+            applicant.id === id ? rejectedApplicant : applicant
+          )
+        );
+        return rejectedApplicant;
+      } catch (err) {
+        setError("Failed to reject tour operator applicant.");
+        console.error(err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   return {
     OperatorApplicants,
     loading,
@@ -133,5 +183,7 @@ export const useTourOperatorManager = () => {
     editApplicant,
     createApplicant,
     deleteApplicant,
+    approveApplicant,
+    rejectApplicant,
   };
 };

@@ -12,7 +12,7 @@ const createTourPackage = async ({
   available_slots,
   date_start,
   date_end,
-  start_time, 
+  start_time,
   end_time,
   assigned_guides = [],
   cancellation_days,
@@ -104,7 +104,7 @@ const updateTourPackage = async (id, touroperator_id, packageData) => {
       is_active || true,
       date_start,
       date_end,
-      start_time, 
+      start_time,
       end_time,
       cancellation_days,
       cancellation_note,
@@ -144,10 +144,9 @@ const getTourPackageByIdForOperator = async (id, touroperator_id) => {
 };
 
 const getTourPackageById = async (id) => {
-  const result = await db.query(
-    `SELECT * FROM tour_packages WHERE id = $1`,
-    [id]
-  );
+  const result = await db.query(`SELECT * FROM tour_packages WHERE id = $1`, [
+    id,
+  ]);
   return result.rows[0];
 };
 

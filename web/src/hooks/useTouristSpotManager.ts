@@ -68,6 +68,7 @@ export const useTouristSpotManager = () => {
       setError("");
       try {
         const data = await apiViewTouristSpot(id);
+
         return data;
       } catch (err) {
         setError(
