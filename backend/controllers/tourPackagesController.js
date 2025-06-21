@@ -6,6 +6,7 @@ const {
   getAllTourPackagesByOperator,
   getTourPackageById,
   getAssignedGuidesByPackage,
+  getTourPackagesByTourGuide,
 } = require("../models/tourPackagesModel.js");
 
 const { getOperatorRegisById } = require("../models/operatorRegisModel.js");
@@ -242,6 +243,19 @@ const viewAssignedGuidesController = async (req, res) => {
   }
 };
 
+const getTourPackagesByGuideController = async (req, res) => {
+  try {
+    const { tourguide_id } = req.params;
+
+    const packages = await getTourPackagesByTourGuide(tourguide_id);
+
+    res.status(200).json({ tourPackages: packages });
+  } catch (err) {
+    console.error("Error fetching tour packages for guide:", err);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
 module.exports = {
   createTourPackageController,
   updateTourPackageController,
@@ -249,4 +263,5 @@ module.exports = {
   viewTourPackagesController,
   viewTourPackageByIdController,
   viewAssignedGuidesController,
+  getTourPackagesByGuideController,
 };
