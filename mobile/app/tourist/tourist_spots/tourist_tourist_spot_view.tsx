@@ -1,183 +1,77 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
+  ScrollView,
   Image,
   TouchableOpacity,
-  Linking,
-  ActivityIndicator,
-  StatusBar,
-  SafeAreaView,
   Dimensions,
-  Share,
+  StatusBar,
+  Linking,
   FlatList,
-  Alert,
+  ActivityIndicator,
   Platform
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
-import { useTouristSpotManager } from '../../../hooks/useTouristSpotManager';
-import { useAuth } from '../../../hooks/useAuth';
 import { LinearGradient } from 'expo-linear-gradient';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import { useTouristSpotManager } from '../../../hooks/useTouristSpotManager';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 0;
-const CARD_MARGIN = 16;
-const CARD_WIDTH = SCREEN_WIDTH - (CARD_MARGIN * 2);
+const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 0;
 
-// Enhanced helper function to convert text from ALL CAPS to Sentence case
-// and replace underscores with spaces
-const toSentenceCase = (text: string) => {
-  if (!text) return '';
-  // Replace underscores with spaces
-  const withSpaces = text.replace(/_/g, ' ');
-  // Convert to lowercase
-  const lowercase = withSpaces.toLowerCase();
-  // Capitalize the first letter of each sentence
-  return lowercase.replace(/(^\s*\w|[.!?]\s*\w)/g, c => c.toUpperCase());
-};
-
-export default function TouristTouristSpotViewScreen() {
-  const router = useRouter();
+export default function TouristTouristSpotView() {
   const { id } = useLocalSearchParams();
-  const { getTouristSpotById, loading, error } = useTouristSpotManager();
-  const { token } = useAuth();
-  const [touristSpot, setTouristSpot] = useState(null);
+  const numericId = id ? Number(id) : null;
+  const router = useRouter();
+  const { fetchTouristSpots, loading, error } = useTouristSpotManager();
+  interface TouristSpot {
+    name: string;
+    type: string;
+    barangay: string;
+    municipality: string;
+    description: string;
+    entrance_fee?: number;
+    other_fees?: string;
+    amenities?: string[];
+    contact_number?: string;
+    email?: string;
+    additional_info?: string;
+    latitude?: number;
+    longitude?: number;
+    images?: { image_url?: string; url?: string; uri?: string }[];
+    opening_time?: string;
+    closing_time?: string;
+  }
+
+  const [touristSpot, setTouristSpot] = useState<TouristSpot | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const carouselRef = useRef(null);
 
   useEffect(() => {
-    const fetchTouristSpot = async () => {
-      if (id) {
-        try {
-          const data = await getTouristSpotById(id);
-          if (data) {
-            setTouristSpot(data);
-          } else {
-            Alert.alert('Error', 'Tourist spot not found');
-            router.back();
-          }
-        } catch (error) {
-          console.error('Error fetching tourist spot:', error);
-          Alert.alert('Error', 'Failed to load tourist spot details');
-          router.back();
-        }
+    if (!numericId) return;
+    const loadTouristSpot = async () => {
+      try {
+        const spot = await fetchTouristSpots(numericId);
+        setTouristSpot(spot);
+        console.log('Loaded tourist spot:', spot);
+      } catch (err) {
+        console.error('Error loading tourist spot:', err);
       }
     };
 
-    fetchTouristSpot();
-  }, [id, getTouristSpotById, router]);
+    loadTouristSpot();
+  }, [numericId, fetchTouristSpots]);
 
-  // First, let's add more detailed logging to understand the image data structure
-  useEffect(() => {
-    if (touristSpot && touristSpot.images) {
-      console.log('Tourist spot images data type:', typeof touristSpot.images);
-      console.log('Tourist spot images:', JSON.stringify(touristSpot.images));
-      
-      // Check if images is an array of strings or objects
-      if (Array.isArray(touristSpot.images) && touristSpot.images.length > 0) {
-        console.log('First image type:', typeof touristSpot.images[0]);
-        console.log('First image value:', touristSpot.images[0]);
-      }
-    }
-  }, [touristSpot]);
-
-  const handleOpenMap = () => {
-    if (!touristSpot?.name) {
-      Alert.alert('Error', 'Tourist spot name not available');
-      return;
-    }
-  
-    // Create a search query using the name, barangay, and municipality
-    const searchQuery = encodeURIComponent(
-      `${touristSpot.name}, ${touristSpot.barangay}, ${touristSpot.municipality}, ${touristSpot.province || 'Cebu'}`
-    );
-    
-    const url = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
-    
-    Linking.openURL(url).catch(err => {
-      Alert.alert('Error', 'Could not open map application');
-      console.error('Error opening map:', err);
-    });
+  // Helper function to convert string to sentence case
+  const toSentenceCase = (str) => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
 
-  const handleCall = () => {
-    if (!touristSpot?.contact_number) {
-      Alert.alert('Error', 'Contact number not available');
-      return;
-    }
-
-    const phoneNumber = touristSpot.contact_number.replace(/\s/g, '');
-    Linking.openURL(`tel:${phoneNumber}`).catch(err => {
-      Alert.alert('Error', 'Could not open phone application');
-    });
-  };
-
-  const handleShare = async () => {
-    try {
-      await Share.share({
-        message: `Check out ${touristSpot.name} in ${touristSpot.municipality}, ${touristSpot.barangay}! ${touristSpot.description}`,
-        title: touristSpot.name,
-      });
-    } catch (error) {
-      console.error('Error sharing:', error);
-    }
-  };
-
-  const renderImageItem = ({ item, index }) => {
-    console.log(`Rendering image ${index}, item type:`, typeof item);
-    
-    // Handle different possible data structures
-    let imageUrl;
-    
-    if (typeof item === 'string') {
-      imageUrl = item.trim();
-    } else if (item && typeof item === 'object') {
-      // Try to extract URL from object (could be image_url, url, uri, etc.)
-      imageUrl = item.image_url || item.url || item.uri || '';
-      if (imageUrl) imageUrl = imageUrl.trim();
-    }
-    
-    console.log(`Image ${index} URL:`, imageUrl);
-    
-    return (
-      <View style={styles.carouselItem}>
-        {imageUrl ? (
-          <Image 
-            source={{ uri: imageUrl }} 
-            style={styles.carouselImage}
-            resizeMode="cover"
-            onError={(e) => {
-              console.error(`Error loading image ${index}:`, e.nativeEvent.error);
-              console.log(`Failed URL: ${imageUrl}`);
-            }}
-          />
-        ) : (
-          <View style={[styles.noImagePlaceholder, { backgroundColor: `${typeColor}20` }]}>
-            <FontAwesome5 name="image" size={40} color="#fff" />
-            <Text style={styles.noImageText}>Image not available</Text>
-          </View>
-        )}
-      </View>
-    );
-  };
-
-  const renderDayBadge = (day) => {
-    const isOpen = touristSpot.days_open && touristSpot.days_open.includes(day);
-    return (
-      <View key={day} style={[styles.dayBadge, isOpen ? styles.openDay : styles.closedDay]}>
-        <Text style={[styles.dayText, isOpen ? styles.openDayText : styles.closedDayText]}>
-          {day.substring(0, 3)}
-        </Text>
-      </View>
-    );
-  };
-
-  // Get a color based on the tourist spot type
-  const getTypeColor = (type: string) => {
-    const colors: Record<string, string> = {
+  // Get color based on tourist spot type
+  const getTypeColor = (type) => {
+    const colors = {
       'ADVENTURE': '#f97316',
       'BEACH': '#0ea5e9',
       'CAMPING': '#84cc16',
@@ -191,15 +85,42 @@ export default function TouristTouristSpotViewScreen() {
     return colors[type] || '#64748b';
   };
 
-  // Return loading, error, and not found states similar to announcement view
+  // Open Google Maps with the tourist spot location
+  const handleOpenMap = () => {
+    if (touristSpot && touristSpot.latitude && touristSpot.longitude) {
+      const url = `https://www.google.com/maps/search/?api=1&query=${touristSpot.latitude},${touristSpot.longitude}`;
+      Linking.openURL(url);
+    } else {
+      // If coordinates are not available, search by name
+      const query = `${touristSpot.name}, ${touristSpot.barangay}, ${touristSpot.municipality}, Cebu`;
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+      Linking.openURL(url);
+    }
+  };
+
+  // Helper function to get image URL from different possible formats
+  const getImageUrl = (image) => {
+    if (!image) return null;
+    
+    // If it's a string, use it directly
+    if (typeof image === 'string') {
+      return image;
+    }
+    
+    // If it's an object with image_url property
+    if (typeof image === 'object' && image !== null) {
+      return image.image_url || image.url || image.uri || null;
+    }
+    
+    return null;
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-        <View style={styles.loadingContent}>
-          <ActivityIndicator size="large" color="#38bdf8" />
-          <Text style={styles.loadingText}>Loading tourist spot...</Text>
-        </View>
+        <ActivityIndicator size="large" color="#0ea5e9" />
+        <Text style={styles.loadingText}>Loading tourist spot details...</Text>
       </View>
     );
   }
@@ -230,20 +151,13 @@ export default function TouristTouristSpotViewScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
       
-      {/* Top Navigation Bar */}
+      {/* Back Button */}
       <View style={styles.navbar}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.navButton}
           onPress={() => router.back()}
         >
-          <FontAwesome5 name="arrow-left" size={18} color="#fff" />
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.navButton}
-          onPress={handleShare}
-        >
-          <FontAwesome5 name="share-alt" size={18} color="#fff" />
+          <FontAwesome5 name="arrow-left" size={18} color="#ffffff" />
         </TouchableOpacity>
       </View>
       
@@ -252,9 +166,7 @@ export default function TouristTouristSpotViewScreen() {
         {touristSpot.images && Array.isArray(touristSpot.images) && touristSpot.images.length > 0 ? (
           <View style={styles.imageContainer}>
             <FlatList
-              ref={carouselRef}
               data={touristSpot.images}
-              renderItem={renderImageItem}
               keyExtractor={(_, index) => `image-${index}`}
               horizontal
               pagingEnabled
@@ -362,58 +274,13 @@ export default function TouristTouristSpotViewScreen() {
             )}
           </View>
           
-          {/* Open Days */}
-          <View style={styles.daysContainer}>
-            <Text style={styles.daysLabel}>Open Days</Text>
-            <View style={styles.daysRow}>
-              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(renderDayBadge)}
-            </View>
-          </View>
-          
-          {/* Contact Information */}
-          {(touristSpot.contact_number || touristSpot.email || touristSpot.facebook_page) && (
-            <View style={styles.contactContainer}>
-              <Text style={styles.contactLabel}>Contact Information</Text>
-              
-              {touristSpot.contact_number && (
-                <TouchableOpacity 
-                  style={styles.contactRow}
-                  onPress={() => Linking.openURL(`tel:${touristSpot.contact_number}`)}
-                >
-                  <FontAwesome5 name="phone-alt" solid size={14} color={typeColor} />
-                  <Text style={styles.contactText}>{touristSpot.contact_number}</Text>
-                </TouchableOpacity>
-              )}
-              
-              {touristSpot.email && (
-                <TouchableOpacity 
-                  style={styles.contactRow}
-                  onPress={() => Linking.openURL(`mailto:${touristSpot.email}`)}
-                >
-                  <FontAwesome5 name="envelope" solid size={14} color={typeColor} />
-                  <Text style={styles.contactText}>{touristSpot.email}</Text>
-                </TouchableOpacity>
-              )}
-              
-              {touristSpot.facebook_page && (
-                <TouchableOpacity 
-                  style={styles.contactRow}
-                  onPress={() => Linking.openURL(touristSpot.facebook_page)}
-                >
-                  <FontAwesome5 name="facebook" brands size={14} color={typeColor} />
-                  <Text style={styles.contactText}>{touristSpot.facebook_page}</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
-          
           {/* Amenities */}
           {touristSpot.amenities && touristSpot.amenities.length > 0 && (
             <View style={styles.amenitiesContainer}>
               <Text style={styles.amenitiesLabel}>Amenities</Text>
-              <View style={styles.amenitiesList}>
+              <View style={styles.amenitiesBadgesContainer}>
                 {touristSpot.amenities.map((amenity, index) => (
-                  <View key={`amenity-${index}`} style={styles.amenityBadge}>
+                  <View key={index} style={styles.amenityBadge}>
                     <Text style={styles.amenityText}>{toSentenceCase(amenity)}</Text>
                   </View>
                 ))}
@@ -421,12 +288,33 @@ export default function TouristTouristSpotViewScreen() {
             </View>
           )}
           
-          {/* Rules */}
-          {touristSpot.rules && (
-            <View style={styles.rulesContainer}>
-              <Text style={styles.rulesLabel}>Rules & Guidelines</Text>
-              <Text style={styles.rulesText}>
-                {toSentenceCase(touristSpot.rules)}
+          {/* Contact Information */}
+          {(touristSpot.contact_number || touristSpot.email) && (
+            <View style={styles.contactContainer}>
+              <Text style={styles.contactLabel}>Contact Information</Text>
+              
+              {touristSpot.contact_number && (
+                <View style={styles.contactItem}>
+                  <FontAwesome5 name="phone" solid size={14} color={typeColor} />
+                  <Text style={styles.contactText}>{touristSpot.contact_number}</Text>
+                </View>
+              )}
+              
+              {touristSpot.email && (
+                <View style={styles.contactItem}>
+                  <FontAwesome5 name="envelope" solid size={14} color={typeColor} />
+                  <Text style={styles.contactText}>{touristSpot.email}</Text>
+                </View>
+              )}
+            </View>
+          )}
+          
+          {/* Additional Information */}
+          {touristSpot.additional_info && (
+            <View style={styles.additionalInfoContainer}>
+              <Text style={styles.additionalInfoLabel}>Additional Information</Text>
+              <Text style={styles.additionalInfoText}>
+                {toSentenceCase(touristSpot.additional_info)}
               </Text>
             </View>
           )}
@@ -443,16 +331,13 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#0f172a',
-  },
-  loadingContent: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#0f172a',
   },
   loadingText: {
-    color: '#cbd5e1',
-    marginTop: 16,
+    color: '#94a3b8',
+    marginTop: 12,
     fontSize: 16,
   },
   errorContainer: {
@@ -460,29 +345,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#0f172a',
-    padding: 24,
+    padding: 20,
   },
   errorTitle: {
+    color: '#fbbf24',
     fontSize: 22,
-    fontWeight: '700',
-    color: '#fff',
+    fontWeight: 'bold',
     marginTop: 16,
     marginBottom: 8,
   },
   errorText: {
-    fontSize: 16,
     color: '#94a3b8',
+    fontSize: 16,
     textAlign: 'center',
     marginBottom: 24,
   },
   backToListButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#1e293b',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
   },
   backToListButtonText: {
-    color: '#fff',
+    color: '#ffffff',
+    fontSize: 16,
     fontWeight: '600',
   },
   navbar: {
@@ -566,65 +452,74 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   typeTagText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+    color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 14,
   },
   hoursContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   hoursText: {
-    fontSize: 14,
     color: '#94a3b8',
-    marginLeft: 8,
+    marginLeft: 6,
+    fontSize: 14,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#fff',
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#ffffff',
     marginBottom: 12,
-    lineHeight: 32,
   },
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   locationText: {
-    fontSize: 16,
-    color: '#cbd5e1',
+    color: '#94a3b8',
     marginLeft: 8,
+    fontSize: 16,
+  },
+  mapButtonContainer: {
+    marginBottom: 24,
+  },
+  mapButton: {
+    backgroundColor: '#1e293b',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  mapButtonText: {
+    color: '#ffffff',
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: '500',
   },
   descriptionContainer: {
-    backgroundColor: '#1e293b',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    marginBottom: 24,
   },
   descriptionLabel: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
+    fontWeight: 'bold',
+    color: '#ffffff',
     marginBottom: 12,
   },
   descriptionText: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#cbd5e1',
+    color: '#94a3b8',
   },
   feeContainer: {
-    backgroundColor: '#1e293b',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    marginBottom: 24,
   },
   feeLabel: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
+    fontWeight: 'bold',
+    color: '#ffffff',
     marginBottom: 12,
   },
   feeContent: {
@@ -633,118 +528,72 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   feeText: {
-    fontSize: 16,
-    color: '#cbd5e1',
+    color: '#94a3b8',
     marginLeft: 8,
-    fontWeight: '600',
+    fontSize: 16,
   },
   otherFeesText: {
-    fontSize: 14,
     color: '#94a3b8',
+    fontSize: 14,
     marginTop: 4,
-    marginLeft: 22,
   },
-  daysContainer: {
-    backgroundColor: '#1e293b',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+  amenitiesContainer: {
+    marginBottom: 24,
   },
-  daysLabel: {
+  amenitiesLabel: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
+    fontWeight: 'bold',
+    color: '#ffffff',
     marginBottom: 12,
   },
-  daysRow: {
+  amenitiesBadgesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
   },
-  dayBadge: {
+  amenityBadge: {
+    backgroundColor: '#1e293b',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
     marginRight: 8,
     marginBottom: 8,
   },
-  openDay: {
-    backgroundColor: '#10b981',
-  },
-  closedDay: {
-    backgroundColor: '#ef4444',
-  },
-  dayText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#ffffff',
+  amenityText: {
+    color: '#94a3b8',
+    fontSize: 14,
   },
   contactContainer: {
-    backgroundColor: '#1e293b',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    marginBottom: 24,
   },
   contactLabel: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
+    fontWeight: 'bold',
+    color: '#ffffff',
     marginBottom: 12,
   },
-  contactRow: {
+  contactItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  contactText: {
-    fontSize: 16,
-    color: '#cbd5e1',
-    marginLeft: 12,
-  },
-  amenitiesContainer: {
-    backgroundColor: '#1e293b',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-  },
-  amenitiesLabel: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
-    marginBottom: 12,
-  },
-  amenitiesList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  amenityBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginRight: 8,
     marginBottom: 8,
   },
-  amenityText: {
-    fontSize: 14,
-    color: '#cbd5e1',
+  contactText: {
+    color: '#94a3b8',
+    marginLeft: 8,
+    fontSize: 16,
   },
-  rulesContainer: {
-    backgroundColor: '#1e293b',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+  additionalInfoContainer: {
+    marginBottom: 24,
   },
-  rulesLabel: {
+  additionalInfoLabel: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
+    fontWeight: 'bold',
+    color: '#ffffff',
     marginBottom: 12,
   },
-  rulesText: {
+  additionalInfoText: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#cbd5e1',
+    color: '#94a3b8',
   },
   paginationContainer: {
     position: 'absolute',
@@ -754,7 +603,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 5, // Ensure dots are above images
   },
   paginationDot: {
     width: 8,
@@ -769,15 +617,6 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
   },
-  noImageContainer: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_WIDTH * 0.75,
-  },
-  noImageText: {
-    marginTop: 8,
-    fontSize: 16,
-    color: '#94a3b8',
-  },
   noImagePlaceholder: {
     width: '100%',
     height: '100%',
@@ -785,232 +624,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(30, 41, 59, 0.8)',
   },
-  
-  // Redesigned cards
-  detailsCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    margin: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  spotName: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#0f172a',
-    flex: 1,
-  },
-  typeBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: '#0284c7',
-    marginLeft: 8,
-  },
-  typeText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 12,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  locationText: {
-    fontSize: 15,
-    color: '#64748b',
-    marginLeft: 6,
-  },
-  
-  // Action buttons inside the card
-  actionButtonsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#0284c7',
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginHorizontal: 4,
-  },
-  actionButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  
-  // Common card style
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    margin: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#0f172a',
-    marginBottom: 8,
-  },
-  description: {
-    fontSize: 16,
-    color: '#334155',
-    lineHeight: 24,
-  },
-  hoursRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  hoursText: {
-    fontSize: 16,
-    color: '#64748b',
-  },
-  daysTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#0f172a',
-    marginBottom: 8,
-  },
-  daysRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  dayBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  openDay: {
-    backgroundColor: '#10b981',
-  },
-  closedDay: {
-    backgroundColor: '#ef4444',
-  },
-  dayText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  openDayText: {
-    color: '#ffffff',
-  },
-  closedDayText: {
-    color: '#ffffff',
-  },
-  contactRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  contactText: {
-    fontSize: 16,
-    color: '#64748b',
-    marginLeft: 6,
-  },
-  feeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  feeText: {
-    fontSize: 16,
-    color: '#64748b',
-    marginLeft: 6,
-  },
-  otherFeesContainer: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-  },
-  otherFeesTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#0f172a',
-    marginBottom: 8,
-  },
-  otherFeesText: {
-    fontSize: 16,
-    color: '#64748b',
-    lineHeight: 24,
-  },
-  amenitiesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  amenityBadge: {
-    backgroundColor: '#e2e8f0',
-    borderRadius: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginRight: 12,
-    marginBottom: 12,
-  },
-  amenityText: {
-    fontSize: 14,
-    color: '#0f172a',
-  },
-  linkText: {
-    color: '#38bdf8',
-    textDecorationLine: 'underline',
-  },
-  mapButtonContainer: {
-    marginBottom: 16,
-  },
-  mapButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#0ea5e9',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 4,
-  },
-  mapButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 16,
-    marginLeft: 8,
-  },
-  contactText: {
-    fontSize: 16,
-    color: '#cbd5e1',
-    marginLeft: 8,
-    flex: 1,
-  },
-  linkText: {
-    color: '#38bdf8',
-    textDecorationLine: 'underline',
-  },
 });
+
+

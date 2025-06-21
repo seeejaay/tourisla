@@ -1,118 +1,101 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, FlatList } from "react-native";
-import { useRouter } from "expo-router";
-import { currentUser } from "@/lib/api/auth"; 
-import { useTourGuideManager } from "@/hooks/useTourGuideManager";
-import { useTourPackageManager } from "@/hooks/useTourPackagesManager";
-
-
+import React, { useState, useEffect } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  ScrollView, 
+  TouchableOpacity,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Alert
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as auth from '@/lib/api/auth';
+import { fetchGuidePackages } from '@/lib/api/guidePackages';
 
 export default function GuideHome() {
   const router = useRouter();
-  const { fetchTourGuideApplicants } = useTourGuideManager();
-  const { fetchAll } = useTourPackageManager();
-
-  const [userName, setemail] = useState("");
-  const [userId, setUserId] = useState(null); 
-  const [foundTourGuide, setTourGuideId] = useState<number | null>(null);
-  const [tour_package_id, setAssignedPackages] = useState<any[]>([]);
+  const [userName, setUserName] = useState('');
+  const [headerHeight, setHeaderHeight] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
+  const [error, setError] = useState(null);
+  const [assignedPackages, setAssignedPackages] = useState([]);
+  const [userData, setUserData] = useState(null);
+  
+  // Get user data and assigned packages
   useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const user = await currentUser(); // Fetch the current user
-        console.log("Current User:", user);
-        setemail(user.data.user.email);
-        console.log("User Email:", user.data.user.email);
-        setUserId(user.data.user.user_id);      // Set user_id
-        console.log("User ID:", user.data.user.user_id);
-      } catch (err) {
-        console.error("Error fetching current user:", err);
-      }
-    };
-    fetchCurrentUser();
-  }, []);
-
-    // Fetch tourGuideId based on user_id
-    useEffect(() => {
-      const fetchTourGuideId = async () => {
-        if (!userId) return;
-        try {
-          const applicants = await fetchTourGuideApplicants();
-          console.log("Tour Guide Applicants:", applicants);
-            const foundTourGuide = applicants?.find(
-              (applicant) => Number(applicant.user_id) === Number(userId)
-            );
-          console.log("Tour Guide Record:", foundTourGuide);
-  
-          if (!foundTourGuide) {
-            setError(`No tour guide record found for user ${userId}.`);
-            return;
-          }
-  
-          setTourGuideId(foundTourGuide.id); // Save the tourGuideId
-          console.log("Tour Guide ID:", foundTourGuide.id);
-        } catch (err) {
-          setError("Error fetching tour guide record.");
-        }
-      };
-      fetchTourGuideId();
-    }, [userId, fetchTourGuideApplicants]);
-
-  // Fetch assigned tour packages for the tour guide
-
-  useEffect(() => {
-    const fetchAssignedPackages = async () => {
-      // Wait until we have the tour guide's ID
-      if (!foundTourGuide) return;
-  
-      console.log("Fetching assigned packages for tour guide ID:", foundTourGuide);
-  
+    const getUserDataAndPackages = async () => {
       try {
         setLoading(true);
-        setError(null); // clear previous errors
-  
-        // Fetch tour guide's assigned packages
-        const assignmentsResponse = await fetch(
-          `${process.env.EXPO_PUBLIC_API_URL}tourguide_assignments?tourguide_id=${foundTourGuide}`, 
-          { credentials: "include" }
-        );
-  
-        if (!assignmentsResponse.ok) {
-          throw new Error(`Server responded with status ${assignmentsResponse.status}`);
+        setError(null);
+        
+        // Get current user data
+        const response = await auth.currentUser();
+        
+        let userData = null;
+        if (response && response.data && response.data.user) {
+          userData = response.data.user;
+        } else if (response && response.user) {
+          userData = response.user;
+        } else if (response && response.data) {
+          userData = response.data;
+        } else if (typeof response === 'object' && response !== null) {
+          userData = response;
         }
-  
-        const assignmentsData: { tour_package_id: number }[] = await assignmentsResponse.json();
-        console.log("Assignments Data:", assignmentsData);
-  
-        if (assignmentsData.length === 0) {
-          setError(`No assigned packages found for tour guide ID ${foundTourGuide}.`);
-          setAssignedPackages([]); // clear list
-          return;
+        
+        setUserData(userData);
+        
+        if (userData && userData.name) {
+          setUserName(userData.name.split(' ')[0]);
+        } else if (userData && userData.first_name) {
+          setUserName(userData.first_name);
+        } else if (userData && userData.email) {
+          setUserName(userData.email.split('@')[0]);
         }
-  
-        // Extract assigned package IDs
-        const packageIds = assignmentsData.map((assignment) => assignment.tour_package_id);
-        console.log("Assigned Package IDs:", packageIds);
-  
-        // Fetch all tour packages
-        const packages = await fetchAll();
-        const assignedPackages = packages.filter((pkg) => packageIds.includes(pkg.id));
-        console.log("Assigned Packages:", assignedPackages);
-  
-        setAssignedPackages(assignedPackages);
-      } catch (err) {
-        console.error("Error fetching assigned packages:", err);
-        setError(`Error fetching assigned packages: ${String(err)}`);
+        
+        // Get user ID
+        const userId = userData.id || userData.user_id;
+        console.log('User ID:', userId);
+        
+        if (!userId) {
+          throw new Error('User ID not found');
+        }
+        
+        // Get packages using the new API function
+        const packages = await fetchGuidePackages(userId);
+        
+        // Ensure packages is an array
+        const packagesArray = Array.isArray(packages) ? packages : [packages].filter(Boolean);
+        
+        setAssignedPackages(packagesArray);
+        
+        // Save to local storage for offline access
+        await AsyncStorage.setItem('guideAssignedPackages', JSON.stringify(packagesArray));
+        
+      } catch (error) {
+        console.error('Error fetching guide data and packages:', error);
+        setError('Failed to load your assigned tour packages');
+        
+        // Try to load from local storage as fallback
+        try {
+          const storedPackagesStr = await AsyncStorage.getItem('guideAssignedPackages');
+          if (storedPackagesStr) {
+            const storedPackages = JSON.parse(storedPackagesStr);
+            setAssignedPackages(storedPackages);
+          }
+        } catch (storageError) {
+          console.error('Error loading from storage:', storageError);
+        }
       } finally {
         setLoading(false);
       }
     };
   
-    fetchAssignedPackages();
-  }, [foundTourGuide, fetchAll]);
+    getUserDataAndPackages();
+  }, []);
   
   
   const renderPackageItem = ({ item }) => (
