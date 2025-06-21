@@ -14,10 +14,11 @@ const createTourPackage = async ({
   date_end,
   start_time,
   end_time,
-  assigned_guides = [],
+  assigned_guides,
   cancellation_days,
   cancellation_note
 }) => {
+  console.log(assigned_guides);
   const result = await db.query(
     `INSERT INTO tour_packages 
       (touroperator_id, package_name, location, description, price, duration_days, inclusions, exclusions, 
@@ -131,6 +132,7 @@ const getAllTourPackagesByOperator = async (touroperator_id) => {
      WHERE touroperator_id = $1`,
     [touroperator_id]
   );
+
   return result.rows;
 };
 

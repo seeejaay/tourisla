@@ -466,7 +466,7 @@ app.get(
 // Routes for Admin verifying applicants
 app.get(
   "/api/v1/guideApplicants",
-  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin", "Tour Operator"]),
   viewTourGuideApplicantsController
 );
 app.get(
@@ -642,7 +642,7 @@ app.get(
 // Routes for Google Calendar integration
 app.get(
   "/api/v1/calendar/authorize",
-  // authenticateTourGuide,
+  allowedRoles(["Tour Guide", "Tourist"]),
   authorizeGoogleCalendarController
 );
 app.get(
