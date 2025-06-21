@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, FlatList } from "react-native";
 import { useRouter } from "expo-router";
-import { useTourGuideAssignments } from "@/hooks/useTourGuideAssignments"; 
 import { currentUser } from "@/lib/api/auth"; 
+import { useTourGuideManager } from "@/hooks/useTourGuideManager";
 
 
 export default function GuideHome() {
   const router = useRouter();
+  const { fetchTourGuideApplicants } = useTourGuideManager();
+
   const [userName, setemail] = useState("");
   const [userId, setUserId] = useState(null); 
-  const { packages: assignedPackages, loading, error } = useTourGuideAssignments(userId); // ✅ Our hook
+  const [tourguide_id, setTourGuideId] = useState<number | null>(null);
+  const [tour_package_id, setAssignedPackages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -26,6 +31,35 @@ export default function GuideHome() {
     };
     fetchCurrentUser();
   }, []);
+
+    // Fetch tourGuideId based on user_id
+    useEffect(() => {
+      const fetchTourGuideId = async () => {
+        if (!userId) return;
+        try {
+          const applicants = await fetchTourGuideApplicants();
+          console.log("Tour Guide Applicants:", applicants);
+            const tourguide_id = applicants?.find(
+              (applicant) => Number(applicant.user_id) === Number(userId)
+            );
+          console.log("Tour Guide Record:", tourguide_id);
+  
+          if (!tourguide_id) {
+            setError(`No tour guide record found for user ${userId}.`);
+            return;
+          }
+  
+          setTourGuideId(tourguide_id.id); // Save the tourGuideId
+          console.log("Tour Guide ID:", tourguide_id.id);
+        } catch (err) {
+          setError("Error fetching tour guide record.");
+        }
+      };
+      fetchTourGuideId();
+    }, [userId, fetchTourGuideApplicants]);
+
+  // Fetch assigned tour packages for the tour guide
+
 
   const renderPackageItem = ({ item }) => (
     <TouchableOpacity style={styles.packageCard} onPress={() => router.push(`/guide/packages/${item.id}`)}>
@@ -46,21 +80,6 @@ export default function GuideHome() {
 
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Your Assigned Tour Packages</Text>
-
-          {loading ? (
-            <ActivityIndicator size="large" color="#0ea5e9" />
-          ) : error ? (
-            <Text style={styles.errorText}>{error}</Text>
-          ) : assignedPackages.length === 0 ? (
-            <Text style={styles.emptyText}>You don't have any assigned tour packages yet.</Text>
-          ) : (
-            <FlatList
-              data={assignedPackages}
-              renderItem={renderPackageItem}
-              keyExtractor={(item) => item.id.toString()}
-              contentContainerStyle={styles.packagesList}
-            />
-          )}
         </View>
       </ScrollView>
     </View>
