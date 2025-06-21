@@ -30,16 +30,19 @@ const createTouristSpot = async (data) => {
     email,
     facebook_page,
     rules,
+    attraction_code,
+    category,
   } = data;
 
   const result = await db.query(
     `INSERT INTO tourist_spots 
     (name, type, description, barangay, municipality, province, location,
-    opening_time, closing_time, days_open, entrance_fee, other_fees, 
-    contact_number, email, facebook_page, rules) 
-    VALUES 
-    ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 
-    $16) 
+     opening_time, closing_time, days_open, entrance_fee, other_fees,
+     contact_number, email, facebook_page, rules, attraction_code, category) 
+     VALUES 
+    ($1, $2, $3, $4, $5, $6, $7, 
+     $8, $9, $10, $11, $12, 
+     $13, $14, $15, $16, $17, $18)
     RETURNING *`,
     [
       name,
@@ -58,8 +61,11 @@ const createTouristSpot = async (data) => {
       email,
       facebook_page,
       rules,
+      attraction_code,
+      category,
     ]
   );
+
   return result.rows[0];
 };
 
@@ -81,6 +87,8 @@ const editTouristSpot = async (id, data) => {
     email,
     facebook_page,
     rules,
+    attraction_code,
+    category,
   } = data;
 
   const result = await db.query(
@@ -100,8 +108,11 @@ const editTouristSpot = async (id, data) => {
       contact_number = $13,
       email = $14,
       facebook_page = $15,
-      rules = $16
-    WHERE id = $17
+      rules = $16,
+      attraction_code = $17,
+      category = $18,
+      updated_at = NOW()
+    WHERE id = $19
     RETURNING *`,
     [
       name,
@@ -120,6 +131,8 @@ const editTouristSpot = async (id, data) => {
       email,
       facebook_page,
       rules,
+      attraction_code,
+      category,
       id,
     ]
   );
@@ -157,6 +170,14 @@ const getTouristSpotImages = async (spotId) => {
   return result.rows;
 };
 
+const deleteTouristSpotImage = async (imageId) => {
+  const result = await db.query(
+    `DELETE FROM tourist_spot_images WHERE id = $1 RETURNING *`,
+    [imageId]
+  );
+  return result.rows[0]; // contains the image_url
+};
+
 module.exports = {
   createTouristSpot,
   editTouristSpot,
@@ -165,4 +186,5 @@ module.exports = {
   getTouristSpotById,
   addTouristSpotImages,
   getTouristSpotImages,
+  deleteTouristSpotImage,
 };

@@ -117,6 +117,7 @@ const {
   deleteTouristSpotController,
   viewTouristSpotsController,
   viewTouristSpotByIdController,
+  deleteTouristSpotImageController,
 } = require("../controllers/touristSpotController");
 
 const {
@@ -548,6 +549,11 @@ app.delete(
 );
 app.get("/api/v1/tourist-spots", viewTouristSpotsController);
 app.get("/api/v1/tourist-spots/:touristSpotId", viewTouristSpotByIdController);
+app.delete(
+  "/api/v1/tourist-spots/images/:imageId",
+  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"]),
+  deleteTouristSpotImageController
+);
 
 // Rules & Regulations Routes
 app.post(
