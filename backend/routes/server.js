@@ -598,23 +598,27 @@ app.post("/api/v1/register", registerVisitorController);
 app.post("/api/v1/register/manual-check-in", manualCheckInController);
 
 // Routes — Tour Packages
-app.post("/api/v1/tour-packages", createTourPackageController);
+app.post(
+  "/api/v1/tour-packages",
+  allowedRoles(["Tour Operator"]),
+  createTourPackageController
+);
 app.put(
   "/api/v1/tour-packages/:id",
   // authenticateTourOperator,
-  allowedRoles(["Tour Guide", "Tour Operator"]),
+  allowedRoles(["Tour Operator"]),
   updateTourPackageController
 );
 app.delete(
   "/api/v1/tour-packages/:id",
   // authenticateTourOperator,
-  allowedRoles(["Tour Guide", "Tour Operator"]),
+  allowedRoles(["Tour Operator"]),
   deleteTourPackageController
 );
 app.get(
   "/api/v1/tour-packages",
   // authenticateTourOperator,
-  allowedRoles(["Tour Guide", "Tour Operator"]),
+  allowedRoles(["Tour Guide", "Tour Operator", "Tourist"]),
   viewTourPackagesController
 );
 app.get(

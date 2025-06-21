@@ -1,4 +1,4 @@
-import { User, FileText, BookA } from "lucide-react";
+import { User, FileText, BookA, Package } from "lucide-react";
 
 import type { NavItem } from "@/components/custom/sidebar";
 
@@ -21,6 +21,12 @@ const operatorNavigation = (userId: string): NavItem[] => {
       href: `/profile/${userId}/tour-guide-application`,
       title: "Tour Guide Application",
       icon: BookA,
+    },
+    {
+      name: "Tour Packages",
+      href: `/profile/${userId}/tour-packages`,
+      title: "Tour Packages",
+      icon: Package,
     },
   ];
 };
