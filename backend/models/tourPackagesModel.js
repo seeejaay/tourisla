@@ -157,6 +157,17 @@ const getAssignedGuidesByPackage = async (packageId) => {
   return result.rows;
 };
 
+const getTourPackagesByTourGuide = async (tourguide_id) => {
+  const result = await db.query(
+    `SELECT tp.*
+     FROM tour_packages tp
+     JOIN tourguide_assignments ta ON tp.id = ta.tour_package_id
+     WHERE ta.tourguide_id = $1`,
+    [tourguide_id]
+  );
+  return result.rows;
+};
+
 module.exports = {
   createTourPackage,
   updateTourPackage,
@@ -165,5 +176,6 @@ module.exports = {
   getTourPackageByIdForOperator,
   getTourPackageById,
   getAssignedGuidesByPackage,
+  getTourPackagesByTourGuide,
 };
 
