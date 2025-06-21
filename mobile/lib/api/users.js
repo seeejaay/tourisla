@@ -1,6 +1,5 @@
 import axios from "axios";
-import { API_URL } from '../config'; // Import API_URL from config
-import { getApiUrl } from './apiUtils';
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const fetchUsers = async () => {
   try {

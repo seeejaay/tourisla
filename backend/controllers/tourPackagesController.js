@@ -14,6 +14,8 @@ const { getOperatorRegisById } = require("../models/operatorRegisModel.js");
 const createTourPackageController = async (req, res) => {
   try {
     console.log("BackEnd Creating Tour Package with data:", req.body);
+    const touroperator_id = req.user.id;
+
     let {
       package_name,
       location,
@@ -29,6 +31,8 @@ const createTourPackageController = async (req, res) => {
       end_time,
       assigned_guides,
       touroperator_id,
+      cancellation_days,
+      cancellation_note
     } = req.body;
 
     package_name = package_name.toUpperCase();
@@ -84,6 +88,8 @@ const createTourPackageController = async (req, res) => {
       start_time,
       end_time,
       assigned_guides,
+      cancellation_days,
+      cancellation_note
     });
 
     res
@@ -113,6 +119,8 @@ const updateTourPackageController = async (req, res) => {
       date_end,
       start_time,
       end_time,
+      cancellation_days,
+      cancellation_note
     } = req.body;
 
     package_name = package_name.toUpperCase();
@@ -158,8 +166,10 @@ const updateTourPackageController = async (req, res) => {
       is_active,
       date_start,
       date_end,
-      start_time,
+      start_time, 
       end_time,
+      cancellation_days,
+      cancellation_note
     });
 
     if (!updated)
