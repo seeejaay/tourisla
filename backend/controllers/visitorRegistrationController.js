@@ -153,9 +153,42 @@ const manualCheckInController = async (req, res) => {
   }
 };
 
+const getVisitorGroupMembersController = async (req, res) => {
+  try {
+    const uniqueCode = req.params.unique_code?.trim().toUpperCase();
+    console.log("🔍 Checking for code:", uniqueCode);
+    
+    if (!uniqueCode) {
+      return res.status(400).json({ error: "Unique code is required." });
+    }
+
+    const registration = await getVisitorByUniqueCode(uniqueCode);
+
+    if (!registration) {
+      return res.status(404).json({ error: "Visitor registration not found." });
+    }
+
+    const membersResult = await db.query(
+      `SELECT * FROM visitor_group_members WHERE registration_id = $1`,
+      [registration.id]
+    );
+
+    return res.status(200).json({
+      message: "Visitor group members fetched successfully.",
+      registration,
+      members: membersResult.rows,
+    });
+  } catch (error) {
+    console.error("Error fetching visitor group members:", error);
+    return res.status(500).json({ error: "Internal server error." });
+  }
+};
+
+
 
 module.exports = {
   registerVisitorController,
   manualCheckInController,
+  getVisitorGroupMembersController,
 };
 
