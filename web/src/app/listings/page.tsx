@@ -1,22 +1,18 @@
-"use client";
-import React from "react";
-import useTripAdvisor from "@/hooks/useTripAdvisor";
 import Image from "next/image";
 import Header from "@/components/custom/header";
-export default function Listings() {
-  const { hotels, loading, error } = useTripAdvisor();
+import { fetchTripadvisorHotels } from "@/lib/api/tripadvisor";
 
-  // Always use an array fallback for hotels
+export default async function Listings() {
+  let hotels = [];
+  let error: string | null = null;
+
+  try {
+    hotels = await fetchTripadvisorHotels();
+  } catch (err) {
+    error = err + "Failed to load hotels.";
+  }
+
   const hotelList = Array.isArray(hotels) ? hotels : [];
-
-  if (loading)
-    return <div className="text-center py-10 text-lg">Loading hotels...</div>;
-  if (error)
-    return (
-      <div className="text-center py-10 text-red-500">
-        Error: {error.message}
-      </div>
-    );
 
   return (
     <>
@@ -25,12 +21,13 @@ export default function Listings() {
         <h2 className="text-3xl font-extrabold mb-8 text-gray-800 text-center tracking-tight">
           Hotel Listings
         </h2>
-        {hotelList.length === 0 ? (
+        {error ? (
+          <div className="text-center py-10 text-red-500">Error: {error}</div>
+        ) : hotelList.length === 0 ? (
           <div className="text-center text-gray-500">No hotels found.</div>
         ) : (
           <div className="flex flex-wrap justify-center gap-8">
             {hotelList.map((hotel) => {
-              // Get the first photo's large image, or a fallback placeholder
               const imageUrl =
                 hotel.photos && hotel.photos.length > 0
                   ? hotel.photos[0].images.large.url
