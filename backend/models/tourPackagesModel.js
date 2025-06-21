@@ -15,16 +15,12 @@ const createTourPackage = async ({
   start_time,
   end_time,
   assigned_guides = [],
-  cancellation_days,
-  cancellation_note
 }) => {
   const result = await db.query(
     `INSERT INTO tour_packages 
-      (touroperator_id, package_name, location, description, price, duration_days, inclusions, exclusions, 
-       available_slots, date_start, date_end, start_time, end_time, cancellation_days, cancellation_note)
+      (touroperator_id, package_name, location, description, price, duration_days, inclusions, exclusions, available_slots, date_start, date_end, start_time, end_time)
      VALUES 
-      ($1, $2, $3, $4, $5, $6, $7, $8, 
-       $9, $10, $11, $12, $13, $14, $15)
+      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
      RETURNING *`,
     [
       touroperator_id,
@@ -38,13 +34,10 @@ const createTourPackage = async ({
       available_slots,
       date_start,
       date_end,
-      start_time, 
+      start_time,
       end_time,
-      cancellation_days,
-      cancellation_note
     ]
   );
-
   const newPackage = result.rows[0];
 
   // Insert assigned tour guides only if they have google_tokens
@@ -79,18 +72,14 @@ const updateTourPackage = async (id, touroperator_id, packageData) => {
     date_end,
     start_time,
     end_time,
-    cancellation_days,
-    cancellation_note
   } = packageData;
 
   const result = await db.query(
     `UPDATE tour_packages 
      SET package_name = $1, location = $2, description = $3, price = $4, duration_days = $5,
          inclusions = $6, exclusions = $7, available_slots = $8, is_active = $9,
-         date_start = $10, date_end = $11, start_time = $12, end_time = $13,
-         cancellation_days = $14, cancellation_note = $15,
-         updated_at = NOW()
-     WHERE id = $16 AND touroperator_id = $17
+         date_start = $10, date_end = $11, start_time = $12, end_time = $13, updated_at = NOW()
+     WHERE id = $14 AND touroperator_id = $15
      RETURNING *`,
     [
       package_name,
@@ -106,10 +95,8 @@ const updateTourPackage = async (id, touroperator_id, packageData) => {
       date_end,
       start_time,
       end_time,
-      cancellation_days,
-      cancellation_note,
       id,
-      touroperator_id
+      touroperator_id,
     ]
   );
   return result.rows[0];
@@ -131,6 +118,7 @@ const getAllTourPackagesByOperator = async (touroperator_id) => {
      WHERE touroperator_id = $1`,
     [touroperator_id]
   );
+
   return result.rows;
 };
 
@@ -178,3 +166,4 @@ module.exports = {
   getTourPackageById,
   getAssignedGuidesByPackage,
 };
+
