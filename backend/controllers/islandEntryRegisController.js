@@ -1,18 +1,16 @@
 const QRCode = require("qrcode");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
-
 const {
-  createVisitorRegistration,
-  createVisitorGroupMembers,
-  isUniqueCodeTaken,
-  getVisitorByUniqueCode,
-  getUserAttractionId,
-  logAttractionVisitByRegistration,
-} = require("../models/visitorRegistrationModel");
+  createIslandEntryRegistration,
+  createIslandEntryMembers,
+  isIslandCodeTaken,
+  getIslandEntryByCode,
+  getUserPortId,
+  logIslandEntryByRegistration,
+} = require("../models/islandEntryRegisModel");
 
 const db = require("../db/index");
 
-// ✅ AWS S3 client setup
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
@@ -22,9 +20,9 @@ const s3Client = new S3Client({
 });
 
 const generateCustomCode = () => {
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const numbers = '0123456789';
-  let result = '';
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const numbers = "0123456789";
+  let result = "";
   for (let i = 0; i < 3; i++) result += letters[Math.floor(Math.random() * letters.length)];
   for (let i = 0; i < 3; i++) result += numbers[Math.floor(Math.random() * numbers.length)];
   return result;
@@ -34,13 +32,12 @@ const generateUniqueCode = async () => {
   let code, taken = true;
   while (taken) {
     code = generateCustomCode();
-    taken = await isUniqueCodeTaken(code);
+    taken = await isIslandCodeTaken(code);
   }
   return code;
 };
 
-// ✅ Register Visitor + Upload QR
-const registerVisitorController = async (req, res) => {
+const registerIslandEntryController = async (req, res) => {
   try {
     const { groupMembers } = req.body;
 
@@ -49,10 +46,10 @@ const registerVisitorController = async (req, res) => {
     }
 
     const uniqueCode = await generateUniqueCode();
-    const qrData = `https://yourdomain.com/scan/${uniqueCode}`;
+    const qrData = `https://yourdomain.com/entry-scan/${uniqueCode}`;
     const qrBuffer = await QRCode.toBuffer(qrData);
 
-    const s3Key = `visitor_qrcodes/${Date.now()}_${uniqueCode}.png`;
+    const s3Key = `island_entry_qrcodes/${Date.now()}_${uniqueCode}.png`;
     const uploadParams = {
       Bucket: process.env.AWS_S3_BUCKET,
       Key: s3Key,
@@ -64,54 +61,51 @@ const registerVisitorController = async (req, res) => {
 
     const qrCodeUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
 
-    const registration = await createVisitorRegistration({
+    const registration = await createIslandEntryRegistration({
       unique_code: uniqueCode,
       qr_code_url: qrCodeUrl,
     });
 
-    const members = await createVisitorGroupMembers(registration.id, groupMembers);
+    const members = await createIslandEntryMembers(registration.id, groupMembers);
 
     res.status(201).json({
-      message: "Visitor group registered successfully",
+      message: "Island entry group registered successfully",
       registration,
       members,
     });
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("Island entry registration error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
-// // Check-in using registration_id
-const manualCheckInController = async (req, res) => {
+const manualIslandEntryCheckInController = async (req, res) => {
   try {
     const { unique_code } = req.body;
-
     const userId = req.session.user?.user_id ?? req.session.user?.id;
 
     if (!userId) {
       return res.status(403).json({ error: "Invalid session: missing user ID." });
     }
 
-    const attractionId = await getUserAttractionId(userId);
+    const portId = await getUserPortId(userId);
 
-    if (!attractionId) {
-      return res.status(403).json({ error: "Missing attraction ID for the user." });
+    if (!portId) {
+      return res.status(403).json({ error: "Missing port ID for the user." });
     }
 
     if (!unique_code) {
       return res.status(400).json({ error: "Unique code is required." });
     }
 
-    const registration = await getVisitorByUniqueCode(unique_code.trim().toUpperCase());
+    const registration = await getIslandEntryByCode(unique_code.trim().toUpperCase());
 
     if (!registration) {
-      return res.status(404).json({ error: "Visitor not found with that code." });
+      return res.status(404).json({ error: "Entry not found with that code." });
     }
 
-    // Get group members from that registration
     const membersResult = await db.query(
-      `SELECT * FROM visitor_group_members WHERE registration_id = $1`,
+      `SELECT * FROM island_entry_registration_members WHERE registration_id = $1`,
       [registration.id]
     );
     const groupMembers = membersResult.rows;
@@ -120,42 +114,38 @@ const manualCheckInController = async (req, res) => {
       return res.status(404).json({ error: "No group members found for this registration." });
     }
 
-    // Check if any member has already checked in today
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     const existingLogCheck = await db.query(
-      `SELECT 1 FROM attraction_visitor_logs 
+      `SELECT 1 FROM island_entry_registration_logs 
        WHERE group_member_id = ANY($1::int[]) 
-         AND tourist_spot_id = $2 
-         AND DATE(visit_date) = $3
+         AND port_id = $2 
+         AND DATE(entry_date) = $3
        LIMIT 1`,
-      [groupMembers.map((m) => m.id), attractionId, today]
+      [groupMembers.map((m) => m.id), portId, today]
     );
 
     if (existingLogCheck.rows.length > 0) {
-      return res.status(409).json({ error: "This group has already checked in today." });
+      return res.status(409).json({ error: "This group has already entered today." });
     }
 
-    // Insert logs for all members
-    const logs = await logAttractionVisitByRegistration({
+    const logs = await logIslandEntryByRegistration({
       groupMembers,
       scannedByUserId: userId,
-      touristSpotId: attractionId,
+      portId,
     });
 
     return res.status(200).json({
-      message: "Visitor group checked in manually.",
+      message: "Island entry group checked in manually.",
       registration,
       logs,
     });
   } catch (error) {
-    console.error("Manual check-in error:", error);
+    console.error("Manual island entry check-in error:", error);
     res.status(500).json({ error: "Internal server error during check-in." });
   }
 };
 
-
 module.exports = {
-  registerVisitorController,
-  manualCheckInController,
+  registerIslandEntryController,
+  manualIslandEntryCheckInController,
 };
-

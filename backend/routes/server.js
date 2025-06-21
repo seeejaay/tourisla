@@ -146,11 +146,13 @@ const {
 
 const {
   registerVisitorController,
+  manualCheckInController,
 } = require("../controllers/visitorRegistrationController");
 
 const {
-  manualCheckInController,
-} = require("../controllers/visitorRegistrationController");
+  registerIslandEntryController,
+  manualIslandEntryCheckInController,
+} = require("./controllers/islandEntryRegisController");
 
 const {
   createTourPackageController,
@@ -614,6 +616,11 @@ app.get(
 // Visitor Registration Route
 app.post("/api/v1/register", registerVisitorController);
 app.post("/api/v1/register/manual-check-in", manualCheckInController);
+
+// Island Entry Registration Routes
+app.post("/api/v1/island-entry/register", registerIslandEntryController);
+app.post("/api/v1/island-entry/manual-check-in", manualIslandEntryCheckInController);
+
 
 // Routes — Tour Packages
 app.post(
