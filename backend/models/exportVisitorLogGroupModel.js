@@ -1,11 +1,13 @@
 const db = require("../db/index.js");
 const ExcelJS = require("exceljs");
 
+
 const exportVisitorLogGrouped = async (filter) => {
   const { tourist_spot_id, start_date, end_date } = filter;
 
+
   const query = `
-    SELECT 
+    SELECT
       ts.name AS tourist_spot_name,
       ts.barangay, ts.municipality, ts.province, ts.type,
       DATE_TRUNC('month', avl.visit_date) AS month,
@@ -21,15 +23,18 @@ const exportVisitorLogGrouped = async (filter) => {
     ORDER BY month DESC
   `;
 
+
   const values = [
     tourist_spot_id || null,
     start_date || null,
     end_date || null
   ];
 
+
   const result = await db.query(query, values);
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet("Visitor Summary");
+
 
   // Header
   sheet.addRow([
@@ -44,13 +49,16 @@ const exportVisitorLogGrouped = async (filter) => {
     "Total Visitors"
   ]);
 
+
   result.rows.forEach((row) => {
     const formattedMonth = new Date(row.month).toLocaleString("default", {
       year: "numeric",
       month: "long",
     });
 
+
     const total = Number(row.local_count) + Number(row.foreign_count);
+
 
     sheet.addRow([
       row.tourist_spot_name,
@@ -65,8 +73,12 @@ const exportVisitorLogGrouped = async (filter) => {
     ]);
   });
 
+
   const buffer = await workbook.xlsx.writeBuffer();
   return buffer;
 };
 
+
 module.exports = { exportVisitorLogGrouped };
+
+

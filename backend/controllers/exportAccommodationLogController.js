@@ -1,18 +1,21 @@
 const ExcelJS = require("exceljs");
 const db = require("../db/index.js");
 
+
 const exportAccommodationLog = async (filter) => {
   const { accommodation_id, start_date, end_date } = filter;
+
 
   // 🛡️ Sanitize empty strings to null so SQL conditions work properly
   const startDate = start_date?.trim() || null;
   const endDate = end_date?.trim() || null;
 
+
   const result = await db.query(
-    `SELECT 
-      avl.*, 
-      a.no_of_rooms, 
-      a.name_of_establishment 
+    `SELECT
+      avl.*,
+      a.no_of_rooms,
+      a.name_of_establishment
      FROM accommodation_visitor_logs avl
      JOIN accommodations a ON a.id = avl.accommodation_id
      WHERE ($1::int IS NULL OR avl.accommodation_id = $1)
@@ -22,8 +25,10 @@ const exportAccommodationLog = async (filter) => {
     [accommodation_id || null, startDate, endDate]
   );
 
+
   const logs = result.rows;
   if (!logs.length) return null;
+
 
   // Determine maximum room number used across all accommodations
   let maxRoom = 0;
@@ -32,7 +37,9 @@ const exportAccommodationLog = async (filter) => {
     if (maxInRow > maxRoom) maxRoom = maxInRow;
   });
 
+
   const grouped = {};
+
 
   logs.forEach(log => {
     const accName = log.name_of_establishment || "Unnamed";
@@ -40,10 +47,13 @@ const exportAccommodationLog = async (filter) => {
     grouped[accName].push(log);
   });
 
+
   const workbook = new ExcelJS.Workbook();
+
 
   for (const [accName, accLogs] of Object.entries(grouped)) {
     const sheet = workbook.addWorksheet(accName.slice(0, 31)); // max 31 chars for Excel sheet name
+
 
     // Headers
     const headers = [
@@ -55,12 +65,14 @@ const exportAccommodationLog = async (filter) => {
     ];
     sheet.addRow(headers);
 
+
     accLogs.forEach(log => {
       const logDate = new Date(log.log_date);
       const checkoutDate = new Date(log.checkout_date);
       const roomMarks = Array.from({ length: maxRoom }, (_, i) =>
         log.rooms_occupied?.includes(i + 1) ? "✓" : ""
       );
+
 
       const rowData = [
         logDate.getFullYear(), logDate.getMonth() + 1, logDate.getDate(),
@@ -72,9 +84,11 @@ const exportAccommodationLog = async (filter) => {
         ...roomMarks
       ];
 
+
       sheet.addRow(rowData);
     });
   }
+
 
   const buffer = await workbook.xlsx.writeBuffer();
   return buffer;
