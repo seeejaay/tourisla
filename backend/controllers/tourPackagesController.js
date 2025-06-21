@@ -5,6 +5,7 @@ const {
   deleteTourPackage,
   getAllTourPackagesByOperator,
   getTourPackageById,
+  getAssignedGuidesByPackage,
 } = require("../models/tourPackagesModel.js");
 
 const { getOperatorRegisById } = require("../models/operatorRegisModel.js");
@@ -192,7 +193,19 @@ const viewTourPackagesController = async (req, res) => {
     const tourOperatorId = operatorRegis.id;
 
     const packages = await getAllTourPackagesByOperator(tourOperatorId);
-    res.json(packages);
+
+    // Fetch assigned guides for each package in parallel
+    const packagesWithGuides = await Promise.all(
+      packages.map(async (pkg) => {
+        const assigned_guides = await getAssignedGuidesByPackage(pkg.id);
+        return {
+          ...pkg,
+          assigned_guides, // array of guides (can be empty)
+        };
+      })
+    );
+
+    res.json(packagesWithGuides);
   } catch (err) {
     console.log(err.message);
     res.send(err.message);
@@ -213,10 +226,27 @@ const viewTourPackageByIdController = async (req, res) => {
   }
 };
 
+const viewAssignedGuidesController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const assignedGuides = await getAssignedGuidesByPackage(id);
+    if (!assignedGuides || assignedGuides.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No guides assigned to this package." });
+    }
+    res.json(assignedGuides);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+};
+
 module.exports = {
   createTourPackageController,
   updateTourPackageController,
   deleteTourPackageController,
   viewTourPackagesController,
   viewTourPackageByIdController,
+  viewAssignedGuidesController,
 };

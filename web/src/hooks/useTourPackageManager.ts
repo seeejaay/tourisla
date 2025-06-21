@@ -20,7 +20,7 @@ export const useTourPackageManager = () => {
     setLoading(true);
     setError("");
     try {
-      console.log("Fetching tour packages...");
+      console.log("Fetching tour packages");
       const packages = await fetchTourPackages();
       setTourPackages(packages);
       return packages;
@@ -58,6 +58,7 @@ export const useTourPackageManager = () => {
     async (data: Partial<TourPackage>): Promise<TourPackage | null> => {
       setLoading(true);
       setError("");
+      console.log("Creating tour package with data:", data);
       try {
         const validated = tourPackageSchema.parse(data);
         const newPackage = await createTourPackage(validated);

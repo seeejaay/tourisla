@@ -118,6 +118,7 @@ const getAllTourPackagesByOperator = async (touroperator_id) => {
      WHERE touroperator_id = $1`,
     [touroperator_id]
   );
+
   return result.rows;
 };
 
