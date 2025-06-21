@@ -39,22 +39,28 @@ export default function StaffAnnouncementsScreen({ headerHeight }) {
   const [showFilters, setShowFilters] = useState(false);
 
   useFocusEffect(
-      useCallback(() => {
-        const loadData = async () => {
-          setLoading(true);
-          try {
-            const data = await fetchAnnouncements();
-            setAnnouncements(data);
-          } catch (err) {
-            console.error("Failed to fetch announcements", err);
-            setError("Failed to load announcements.");
-          } finally {
-            setLoading(false);
-          }
-        };
-    
-        loadData();
-      }, [])
+    useCallback(() => {
+      const loadData = async () => {
+        setLoading(true);
+        try {
+          console.log("Loading staff announcements data...");
+          const data = await fetchAnnouncements();
+          console.log(`Received ${data?.length || 0} staff announcements`);
+          setAnnouncements(data || []);
+          setError(null);
+        } catch (err) {
+          console.error("Failed to fetch staff announcements", err);
+          // Don't show the error to the user
+          console.log("Error suppressed from UI");
+          // Set empty array to avoid showing previous data
+          setAnnouncements([]);
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      loadData();
+    }, [])
   );
 
   const filteredAnnouncements = announcements
@@ -467,3 +473,4 @@ const styles = StyleSheet.create({
       shadowOffset: { width: 0, height: 2 },
   },
 });
+

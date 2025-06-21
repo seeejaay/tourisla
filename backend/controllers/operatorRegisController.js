@@ -102,6 +102,7 @@ const viewAllOperatorRegisController = async (req, res) => {
 const viewOperatorRegisByIdController = async (req, res) => {
   try {
     const { operatorId } = req.params;
+    console.log("operatorId", operatorId);
     const operatorRegis = await getOperatorRegisById(operatorId);
     res.json(operatorRegis);
   } catch (err) {

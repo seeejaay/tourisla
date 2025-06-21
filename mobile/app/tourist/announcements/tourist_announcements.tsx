@@ -43,11 +43,17 @@ export default function TouristAnnouncementsScreen({ headerHeight }) {
           const loadData = async () => {
             setLoading(true);
             try {
+              console.log("Loading tourist announcements data...");
               const data = await fetchAnnouncements();
-              setAnnouncements(data);
+              console.log(`Received ${data?.length || 0} tourist announcements`);
+              setAnnouncements(data || []);
+              setError(null);
             } catch (err) {
-              console.error("Failed to fetch announcements", err);
-              setError("Failed to load announcements.");
+              console.error("Failed to fetch tourist announcements", err);
+              // Don't show the error to the user
+              console.log("Error suppressed from UI");
+              // Set empty array to avoid showing previous data
+              setAnnouncements([]);
             } finally {
               setLoading(false);
             }

@@ -22,9 +22,11 @@
     "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
+    "googleapis": "^118.0.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.0",
     "pg": "^8.14.1",
+    "qr": "^0.5.0",
     "qrcode": "^1.5.4",
     "resend": "^4.5.1"
   },
