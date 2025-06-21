@@ -11,7 +11,7 @@ const {
 
 const createTourPackageController = async (req, res) => {
   try {
-    const touroperator_id = 1;
+    const touroperator_id = req.user.id;
     let {
       package_name,
       location,
@@ -26,6 +26,8 @@ const createTourPackageController = async (req, res) => {
       start_time,
       end_time,
       assigned_guides,
+      cancellation_days,
+      cancellation_note
     } = req.body;
 
     package_name = package_name.toUpperCase();
@@ -63,7 +65,9 @@ const createTourPackageController = async (req, res) => {
       date_end,
       start_time, 
       end_time,
-      assigned_guides
+      assigned_guides,
+      cancellation_days,
+      cancellation_note
     });
 
     res.status(201).json({ message: "Tour package created", tourPackage: newPackage });
@@ -90,7 +94,9 @@ const updateTourPackageController = async (req, res) => {
       date_start,
       date_end,
       start_time, 
-      end_time
+      end_time,
+      cancellation_days,
+      cancellation_note
     } = req.body;
 
     package_name = package_name.toUpperCase();
@@ -125,7 +131,9 @@ const updateTourPackageController = async (req, res) => {
       date_start,
       date_end,
       start_time, 
-      end_time
+      end_time,
+      cancellation_days,
+      cancellation_note
     });
 
     if (!updated) return res.status(404).json({ message: "Tour package not found." });
