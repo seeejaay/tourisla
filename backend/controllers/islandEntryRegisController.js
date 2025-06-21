@@ -22,10 +22,18 @@ const s3Client = new S3Client({
 const generateCustomCode = () => {
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const numbers = "0123456789";
-  let result = "";
-  for (let i = 0; i < 3; i++) result += letters[Math.floor(Math.random() * letters.length)];
-  for (let i = 0; i < 3; i++) result += numbers[Math.floor(Math.random() * numbers.length)];
-  return result;
+//   let result = "";
+//   for (let i = 0; i < 3; i++) result += letters[Math.floor(Math.random() * letters.length)];
+//   for (let i = 0; i < 3; i++) result += numbers[Math.floor(Math.random() * numbers.length)];
+//   return result;
+     let code = '';
+
+    for (let i = 0; i < 3; i++) {
+        code += letters[Math.floor(Math.random() * letters.length)];
+        code += numbers[Math.floor(Math.random() * numbers.length)];
+    }
+
+    return code;
 };
 
 const generateUniqueCode = async () => {
@@ -88,12 +96,6 @@ const manualIslandEntryCheckInController = async (req, res) => {
       return res.status(403).json({ error: "Invalid session: missing user ID." });
     }
 
-    const portId = await getUserPortId(userId);
-
-    if (!portId) {
-      return res.status(403).json({ error: "Missing port ID for the user." });
-    }
-
     if (!unique_code) {
       return res.status(400).json({ error: "Unique code is required." });
     }
@@ -104,46 +106,35 @@ const manualIslandEntryCheckInController = async (req, res) => {
       return res.status(404).json({ error: "Entry not found with that code." });
     }
 
-    const membersResult = await db.query(
-      `SELECT * FROM island_entry_registration_members WHERE registration_id = $1`,
-      [registration.id]
-    );
-    const groupMembers = membersResult.rows;
-
-    if (groupMembers.length === 0) {
-      return res.status(404).json({ error: "No group members found for this registration." });
-    }
-
     const today = new Date().toISOString().split("T")[0];
     const existingLogCheck = await db.query(
       `SELECT 1 FROM island_entry_registration_logs 
-       WHERE group_member_id = ANY($1::int[]) 
-         AND port_id = $2 
-         AND DATE(entry_date) = $3
+       WHERE registration_id = $1 
+         AND DATE(visit_date) = $2
        LIMIT 1`,
-      [groupMembers.map((m) => m.id), portId, today]
+      [registration.id, today]
     );
 
     if (existingLogCheck.rows.length > 0) {
       return res.status(409).json({ error: "This group has already entered today." });
     }
 
-    const logs = await logIslandEntryByRegistration({
-      groupMembers,
+    const log = await logIslandEntryByRegistration({
+      registrationId: registration.id,
       scannedByUserId: userId,
-      portId,
     });
 
     return res.status(200).json({
       message: "Island entry group checked in manually.",
       registration,
-      logs,
+      log,
     });
   } catch (error) {
     console.error("Manual island entry check-in error:", error);
     res.status(500).json({ error: "Internal server error during check-in." });
   }
 };
+
 
 module.exports = {
   registerIslandEntryController,
