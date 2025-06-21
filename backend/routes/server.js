@@ -90,6 +90,7 @@ const {
   createOperatorUploadDocuController,
   editOperatorUploadDocuController,
   getOperatorUploadDocuByIdController,
+  getOperatorUploadByUserIdController,
 } = require("../controllers/operatorUploadDocuController.js");
 
 const {
@@ -146,8 +147,8 @@ const {
   registerVisitorController,
 } = require("../controllers/visitorRegistrationController");
 
-const { 
-  manualCheckInController 
+const {
+  manualCheckInController,
 } = require("../controllers/visitorRegistrationController");
 
 const {
@@ -185,13 +186,16 @@ const {
   getTripadvisorHotelsWithPhotos,
 } = require("../controllers/tripadvisorController.js");
 
-const { exportVisitorLogController } = require("../controllers/exportVisitorLogController");
-const { exportVisitorLogGroupController } = require("../controllers/exportVisitorLogGroupController");
-
+const {
+  exportVisitorLogController,
+} = require("../controllers/exportVisitorLogController");
+const {
+  exportVisitorLogGroupController,
+} = require("../controllers/exportVisitorLogGroupController");
 
 const {
   authorizeGoogleCalendarController,
-  googleCalendarCallbackController
+  googleCalendarCallbackController,
 } = require("../controllers/calendarController.js");
 
 const {
@@ -206,7 +210,7 @@ const {
 
 const {
   markBookingAsFinishedController,
-  getTourGuideBookingsFilteredController
+  getTourGuideBookingsFilteredController,
 } = require("../controllers/guideBookingsController.js");
 
 const {
@@ -216,7 +220,7 @@ const {
   createQuestionController,
   editQuestionController,
   deleteQuestionController,
-  viewQuestionsByTypeController
+  viewQuestionsByTypeController,
 } = require("../controllers/feedbackController.js");
 
 const {
@@ -365,7 +369,7 @@ app.delete(
 app.get("/api/v1/guideRegis", authenticateTourGuide, viewGuideRegisController);
 app.get(
   "/api/v1/guideRegis/:guideId",
-  authenticateTourGuide,
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
   viewGuideRegisByIdController
 );
 
@@ -384,12 +388,18 @@ app.put(
 );
 app.get(
   "/api/v1/guideUploadDocu/doc/:docuId",
-  authenticateTourGuide,
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin", "Tour Guide"]),
   getGuideUploadDocuByIdController
 );
 app.get(
   "/api/v1/guideUploadDocu/user/:userId",
-  authenticateTourGuide,
+  allowedRoles([
+    "Tourism Staff",
+    "Tourism Officer",
+    "Admin",
+    "Tour Guide",
+    "Tour Operator",
+  ]),
   getGuideUploadByUserIdController
 );
 
@@ -407,12 +417,24 @@ app.delete(
 );
 app.get(
   "/api/v1/operatorRegis",
-  authenticateTourOperator,
+  allowedRoles([
+    "Tourism Staff",
+    "Tourism Officer",
+    "Admin",
+    "Tour Guide",
+    "Tour Operator",
+  ]),
   viewAllOperatorRegisController
 );
 app.get(
   "/api/v1/operatorRegis/:operatorId",
-  authenticateTourOperator,
+  allowedRoles([
+    "Tourism Staff",
+    "Tourism Officer",
+    "Admin",
+    "Tour Guide",
+    " Tour Operator",
+  ]),
   viewOperatorRegisByIdController
 );
 
@@ -430,30 +452,36 @@ app.put(
   editOperatorUploadDocuController
 );
 app.get(
-  "/api/v1/operatorUploadDocu/:documentId",
+  "/api/v1/operatorUploadDocu/doc/:documentId",
   authenticateTourOperator,
   getOperatorUploadDocuByIdController
+);
+
+app.get(
+  "/api/v1/operatorUploadDocu/user/:userId",
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Tour Operator"]),
+  getOperatorUploadByUserIdController
 );
 
 // Routes for Admin verifying applicants
 app.get(
   "/api/v1/guideApplicants",
-  authenticateAdmin,
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
   viewTourGuideApplicantsController
 );
 app.get(
   "/api/v1/guideApplicants/:applicantId",
-  authenticateAdmin,
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
   viewTourGuideApplicantDetailsController
 );
 app.put(
   "/api/v1/guideApplicants/:applicantId/approve",
-  authenticateAdmin,
+  allowedRoles(["Tourism Staff", "Tourism Officer"]),
   approveTourGuideApplicantController
 );
 app.put(
   "/api/v1/guideApplicants/:applicantId/reject",
-  authenticateAdmin,
+  allowedRoles(["Tourism Staff", "Tourism Officer"]),
   rejectTourGuideApplicantController
 );
 app.get(
@@ -468,19 +496,19 @@ app.get(
 );
 app.put(
   "/api/v1/operatorApplicants/:applicantId/approve",
-  authenticateAdmin,
+  allowedRoles(["Tourism Staff", "Tourism Officer"]),
   approveTourOperatorApplicantController
 );
 app.put(
   "/api/v1/operatorApplicants/:applicantId/reject",
-  authenticateAdmin,
+  allowedRoles(["Tourism Staff", "Tourism Officer"]),
   rejectTourOperatorApplicantController
 );
 
 // Routes for Tour Guides applying to Tour Operators
 app.post(
   "/api/v1/applyToOperator",
-  authenticateTourGuide,
+  allowedRoles(["Tour Guide"]),
   applyToTourOperatorController
 );
 app.get(
@@ -581,23 +609,27 @@ app.post("/api/v1/register", registerVisitorController);
 app.post("/api/v1/register/manual-check-in", manualCheckInController);
 
 // Routes — Tour Packages
-app.post("/api/v1/tour-packages", createTourPackageController);
+app.post(
+  "/api/v1/tour-packages",
+  allowedRoles(["Tour Operator"]),
+  createTourPackageController
+);
 app.put(
   "/api/v1/tour-packages/:id",
   // authenticateTourOperator,
-  allowedRoles(["Tour Guide", "Tour Operator"]),
+  allowedRoles(["Tour Operator"]),
   updateTourPackageController
 );
 app.delete(
   "/api/v1/tour-packages/:id",
   // authenticateTourOperator,
-  allowedRoles(["Tour Guide", "Tour Operator"]),
+  allowedRoles(["Tour Operator"]),
   deleteTourPackageController
 );
 app.get(
   "/api/v1/tour-packages",
   // authenticateTourOperator,
-  allowedRoles(["Tour Guide", "Tour Operator"]),
+  allowedRoles(["Tour Guide", "Tour Operator", "Tourist"]),
   viewTourPackagesController
 );
 app.get(
@@ -712,7 +744,6 @@ app.get("/api/v1/visitor-logs/export", exportVisitorLogController);
 //Visitor Summary Grouped by Month Export
 app.get("/api/v1/visitor-summary/export", exportVisitorLogGroupController);
 
-
 // Tourist submits feedback for guide/operator/spot
 app.post(
   "/api/v1/feedback/submit",
@@ -756,6 +787,8 @@ app.delete(
 );
 
 // 5. Anyone can view feedback questions (for form rendering)
+
+app.get("/api/v1/feedback/questions/:type", viewQuestionsByTypeController);
 app.get(
   "/api/v1/feedback/questions/:type",
   viewQuestionsByTypeController
@@ -785,3 +818,4 @@ app.post(
   authenticateTourOperator,
   uploadOperatorQrController
 );
+

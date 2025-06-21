@@ -85,7 +85,7 @@ export const tourGuideDocuFields = [
       { value: "FIT", label: "Fit to Work" },
       { value: "FLUENT", label: "Fluent" },
       { value: "TRAINING_CERTIFIED", label: "Training Certified" },
-      { value: "NO_CRIMINAL_RECORD", label: "No Criminal Record" },
+      { value: "NO_CRIMINAL_RECORD", label: "No Criminal ecord" },
     ],
   },
 ];

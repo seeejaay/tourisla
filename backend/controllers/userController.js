@@ -31,28 +31,33 @@ const createUserController = async (req, res) => {
     const formatedEmail = email.toUpperCase();
 
     const captchaToken = req.body.captchaToken;
+    const isAdmin = req.session.user && req.session.user.role === "Admin";
 
-    // Special handling for mobile app
-    if (captchaToken === "mobile-app-verification-token") {
-      console.log(
-        "Mobile app verification token received - bypassing reCAPTCHA check"
-      );
-      // Skip the reCAPTCHA verification for mobile app
-    } else if (!captchaToken) {
-      return res.status(400).json({ error: "Captcha token is required" });
-    } else {
-      // Verify captcha for web clients
-      const secretKey = process.env.RECAPTCHA_SECRET_KEY;
-
-      const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
-      const captchaRes = await axios.post(verifyUrl);
-
-      if (!captchaRes.data.success) {
-        console.log("Captcha verification failed:", captchaRes.data);
-        return res.status(400).json({ error: "Captcha verification failed" });
+    // Admin bypasses captcha
+    if (!isAdmin) {
+      // Special handling for mobile app
+      if (captchaToken === "mobile-app-verification-token") {
+        console.log(
+          "Mobile app verification token received - bypassing reCAPTCHA check"
+        );
+        // Skip the reCAPTCHA verification for mobile app
+      } else if (!captchaToken) {
+        return res.status(400).json({ error: "Captcha token is required" });
       } else {
-        console.log("Captcha verification successful");
+        // Verify captcha for web clients
+        const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+        const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
+        const captchaRes = await axios.post(verifyUrl);
+
+        if (!captchaRes.data.success) {
+          console.log("Captcha verification failed:", captchaRes.data);
+          return res.status(400).json({ error: "Captcha verification failed" });
+        } else {
+          console.log("Captcha verification successful");
+        }
       }
+    } else {
+      console.log("Admin detected - bypassing captcha verification");
     }
 
     // Default role for new users
@@ -60,7 +65,7 @@ const createUserController = async (req, res) => {
     if (existingUser) {
       return res.status(409).json({ error: "Email already exists" });
     }
-    const isAdmin = req.session.user && req.session.user.role === "Admin";
+
     // Role assignment logic for admins
     let assignedRole = "";
     if (isAdmin) {
