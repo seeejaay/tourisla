@@ -5,7 +5,6 @@ const {
   createIslandEntryMembers,
   isIslandCodeTaken,
   getIslandEntryByCode,
-  getUserPortId,
   logIslandEntryByRegistration,
 } = require("../models/islandEntryRegisModel");
 
@@ -135,8 +134,40 @@ const manualIslandEntryCheckInController = async (req, res) => {
   }
 };
 
+const getIslandEntryMembersController = async (req, res) => {
+  try {
+    const uniqueCode = req.params.unique_code?.trim().toUpperCase();
+
+    if (!uniqueCode) {
+      return res.status(400).json({ error: "Unique code is required." });
+    }
+
+    const registration = await getIslandEntryByCode(uniqueCode);
+
+    if (!registration) {
+      return res.status(404).json({ error: "Registration not found." });
+    }
+
+    const membersResult = await db.query(
+      `SELECT * FROM island_entry_registration_members WHERE registration_id = $1`,
+      [registration.id]
+    );
+
+    return res.status(200).json({
+      message: "Group members fetched successfully.",
+      registration,
+      members: membersResult.rows,
+    });
+  } catch (error) {
+    console.error("Error fetching island entry members:", error);
+    return res.status(500).json({ error: "Internal server error." });
+  }
+};
+
+
 
 module.exports = {
   registerIslandEntryController,
   manualIslandEntryCheckInController,
+  getIslandEntryMembersController,
 };

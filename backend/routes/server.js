@@ -147,11 +147,13 @@ const {
 const {
   registerVisitorController,
   manualCheckInController,
+  getVisitorGroupMembersController,
 } = require("../controllers/visitorRegistrationController");
 
 const {
   registerIslandEntryController,
   manualIslandEntryCheckInController,
+  getIslandEntryMembersController,
 } = require("../controllers/islandEntryRegisController");
 
 const {
@@ -614,12 +616,15 @@ app.get(
 );
 
 // Visitor Registration Route
+app.get("/api/v1/register/members/:unique_code", getVisitorGroupMembersController);
 app.post("/api/v1/register", registerVisitorController);
 app.post("/api/v1/register/manual-check-in", manualCheckInController);
+
 
 // Island Entry Registration Routes
 app.post("/api/v1/island-entry/register", registerIslandEntryController);
 app.post("/api/v1/island-entry/manual-check-in", manualIslandEntryCheckInController);
+app.get("/api/v1/island-entry/members/:unique_code", getIslandEntryMembersController)
 
 
 // Routes — Tour Packages

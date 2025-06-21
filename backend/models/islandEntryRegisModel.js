@@ -51,15 +51,6 @@ const getIslandEntryByCode = async (uniqueCode) => {
   return result.rows[0];
 };
 
-// ✅ Get port ID from user ID
-const getUserPortId = async (userId) => {
-  const result = await db.query(
-    `SELECT port_id FROM users WHERE user_id = $1 LIMIT 1`,
-    [userId]
-  );
-  return result.rows[0]?.port_id || null;
-};
-
 // ✅ Log island entry
 const logIslandEntryByRegistration = async ({ registrationId, scannedByUserId }) => {
   const result = await db.query(
@@ -81,6 +72,5 @@ module.exports = {
   createIslandEntryMembers,
   isIslandCodeTaken,
   getIslandEntryByCode,
-  getUserPortId,
   logIslandEntryByRegistration,
 };
