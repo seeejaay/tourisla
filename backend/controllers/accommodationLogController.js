@@ -7,23 +7,26 @@ const {
   exportAccommodationLog,
 } = require("../models/accommodationLogModel.js");
 
+
 // Create
 const createAccommodationLogController = async (req, res) => {
   try {
    // Get the user ID from the session
     const userId = req.session.user.user_id ?? req.session.user.id;
     const log = await createAccommodationLog(req.body, userId);
-    
+   
     res.status(201).json({
       message: "Accommodation log created successfully",
       data: log
     });
+
 
   } catch (err) {
     console.error(err.message);
     res.status(400).send(err.message);
   }
 };
+
 
 // Edit
 const editAccommodationLogController = async (req, res) => {
@@ -39,6 +42,7 @@ const editAccommodationLogController = async (req, res) => {
   }
 };
 
+
 // Delete
 const deleteAccommodationLogController = async (req, res) => {
   try {
@@ -51,16 +55,18 @@ const deleteAccommodationLogController = async (req, res) => {
   }
 };
 
+
 // View All
 const getAllAccommodationLogsController = async (req, res) => {
   try {
     const logs = await getAllAccommodationLogs();
-    res.json(logs); 
+    res.json(logs);
   } catch (err) {
     console.error(err.message);
     res.status(400).send(err.message);
   }
 };
+
 
 // View One
 const getAccommodationLogByIdController = async (req, res) => {
@@ -75,14 +81,18 @@ const getAccommodationLogByIdController = async (req, res) => {
 };
 
 
+
+
 const exportAccommodationLogController = async (req, res) => {
   try {
     const filter = req.query;
     const buffer = await exportAccommodationLog(filter);
 
+
     if (!buffer) {
       return res.status(404).send("No records to export.");
     }
+
 
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", 'attachment; filename="accommodation_logs.xlsx"');
@@ -92,6 +102,8 @@ const exportAccommodationLogController = async (req, res) => {
     res.status(500).send("Failed to export logs.");
   }
 };
+
+
 
 
 module.exports = {
