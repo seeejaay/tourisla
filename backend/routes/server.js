@@ -157,6 +157,7 @@ const {
   deleteTourPackageController,
   viewTourPackagesController,
   viewTourPackageByIdController,
+  viewAssignedGuidesController,
 } = require("../controllers/tourPackagesController.js");
 
 const {
@@ -626,6 +627,11 @@ app.get(
   // authenticateTourOperator,
   allowedRoles(["Tour Guide", "Tour Operator"]),
   viewTourPackageByIdController
+);
+
+app.get(
+  "/api/v1/tour-packages/:id/assigned-guides",
+  viewAssignedGuidesController
 );
 
 // Routes for Google Calendar integration
