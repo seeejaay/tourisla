@@ -186,6 +186,60 @@ const getTouristBookingsFilteredController = async (req, res) => {
   }
 };
 
+const cancelBookingController = async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+
+    const booking = await getBookingById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    // Fetch tour package to check cancellation policy
+    const tourPackage = await getTourPackageById(booking.tour_package_id);
+    if (!tourPackage) {
+      return res.status(404).json({ error: "Tour package not found" });
+    }
+
+    // If no cancellation_days set, deny cancellation
+    if (!tourPackage.cancellation_days) {
+      return res.status(403).json({ error: "This package does not support cancellation." });
+    }
+
+    // Calculate how many days before the tour the cancellation is made
+    const today = new Date();
+    const scheduledDate = new Date(booking.scheduled_date);
+    const timeDiff = scheduledDate.getTime() - today.getTime();
+    const daysBefore = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // convert ms to days
+
+    // If cancelled too late (less than allowed days), deny cancellation
+    if (daysBefore < tourPackage.cancellation_days) {
+      return res.status(403).json({ error: `Cancellations are not allowed less than ${tourPackage.cancellation_days} day(s) before the tour.` });
+    }
+
+    const daysLate = tourPackage.cancellation_days - daysBefore;
+    let refundPercent = 100 - (daysLate * 25);
+
+    // Cap refund between 0 and 100
+    if (refundPercent < 0) refundPercent = 0;
+    if (refundPercent > 100) refundPercent = 100;
+
+    // Update booking status to CANCELLED
+    const cancelledBooking = await updateBookingStatus(bookingId, "CANCELLED");
+    if (!cancelledBooking) {
+      return res.status(500).json({ error: "Failed to update booking status." });
+    }
+
+    return res.json({
+      message: `Booking cancelled successfully. Expect your ${refundPercent}% refund within 24-48 hours.`,
+      booking: cancelledBooking
+    });
+
+  } catch (err) {
+    console.error("Cancel Booking Error:", err);
+    return res.status(500).json({ error: "Failed to cancel booking", details: err.message });
+  }
+};
 
 module.exports = {
   createBookingController,
@@ -193,5 +247,6 @@ module.exports = {
   getTouristBookingsController,
   getBookingsByPackageController,
   getBookingByIdController,
-  getTouristBookingsFilteredController
+  getTouristBookingsFilteredController,
+  cancelBookingController
 };

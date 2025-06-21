@@ -33,10 +33,8 @@ export const fetchRules = async () => {
     if (response.status !== 200) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
     }
-    
     return response.data;
   } catch (error) {
-    console.error('Error fetching rules:', error.message || error);
     if (error.config) {
       console.error('URL attempted:', error.config.url);
     }

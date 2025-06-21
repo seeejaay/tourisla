@@ -7,7 +7,6 @@ import { Feather, FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
-import { API_URL } from '@/lib/config';
 import { logout } from '@/lib/api/auth'; // Import the logout function
 
 const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 44;
@@ -29,7 +28,6 @@ export default function Settings() {
       const response = await axios.get(`${API_URL}/api/rules`);
       setRules(response.data);
     } catch (error) {
-      console.error('Error fetching rules:', error);
       setRulesError('Failed to load rules and regulations');
     } finally {
       setLoadingRules(false);

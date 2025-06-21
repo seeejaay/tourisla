@@ -8,7 +8,6 @@ import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { API_URL } from '../../../lib/config';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Document types using enum values
