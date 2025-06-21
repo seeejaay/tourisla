@@ -4,7 +4,7 @@ import {
   SafeAreaView, StatusBar, ActivityIndicator, Platform 
 } from 'react-native';
 import axios from 'axios';
-import { API_URL } from '@/lib/config';
+
 
 export default function ApiTestScreen() {
   const [results, setResults] = useState([]);
