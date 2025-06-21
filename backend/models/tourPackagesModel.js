@@ -14,8 +14,11 @@ const createTourPackage = async ({
   date_end,
   start_time,
   end_time,
-  assigned_guides = [],
+  assigned_guides,
+  cancellation_days,
+  cancellation_note
 }) => {
+  console.log(assigned_guides);
   const result = await db.query(
     `INSERT INTO tour_packages 
       (touroperator_id, package_name, location, description, price, duration_days, inclusions, exclusions, available_slots, date_start, date_end, start_time, end_time)
@@ -157,6 +160,17 @@ const getAssignedGuidesByPackage = async (packageId) => {
   return result.rows;
 };
 
+const getTourPackagesByTourGuide = async (tourguide_id) => {
+  const result = await db.query(
+    `SELECT tp.*
+     FROM tour_packages tp
+     JOIN tourguide_assignments ta ON tp.id = ta.tour_package_id
+     WHERE ta.tourguide_id = $1`,
+    [tourguide_id]
+  );
+  return result.rows;
+};
+
 module.exports = {
   createTourPackage,
   updateTourPackage,
@@ -165,5 +179,6 @@ module.exports = {
   getTourPackageByIdForOperator,
   getTourPackageById,
   getAssignedGuidesByPackage,
+  getTourPackagesByTourGuide,
 };
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserManager } from "@/hooks/useUserManager";
 import countries from "@/app/static/countries.json"; // Adjust path as needed
+import { useCalendar } from "@/hooks/useCalendar";
 
 interface UserProfile {
   user_id: number;
@@ -29,6 +30,7 @@ interface UserForm extends UserProfile {
 export default function ProfilePage() {
   const router = useRouter();
   const { loggedInUser, loading: authLoading } = useAuth();
+  const { authorizeCalendar } = useCalendar();
   const {
     updateUser,
     loading: updateLoading,
@@ -275,14 +277,26 @@ export default function ProfilePage() {
                 </button>
               </>
             ) : (
-              <button
-                className="px-6 py-2 rounded-full bg-indigo-500 text-white font-semibold shadow hover:bg-indigo-600 transition"
-                onClick={() => setEditMode(true)}
-              >
-                Edit Profile
-              </button>
+              <>
+                <button
+                  className="px-6 py-2 rounded-full bg-indigo-500 text-white font-semibold shadow hover:bg-indigo-600 transition"
+                  onClick={() => setEditMode(true)}
+                >
+                  Edit Profile
+                </button>
+                {user.role && user.role.toLowerCase() === "tour guide" && (
+                  <button
+                    className="px-6 py-2 rounded-full bg-green-500 text-white font-semibold shadow hover:bg-green-600 transition"
+                    onClick={authorizeCalendar}
+                    type="button"
+                  >
+                    Authorize Google Calendar
+                  </button>
+                )}
+              </>
             )}
           </div>
+
           {updateError && (
             <div className="mt-6 text-center text-red-500">{updateError}</div>
           )}
