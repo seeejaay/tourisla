@@ -1,152 +1,151 @@
-import { useState, useCallback } from 'react';
-import { 
-  fetchTouristSpots, 
-  fetchTouristSpotById, 
+import { useState, useCallback } from "react";
+
+import type { TouristSpotSchema } from "@/static/tourist-spot/useTouristSpotManagerSchema";
+import type { TouristSpot } from "@/static/tourist-spot/useTouristSpotManagerSchema";
+
+import {
   createTouristSpot as apiCreateTouristSpot,
+  fetchTouristSpots as apiFetchTouristSpots,
+  viewTouristSpots as apiViewTouristSpot,
   updateTouristSpot as apiUpdateTouristSpot,
-  deleteTouristSpot as apiDeleteTouristSpot
-} from '../lib/api/touristSpot';
+  deleteTouristSpot as apiDeleteTouristSpot,
+} from "@/lib/api/touristSpot";
 
 export const useTouristSpotManager = () => {
-  const [touristSpots, setTouristSpots] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [touristSpots, setTouristSpots] = useState<TouristSpot[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
 
-  // Get all tourist spots
-  const getAllTouristSpots = useCallback(async () => {
+  // Fetch all tourist spots and update state
+  const fetchTouristSpots = useCallback(async (): Promise<
+    TouristSpot[] | null
+  > => {
     setLoading(true);
-    setError(null);
-    
+    setError("");
     try {
-      // Try to fetch from API first
-      const data = await fetchTouristSpots();
+      const data = await apiFetchTouristSpots();
       setTouristSpots(data);
       return data;
     } catch (err) {
-      console.error('Error fetching tourist spots:', err);
-      
-      // If API fails, use mock data as fallback
-      try {
-        console.log('Using mock data as fallback');
-        const mockData = getMockTouristSpots();
-        setTouristSpots(mockData);
-        return mockData;
-      } catch (mockErr) {
-        console.error('Error with mock data:', mockErr);
-        setError('Failed to load tourist spots. Please try again.');
-        return [];
-      }
+      setError("Error: " + (err instanceof Error ? err.message : String(err)));
+      return null;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Get tourist spot by ID
-  const getTouristSpotById = useCallback(async (id) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Try to fetch from API first
-      const data = await fetchTouristSpotById(id);
-      return data;
-    } catch (err) {
-      console.error(`Error fetching tourist spot with ID ${id}:`, err);
-      
-      // If API fails, try to find in mock data
+  // Create a new tourist spot and update state
+  const createTouristSpot = useCallback(
+    async (touristSpotData: FormData): Promise<TouristSpot | null> => {
+      setLoading(true);
+      setError("");
       try {
-        console.log('Using mock data as fallback for single tourist spot');
-        const mockData = getMockTouristSpots();
-        const spot = mockData.find(spot => spot.id.toString() === id.toString());
-        if (spot) {
-          return spot;
-        } else {
-          setError('Tourist spot not found');
+        const response: TouristSpot & { error?: string } =
+          await apiCreateTouristSpot(touristSpotData); // <-- Pass FormData
+        if (response.error) {
+          setError(response.error);
           return null;
         }
-      } catch (mockErr) {
-        setError('Failed to load tourist spot details');
+        setTouristSpots((prev) => [...prev, response]);
+        return response;
+      } catch (error) {
+        setError(
+          "An error occurred while creating the tourist spot." +
+            (error instanceof Error ? error.message : String(error))
+        );
         return null;
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
-  // Create tourist spot (admin only)
-  const createTouristSpot = useCallback(async (spotData, token) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const data = await apiCreateTouristSpot(spotData, token);
-      
-      // Update the local state with the new tourist spot
-      setTouristSpots(prev => [...prev, data]);
-      return data;
-    } catch (err) {
-      console.error('Error creating tourist spot:', err);
-      setError('Failed to create tourist spot. Please try again.');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // View a specific tourist spot
+  const viewTouristSpot = useCallback(
+    async (id: string): Promise<TouristSpot | null> => {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await apiViewTouristSpot(id);
 
-  // Update tourist spot (admin only)
-  const updateTouristSpot = useCallback(async (id, spotData, token) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const data = await apiUpdateTouristSpot(id, spotData, token);
-      
-      // Update the local state
-      setTouristSpots(prev => 
-        prev.map(spot => spot.id.toString() === id.toString() ? data : spot)
-      );
-      
-      return data;
-    } catch (err) {
-      console.error(`Error updating tourist spot with ID ${id}:`, err);
-      setError('Failed to update tourist spot. Please try again.');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        return data;
+      } catch (err) {
+        setError(
+          "Error: " + (err instanceof Error ? err.message : String(err))
+        );
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
-  // Delete tourist spot (admin only)
-  const deleteTouristSpot = useCallback(async (id, token) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      await apiDeleteTouristSpot(id, token);
-      
-      // Update the local state
-      setTouristSpots(prev => prev.filter(spot => spot.id.toString() !== id.toString()));
-      return true;
-    } catch (err) {
-      console.error(`Error deleting tourist spot with ID ${id}:`, err);
-      setError('Failed to delete tourist spot. Please try again.');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
+  // Update an existing tourist spot
+  const updateTouristSpot = useCallback(
+    async (
+      id: number,
+      touristSpotData: TouristSpotSchema | FormData
+    ): Promise<TouristSpot | null> => {
+      setLoading(true);
+      setError("");
+      try {
+        const response: TouristSpot & { error?: string } =
+          await apiUpdateTouristSpot(id, touristSpotData);
+        if (response.error) {
+          setError(response.error);
+          return null;
+        }
+        setTouristSpots((prev) =>
+          prev.map((spot) => (spot.id === id ? response : spot))
+        );
+        return response;
+      } catch (error) {
+        setError(
+          "An error occurred while updating the tourist spot." +
+            (error instanceof Error ? error.message : String(error))
+        );
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+  // Delete a tourist spot and update state
+  const deleteTouristSpot = useCallback(
+    async (id: number): Promise<boolean> => {
+      setLoading(true);
+      setError("");
+      try {
+        const response = await apiDeleteTouristSpot(id);
+        if (response.error) {
+          setError(response.error);
+          return false;
+        }
+        setTouristSpots((prev) => prev.filter((spot) => spot.id !== id));
+        return true;
+      } catch (error) {
+        setError(
+          "An error occurred while deleting the tourist spot." +
+            (error instanceof Error ? error.message : String(error))
+        );
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
   return {
     touristSpots,
     loading,
     error,
-    getAllTouristSpots,
-    getTouristSpotById,
+    fetchTouristSpots,
     createTouristSpot,
+    viewTouristSpot,
     updateTouristSpot,
-    deleteTouristSpot
+    deleteTouristSpot,
   };
 };
-
-
-
