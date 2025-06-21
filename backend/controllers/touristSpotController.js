@@ -4,7 +4,7 @@ const {
   deleteTouristSpot,
   getAllTouristSpots,
   getTouristSpotById,
-  deleteTouristSpotImages,
+  deleteTouristSpotImage,
   getTouristSpotImages,
   addTouristSpotImages,
 } = require("../models/touristSpotModel");
@@ -24,8 +24,7 @@ const createTouristSpotController = async (req, res) => {
       barangay,
       municipality,
       province,
-      longitude,
-      latitude,
+      location,
       opening_time,
       closing_time,
       days_open,
@@ -35,6 +34,8 @@ const createTouristSpotController = async (req, res) => {
       email,
       facebook_page,
       rules,
+      attraction_code,
+      category,
     } = req.body;
 
     // Upload images to S3 and collect URLs
@@ -61,8 +62,7 @@ const createTouristSpotController = async (req, res) => {
       barangay: barangay?.toUpperCase(),
       municipality: municipality?.toUpperCase(),
       province: province?.toUpperCase(),
-      longitude,
-      latitude,
+      location,
       opening_time,
       closing_time,
       days_open,
@@ -72,8 +72,10 @@ const createTouristSpotController = async (req, res) => {
       email,
       facebook_page,
       rules: rules?.toUpperCase(),
-      // Add images directly to the tourist spot
+      attraction_code: attraction_code?.toUpperCase(),
+      category: category?.toUpperCase(),
     });
+
 
     let spotImages = [];
     if (imageUrls.length > 0) {
@@ -99,15 +101,14 @@ const createTouristSpotController = async (req, res) => {
 const editTouristSpotController = async (req, res) => {
   try {
     const { touristSpotId } = req.params;
-    const {
+        const {
       name,
       type,
       description,
       barangay,
       municipality,
       province,
-      longitude,
-      latitude,
+      location,
       opening_time,
       closing_time,
       days_open,
@@ -117,7 +118,10 @@ const editTouristSpotController = async (req, res) => {
       email,
       facebook_page,
       rules,
+      attraction_code,
+      category,
     } = req.body;
+    
 
     // Get current tourist spot to access existing images
     const currentSpot = await getTouristSpotById(touristSpotId);
@@ -146,8 +150,7 @@ const editTouristSpotController = async (req, res) => {
       barangay: barangay?.toUpperCase(),
       municipality: municipality?.toUpperCase(),
       province: province?.toUpperCase(),
-      longitude,
-      latitude,
+      location,
       opening_time,
       closing_time,
       days_open,
@@ -157,8 +160,11 @@ const editTouristSpotController = async (req, res) => {
       email,
       facebook_page,
       rules: rules?.toUpperCase(),
-      images, // Include images directly
+      attraction_code: attraction_code?.toUpperCase(),
+      category: category?.toUpperCase(),
     });
+
+
     // Upload images to S3
     if (req.files && req.files.length > 0) {
       const imageUrls = [];
@@ -257,10 +263,47 @@ const viewTouristSpotByIdController = async (req, res) => {
   }
 };
 
+const deleteTouristSpotImageController = async (req, res) => {
+  try {
+    const { imageId } = req.params;
+    console.log("Deleting image with ID:", imageId);
+
+    const deletedImage = await deleteTouristSpotImage(imageId);
+    if (!deletedImage) {
+      console.log("Image not found in DB.");
+      return res.status(404).json({ message: "Image not found." });
+    }
+
+    const imageUrl = deletedImage.image_url;
+    console.log("Image URL:", imageUrl);
+
+    const url = new URL(imageUrl);
+    const s3Key = url.pathname.startsWith("/") ? url.pathname.slice(1) : url.pathname;
+    console.log("S3 Key to delete:", s3Key);
+
+    try {
+      await deleteS3Object(s3Key);
+      console.log("Image deleted from S3.");
+    } catch (s3Error) {
+      console.error("S3 Deletion Error:", s3Error.message);
+    }
+
+    return res.status(200).json({
+      message: "Image deleted successfully.",
+      deletedImage,
+    });
+  } catch (err) {
+    console.error("Image deletion failed:", err);
+    res.status(500).json({ error: "Failed to delete image." });
+  }
+};
+
+
 module.exports = {
   createTouristSpotController,
   editTouristSpotController,
   deleteTouristSpotController,
   viewTouristSpotsController,
   viewTouristSpotByIdController,
+  deleteTouristSpotImageController,
 };
