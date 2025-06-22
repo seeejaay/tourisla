@@ -61,14 +61,7 @@ const getOperatorQrController = async (req, res) => {
     if (!operatorId) {
       return res.status(400).json({ error: "Tour operator ID is required." });
     }
-    const operatorRegis = await getOperatorRegisByOperatorId(operatorId);
-    if (!operatorRegis) {
-      return res
-        .status(404)
-        .json({ error: "Tour operator not found or not registered." });
-    }
-    const touroperator_id = operatorRegis.user_id;
-    console.log("Tour Operator ID:", touroperator_id);
+
     // Optional: check user role if needed
     const user = req.session.user;
     if (!user || (user.role !== "Tour Operator" && user.role !== "Tourist")) {
@@ -77,7 +70,8 @@ const getOperatorQrController = async (req, res) => {
       });
     }
 
-    const operatorQrs = await getOperatorQrById(touroperator_id);
+    const operatorQrs = await getOperatorQrById(operatorId);
+    console.log("Operator QR codes:", operatorQrs);
     res.status(200).json({ data: operatorQrs });
   } catch (error) {
     console.error("Error fetching operator QR codes:", error);
