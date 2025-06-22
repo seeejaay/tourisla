@@ -164,6 +164,7 @@ const {
   viewTourPackagesController,
   viewTourPackageByIdController,
   getTourPackagesByGuideController,
+  viewAllTourPackages,
 } = require("../controllers/tourPackagesController.js");
 
 const {
@@ -212,7 +213,7 @@ const {
   getBookingsByPackageController,
   getBookingByIdController,
   getTouristBookingsFilteredController,
-  cancelBookingController
+  cancelBookingController,
 } = require("../controllers/bookingController.js");
 
 const {
@@ -233,11 +234,12 @@ const {
 const {
   createIncidentReportController,
   viewAllIncidentReportsController,
-  viewIncidentReportByUserController
+  viewIncidentReportByUserController,
 } = require("../controllers/incidentRepController.js");
 
 const {
-  uploadOperatorQrController
+  uploadOperatorQrController,
+  getOperatorQrController,
 } = require("../controllers/operatorQRController.js");
 
 app.use(
@@ -653,10 +655,17 @@ app.get(
   allowedRoles(["Tour Guide", "Tour Operator", "Tourist"]),
   viewTourPackagesController
 );
+
 app.get(
-  "/api/v1/tour-packages/:id",
+  "/api/v1/tour-packages/all",
+  allowedRoles(["Tourist"]),
+  viewAllTourPackages
+);
+
+app.get(
+  "/api/v1/tour-packages/pkg/:id",
   // authenticateTourOperator,
-  allowedRoles(["Tour Guide", "Tour Operator"]),
+  allowedRoles(["Tour Guide", "Tour Operator", "Tourist"]),
   viewTourPackageByIdController
 );
 app.get(
@@ -673,57 +682,57 @@ app.get(
 );
 app.get(
   "/api/v1/calendar/auth/callback",
-  // authenticateTourGuide,
+  allowedRoles(["Tour Guide", "Tourist"]),
   googleCalendarCallbackController
 );
 
 // Routes for booking (Tour Guide's Side)
 app.patch(
   "/api/v1/bookings/guide/:bookingId/finish",
-  // authenticateTourGuide,
+  allowedRoles(["Tour Guide"]),
   markBookingAsFinishedController
 );
 app.get(
   "/api/v1/bookings/guide",
-  // authenticateTourGuide,
+  allowedRoles(["Tour Guide"]),
   getTourGuideBookingsFilteredController
 );
 
 // Routes for Booking
 app.post(
   "/api/v1/bookings",
-  // authenticateUser,
   upload.single("proof_of_payment"),
+  allowedRoles(["Tourist"]),
   createBookingController
 );
 app.put(
   "/api/v1/bookings/:id/status",
-  // authenticateTourOperator,
+  allowedRoles(["Tour Operator"]),
   updateBookingStatusController
 );
 app.get(
   "/api/v1/bookings/tourist",
-  // authenticateUser,
+  allowedRoles(["Tourist"]),
   getTouristBookingsController
 );
 app.get(
   "/api/v1/bookings/package/:packageId",
-  authenticateTourOperator,
+  allowedRoles(["Tour Operator"]),
   getBookingsByPackageController
 );
 app.get(
   "/api/v1/bookings/:id",
-  authenticateUser,
+  allowedRoles(["Tourist"]),
   getBookingByIdController
 );
 app.get(
   "/api/v1/bookings/tourist/filtered",
-  // authenticateUser,
+  allowedRoles(["Tourist"]),
   getTouristBookingsFilteredController
 );
 app.put(
   "/api/v1/bookings/:id/cancel",
-  authenticateUser,
+  allowedRoles(["Tourist"]),
   cancelBookingController
 );
 
@@ -816,10 +825,7 @@ app.delete(
 // 5. Anyone can view feedback questions (for form rendering)
 
 app.get("/api/v1/feedback/questions/:type", viewQuestionsByTypeController);
-app.get(
-  "/api/v1/feedback/questions/:type",
-  viewQuestionsByTypeController
-);
+app.get("/api/v1/feedback/questions/:type", viewQuestionsByTypeController);
 
 // Routes for Incident Reports
 app.post(
@@ -846,3 +852,8 @@ app.post(
   uploadOperatorQrController
 );
 
+app.get(
+  "/api/v1/operator-qr/:operatorId",
+  allowedRoles(["Tour Operator", "Tourist"]),
+  getOperatorQrController
+);

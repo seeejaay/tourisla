@@ -1,30 +1,39 @@
 const { getGoogleTokens } = require("../models/calendarModel.js");
 const { oauth2Client } = require("../utils/calendar.js");
 const { google } = require("googleapis");
-const { getAssignedGuidesByPackage, getTourPackageById } = require("../models/tourPackagesModel.js");
+const {
+  getAssignedGuidesByPackage,
+  getTourPackageById,
+} = require("../models/tourPackagesModel.js");
 const {
   createBooking,
   updateBookingStatus,
   getBookingsByTourist,
   getBookingsByPackage,
   getBookingById,
-  getFilteredBookingsByTourist
+  getFilteredBookingsByTourist,
 } = require("../models/bookingModel.js");
 const { s3Client, PutObjectCommand } = require("../utils/s3.js");
 
 const createBookingController = async (req, res) => {
   try {
-    const tourist_id = req.user?.id || 31; // 31 is hard coded for manual testing
-    const {
-      tour_package_id,
-      scheduled_date,
-      number_of_guests,
-      total_price,
-      notes
-    } = req.body;
+    const user = req.session.user;
+    console.log("Tourist ID from session:", user?.id);
+    if (!user || user.role !== "Tourist") {
+      return res
+        .status(403)
+        .json({ error: "Only tourists can create bookings." });
+    }
+    const tourist_id = user.id; // Get tourist ID from session
+    console.log("Tourist ID:", tourist_id);
 
-    if (!tour_package_id || !scheduled_date || !number_of_guests || !total_price) {
-      return res.status(400).json({ error: "Missing required booking fields." });
+    const { package_id, scheduled_date, number_of_guests, total_price, notes } =
+      req.body;
+    console.log("Booking Request Body:", req.body);
+    if (!package_id || !scheduled_date || !number_of_guests || !total_price) {
+      return res
+        .status(400)
+        .json({ error: "Missing required booking fields." });
     }
 
     let proof_of_payment = null;
@@ -40,12 +49,14 @@ const createBookingController = async (req, res) => {
       await s3Client.send(new PutObjectCommand(uploadParams));
       proof_of_payment = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
     } else {
-      return res.status(400).json({ error: "Upload image for proof of payment is required." });
+      return res
+        .status(400)
+        .json({ error: "Upload image for proof of payment is required." });
     }
 
     const newBooking = await createBooking({
       tourist_id,
-      tour_package_id,
+      tour_package_id: package_id,
       scheduled_date,
       number_of_guests,
       total_price,
@@ -53,7 +64,9 @@ const createBookingController = async (req, res) => {
       proof_of_payment,
     });
 
-    res.status(201).json({ message: "Booking created successfully", newBooking });
+    res
+      .status(201)
+      .json({ message: "Booking created successfully", newBooking });
   } catch (err) {
     console.error("Booking Error:", err);
     res.status(500).json({ error: "Failed to create booking" });
@@ -85,7 +98,7 @@ const updateBookingStatusController = async (req, res) => {
       const endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + tourPackage.duration_days - 1);
 
-      const padTime = (t) => t.length === 5 ? `${t}:00` : t; // Adds :00 if missing
+      const padTime = (t) => (t.length === 5 ? `${t}:00` : t); // Adds :00 if missing
       const formattedStart = startDate.toISOString().split("T")[0];
       const formattedEnd = endDate.toISOString().split("T")[0];
 
@@ -121,7 +134,10 @@ const updateBookingStatusController = async (req, res) => {
             resource: event,
           });
         } catch (calendarErr) {
-          console.error(`Calendar sync failed for guide ${guide.tourguide_id}:`, calendarErr.message);
+          console.error(
+            `Calendar sync failed for guide ${guide.tourguide_id}:`,
+            calendarErr.message
+          );
         }
       }
     }
@@ -132,7 +148,6 @@ const updateBookingStatusController = async (req, res) => {
     res.status(500).json({ error: "Failed to update status" });
   }
 };
-
 
 const getTouristBookingsController = async (req, res) => {
   try {
@@ -203,7 +218,9 @@ const cancelBookingController = async (req, res) => {
 
     // If no cancellation_days set, deny cancellation
     if (!tourPackage.cancellation_days) {
-      return res.status(403).json({ error: "This package does not support cancellation." });
+      return res
+        .status(403)
+        .json({ error: "This package does not support cancellation." });
     }
 
     // Calculate how many days before the tour the cancellation is made
@@ -214,11 +231,13 @@ const cancelBookingController = async (req, res) => {
 
     // If cancelled too late (less than allowed days), deny cancellation
     if (daysBefore < tourPackage.cancellation_days) {
-      return res.status(403).json({ error: `Cancellations are not allowed less than ${tourPackage.cancellation_days} day(s) before the tour.` });
+      return res.status(403).json({
+        error: `Cancellations are not allowed less than ${tourPackage.cancellation_days} day(s) before the tour.`,
+      });
     }
 
     const daysLate = tourPackage.cancellation_days - daysBefore;
-    let refundPercent = 100 - (daysLate * 25);
+    let refundPercent = 100 - daysLate * 25;
 
     // Cap refund between 0 and 100
     if (refundPercent < 0) refundPercent = 0;
@@ -227,17 +246,20 @@ const cancelBookingController = async (req, res) => {
     // Update booking status to CANCELLED
     const cancelledBooking = await updateBookingStatus(bookingId, "CANCELLED");
     if (!cancelledBooking) {
-      return res.status(500).json({ error: "Failed to update booking status." });
+      return res
+        .status(500)
+        .json({ error: "Failed to update booking status." });
     }
 
     return res.json({
       message: `Booking cancelled successfully. Expect your ${refundPercent}% refund within 24-48 hours.`,
-      booking: cancelledBooking
+      booking: cancelledBooking,
     });
-
   } catch (err) {
     console.error("Cancel Booking Error:", err);
-    return res.status(500).json({ error: "Failed to cancel booking", details: err.message });
+    return res
+      .status(500)
+      .json({ error: "Failed to cancel booking", details: err.message });
   }
 };
 
@@ -248,5 +270,5 @@ module.exports = {
   getBookingsByPackageController,
   getBookingByIdController,
   getTouristBookingsFilteredController,
-  cancelBookingController
+  cancelBookingController,
 };
