@@ -75,14 +75,11 @@ const getBookingsByPackage = async (packageId) => {
 };
 
 const getBookingById = async (id) => {
-  const result = await db.query(
-    `SELECT * FROM bookings WHERE id = $1`,
-    [id]
-  );
+  const result = await db.query(`SELECT * FROM bookings WHERE id = $1`, [id]);
   return result.rows[0];
 };
 
-// tourist booking history based on date with filter 
+// tourist booking history based on date with filter
 const getFilteredBookingsByTourist = async (touristId, timeFilter) => {
   let baseQuery = `
     SELECT *,
@@ -105,13 +102,23 @@ const getFilteredBookingsByTourist = async (touristId, timeFilter) => {
 
   baseQuery += ` ORDER BY scheduled_date DESC`;
   console.log("Executing query with:", touristId, timeFilter);
-console.log("Query:", baseQuery);
+  console.log("Query:", baseQuery);
 
   const result = await db.query(baseQuery, [touristId]);
   return result.rows;
 };
 
-
+const getBookingsByTourOperatorId = async (operatorId) => {
+  const result = await db.query(
+    `SELECT b.*, tp.package_name AS package_name, tp.touroperator_id
+     FROM bookings b
+     JOIN tour_packages tp ON b.tour_package_id = tp.id
+     WHERE tp.touroperator_id = $1
+     ORDER BY b.scheduled_date DESC`,
+    [operatorId]
+  );
+  return result.rows;
+};
 
 module.exports = {
   createBooking,
@@ -119,5 +126,6 @@ module.exports = {
   getBookingsByTourist,
   getBookingsByPackage,
   getBookingById,
-  getFilteredBookingsByTourist
+  getFilteredBookingsByTourist,
+  getBookingsByTourOperatorId,
 };
