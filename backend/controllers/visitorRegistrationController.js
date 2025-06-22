@@ -124,11 +124,11 @@ const manualCheckInController = async (req, res) => {
     const today = new Date().toISOString().split('T')[0];
     const existingLogCheck = await db.query(
       `SELECT 1 FROM attraction_visitor_logs 
-       WHERE group_member_id = ANY($1::int[]) 
+       WHERE  registration_id = $1 
          AND tourist_spot_id = $2 
          AND DATE(visit_date) = $3
        LIMIT 1`,
-      [groupMembers.map((m) => m.id), attractionId, today]
+      [registration.id, attractionId, today]
     );
 
     if (existingLogCheck.rows.length > 0) {
@@ -137,7 +137,7 @@ const manualCheckInController = async (req, res) => {
 
     // Insert logs for all members
     const logs = await logAttractionVisitByRegistration({
-      groupMembers,
+      registrationId: registration.id,
       scannedByUserId: userId,
       touristSpotId: attractionId,
     });
@@ -228,7 +228,7 @@ const registerWalkInVisitorController = async (req, res) => {
 
     // ✅ Automatically log as "checked-in"
     const logs = await logAttractionVisitByRegistration({
-      groupMembers: members,
+      registrationId: registration.id,
       scannedByUserId: userId,
       touristSpotId: attractionId,
     });
