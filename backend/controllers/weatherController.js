@@ -11,7 +11,7 @@ const getWeather = async (req, res) => {
       const error = await response.json();
       return res.status(response.status).json({ error });
     }
-    console.log("Weather fetch successful for location:", response);
+
     const data = await response.json();
     res.json(data);
   } catch (err) {

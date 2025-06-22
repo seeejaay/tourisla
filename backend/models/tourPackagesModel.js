@@ -16,14 +16,14 @@ const createTourPackage = async ({
   end_time,
   assigned_guides,
   cancellation_days,
-  cancellation_note
+  cancellation_note,
 }) => {
   console.log(assigned_guides);
   const result = await db.query(
     `INSERT INTO tour_packages 
-      (touroperator_id, package_name, location, description, price, duration_days, inclusions, exclusions, available_slots, date_start, date_end, start_time, end_time)
+      (touroperator_id, package_name, location, description, price, duration_days, inclusions, exclusions, available_slots, date_start, date_end, start_time, end_time,cancellation_days, cancellation_note)
      VALUES 
-      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
      RETURNING *`,
     [
       touroperator_id,
@@ -39,6 +39,8 @@ const createTourPackage = async ({
       date_end,
       start_time,
       end_time,
+      cancellation_days,
+      cancellation_note,
     ]
   );
   const newPackage = result.rows[0];
@@ -105,12 +107,12 @@ const updateTourPackage = async (id, touroperator_id, packageData) => {
   return result.rows[0];
 };
 
-const deleteTourPackage = async (id, touroperator_id) => {
+const deleteTourPackage = async (id) => {
   const result = await db.query(
     `DELETE FROM tour_packages 
-     WHERE id = $1 AND touroperator_id = $2 
+     WHERE id = $1 
      RETURNING *`,
-    [id, touroperator_id]
+    [id]
   );
   return result.rows[0];
 };
@@ -171,6 +173,11 @@ const getTourPackagesByTourGuide = async (tourguide_id) => {
   return result.rows;
 };
 
+const getAllTourPackages = async () => {
+  const result = await db.query(`SELECT * FROM tour_packages`);
+  return result.rows;
+};
+
 module.exports = {
   createTourPackage,
   updateTourPackage,
@@ -180,5 +187,5 @@ module.exports = {
   getTourPackageById,
   getAssignedGuidesByPackage,
   getTourPackagesByTourGuide,
+  getAllTourPackages,
 };
-
