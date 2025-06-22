@@ -165,22 +165,6 @@ export default function TouristTouristSpotsScreen({ headerHeight }) {
             <Icon name="eye" size={18} color="#ffffff" />
             <Text style={styles.actionButtonText}>View</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.editButton]}
-            onPress={() => router.push(`/tourist/tourist_spots/tourist_tourist_spot_edit?id=${item.id}`)}
-          >
-            <Icon name="edit-2" size={18} color="#ffffff" />
-            <Text style={styles.actionButtonText}>Edit</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.deleteButton]}
-            onPress={() => handleDelete(item.id, item.name)}
-          >
-            <Icon name="trash-2" size={18} color="#ffffff" />
-            <Text style={styles.actionButtonText}>Delete</Text>
-          </TouchableOpacity>
         </View>
       </View>
     );
@@ -294,14 +278,6 @@ export default function TouristTouristSpotsScreen({ headerHeight }) {
             showsVerticalScrollIndicator={false}
           />
         )}
-        
-        {/* Add FAB */}
-        <TouchableOpacity
-          style={styles.fab}
-          onPress={() => router.push('/tourist/tourist_spots/tourist_tourist_spot_add')}
-        >
-          <Icon name="plus" size={24} color="#1fd8d6" />
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -469,12 +445,6 @@ const styles = StyleSheet.create({
   viewButton: {
     backgroundColor: '#0ea5e9',
   },
-  editButton: {
-    backgroundColor: '#10b981',
-  },
-  deleteButton: {
-    backgroundColor: '#ef4444',
-  },
   actionButtonText: {
     color: '#ffffff',
     fontWeight: '600',
@@ -536,23 +506,6 @@ const styles = StyleSheet.create({
   clearButtonText: {
     color: '#0ea5e9',
     fontWeight: '600',
-  },
-  fab: {
-    position: "absolute",
-    right: 16,
-    bottom: Platform.OS === 'ios' ? 140 : 130, // Match the position used in other tourist pages
-    backgroundColor: "#0f172a",
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    zIndex: 100, // Higher zIndex to ensure visibility
   },
 });
 

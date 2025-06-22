@@ -42,7 +42,7 @@ const toSentenceCase = (text: string) => {
 export default function TouristTouristSpotViewScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const { getTouristSpotById, loading, error } = useTouristSpotManager();
+  const { viewTouristSpot, loading, error } = useTouristSpotManager();
   const { token } = useAuth();
   const [touristSpot, setTouristSpot] = useState(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -52,7 +52,7 @@ export default function TouristTouristSpotViewScreen() {
     const fetchTouristSpot = async () => {
       if (id) {
         try {
-          const data = await getTouristSpotById(id);
+          const data = await viewTouristSpot(id);
           if (data) {
             setTouristSpot(data);
           } else {
@@ -68,7 +68,7 @@ export default function TouristTouristSpotViewScreen() {
     };
 
     fetchTouristSpot();
-  }, [id, getTouristSpotById, router]);
+  }, [id, viewTouristSpot, router]);
 
   // First, let's add more detailed logging to understand the image data structure
   useEffect(() => {

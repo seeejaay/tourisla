@@ -26,15 +26,15 @@ const cardWidth = width * 0.9;
 
 export default function AdminTouristSpotsScreen({ headerHeight }) {
   const router = useRouter();
-  const { touristSpots, loading, error, getAllTouristSpots, deleteTouristSpot } = useTouristSpotManager();
+  const { touristSpots, loading, error, fetchTouristSpots, deleteTouristSpot } = useTouristSpotManager();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState(null);
 
   // Fetch tourist spots when screen is focused
   useFocusEffect(
     useCallback(() => {
-      getAllTouristSpots();
-    }, [getAllTouristSpots])
+      fetchTouristSpots();
+    }, [fetchTouristSpots])
   );
 
   // Filter tourist spots based on search query and selected type
@@ -61,7 +61,7 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
           onPress: async () => {
             try {
               await deleteTouristSpot(id);
-              getAllTouristSpots(); // Refresh the list
+              fetchTouristSpots(); // Refresh the list
             } catch (error) {
               Alert.alert("Error", "Failed to delete tourist spot. Please try again.");
             }
@@ -87,20 +87,46 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
     return colors[type] || '#64748b';
   };
 
+  // Helper function to get image URL from different possible formats
+  const getImageUrl = (images) => {
+    if (!images || !Array.isArray(images) || images.length === 0) {
+      return null;
+    }
+    
+    const firstImage = images[0];
+    
+    // If it's a string, use it directly
+    if (typeof firstImage === 'string') {
+      return firstImage;
+    }
+    
+    // If it's an object with image_url property
+    if (typeof firstImage === 'object' && firstImage !== null) {
+      return firstImage.image_url || firstImage.url || firstImage.uri || null;
+    }
+    
+    return null;
+  };
+
   // Render tourist spot card
   const renderTouristSpotCard = ({ item }) => {
     const typeColor = getTypeColor(item.type);
+    const imageUrl = getImageUrl(item.images);
     
     return (
       <View style={styles.card}>
         {/* Image Section with Gradient Overlay */}
         <View style={styles.cardImageContainer}>
-          {item.images && item.images.length > 0 ? (
+          {imageUrl ? (
             <>
               <Image
-                source={{ uri: item.images[0] }}
+                source={{ uri: imageUrl }}
                 style={styles.cardImage}
                 resizeMode="cover"
+                onError={(e) => {
+                  console.error('Error loading image:', e.nativeEvent.error);
+                  console.log('Failed image URL:', imageUrl);
+                }}
               />
               <LinearGradient
                 colors={['transparent', 'rgba(0,0,0,0.7)']}
@@ -142,7 +168,7 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
           
           <TouchableOpacity 
             style={[styles.actionButton, styles.editButton]}
-            onPress={() => router.push(`/admin/tourist_spots/admin_tourist_spot_edit?id=${item.id}`)}
+            onPress={() => router.push(`/admin/tourist_spots/admin_tourist_spot_edit?id=${item.id}&images=${JSON.stringify(item.images)}`)}
           >
             <Icon name="edit-2" size={18} color="#ffffff" />
             <Text style={styles.actionButtonText}>Edit</Text>
@@ -234,7 +260,7 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity
               style={styles.retryButton}
-              onPress={() => getAllTouristSpots()}
+              onPress={() => fetchTouristSpots()}
             >
               <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
@@ -274,7 +300,7 @@ export default function AdminTouristSpotsScreen({ headerHeight }) {
           style={styles.fab}
           onPress={() => router.push('/admin/tourist_spots/admin_tourist_spot_add')}
         >
-          <Icon name="plus" size={24} color="#ffffff" />
+          <Icon name="plus" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -514,7 +540,7 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     right: 16,
-    bottom: Platform.OS === 'ios' ? 140 : 130, // Match the position used in other admin pages
+    bottom: Platform.OS === 'ios' ? 140 : 130, // Match the position used in other tourist pages
     backgroundColor: "#0f172a",
     width: 56,
     height: 56,
@@ -529,12 +555,3 @@ const styles = StyleSheet.create({
     zIndex: 100, // Higher zIndex to ensure visibility
   },
 });
-
-
-
-
-
-
-
-
-
