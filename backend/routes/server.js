@@ -154,6 +154,7 @@ const {
   registerIslandEntryController,
   manualIslandEntryCheckInController,
   getIslandEntryMembersController,
+  checkPayMongoPaymentStatusController,
 } = require("../controllers/islandEntryRegisController");
 
 const {
@@ -238,6 +239,18 @@ const {
 const {
   uploadOperatorQrController
 } = require("../controllers/operatorQRController.js");
+
+const {
+  getActivePriceController,
+  createPriceController,
+  togglePriceController,
+} = require("../controllers/priceManageController.js");
+
+const {
+  createIslandEntryPaymentLink,
+  // handlePayMongoWebhook,
+  manuallyConfirmPayment,
+} = require("../controllers/paymongoController.js");
 
 app.use(
   session({
@@ -624,8 +637,8 @@ app.post("/api/v1/register/manual-check-in", manualCheckInController);
 // Island Entry Registration Routes
 app.post("/api/v1/island-entry/register", registerIslandEntryController);
 app.post("/api/v1/island-entry/manual-check-in", manualIslandEntryCheckInController);
-app.get("/api/v1/island-entry/members/:unique_code", getIslandEntryMembersController)
-
+app.get("/api/v1/island-entry/members/:unique_code", getIslandEntryMembersController);
+app.post("/api/v1/island-entry/payment-status", checkPayMongoPaymentStatusController);
 
 // Routes — Tour Packages
 app.post(
@@ -843,4 +856,18 @@ app.post(
   authenticateTourOperator,
   uploadOperatorQrController
 );
+
+// Routes for Price Management
+app.get("/api/v1/prices/active", getActivePriceController);
+app.post("/api/v1/prices", authenticateTourismOfficer, createPriceController);
+app.patch(
+  "/api/v1/prices/:id/toggle",
+  authenticateTourismOfficer,
+  togglePriceController
+);
+
+// Routes for PayMongo
+app.post("/api/v1/paymongo/links", createIslandEntryPaymentLink);
+// app.post("/api/v1/paymongo/webhook", handlePayMongoWebhook);
+app.post("/api/v1/paymongo/manual-confirm", manuallyConfirmPayment);
 
