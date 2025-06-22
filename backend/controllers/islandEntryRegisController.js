@@ -262,6 +262,7 @@ const checkPayMongoPaymentStatusController = async (req, res) => {
     res.status(500).json({ error: "Failed to check PayMongo payment status" });
   }
 };
+
 const registerIslandWalkInController = async (req, res) => {
   try {
     const { groupMembers } = req.body;
@@ -316,7 +317,6 @@ const registerIslandWalkInController = async (req, res) => {
     res.status(500).json({ error: "Internal server error during walk-in registration." });
   }
 };
-
 
 module.exports = {
   registerIslandEntryController,

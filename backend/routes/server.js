@@ -906,8 +906,4 @@ app.post("/api/v1/paymongo/links", createIslandEntryPaymentLink);
 // app.post("/api/v1/paymongo/webhook", handlePayMongoWebhook);
 app.post("/api/v1/paymongo/manual-confirm", manuallyConfirmPayment);
 
-app.get(
-  "/api/v1/operator-qr/:operatorId",
-  allowedRoles(["Tour Operator", "Tourist"]),
-  getOperatorQrController
-);
+
