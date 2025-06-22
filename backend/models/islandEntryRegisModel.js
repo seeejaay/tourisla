@@ -1,16 +1,18 @@
 const db = require("../db/index");
 
-// ✅ Create new island entry registration
-const createIslandEntryRegistration = async ({ unique_code, qr_code_url }) => {
+// Create new island entry registration
+const createIslandEntryRegistration = async ({ unique_code, qr_code_url, payment_method, payment_status, total_fee }) => {
   const result = await db.query(
-    `INSERT INTO island_entry_registration (unique_code, qr_code_url) 
-     VALUES ($1, $2) RETURNING *`,
-    [unique_code, qr_code_url]
+    `INSERT INTO island_entry_registration 
+     (unique_code, qr_code_url, payment_method, payment_status, total_fee)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING *`,
+    [unique_code, qr_code_url, payment_method, payment_status, total_fee]
   );
   return result.rows[0];
 };
 
-// ✅ Add group members
+// Add group members
 const createIslandEntryMembers = async (registrationId, members) => {
   const promises = members.map((member) =>
     db.query(
@@ -33,7 +35,7 @@ const createIslandEntryMembers = async (registrationId, members) => {
   return results.map((res) => res.rows[0]);
 };
 
-// ✅ Check if code exists
+// Check if code exists
 const isIslandCodeTaken = async (uniqueCode) => {
   const result = await db.query(
     `SELECT 1 FROM island_entry_registration WHERE unique_code = $1 LIMIT 1`,
@@ -42,7 +44,7 @@ const isIslandCodeTaken = async (uniqueCode) => {
   return result.rowCount > 0;
 };
 
-// ✅ Get by code
+// Get by code
 const getIslandEntryByCode = async (uniqueCode) => {
   const result = await db.query(
     `SELECT * FROM island_entry_registration WHERE unique_code = $1`,
@@ -51,7 +53,7 @@ const getIslandEntryByCode = async (uniqueCode) => {
   return result.rows[0];
 };
 
-// ✅ Log island entry
+// Log island entry
 const logIslandEntryByRegistration = async ({ registrationId, scannedByUserId }) => {
   const result = await db.query(
     `INSERT INTO island_entry_registration_logs 
@@ -64,7 +66,15 @@ const logIslandEntryByRegistration = async ({ registrationId, scannedByUserId })
   return result.rows[0];
 };
 
-
+const saveIslandEntryPayment = async ({ registration_id, amount, status, payment_link }) => {
+  const result = await db.query(
+    `INSERT INTO island_entry_payments 
+      (registration_id, amount, status, payment_link)
+     VALUES ($1, $2, $3, $4) RETURNING *`,
+    [registration_id, amount, status, payment_link]
+  );
+  return result.rows[0];
+};
 
 
 module.exports = {
@@ -73,4 +83,5 @@ module.exports = {
   isIslandCodeTaken,
   getIslandEntryByCode,
   logIslandEntryByRegistration,
+  saveIslandEntryPayment,
 };

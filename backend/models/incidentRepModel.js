@@ -1,4 +1,4 @@
-const db = require('../db');
+const db = require("../db/index.js");
 
 const createIncidentReport = async ({
   submitted_by,

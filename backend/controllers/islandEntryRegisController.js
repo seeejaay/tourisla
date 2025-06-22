@@ -1,14 +1,16 @@
+const db = require("../db/index");
 const QRCode = require("qrcode");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { getActivePrice } = require("../models/priceManageModel");
+const { createPayMongoLink } = require("../models/paymongoModel");
+const { updateIslandEntryPaymentStatus } = require("../models/paymongoModel");
+const { getIslandEntryByCode } = require("../models/islandEntryRegisModel");
 const {
   createIslandEntryRegistration,
   createIslandEntryMembers,
   isIslandCodeTaken,
-  getIslandEntryByCode,
-  logIslandEntryByRegistration,
+  saveIslandEntryPayment,
 } = require("../models/islandEntryRegisModel");
-
-const db = require("../db/index");
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
@@ -46,13 +48,31 @@ const generateUniqueCode = async () => {
 
 const registerIslandEntryController = async (req, res) => {
   try {
-    const { groupMembers } = req.body;
+    const { groupMembers, payment_method } = req.body;
 
     if (!groupMembers || !Array.isArray(groupMembers) || groupMembers.length === 0) {
       return res.status(400).json({ error: "Group members are required" });
     }
 
+    if (!["CASH", "ONLINE"].includes(payment_method)) {
+      return res.status(400).json({ error: "Invalid payment method" });
+    }
+
+    // Step 1: Generate unique code
     const uniqueCode = await generateUniqueCode();
+
+    // Step 2: Compute total fee
+    const activePrice = await getActivePrice();
+    const isPaymentEnabled = activePrice.is_enabled;
+    let pricePerPerson = 0;
+
+    if (isPaymentEnabled) {
+      pricePerPerson = parseFloat(activePrice.amount);
+    }
+
+    const totalFee = pricePerPerson * groupMembers.length;
+
+    // Step 3: Generate QR code
     const qrData = `https://yourdomain.com/entry-scan/${uniqueCode}`;
     const qrBuffer = await QRCode.toBuffer(qrData);
 
@@ -65,26 +85,60 @@ const registerIslandEntryController = async (req, res) => {
     };
 
     await s3Client.send(new PutObjectCommand(uploadParams));
-
     const qrCodeUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
 
+    // Step 4: Save registration
     const registration = await createIslandEntryRegistration({
       unique_code: uniqueCode,
       qr_code_url: qrCodeUrl,
+      payment_method,
+      payment_status: payment_method === "CASH" ? "UNPAID" : "PENDING",
+      total_fee: totalFee,
     });
 
+    // Step 5: Save group members
     const members = await createIslandEntryMembers(registration.id, groupMembers);
 
+    // Step 6: If ONLINE, validate minimum amount and create PayMongo link
+    let paymentLink = null;
+    if (payment_method === "ONLINE") {
+      if (totalFee < 100) {
+        return res.status(400).json({
+          error: "Online payment is only allowed for total amounts of ₱100 and above. Please pay on-site.",
+        });
+      }
+
+      const description = `Island Entry Fee for ${groupMembers.length} person(s)`;
+      const paymongoData = await createPayMongoLink({
+        amount: totalFee,
+        referenceNumber: uniqueCode,
+        description,
+      });
+
+      paymentLink = paymongoData.attributes.checkout_url;
+
+      await saveIslandEntryPayment({
+        registration_id: registration.id,
+        payment_link: paymongoData.attributes.checkout_url,
+        status: paymongoData.attributes.status.toUpperCase(),
+        amount: registration.total_fee,
+      });
+    }
+
+    // Final response
     res.status(201).json({
       message: "Island entry group registered successfully",
       registration,
       members,
+      total_fee: totalFee,
+      payment_link: paymentLink,
     });
   } catch (error) {
-    console.error("Island entry registration error:", error);
+    console.error("Island entry registration error:", error?.response?.data || error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 const manualIslandEntryCheckInController = async (req, res) => {
   try {
@@ -164,10 +218,55 @@ const getIslandEntryMembersController = async (req, res) => {
   }
 };
 
+const checkPayMongoPaymentStatusController = async (req, res) => {
+  try {
+    const { unique_code } = req.body;
+
+    if (!unique_code) {
+      return res.status(400).json({ error: "Unique code is required" });
+    }
+
+    const code = unique_code.trim().toUpperCase();
+
+    const registration = await getIslandEntryByCode(code);
+    if (!registration) {
+      return res.status(404).json({ error: "Registration not found" });
+    }
+
+    // Fetch PayMongo link data
+    const response = await axios.get(`https://api.paymongo.com/v1/links?reference_number=${code}`, {
+      headers: {
+        accept: "application/json",
+        authorization: "Basic " + Buffer.from(process.env.PAYMONGO_SECRET_KEY + ":").toString("base64"),
+      },
+    });
+
+    const paymentData = response.data.data.find(link => link.attributes.status === "paid") || response.data.data[0];
+
+    if (!paymentData) {
+      return res.status(404).json({ error: "Payment link not found" });
+    }
+
+    // Update local DBs
+    await updateIslandEntryPaymentStatus({
+      registration_id: registration.id,
+      status: paymentData.attributes.status.toUpperCase(),
+    });
+
+    res.status(200).json({
+      message: "Payment status fetched",
+      paymongo_status: paymentData.attributes.status.toUpperCase(),
+    });
+  } catch (error) {
+    console.error("Manual PayMongo status check error:", error?.response?.data || error);
+    res.status(500).json({ error: "Failed to check PayMongo payment status" });
+  }
+};
 
 
 module.exports = {
   registerIslandEntryController,
   manualIslandEntryCheckInController,
   getIslandEntryMembersController,
+  checkPayMongoPaymentStatusController,
 };

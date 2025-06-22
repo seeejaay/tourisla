@@ -1,4 +1,4 @@
-const db = require('../db');
+const db = require("../db/index.js");
 
 const createOperatorQr = async ({ tour_operator_id, qr_name, qr_image_url }) => {
   const result = await db.query(
