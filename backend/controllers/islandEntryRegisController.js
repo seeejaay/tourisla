@@ -53,7 +53,7 @@ const registerIslandEntryController = async (req, res) => {
     }
 
     const uniqueCode = await generateUniqueCode();
-    const qrData = `https://yourdomain.com/entry-scan/${uniqueCode}`;
+    const qrData = `${uniqueCode}`;
     const qrBuffer = await QRCode.toBuffer(qrData);
 
     const s3Key = `island_entry_qrcodes/${Date.now()}_${uniqueCode}.png`;
