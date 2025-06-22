@@ -164,10 +164,65 @@ const getIslandEntryMembersController = async (req, res) => {
   }
 };
 
+const registerIslandWalkInController = async (req, res) => {
+  try {
+    const { groupMembers } = req.body;
+    const userId = req.session.user?.user_id ?? req.session.user?.id;
+
+    if (!userId) {
+      return res.status(403).json({ error: "Invalid session: missing user ID." });
+    }
+
+    if (!groupMembers || !Array.isArray(groupMembers) || groupMembers.length === 0) {
+      return res.status(400).json({ error: "Group members are required" });
+    }
+
+    const uniqueCode = await generateCustomCode(); // custom generator
+    const qrData = `${uniqueCode}`;
+    const qrBuffer = await QRCode.toBuffer(qrData);
+
+    const s3Key = `island_entry_qrcodes/${Date.now()}_${uniqueCode}.png`;
+    const uploadParams = {
+      Bucket: process.env.AWS_S3_BUCKET,
+      Key: s3Key,
+      Body: qrBuffer,
+      ContentType: "image/png",
+    };
+
+    await s3Client.send(new PutObjectCommand(uploadParams));
+
+    const qrCodeUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+
+    const registration = await createIslandEntryRegistration({
+      unique_code: uniqueCode,
+      qr_code_url: qrCodeUrl,
+    });
+
+    const members = await createIslandEntryMembers(registration.id, groupMembers);
+
+    // ✅ Auto-log all members
+    const logs = await logIslandEntryByRegistration({
+      groupMembers: members,
+      scannedByUserId: userId,
+      registrationId: registration.id,
+    });
+
+    return res.status(201).json({
+      message: "Island walk-in group registered and logged successfully.",
+      registration,
+      members,
+      logs,
+    });
+  } catch (error) {
+    console.error("Island walk-in registration error:", error);
+    res.status(500).json({ error: "Internal server error during walk-in registration." });
+  }
+};
 
 
 module.exports = {
   registerIslandEntryController,
   manualIslandEntryCheckInController,
   getIslandEntryMembersController,
+  registerIslandWalkInController,
 };

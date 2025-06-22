@@ -155,6 +155,7 @@ const {
   registerIslandEntryController,
   manualIslandEntryCheckInController,
   getIslandEntryMembersController,
+  registerIslandWalkInController,
 } = require("../controllers/islandEntryRegisController");
 
 const {
@@ -628,6 +629,7 @@ app.post("/api/v1/register/walk-in", registerWalkInVisitorController);
 // Island Entry Registration Routes
 app.post("/api/v1/island-entry/register", registerIslandEntryController);
 app.post("/api/v1/island-entry/manual-check-in", manualIslandEntryCheckInController);
+app.post("/api/v1/island-entry/walk-in", registerIslandWalkInController);
 app.get("/api/v1/island-entry/members/:unique_code", getIslandEntryMembersController)
 
 
