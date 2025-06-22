@@ -175,11 +175,8 @@ const {
   deleteAccommodationLogController,
   getAllAccommodationLogsController,
   getAccommodationLogByIdController,
-} = require("../controllers/accommodationLogController.js");
-
-const {
   exportAccommodationLogController,
-} = require("../controllers/accommodationLogController");
+} = require("../controllers/accommodationLogController.js");
 
 const {
   createPolicyController,
@@ -634,18 +631,29 @@ app.get(
 );
 
 // Visitor Registration Route
-app.get("/api/v1/register/members/:unique_code", getVisitorGroupMembersController);
+app.get(
+  "/api/v1/register/members/:unique_code",
+  getVisitorGroupMembersController
+);
 app.post("/api/v1/register", registerVisitorController);
 app.post("/api/v1/register/manual-check-in", manualCheckInController);
 app.post("/api/v1/register/walk-in", registerWalkInVisitorController);
 
-
 // Island Entry Registration Routes
 app.post("/api/v1/island-entry/register", registerIslandEntryController);
-app.post("/api/v1/island-entry/manual-check-in", manualIslandEntryCheckInController);
+app.post(
+  "/api/v1/island-entry/manual-check-in",
+  manualIslandEntryCheckInController
+);
 app.post("/api/v1/island-entry/walk-in", registerIslandWalkInController);
-app.get("/api/v1/island-entry/members/:unique_code", getIslandEntryMembersController);
-app.post("/api/v1/island-entry/payment-status", checkPayMongoPaymentStatusController);
+app.get(
+  "/api/v1/island-entry/members/:unique_code",
+  getIslandEntryMembersController
+);
+app.post(
+  "/api/v1/island-entry/payment-status",
+  checkPayMongoPaymentStatusController
+);
 
 // Routes — Tour Packages
 app.post(
@@ -905,5 +913,3 @@ app.patch(
 app.post("/api/v1/paymongo/links", createIslandEntryPaymentLink);
 // app.post("/api/v1/paymongo/webhook", handlePayMongoWebhook);
 app.post("/api/v1/paymongo/manual-confirm", manuallyConfirmPayment);
-
-
