@@ -7,6 +7,7 @@ const {
   getTourPackageById,
   getAssignedGuidesByPackage,
   getTourPackagesByTourGuide,
+  getAllTourPackages,
 } = require("../models/tourPackagesModel.js");
 
 const { getOperatorRegisById } = require("../models/operatorRegisModel.js");
@@ -14,7 +15,6 @@ const { getOperatorRegisById } = require("../models/operatorRegisModel.js");
 
 const createTourPackageController = async (req, res) => {
   try {
-
     console.log("BackEnd Creating Tour Package with data:", req.body);
     let {
       package_name,
@@ -33,7 +33,6 @@ const createTourPackageController = async (req, res) => {
       touroperator_id,
       cancellation_days,
       cancellation_note,
-
     } = req.body;
 
     package_name = package_name.toUpperCase();
@@ -50,7 +49,8 @@ const createTourPackageController = async (req, res) => {
       !price ||
       !duration_days ||
       !available_slots ||
-      !date_start
+      !date_start ||
+      !assigned_guides
     ) {
       return res.status(400).json({ error: "All fields are required" });
     }
@@ -91,7 +91,6 @@ const createTourPackageController = async (req, res) => {
       assigned_guides,
       cancellation_days,
       cancellation_note,
-
     });
 
     res
@@ -123,7 +122,6 @@ const updateTourPackageController = async (req, res) => {
       end_time,
       cancellation_days,
       cancellation_note,
-
     } = req.body;
 
     package_name = package_name.toUpperCase();
@@ -189,8 +187,8 @@ const deleteTourPackageController = async (req, res) => {
   try {
     const { id } = req.params;
     const touroperator_id = req.user.id;
-
-    const deleted = await deleteTourPackage(id, touroperator_id);
+    console.log("Deleting" + id);
+    const deleted = await deleteTourPackage(id);
     if (!deleted)
       return res.status(404).json({ message: "Tour package not found." });
 
@@ -201,9 +199,23 @@ const deleteTourPackageController = async (req, res) => {
   }
 };
 
+const viewAllTourPackages = async (req, res) => {
+  try {
+    const packages = await getAllTourPackages();
+    if (!packages || packages.length === 0) {
+      return res.status(404).json({ message: "No tour packages found." });
+    }
+    res.json(packages);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+};
+
 const viewTourPackagesController = async (req, res) => {
   try {
     const tourOperator_Id = req.user.id;
+    console.log("Fetching tour packages for operator ID:", tourOperator_Id);
 
     const operatorRegis = await getOperatorRegisById(tourOperator_Id);
     if (!operatorRegis) {
@@ -234,7 +246,8 @@ const viewTourPackagesController = async (req, res) => {
 const viewTourPackageByIdController = async (req, res) => {
   try {
     const { id } = req.params;
-    const tourPackage = await getTourPackageById(id, tourOperatorId);
+    console.log("BAckend Fetching tour package with ID:", id);
+    const tourPackage = await getTourPackageById(id);
     if (!tourPackage)
       return res.status(404).json({ message: "Tour package not found." });
 
@@ -274,7 +287,6 @@ const getTourPackagesByGuideController = async (req, res) => {
   }
 };
 
-
 module.exports = {
   createTourPackageController,
   updateTourPackageController,
@@ -283,4 +295,5 @@ module.exports = {
   viewTourPackageByIdController,
   viewAssignedGuidesController,
   getTourPackagesByGuideController,
+  viewAllTourPackages,
 };
