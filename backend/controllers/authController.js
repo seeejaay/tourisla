@@ -3,7 +3,7 @@ const {
   findUserByEmail,
   statusCheck,
   loginDate,
-} = require("../models/userModel");
+} = require("../models/userModel.js");
 
 const loginUser = async (req, res) => {
   let { email, password } = req.body;

@@ -105,10 +105,9 @@ const getUserByResetToken = async (token) => {
 };
 
 const updatePassword = async (userId, newPassword) => {
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
   const result = await db.query(
     "UPDATE users SET password = $1, reset_password_token = NULL, reset_password_expires = NULL WHERE user_id = $2 RETURNING *",
-    [hashedPassword, userId]
+    [newPassword, userId]
   );
   return result.rows[0];
 };
