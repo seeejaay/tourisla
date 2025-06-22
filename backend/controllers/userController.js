@@ -230,9 +230,14 @@ const viewUserController = async (req, res) => {
 
 const forgotPasswordController = async (req, res) => {
   const { email } = req.body;
-
+  console.log("Forgot password request for email:", email);
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+  const newEmail = email.toUpperCase(); // Ensure email is in uppercase
   try {
-    const user = await findUserByEmail(email);
+    const user = await findUserByEmail(newEmail);
+
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -240,11 +245,11 @@ const forgotPasswordController = async (req, res) => {
     const token = crypto.randomBytes(32).toString("hex");
     const expires = new Date(Date.now() + 3600 * 1000);
 
-    await setResetPasswordToken(email, token, expires);
+    await setResetPasswordToken(newEmail, token, expires);
 
     //on production, use the actual URL of your frontend
     const resetLink = `http://localhost:3000/auth/reset-password?token=${token}`;
-    await sendResetPasswordEmail(email, resetLink);
+    await sendResetPasswordEmail(newEmail, resetLink);
 
     res.status(200).json({
       status: "success",
