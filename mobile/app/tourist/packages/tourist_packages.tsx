@@ -59,7 +59,7 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
 
       <TouchableOpacity
         style={styles.detailsButton}
-        onPress={() => router.push(`/tourist/packages/${item.id}`)}
+        onPress={() => router.push(`/tourist/packages/packages/${item.id}`)}
       >
         <Text style={styles.detailsButtonText}>View Details</Text>
       </TouchableOpacity>
