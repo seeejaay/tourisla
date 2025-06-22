@@ -71,6 +71,7 @@ export function useAuth() {
     }
     try {
       const resForgotPassword = await forgotPassword(email);
+
       return resForgotPassword;
     } catch (err) {
       setError("An error occurred during password reset: " + err);
