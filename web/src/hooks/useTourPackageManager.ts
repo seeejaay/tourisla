@@ -6,6 +6,7 @@ import {
   fetchTourPackages,
   fetchTourPackage,
   fetchAllTourPackages as apiFetchAllTourPackages,
+  fetchTourPackagesByGuide as apiFetchTourPackagesByGuide,
 } from "@/lib/api/tour-packages";
 import tourPackageSchema, {
   TourPackage,
@@ -140,6 +141,31 @@ export const useTourPackageManager = () => {
     }
   }, []);
 
+  const fetchTourPackagesByGuide = useCallback(
+    async (guideId: string): Promise<TourPackage[]> => {
+      setLoading(true);
+      setError("");
+
+      try {
+        console.log(`Fetching tour packages by guide ID: ${guideId}`);
+        const packages = await apiFetchTourPackagesByGuide(guideId); // <-- Use the API function
+        setTourPackages(packages);
+        console.log(
+          "API Tour packages by guide fetched successfully:",
+          packages
+        );
+        return packages;
+      } catch (err) {
+        setError("Failed to fetch tour packages by guide.");
+        console.error(err);
+        return [];
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   return {
     tourPackages,
     loading,
@@ -150,6 +176,7 @@ export const useTourPackageManager = () => {
     edit,
     remove,
     setTourPackages, // Exposed for manual updates if needed
-    fetchAllTourPackages, // Exposed for fetching all tour packages
+    fetchAllTourPackages,
+    fetchTourPackagesByGuide, // Exposed for fetching all tour packages
   };
 };

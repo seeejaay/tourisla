@@ -136,3 +136,25 @@ export const fetchAllTourPackages = async () => {
     throw error;
   }
 };
+
+export const fetchTourPackagesByGuide = async (tourguideId) => {
+  try {
+    console.log("API Fetching Tour Packages for Guide ID:", tourguideId);
+    const response = await axios.get(
+      `${API_URL}tour-packages/by-guide/${tourguideId}`,
+      {
+        withCredentials: true,
+      }
+    );
+    if (response.status < 200 || response.status >= 300) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Fetching Tour Packages by Guide: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
