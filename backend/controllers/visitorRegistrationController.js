@@ -49,7 +49,7 @@ const registerVisitorController = async (req, res) => {
     }
 
     const uniqueCode = await generateUniqueCode();
-    const qrData = `https://yourdomain.com/scan/${uniqueCode}`;
+    const qrData = `${uniqueCode}`;
     const qrBuffer = await QRCode.toBuffer(qrData);
 
     const s3Key = `visitor_qrcodes/${Date.now()}_${uniqueCode}.png`;
