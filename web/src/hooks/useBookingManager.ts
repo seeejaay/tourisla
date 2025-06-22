@@ -9,6 +9,7 @@ import {
   getBookingById,
   getFilteredBookingsByTourist,
   cancelBooking,
+  getBookingsByOperator as apigetBookingsByOperator,
 } from "@/lib/api/booking";
 
 // Hook for creating a booking
@@ -223,4 +224,27 @@ export function useFilteredBookingsByTourist() {
   );
 
   return { data, fetchFiltered, loading, error };
+}
+
+export function useBookingsByOperator() {
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchByOperator = useCallback(async (operatorId: string | number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await apigetBookingsByOperator(operatorId);
+      setData(result);
+      return result;
+    } catch (err) {
+      setError(err + "Unknown error");
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { data, fetchByOperator, loading, error };
 }

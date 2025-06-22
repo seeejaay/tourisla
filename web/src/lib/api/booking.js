@@ -198,3 +198,25 @@ export const cancelBooking = async (bookingId) => {
     throw error;
   }
 };
+
+export const getBookingsByOperator = async (operatorId) => {
+  try {
+    console.log("API Fetching Bookings for Operator ID:", operatorId);
+    const response = await axios.get(
+      `${API_URL}bookings/operator/${operatorId}`,
+      {
+        withCredentials: true,
+      }
+    );
+    if (response.status < 200 || response.status >= 300) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Fetching Bookings by Operator: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
