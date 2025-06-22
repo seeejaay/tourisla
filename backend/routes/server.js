@@ -148,6 +148,7 @@ const {
   registerVisitorController,
   manualCheckInController,
   getVisitorGroupMembersController,
+  registerWalkInVisitorController,
 } = require("../controllers/visitorRegistrationController");
 
 const {
@@ -619,6 +620,7 @@ app.get(
 app.get("/api/v1/register/members/:unique_code", getVisitorGroupMembersController);
 app.post("/api/v1/register", registerVisitorController);
 app.post("/api/v1/register/manual-check-in", manualCheckInController);
+app.post("/api/v1/register/walk-in", registerWalkInVisitorController);
 
 
 // Island Entry Registration Routes

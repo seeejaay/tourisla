@@ -184,11 +184,72 @@ const getVisitorGroupMembersController = async (req, res) => {
   }
 };
 
+const registerWalkInVisitorController = async (req, res) => {
+  try {
+    const { groupMembers } = req.body;
+    const userId = req.session.user?.user_id ?? req.session.user?.id;
+
+    if (!userId) {
+      return res.status(403).json({ error: "Invalid session: missing user ID." });
+    }
+
+    if (!groupMembers || !Array.isArray(groupMembers) || groupMembers.length === 0) {
+      return res.status(400).json({ error: "Group members are required" });
+    }
+
+    const attractionId = await getUserAttractionId(userId);
+
+    if (!attractionId) {
+      return res.status(403).json({ error: "Missing attraction ID for the user." });
+    }
+
+    const uniqueCode = await generateUniqueCode();
+    const qrData = `${uniqueCode}`;
+    const qrBuffer = await QRCode.toBuffer(qrData);
+
+    const s3Key = `visitor_qrcodes/${Date.now()}_${uniqueCode}.png`;
+    const uploadParams = {
+      Bucket: process.env.AWS_S3_BUCKET,
+      Key: s3Key,
+      Body: qrBuffer,
+      ContentType: "image/png",
+    };
+
+    await s3Client.send(new PutObjectCommand(uploadParams));
+
+    const qrCodeUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+
+    const registration = await createVisitorRegistration({
+      unique_code: uniqueCode,
+      qr_code_url: qrCodeUrl,
+    });
+
+    const members = await createVisitorGroupMembers(registration.id, groupMembers);
+
+    // ✅ Automatically log as "checked-in"
+    const logs = await logAttractionVisitByRegistration({
+      groupMembers: members,
+      scannedByUserId: userId,
+      touristSpotId: attractionId,
+    });
+
+    return res.status(201).json({
+      message: "Walk-in visitor group registered and logged successfully.",
+      registration,
+      members,
+      logs,
+    });
+  } catch (error) {
+    console.error("Walk-in registration error:", error);
+    res.status(500).json({ error: "Internal server error during walk-in registration." });
+  }
+};
 
 
 module.exports = {
   registerVisitorController,
   manualCheckInController,
   getVisitorGroupMembersController,
+  registerWalkInVisitorController,
 };
 
