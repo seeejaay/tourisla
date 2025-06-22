@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import TouristHomeScreen from './home/tourist_home';
 import TouristMapScreen from './map/tourist_map';
 import TouristAnnouncementsScreen from './announcements/tourist_announcements';
+import TouristPackagesScreen from './packages/tourist_packages';
 import TouristProfileScreen from './profile/tourist_profile';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { StyleSheet, View, Platform, TouchableOpacity, Image, Text, StatusBar, Dimensions } from 'react-native';
@@ -170,6 +171,8 @@ function CustomTabBar({ state, descriptors, navigation }) {
             iconName = isFocused ? "megaphone" : "megaphone-outline";
           } else if (route.name === 'Tourist Spots') {
             iconName = isFocused ? "location" : "location-outline";
+          } else if (route.name === 'Packages') {
+            iconName = isFocused ? "calendar-clear" : "calendar-clear-outline";
           }
           // Removed Hotlines case
           
@@ -270,6 +273,9 @@ export default function TouristDashboard() {
         </Tab.Screen>
         <Tab.Screen name="Announcements">
           {() => <TouristAnnouncementsScreen headerHeight={headerHeight} />}
+        </Tab.Screen>
+        <Tab.Screen name="Packages">
+          {() => <TouristPackagesScreen headerHeight={headerHeight} />}
         </Tab.Screen>
         <Tab.Screen name="Tourist Spots">
           {() => <TouristTouristSpotsScreen headerHeight={headerHeight} />}
