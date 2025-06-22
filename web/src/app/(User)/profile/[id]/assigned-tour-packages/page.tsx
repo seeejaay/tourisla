@@ -12,6 +12,7 @@ export default function AssignedTourPackagesPage() {
 
   // Ensure id is always a string
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  console.log("AssignedTourPackagesPage id:", id);
 
   // Centralized load function for reuse
   const loadPackages = useCallback(async () => {
@@ -20,6 +21,7 @@ export default function AssignedTourPackagesPage() {
     // Use the tourPackages property if it exists
     setPackages(Array.isArray(data?.tourPackages) ? data.tourPackages : []);
   }, [fetchTourPackagesByGuide, id]);
+  console.log("AssignedTourPackagesPage packages:", packages);
 
   useEffect(() => {
     loadPackages();
