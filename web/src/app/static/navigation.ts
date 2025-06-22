@@ -31,7 +31,11 @@ export const navigation = [
     href: "/announcements",
     title: "Announcements",
   },
-  // Add more main nav items as needed
+  {
+    tag: "Tour Packages",
+    href: "/tour-packages",
+    title: "Tour Packages",
+  },
 ];
 export const footerNavigation = [
   {

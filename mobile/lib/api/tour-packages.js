@@ -4,7 +4,7 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const createTourPackage = async (packageData) => {
   try {
-    console.log("Creating Tour Package with data:", packageData);
+    console.log("API Creating Tour Package with data:", packageData);
     const response = await axios.post(`${API_URL}tour-packages`, packageData, {
       headers: {
         "Content-Type": "application/json",
@@ -79,13 +79,13 @@ export const deleteTourPackage = async (packageId) => {
 
 export const fetchTourPackages = async () => {
   try {
-    console.log("Fetching Tour Packages");
     const response = await axios.get(`${API_URL}tour-packages`, {
       withCredentials: true,
     });
     if (response.status < 200 || response.status >= 300) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
     }
+    console.log("Fetched Tour Packages:", response.data);
     return response.data;
   } catch (error) {
     console.error(
@@ -98,10 +98,13 @@ export const fetchTourPackages = async () => {
 
 export const fetchTourPackage = async (operatorId) => {
   try {
-    console.log("Fetching Tour Package with ID:", operatorId);
-    const response = await axios.get(`${API_URL}tour-packages/${operatorId}`, {
-      withCredentials: true,
-    });
+    console.log("API Fetching Tour Package with ID:", operatorId);
+    const response = await axios.get(
+      `${API_URL}tour-packages/pkg/${operatorId}`,
+      {
+        withCredentials: true,
+      }
+    );
     if (response.status < 200 || response.status >= 300) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
     }
@@ -109,6 +112,47 @@ export const fetchTourPackage = async (operatorId) => {
   } catch (error) {
     console.error(
       "Error Fetching Tour Package: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const fetchAllTourPackages = async () => {
+  try {
+    const response = await axios.get(`${API_URL}tour-packages/all`, {
+      withCredentials: true,
+    });
+    if (response.status < 200 || response.status >= 300) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+    console.log("Fetched All Tour Packages:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Fetching All Tour Packages: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const fetchTourPackagesByGuide = async (tourguideId) => {
+  try {
+    console.log("API Fetching Tour Packages for Guide ID:", tourguideId);
+    const response = await axios.get(
+      `${API_URL}tour-packages/by-guide/${tourguideId}`,
+      {
+        withCredentials: true,
+      }
+    );
+    if (response.status < 200 || response.status >= 300) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Fetching Tour Packages by Guide: ",
       error.response?.data || error.message
     );
     throw error;

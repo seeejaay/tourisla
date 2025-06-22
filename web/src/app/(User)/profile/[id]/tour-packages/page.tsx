@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
 import AddTourPackage from "@/components/custom/tour-package/addTourPackage";
+import DeleteTourPackage from "@/components/custom/tour-package/deleteTourPackage";
 import { Loader2, AlertTriangle, Plus } from "lucide-react";
 import { useParams } from "next/navigation";
 import {
@@ -10,8 +11,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +19,6 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-// import CreateTourPackageForm from "@/components/custom/tour-package/CreateTourPackageForm";
 
 export default function TourPackagesPage() {
   const { fetchAll, loading, error } = useTourPackageManager();
@@ -31,20 +29,21 @@ export default function TourPackagesPage() {
   // Ensure id is always a string
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
-  useEffect(() => {
+  // Centralized load function for reuse
+  const loadPackages = useCallback(async () => {
     if (!id) return;
-    async function loadPackages() {
-      const data = await fetchAll();
-      setPackages(Array.isArray(data) ? data : []);
-    }
-    loadPackages();
+    const data = await fetchAll();
+    setPackages(Array.isArray(data) ? data : []);
   }, [fetchAll, id]);
+
+  useEffect(() => {
+    loadPackages();
+  }, [loadPackages]);
 
   // Handle create success
   const handleCreateSuccess = async () => {
     setDialogOpen(false);
-    const data = await fetchAll();
-    setPackages(Array.isArray(data) ? data : []);
+    await loadPackages();
   };
 
   if (!id) {
@@ -57,7 +56,7 @@ export default function TourPackagesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col items-center py-12 px-4 sm:px-6 w-full">
-      <div className="w-full pl-24 space-y-8">
+      <div className="w-full pl-0 md:pl-24 space-y-8">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -74,7 +73,7 @@ export default function TourPackagesPage() {
 
         {/* Dialog for Creating Tour Package */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-[600px] rounded-lg">
+          <DialogContent className="sm:max-w-[600px] lg:max-w-7xl overflow-y-scroll h-[80svh] rounded-lg">
             <DialogHeader>
               <DialogTitle className="text-2xl font-semibold">
                 Create Tour Package
@@ -85,11 +84,6 @@ export default function TourPackagesPage() {
               onCancel={() => setDialogOpen(false)}
               operatorId={id}
             />
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
 
@@ -127,7 +121,7 @@ export default function TourPackagesPage() {
             </Button>
           </div>
         ) : (
-          <div className="flex flex-wrap justify-center gap-6 w-full ">
+          <div className="flex flex-wrap justify-center gap-6 w-full">
             {packages.map((pkg) => (
               <Card
                 key={pkg.id}
@@ -162,10 +156,11 @@ export default function TourPackagesPage() {
                         ))}
                   </div>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="flex items-center justify-between gap-2">
                   <span className="text-xs text-gray-400">
                     {pkg.date_start} - {pkg.date_end}
                   </span>
+                  <DeleteTourPackage id={pkg.id} onDeleted={loadPackages} />
                 </CardFooter>
               </Card>
             ))}

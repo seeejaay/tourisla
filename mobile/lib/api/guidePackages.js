@@ -1,146 +1,90 @@
 import axios from "axios";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const fetchGuidePackages = async (userId) => {
   try {
-    // Try multiple endpoints to get guide packages
-    const endpoints = [
-      `${API_URL}guide-packages/${userId}`,
-      `${API_URL}tourguide/packages/${userId}`,
-      `${API_URL}tour-packages/guide/${userId}`
+    // Get auth token from AsyncStorage
+    const token = await AsyncStorage.getItem('authToken');
+    
+    // Set up request config with auth token
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      withCredentials: true
+    };
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    console.log('Using auth token:', token ? 'Yes (token exists)' : 'No token found');
+    
+    // First get the guide profile to get the guide ID
+    const profileEndpoints = [
+      `${API_URL}tourguide/profile/${userId}`,
+      `${API_URL}guideRegis/user/${userId}`,
+      `${API_URL}tourguide-applicants/user/${userId}`
     ];
     
-    let response = null;
-    let successEndpoint = null;
+    let guideProfile = null;
     
-    // Try each endpoint until one works
-    for (const endpoint of endpoints) {
+    for (const endpoint of profileEndpoints) {
       try {
-        console.log(`Trying endpoint: ${endpoint}`);
-        const result = await axios.get(endpoint, {
-          withCredentials: true,
-        });
+        console.log(`Trying to get guide profile from: ${endpoint}`);
+        const profileResult = await axios.get(endpoint, config);
         
-        if (result.status === 200) {
-          response = result;
-          successEndpoint = endpoint;
+        if (profileResult.status === 200) {
+          guideProfile = profileResult.data;
+          console.log(`Guide profile found at ${endpoint}:`, guideProfile);
           break;
         }
-      } catch (endpointError) {
-        console.log(`Endpoint ${endpoint} failed: ${endpointError.message}`);
+      } catch (profileError) {
+        console.log(`Profile endpoint ${endpoint} failed: ${profileError.message}`);
       }
     }
     
-    // If no endpoint worked, try the fallback approach
-    if (!response) {
-      console.log("Trying fallback approach: get guide profile first");
+    // If we couldn't find the guide profile, try using the user ID directly
+    if (!guideProfile) {
+      console.log('Could not find guide profile, using user ID directly');
       
-      // Try to get guide profile
-      const profileEndpoints = [
-        `${API_URL}tourguide/profile/${userId}`,
-        `${API_URL}guideRegis/user/${userId}`,
-        `${API_URL}tourguide-applicants/user/${userId}`
-      ];
+      // Use the correct endpoint to get packages by user ID
+      const packagesEndpoint = `${API_URL}tour-packages/by-user/${userId}`;
+      console.log(`Fetching packages from: ${packagesEndpoint}`);
       
-      let guideProfile = null;
+      const packagesResponse = await axios.get(packagesEndpoint, config);
       
-      for (const endpoint of profileEndpoints) {
-        try {
-          const profileResult = await axios.get(endpoint, {
-            withCredentials: true,
-          });
-          
-          if (profileResult.status === 200) {
-            guideProfile = profileResult.data;
-            console.log(`Guide profile found at ${endpoint}:`, guideProfile);
-            break;
-          }
-        } catch (profileError) {
-          console.log(`Profile endpoint ${endpoint} failed: ${profileError.message}`);
-        }
+      if (packagesResponse.status === 200) {
+        console.log("Successfully fetched guide packages by user ID");
+        return packagesResponse.data.tourPackages || packagesResponse.data;
       }
       
-      if (guideProfile) {
-        const guideId = guideProfile.id || guideProfile.guide_id || guideProfile.tourguide_id;
-        
-        if (guideId) {
-          console.log(`Found guide ID: ${guideId}, trying to get assignments`);
-          
-          // Try to get assignments
-          const assignmentEndpoints = [
-            `${API_URL}tourguide/assignments/${guideId}`,
-            `${API_URL}tourguide-assignments/guide/${guideId}`,
-            `${API_URL}guide-assignments/${guideId}`
-          ];
-          
-          let assignments = null;
-          
-          for (const endpoint of assignmentEndpoints) {
-            try {
-              const assignmentResult = await axios.get(endpoint, {
-                withCredentials: true,
-              });
-              
-              if (assignmentResult.status === 200) {
-                assignments = assignmentResult.data;
-                console.log(`Assignments found at ${endpoint}:`, assignments);
-                break;
-              }
-            } catch (assignmentError) {
-              console.log(`Assignment endpoint ${endpoint} failed: ${assignmentError.message}`);
-            }
-          }
-          
-          if (assignments && Array.isArray(assignments) && assignments.length > 0) {
-            // Get package IDs from assignments
-            const packageIds = assignments
-              .map(a => a.tour_package_id || a.package_id)
-              .filter(id => id);
-              
-            if (packageIds.length > 0) {
-              console.log(`Found package IDs: ${packageIds}, fetching package details`);
-              
-              // Get package details
-              const packagesPromises = packageIds.map(id => 
-                axios.get(`${API_URL}tour-packages/${id}`, {
-                  withCredentials: true,
-                })
-              );
-              
-              const packagesResults = await Promise.all(
-                packagesPromises.map(p => p.catch(e => ({ error: e })))
-              );
-              
-              const packages = packagesResults
-                .filter(r => !r.error)
-                .map(r => r.data);
-                
-              if (packages.length > 0) {
-                console.log(`Successfully fetched ${packages.length} packages`);
-                return packages;
-              }
-            }
-          }
-        }
-      }
-      
-      // Last resort: get all packages
-      console.log("Trying last resort: get all packages");
-      const allPackagesResponse = await axios.get(`${API_URL}tour-packages`, {
-        withCredentials: true,
-      });
-      
-      if (allPackagesResponse.status === 200) {
-        console.log("Using all packages as fallback");
-        return allPackagesResponse.data;
-      }
-      
-      throw new Error("All approaches to get guide packages failed");
+      throw new Error("Could not find guide profile or packages");
     }
     
-    console.log(`Successfully fetched guide packages from ${successEndpoint}`);
-    return response.data;
+    // Get the guide ID from the profile
+    const guideId = guideProfile.id || guideProfile.guide_id || guideProfile.tourguide_id;
+    
+    if (!guideId) {
+      throw new Error("Could not determine guide ID from profile");
+    }
+    
+    console.log(`Using guide ID: ${guideId} to fetch packages`);
+    
+    // Use the correct endpoint to get packages by guide ID
+    const packagesEndpoint = `${API_URL}tour-packages/by-guide/${guideId}`;
+    console.log(`Fetching packages from: ${packagesEndpoint}`);
+    
+    const packagesResponse = await axios.get(packagesEndpoint, config);
+    
+    if (packagesResponse.status === 200) {
+      console.log("Successfully fetched guide packages");
+      return packagesResponse.data.tourPackages || packagesResponse.data;
+    }
+    
+    throw new Error("Failed to fetch guide packages");
   } catch (error) {
     console.error(
       "Error Fetching Guide Packages: ",
@@ -148,4 +92,9 @@ export const fetchGuidePackages = async (userId) => {
     );
     throw error;
   }
+};
+
+// Export as default object
+export default {
+  fetchGuidePackages
 };

@@ -148,6 +148,7 @@ const {
   registerVisitorController,
   manualCheckInController,
   getVisitorGroupMembersController,
+  registerWalkInVisitorController,
 } = require("../controllers/visitorRegistrationController");
 
 const {
@@ -155,6 +156,7 @@ const {
   manualIslandEntryCheckInController,
   getIslandEntryMembersController,
   checkPayMongoPaymentStatusController,
+  registerIslandWalkInController,
 } = require("../controllers/islandEntryRegisController");
 
 const {
@@ -164,6 +166,7 @@ const {
   viewTourPackagesController,
   viewTourPackageByIdController,
   getTourPackagesByGuideController,
+  viewAllTourPackages,
 } = require("../controllers/tourPackagesController.js");
 
 const {
@@ -212,7 +215,8 @@ const {
   getBookingsByPackageController,
   getBookingByIdController,
   getTouristBookingsFilteredController,
-  cancelBookingController
+  cancelBookingController,
+  getBookingsByTourOperatorController,
 } = require("../controllers/bookingController.js");
 
 const {
@@ -233,11 +237,12 @@ const {
 const {
   createIncidentReportController,
   viewAllIncidentReportsController,
-  viewIncidentReportByUserController
+  viewIncidentReportByUserController,
 } = require("../controllers/incidentRepController.js");
 
 const {
-  uploadOperatorQrController
+  uploadOperatorQrController,
+  getOperatorQrController,
 } = require("../controllers/operatorQRController.js");
 
 const {
@@ -632,11 +637,13 @@ app.get(
 app.get("/api/v1/register/members/:unique_code", getVisitorGroupMembersController);
 app.post("/api/v1/register", registerVisitorController);
 app.post("/api/v1/register/manual-check-in", manualCheckInController);
+app.post("/api/v1/register/walk-in", registerWalkInVisitorController);
 
 
 // Island Entry Registration Routes
 app.post("/api/v1/island-entry/register", registerIslandEntryController);
 app.post("/api/v1/island-entry/manual-check-in", manualIslandEntryCheckInController);
+app.post("/api/v1/island-entry/walk-in", registerIslandWalkInController);
 app.get("/api/v1/island-entry/members/:unique_code", getIslandEntryMembersController);
 app.post("/api/v1/island-entry/payment-status", checkPayMongoPaymentStatusController);
 
@@ -664,15 +671,22 @@ app.get(
   allowedRoles(["Tour Guide", "Tour Operator", "Tourist"]),
   viewTourPackagesController
 );
+
 app.get(
-  "/api/v1/tour-packages/:id",
+  "/api/v1/tour-packages/all",
+  allowedRoles(["Tourist"]),
+  viewAllTourPackages
+);
+
+app.get(
+  "/api/v1/tour-packages/pkg/:id",
   // authenticateTourOperator,
-  allowedRoles(["Tour Guide", "Tour Operator"]),
+  allowedRoles(["Tour Guide", "Tour Operator", "Tourist"]),
   viewTourPackageByIdController
 );
 app.get(
   "/api/v1/tour-packages/by-guide/:tourguide_id",
-  // allowedRoles(["Tour Guide", "Tour Operator"]), // Optional
+  allowedRoles(["Tour Guide"]),
   getTourPackagesByGuideController
 );
 
@@ -684,60 +698,65 @@ app.get(
 );
 app.get(
   "/api/v1/calendar/auth/callback",
-  // authenticateTourGuide,
+  allowedRoles(["Tour Guide", "Tourist"]),
   googleCalendarCallbackController
 );
 
 // Routes for booking (Tour Guide's Side)
 app.patch(
   "/api/v1/bookings/guide/:bookingId/finish",
-  // authenticateTourGuide,
+  allowedRoles(["Tour Guide"]),
   markBookingAsFinishedController
 );
 app.get(
   "/api/v1/bookings/guide",
-  // authenticateTourGuide,
+  allowedRoles(["Tour Guide"]),
   getTourGuideBookingsFilteredController
 );
 
 // Routes for Booking
 app.post(
   "/api/v1/bookings",
-  // authenticateUser,
   upload.single("proof_of_payment"),
+  allowedRoles(["Tourist"]),
   createBookingController
 );
 app.put(
   "/api/v1/bookings/:id/status",
-  // authenticateTourOperator,
+  allowedRoles(["Tour Operator"]),
   updateBookingStatusController
 );
 app.get(
   "/api/v1/bookings/tourist",
-  // authenticateUser,
+  allowedRoles(["Tourist"]),
   getTouristBookingsController
 );
 app.get(
   "/api/v1/bookings/package/:packageId",
-  authenticateTourOperator,
+  allowedRoles(["Tour Operator"]),
   getBookingsByPackageController
 );
 app.get(
   "/api/v1/bookings/:id",
-  authenticateUser,
+  allowedRoles(["Tourist"]),
   getBookingByIdController
 );
 app.get(
   "/api/v1/bookings/tourist/filtered",
-  // authenticateUser,
+  allowedRoles(["Tourist"]),
   getTouristBookingsFilteredController
 );
 app.put(
   "/api/v1/bookings/:id/cancel",
-  authenticateUser,
+  allowedRoles(["Tourist"]),
   cancelBookingController
 );
 
+app.get(
+  "/api/v1/bookings/operator/:operatorId",
+  allowedRoles(["Tour Operator"]),
+  getBookingsByTourOperatorController
+);
 // Accommodation Logs Routes
 app.post(
   "/api/v1/accommodation-logs",
@@ -827,10 +846,7 @@ app.delete(
 // 5. Anyone can view feedback questions (for form rendering)
 
 app.get("/api/v1/feedback/questions/:type", viewQuestionsByTypeController);
-app.get(
-  "/api/v1/feedback/questions/:type",
-  viewQuestionsByTypeController
-);
+app.get("/api/v1/feedback/questions/:type", viewQuestionsByTypeController);
 
 // Routes for Incident Reports
 app.post(
@@ -856,6 +872,11 @@ app.post(
   authenticateTourOperator,
   uploadOperatorQrController
 );
+app.get(
+  "/api/v1/operator-qr/:operatorId",
+  allowedRoles(["Tour Operator", "Tourist"]),
+  getOperatorQrController
+);
 
 // Routes for Price Management
 app.get("/api/v1/prices/active", getActivePriceController);
@@ -871,3 +892,22 @@ app.post("/api/v1/paymongo/links", createIslandEntryPaymentLink);
 // app.post("/api/v1/paymongo/webhook", handlePayMongoWebhook);
 app.post("/api/v1/paymongo/manual-confirm", manuallyConfirmPayment);
 
+// Routes for Price Management
+app.get("/api/v1/prices/active", getActivePriceController);
+app.post("/api/v1/prices", authenticateTourismOfficer, createPriceController);
+app.patch(
+  "/api/v1/prices/:id/toggle",
+  authenticateTourismOfficer,
+  togglePriceController
+);
+
+// Routes for PayMongo
+app.post("/api/v1/paymongo/links", createIslandEntryPaymentLink);
+// app.post("/api/v1/paymongo/webhook", handlePayMongoWebhook);
+app.post("/api/v1/paymongo/manual-confirm", manuallyConfirmPayment);
+
+app.get(
+  "/api/v1/operator-qr/:operatorId",
+  allowedRoles(["Tour Operator", "Tourist"]),
+  getOperatorQrController
+);
