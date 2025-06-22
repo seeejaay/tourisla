@@ -11,6 +11,7 @@ const {
 } = require("../models/tourPackagesModel.js");
 
 const { getOperatorRegisById } = require("../models/operatorRegisModel.js");
+const { getGuideRegisById } = require("../models/guideRegisModel.js");
 // Tour Operator managing tour packages
 
 const createTourPackageController = async (req, res) => {
@@ -277,9 +278,18 @@ const viewAssignedGuidesController = async (req, res) => {
 const getTourPackagesByGuideController = async (req, res) => {
   try {
     const { tourguide_id } = req.params;
-
-    const packages = await getTourPackagesByTourGuide(tourguide_id);
-
+    console.log("Fetching tour packages for guide ID:", tourguide_id);
+    const guideRegis = await getGuideRegisById(tourguide_id);
+    if (!guideRegis) {
+      return res.status(404).json({ message: "Tour guide not found." });
+    }
+    const tourGuide_Id = guideRegis.id;
+    console.log("Tour Guide ID:", tourGuide_Id);
+    const packages = await getTourPackagesByTourGuide(tourGuide_Id);
+    if (!packages || packages.length === 0) {
+      return res.status(404).json({ message: "No tour packages found." });
+    }
+    console.log("Tour Packages for Guide:", packages);
     res.status(200).json({ tourPackages: packages });
   } catch (err) {
     console.error("Error fetching tour packages for guide:", err);

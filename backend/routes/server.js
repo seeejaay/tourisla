@@ -670,7 +670,7 @@ app.get(
 );
 app.get(
   "/api/v1/tour-packages/by-guide/:tourguide_id",
-  // allowedRoles(["Tour Guide", "Tour Operator"]), // Optional
+  allowedRoles(["Tour Guide"]),
   getTourPackagesByGuideController
 );
 
