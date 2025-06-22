@@ -1,4 +1,4 @@
-import { BookUser, Users, Sailboat } from "lucide-react";
+import { BookUser, Users, Sailboat, User } from "lucide-react";
 
 import type { NavItem } from "@/components/custom/sidebar";
 
@@ -21,6 +21,12 @@ const tourGuideNavigation = (userId: string): NavItem[] => {
       href: `/profile/${userId}/apply-to-tour-operator`,
       title: "Apply to Tour Operator",
       icon: Sailboat,
+    },
+    {
+      name: "Asssigned Tour Packages",
+      href: `/profile/${userId}/assigned-tour-packages`,
+      title: "Assigned Tour Packages",
+      icon: User,
     },
   ];
 };
