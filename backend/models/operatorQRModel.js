@@ -1,6 +1,10 @@
-const db = require('../db');
+const db = require("../db");
 
-const createOperatorQr = async ({ tour_operator_id, qr_name, qr_image_url }) => {
+const createOperatorQr = async ({
+  tour_operator_id,
+  qr_name,
+  qr_image_url,
+}) => {
   const result = await db.query(
     `INSERT INTO operator_qr (tour_operator_id, qr_name, qr_image_url)
      VALUES ($1, $2, $3)
@@ -10,6 +14,15 @@ const createOperatorQr = async ({ tour_operator_id, qr_name, qr_image_url }) => 
   return result.rows[0];
 };
 
+const getOperatorQrById = async (tour_operator_id) => {
+  const result = await db.query(
+    `SELECT * FROM operator_qr WHERE tour_operator_id = $1`,
+    [tour_operator_id]
+  );
+  return result.rows;
+};
+
 module.exports = {
   createOperatorQr,
+  getOperatorQrById,
 };

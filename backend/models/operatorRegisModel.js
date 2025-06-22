@@ -73,10 +73,19 @@ const getOperatorRegisById = async (operatorId) => {
   return result.rows[0];
 };
 
+const getOperatorRegisByOperatorId = async (operatorId) => {
+  const result = await db.query(
+    "SELECT * FROM touroperator_applicants WHERE id = $1",
+    [operatorId]
+  );
+  return result.rows[0];
+};
+
 module.exports = {
   createOperatorRegis,
   editOperatorRegis,
   deleteOperatorRegis,
   getAllOperatorRegis,
   getOperatorRegisById,
+  getOperatorRegisByOperatorId,
 };
