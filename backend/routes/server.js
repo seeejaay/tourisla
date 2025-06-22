@@ -208,6 +208,7 @@ const {
   getBookingByIdController,
   getTouristBookingsFilteredController,
   cancelBookingController,
+  getBookingsByTourOperatorController,
 } = require("../controllers/bookingController.js");
 
 const {
@@ -716,6 +717,11 @@ app.put(
   cancelBookingController
 );
 
+app.get(
+  "/api/v1/bookings/operator/:operatorId",
+  allowedRoles(["Tour Operator"]),
+  getBookingsByTourOperatorController
+);
 // Accommodation Logs Routes
 app.post(
   "/api/v1/accommodation-logs",

@@ -5,6 +5,9 @@ const {
   getAssignedGuidesByPackage,
   getTourPackageById,
 } = require("../models/tourPackagesModel.js");
+
+const { getOperatorRegisById } = require("../models/operatorRegisModel.js");
+
 const {
   createBooking,
   updateBookingStatus,
@@ -12,6 +15,7 @@ const {
   getBookingsByPackage,
   getBookingById,
   getFilteredBookingsByTourist,
+  getBookingsByTourOperatorId,
 } = require("../models/bookingModel.js");
 const { s3Client, PutObjectCommand } = require("../utils/s3.js");
 
@@ -77,17 +81,18 @@ const updateBookingStatusController = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
+    const newStatus = status.toUpperCase();
 
-    if (!["APPROVED", "REJECTED"].includes(status)) {
+    if (!["APPROVED", "REJECTED"].includes(newStatus)) {
       return res.status(400).json({ error: "Invalid status" });
     }
 
-    const updated = await updateBookingStatus(id, status);
+    const updated = await updateBookingStatus(id, newStatus);
     if (!updated) {
       return res.status(404).json({ error: "Booking not found" });
     }
 
-    if (status === "APPROVED") {
+    if (newStatus === "APPROVED") {
       const booking = await getBookingById(id);
       const { scheduled_date, tour_package_id } = booking;
       const assignedGuides = await getAssignedGuidesByPackage(tour_package_id);
@@ -101,7 +106,7 @@ const updateBookingStatusController = async (req, res) => {
       const padTime = (t) => (t.length === 5 ? `${t}:00` : t); // Adds :00 if missing
       const formattedStart = startDate.toISOString().split("T")[0];
       const formattedEnd = endDate.toISOString().split("T")[0];
-
+      console.log("ADDING TO CALENDAR");
       const event = {
         summary: tourPackage.package_name || "Tour Booking",
         location: tourPackage.location,
@@ -263,6 +268,29 @@ const cancelBookingController = async (req, res) => {
   }
 };
 
+const getBookingsByTourOperatorController = async (req, res) => {
+  try {
+    const user = req.session.user;
+    console.log("User from session:", user);
+    const tourOperatorId = user.id;
+    console.log("Tour Operator ID:", tourOperatorId);
+    if (!tourOperatorId) {
+      return res.status(403).json({ error: "Tour operator ID is required." });
+    }
+    const operatorRegis = await getOperatorRegisById(tourOperatorId);
+
+    if (!operatorRegis) {
+      return res.status(404).json({ error: "Tour operator not found." });
+    }
+    const tourOperator_Id = operatorRegis.id;
+    console.log("Tour Operator Registration ID:", tourOperator_Id);
+    const bookings = await getBookingsByTourOperatorId(tourOperator_Id);
+    res.json(bookings);
+  } catch (err) {
+    console.error("Error fetching tour operator bookings:", err.stack);
+    res.status(500).json({ error: "Failed to fetch tour operator bookings" });
+  }
+};
 module.exports = {
   createBookingController,
   updateBookingStatusController,
@@ -271,4 +299,5 @@ module.exports = {
   getBookingByIdController,
   getTouristBookingsFilteredController,
   cancelBookingController,
+  getBookingsByTourOperatorController,
 };
