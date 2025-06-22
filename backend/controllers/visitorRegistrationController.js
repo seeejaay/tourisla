@@ -194,7 +194,7 @@ const registerWalkInVisitorController = async (req, res) => {
     }
 
     if (!groupMembers || !Array.isArray(groupMembers) || groupMembers.length === 0) {
-      return res.status(400).json({ error: "Group members are required" });
+      return res.status(400).json({ error: "Group members are required." });
     }
 
     const attractionId = await getUserAttractionId(userId);
@@ -219,14 +219,16 @@ const registerWalkInVisitorController = async (req, res) => {
 
     const qrCodeUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
 
+    // ✅ Create the registration
     const registration = await createVisitorRegistration({
       unique_code: uniqueCode,
       qr_code_url: qrCodeUrl,
     });
 
+    // ✅ Add members
     const members = await createVisitorGroupMembers(registration.id, groupMembers);
 
-    // ✅ Automatically log as "checked-in"
+    // ✅ Log the group check-in (only 1 row in logs)
     const logs = await logAttractionVisitByRegistration({
       registrationId: registration.id,
       scannedByUserId: userId,
@@ -244,6 +246,7 @@ const registerWalkInVisitorController = async (req, res) => {
     res.status(500).json({ error: "Internal server error during walk-in registration." });
   }
 };
+
 
 
 module.exports = {
