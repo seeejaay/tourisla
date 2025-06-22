@@ -114,7 +114,11 @@ export default function TouristTouristSpotsScreen({ headerHeight }) {
     const imageUrl = getImageUrl(item.images);
     
     return (
-      <View style={styles.card}>
+      <TouchableOpacity
+        onPress={() => router.push(`/tourist/tourist_spots/tourist_tourist_spot_view?id=${item.id}`)}
+        activeOpacity={0.9}
+        style={styles.card}
+      >
         {/* Image Section with Gradient Overlay */}
         <View style={styles.cardImageContainer}>
           {imageUrl ? (
@@ -125,7 +129,6 @@ export default function TouristTouristSpotsScreen({ headerHeight }) {
                 resizeMode="cover"
                 onError={(e) => {
                   console.error('Error loading image:', e.nativeEvent.error);
-                  console.log('Failed image URL:', imageUrl);
                 }}
               />
               <LinearGradient
@@ -138,13 +141,13 @@ export default function TouristTouristSpotsScreen({ headerHeight }) {
               <Icon name="image" size={40} color={typeColor} />
             </View>
           )}
-          
+  
           {/* Type Badge */}
           <View style={[styles.typeBadge, { backgroundColor: typeColor }]}>
             <Text style={styles.typeText}>{item.type}</Text>
           </View>
-          
-          {/* Title overlay on image */}
+  
+          {/* Title Overlay */}
           <View style={styles.titleOverlay}>
             <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
             <View style={styles.locationRow}>
@@ -155,18 +158,7 @@ export default function TouristTouristSpotsScreen({ headerHeight }) {
             </View>
           </View>
         </View>
-        
-        {/* Action Buttons */}
-        <View style={styles.actionButtonsRow}>
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.viewButton]}
-            onPress={() => router.push(`/tourist/tourist_spots/tourist_tourist_spot_view?id=${item.id}`)}
-          >
-            <Icon name="eye" size={18} color="#ffffff" />
-            <Text style={styles.actionButtonText}>View</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
