@@ -49,7 +49,7 @@ const registerVisitorController = async (req, res) => {
     }
 
     const uniqueCode = await generateUniqueCode();
-    const qrData = `https://yourdomain.com/scan/${uniqueCode}`;
+    const qrData = `${uniqueCode}`;
     const qrBuffer = await QRCode.toBuffer(qrData);
 
     const s3Key = `visitor_qrcodes/${Date.now()}_${uniqueCode}.png`;
@@ -124,11 +124,11 @@ const manualCheckInController = async (req, res) => {
     const today = new Date().toISOString().split('T')[0];
     const existingLogCheck = await db.query(
       `SELECT 1 FROM attraction_visitor_logs 
-       WHERE group_member_id = ANY($1::int[]) 
+       WHERE  registration_id = $1 
          AND tourist_spot_id = $2 
          AND DATE(visit_date) = $3
        LIMIT 1`,
-      [groupMembers.map((m) => m.id), attractionId, today]
+      [registration.id, attractionId, today]
     );
 
     if (existingLogCheck.rows.length > 0) {
@@ -137,7 +137,7 @@ const manualCheckInController = async (req, res) => {
 
     // Insert logs for all members
     const logs = await logAttractionVisitByRegistration({
-      groupMembers,
+      registrationId: registration.id,
       scannedByUserId: userId,
       touristSpotId: attractionId,
     });
@@ -184,11 +184,75 @@ const getVisitorGroupMembersController = async (req, res) => {
   }
 };
 
+const registerWalkInVisitorController = async (req, res) => {
+  try {
+    const { groupMembers } = req.body;
+    const userId = req.session.user?.user_id ?? req.session.user?.id;
+
+    if (!userId) {
+      return res.status(403).json({ error: "Invalid session: missing user ID." });
+    }
+
+    if (!groupMembers || !Array.isArray(groupMembers) || groupMembers.length === 0) {
+      return res.status(400).json({ error: "Group members are required." });
+    }
+
+    const attractionId = await getUserAttractionId(userId);
+
+    if (!attractionId) {
+      return res.status(403).json({ error: "Missing attraction ID for the user." });
+    }
+
+    const uniqueCode = await generateUniqueCode();
+    const qrData = `${uniqueCode}`;
+    const qrBuffer = await QRCode.toBuffer(qrData);
+
+    const s3Key = `visitor_qrcodes/${Date.now()}_${uniqueCode}.png`;
+    const uploadParams = {
+      Bucket: process.env.AWS_S3_BUCKET,
+      Key: s3Key,
+      Body: qrBuffer,
+      ContentType: "image/png",
+    };
+
+    await s3Client.send(new PutObjectCommand(uploadParams));
+
+    const qrCodeUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+
+    // ✅ Create the registration
+    const registration = await createVisitorRegistration({
+      unique_code: uniqueCode,
+      qr_code_url: qrCodeUrl,
+    });
+
+    // ✅ Add members
+    const members = await createVisitorGroupMembers(registration.id, groupMembers);
+
+    // ✅ Log the group check-in (only 1 row in logs)
+    const logs = await logAttractionVisitByRegistration({
+      registrationId: registration.id,
+      scannedByUserId: userId,
+      touristSpotId: attractionId,
+    });
+
+    return res.status(201).json({
+      message: "Walk-in visitor group registered and logged successfully.",
+      registration,
+      members,
+      logs,
+    });
+  } catch (error) {
+    console.error("Walk-in registration error:", error);
+    res.status(500).json({ error: "Internal server error during walk-in registration." });
+  }
+};
+
 
 
 module.exports = {
   registerVisitorController,
   manualCheckInController,
   getVisitorGroupMembersController,
+  registerWalkInVisitorController,
 };
 

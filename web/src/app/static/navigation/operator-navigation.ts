@@ -1,4 +1,4 @@
-import { User, FileText, BookA, Package } from "lucide-react";
+import { User, FileText, BookA, Package, QrCode } from "lucide-react";
 
 import type { NavItem } from "@/components/custom/sidebar";
 
@@ -9,6 +9,18 @@ const operatorNavigation = (userId: string): NavItem[] => {
       href: `/profile/${userId}`,
       title: "Profile",
       icon: User,
+    },
+    {
+      name: "Bookings",
+      href: `/profile/${userId}/bookings`,
+      title: "Bookings",
+      icon: FileText,
+    },
+    {
+      name: "Tour Operator Dashboard",
+      href: `/profile/${userId}/dashboard`,
+      title: "Tour Operator Dashboard",
+      icon: FileText,
     },
     {
       name: "Documents",
@@ -27,6 +39,12 @@ const operatorNavigation = (userId: string): NavItem[] => {
       href: `/profile/${userId}/tour-packages`,
       title: "Tour Packages",
       icon: Package,
+    },
+    {
+      name: "Upload QR Code",
+      href: `/profile/${userId}/qr-code`,
+      title: "Upload QR Code",
+      icon: QrCode,
     },
   ];
 };

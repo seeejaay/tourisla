@@ -1,192 +1,168 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity,
-  ActivityIndicator,
-  FlatList,
-  Image,
-  Alert
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as auth from '@/lib/api/auth';
-import { fetchGuidePackages } from '@/lib/api/guidePackages';
+import React, { useEffect, useCallback, useState } from "react";
+import { View, Text, FlatList, ActivityIndicator, StyleSheet } from "react-native";
+import { useTourPackageManager } from "@/hooks/useTourPackagesManager";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function GuideHome() {
-  const router = useRouter();
-  const [userName, setUserName] = useState('');
-  const [headerHeight, setHeaderHeight] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [assignedPackages, setAssignedPackages] = useState([]);
-  const [userData, setUserData] = useState(null);
-  
-  // Get user data and assigned packages
+  const [tourGuideId, setTourGuideId] = useState<number | null>(null);
+  const { loggedInUser } = useAuth();
+  const { fetchTourPackagesByGuide, loading, error } = useTourPackageManager();
+  const [user, setUser] = useState<any>(null); // Adjust type as needed
+  const [packages, setPackages] = useState<any[]>([]);
+
   useEffect(() => {
-    const getUserDataAndPackages = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Get current user data
-        const response = await auth.currentUser();
-        
-        let userData = null;
-        if (response && response.data && response.data.user) {
-          userData = response.data.user;
-        } else if (response && response.user) {
-          userData = response.user;
-        } else if (response && response.data) {
-          userData = response.data;
-        } else if (typeof response === 'object' && response !== null) {
-          userData = response;
-        }
-        
-        setUserData(userData);
-        
-        if (userData && userData.name) {
-          setUserName(userData.name.split(' ')[0]);
-        } else if (userData && userData.first_name) {
-          setUserName(userData.first_name);
-        } else if (userData && userData.email) {
-          setUserName(userData.email.split('@')[0]);
-        }
-        
-        // Get user ID
-        const userId = userData.id || userData.user_id;
-        console.log('User ID:', userId);
-        
-        if (!userId) {
-          throw new Error('User ID not found');
-        }
-        
-        // Get packages using the new API function
-        const packages = await fetchGuidePackages(userId);
-        
-        // Ensure packages is an array
-        const packagesArray = Array.isArray(packages) ? packages : [packages].filter(Boolean);
-        
-        setAssignedPackages(packagesArray);
-        
-        // Save to local storage for offline access
-        await AsyncStorage.setItem('guideAssignedPackages', JSON.stringify(packagesArray));
-        
-      } catch (error) {
-        console.error('Error fetching guide data and packages:', error);
-        setError('Failed to load your assigned tour packages');
-        
-        // Try to load from local storage as fallback
-        try {
-          const storedPackagesStr = await AsyncStorage.getItem('guideAssignedPackages');
-          if (storedPackagesStr) {
-            const storedPackages = JSON.parse(storedPackagesStr);
-            setAssignedPackages(storedPackages);
-          }
-        } catch (storageError) {
-          console.error('Error loading from storage:', storageError);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+    let isMounted = true;
+    async function getUserAndGuide() {
+      const fetchedUser = await loggedInUser();
+      if (!isMounted || !fetchedUser) return;
   
-    getUserDataAndPackages();
-  }, []);
-  
-  
-  const renderPackageItem = ({ item }) => (
-    <TouchableOpacity style={styles.packageCard} onPress={() => router.push(`/guide/packages/${item.id}`)}>
-      <Text style={styles.packageName}>{item.package_name}</Text>
-      <Text style={styles.packageDetails}>Location: {item.location}</Text>
-      <Text style={styles.packageDetails}>Price: ₱{item.price}</Text>
-      <Text style={styles.packageDetails}>Duration: {item.duration_days} day(s)</Text>
-    </TouchableOpacity>
-  );
+      setUser(fetchedUser); 
+      console.log("GuideHome fetched user:", fetchedUser);
+      const id = fetchedUser?.data?.user?.user_id;
+      console.log('GuideHome user_id:', id); 
+      setTourGuideId(id);
+    }
+    getUserAndGuide();
+    return () => { isMounted = false; };
+  }, [loggedInUser]);
+
+  const loadPackages = useCallback(async () => {
+    if (!tourGuideId) return;
+    const data = await fetchTourPackagesByGuide(tourGuideId);
+    setPackages(Array.isArray(data?.tourPackages) ? data.tourPackages : []);
+  }, [fetchTourPackagesByGuide, tourGuideId]);
+  console.log("AssignedTourPackagesPage packages:", packages);
+
+  useEffect(() => {
+    loadPackages();
+  }, [loadPackages]);
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#3b82f6" />
+        <Text style={styles.loadingText}>Loading assigned tour packages...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorTitle}>Error</Text>
+        <Text style={styles.errorMessage}>{error}</Text>
+      </View>
+    );
+  }
+
+  if (packages.length === 0) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.emptyTitle}>No assigned tour packages found</Text>
+        <Text style={styles.emptySubtitle}>You currently have no assigned tour packages.</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeText}>Welcome{userName ? `, ${userName}` : ""}!</Text>
-          <Text style={styles.welcomeSubtext}>Discover the beauty of Cebu</Text>
+    <FlatList
+      data={packages}
+      keyExtractor={(pkg) => pkg.id?.toString()}
+      contentContainerStyle={styles.listContent}
+      ListHeaderComponent={
+        <>
+          <Text style={styles.heading}>Assigned Tour Packages</Text>
+          <Text style={styles.subheading}>View all tour packages assigned to you.</Text>
+        </>
+      }
+      renderItem={({ item: pkg }) => (
+        <View style={styles.card}>
+          <Text style={styles.packageName}>{pkg.package_name}</Text>
+          <Text style={styles.description}>{pkg.description}</Text>
+          <Text style={styles.info}>Location: {pkg.location}</Text>
+          <Text style={styles.info}>Price: ₱{pkg.price}</Text>
+          <Text style={styles.info}>Duration: {pkg.duration_days} days</Text>
+          <Text style={styles.info}>Slots: {pkg.available_slots}</Text>
+          <Text style={styles.date}>{pkg.date_start} – {pkg.date_end}</Text>
         </View>
-
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Your Assigned Tour Packages</Text>
-        </View>
-      </ScrollView>
-    </View>
+      )}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  listContent: {
+    padding: 16,
+    backgroundColor: "transparent",
+    marginTop: 100,
+  },
+  centered: {
     flex: 1,
-    backgroundColor: "#f8fafc",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    backgroundColor: "#f9fafb",
   },
-  scrollContent: {
-    padding: 16,
+  loadingText: {
+    marginTop: 8,
+    color: "#6b7280",
   },
-  welcomeSection: {
-    marginBottom: 20,
-  },
-  welcomeText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#0f172a",
-  },
-  welcomeSubtext: {
-    fontSize: 16,
-    color: "#64748b",
-    marginTop: 4,
-  },
-  sectionContainer: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
+  errorTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#0f172a",
-    marginBottom: 12,
-  },
-  errorText: {
+    fontWeight: "600",
     color: "#ef4444",
-    fontSize: 14,
+  },
+  errorMessage: {
+    color: "#b91c1c",
+    marginTop: 4,
     textAlign: "center",
   },
-  emptyText: {
-    color: "#64748b",
-    fontSize: 14,
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 4,
+  },
+  emptySubtitle: {
+    color: "#6b7280",
     textAlign: "center",
   },
-  packagesList: {
-    paddingVertical: 8,
+  heading: {
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#111827",
+    marginBottom: 4,
   },
-  packageCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 16,
+  subheading: {
+    fontSize: 14,
+    color: "#6b7280",
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 3,
+  },
+  card: {
+    backgroundColor: "#ffffff",
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    marginBottom: 12,
   },
   packageName: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#0f172a",
-    marginBottom: 8,
-  },
-  packageDetails: {
-    fontSize: 14,
-    color: "#64748b",
+    fontWeight: "600",
+    color: "#111827",
     marginBottom: 4,
   },
+  description: {
+    color: "#374151",
+    marginBottom: 8,
+  },
+  info: {
+    color: "#6b7280",
+    fontSize: 14,
+  },
+  date: {
+    color: "#9ca3af",
+    fontSize: 12,
+    marginTop: 8,
+  },
 });
-
