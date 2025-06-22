@@ -55,8 +55,9 @@ const uploadOperatorQrController = async (req, res) => {
 
 const getOperatorQrController = async (req, res) => {
   try {
-    const operatorId = req.params.operatorId; // <-- get from params
+    const operatorId = req.params.operatorId;
     console.log("Fetching QR codes for Tour Operator ID:", operatorId);
+    let touroperator_id = operatorId;
 
     if (!operatorId) {
       return res.status(400).json({ error: "Tour operator ID is required." });
@@ -70,7 +71,18 @@ const getOperatorQrController = async (req, res) => {
       });
     }
 
-    const operatorQrs = await getOperatorQrById(operatorId);
+    if (user.role === "Tourist") {
+      const operatorRegis = await getOperatorRegisByOperatorId(operatorId);
+      if (!operatorRegis) {
+        return res
+          .status(404)
+          .json({ error: "Tour operator not found or not registered." });
+      }
+      touroperator_id = operatorRegis.user_id; // <-- assign to the outer variable
+      console.log("Tour Operator ID:", touroperator_id);
+    }
+
+    const operatorQrs = await getOperatorQrById(touroperator_id);
     console.log("Operator QR codes:", operatorQrs);
     res.status(200).json({ data: operatorQrs });
   } catch (error) {
