@@ -100,13 +100,7 @@ export function columns(
                 View
               </DropdownMenuItem>
 
-              <DropdownMenuItem
-                onClick={() =>
-                  router.push(
-                    `/tourism-staff/tour-guides/${guide.user_id}/documents`
-                  )
-                }
-              >
+              <DropdownMenuItem onClick={() => onViewDocuments(guide)}>
                 View Documents
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onApprove(guide)}>
