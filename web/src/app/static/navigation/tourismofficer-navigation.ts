@@ -15,11 +15,22 @@ const tourismOfficerNavigation = (): NavItem[] => {
       title: "Announcements",
       icon: Megaphone,
     },
-
+    {
+      name: "Accommodation Reports",
+      href: `/tourism-officer/accommodation-reports`,
+      title: "Accommodation Reports",
+      icon: BookText,
+    },
     {
       name: "Rules",
       href: `/tourism-officer/rules`,
       title: "Rules",
+      icon: BookText,
+    },
+    {
+      name: "Tourism Staff",
+      href: `/tourism-officer/tourism-staff`,
+      title: "Tourism Staff",
       icon: BookText,
     },
     {

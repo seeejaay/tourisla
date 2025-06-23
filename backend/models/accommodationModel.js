@@ -1,18 +1,16 @@
 const db = require("../db/index.js");
 
-
 const createAccommodation = async (data) => {
   const {
     "Name of Establishment": name,
-    "Type": type,
+    Type: type,
     "No. of Rooms": rooms,
     "Number of Employees": employees,
-    "Year": year,
-    "Region": region,
-    "Province": province,
+    Year: year,
+    Region: region,
+    Province: province,
     "Municipality / City": municipality,
   } = data;
-
 
   const result = await db.query(
     `INSERT INTO accommodations
@@ -22,23 +20,20 @@ const createAccommodation = async (data) => {
     [name, type, rooms, employees, year, region, province, municipality]
   );
 
-
   return result.rows[0];
 };
-
 
 const editAccommodation = async (id, data) => {
   const {
     "Name of Establishment": name,
-    "Type": type,
+    Type: type,
     "No. of Rooms": rooms,
     "Number of Employees": employees,
-    "Year": year,
-    "Region": region,
-    "Province": province,
+    Year: year,
+    Region: region,
+    Province: province,
     "Municipality / City": municipality,
   } = data;
-
 
   const result = await db.query(
     `UPDATE accommodations SET
@@ -54,10 +49,8 @@ const editAccommodation = async (id, data) => {
     [name, type, rooms, employees, year, region, province, municipality, id]
   );
 
-
   return result.rows[0];
 };
-
 
 const deleteAccommodation = async (id) => {
   const result = await db.query(
@@ -67,12 +60,10 @@ const deleteAccommodation = async (id) => {
   return result.rows[0];
 };
 
-
 const getAllAccommodations = async () => {
   const result = await db.query("SELECT * FROM accommodations");
   return result.rows;
 };
-
 
 const getAccommodationById = async (id) => {
   const result = await db.query("SELECT * FROM accommodations WHERE id = $1", [
@@ -81,6 +72,20 @@ const getAccommodationById = async (id) => {
   return result.rows[0];
 };
 
+const assignAccommodationToStaff = async (staffId, accommodationId) => {
+  const result = await db.query(
+    `UPDATE users SET accommodation_id = $1 WHERE user_id = $2 RETURNING *`,
+    [accommodationId, staffId]
+  );
+  return result.rows[0];
+};
+
+const getAllTourismStaff = async () => {
+  const result = await db.query(
+    `SELECT * FROM users WHERE role = 'Tourism Staff'`
+  );
+  return result.rows;
+};
 
 module.exports = {
   createAccommodation,
@@ -88,4 +93,6 @@ module.exports = {
   deleteAccommodation,
   getAllAccommodations,
   getAccommodationById,
+  getAllTourismStaff,
+  assignAccommodationToStaff,
 };

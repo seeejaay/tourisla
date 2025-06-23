@@ -142,6 +142,8 @@ const {
   deleteAccommodationController,
   viewAccommodationsController,
   viewAccommodationByIdController,
+  assignTourismStaffController,
+  getAllTourismStaffController,
 } = require("../controllers/accommodationController.js");
 
 const {
@@ -176,6 +178,7 @@ const {
   getAllAccommodationLogsController,
   getAccommodationLogByIdController,
   exportAccommodationLogController,
+  getAccommodationLogsByAccommodationIdController,
 } = require("../controllers/accommodationLogController.js");
 
 const {
@@ -633,8 +636,25 @@ app.delete(
 );
 app.get("/api/v1/accommodations", viewAccommodationsController);
 app.get(
+  "/api/v1/accommodations/tourism-staff",
+  allowedRoles(["Tourism Officer"]),
+  getAllTourismStaffController
+);
+app.get(
   "/api/v1/accommodations/:accommodationId",
   viewAccommodationByIdController
+);
+
+app.get(
+  "/api/v1/accommodations/logs/:accommodationId",
+  allowedRoles(["Tourism Staff"]),
+  getAccommodationLogsByAccommodationIdController
+);
+
+app.put(
+  "/api/v1/accommodations/:accommodationId/assign-staff",
+  allowedRoles(["Tourism Officer"]),
+  assignTourismStaffController
 );
 
 // Visitor Registration Route
@@ -775,7 +795,7 @@ app.get(
 // Accommodation Logs Routes
 app.post(
   "/api/v1/accommodation-logs",
-  authenticateTourismStaff,
+  allowedRoles(["Tourism Staff"]),
   createAccommodationLogController
 );
 app.put(
