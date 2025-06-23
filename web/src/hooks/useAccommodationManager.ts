@@ -8,6 +8,8 @@ import {
   getAccommodationById as apiViewAccommodation,
   editAccommodation as apiUpdateAccommodation,
   deleteAccommodation as apiDeleteAccommodation,
+  getTourismStaff as apiGetTourismStaff,
+  assignAccommodationToStaff as apiAssignAccommodationToStaff,
 } from "@/lib/api/accommodations";
 
 export const useAccommodationManager = () => {
@@ -142,6 +144,60 @@ export const useAccommodationManager = () => {
     []
   );
 
+  // Fetch tourism staff and assign accommodation to staff
+  const assignAccommodationToStaff = useCallback(
+    async (
+      staffId: number,
+      accommodationId: number | null
+    ): Promise<boolean> => {
+      setLoading(true);
+      setError("");
+      try {
+        console.log(
+          `Assigning accommodation ID ${accommodationId} to staff ID ${staffId}`
+        );
+        const response = await apiAssignAccommodationToStaff(
+          staffId,
+          accommodationId
+        );
+        if (response.error) {
+          setError(response.error);
+          return false;
+        }
+        // Optionally, update the state with the new assignment
+        return true;
+      } catch (error) {
+        setError(
+          "An error occurred while assigning the accommodation to staff." +
+            (error instanceof Error ? error.message : String(error))
+        );
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  // Fetch tourism staff for assignment
+  const getTourismStaff = useCallback(async (): Promise<any[]> => {
+    setLoading(true);
+    setError("");
+    try {
+      const staff = await apiGetTourismStaff();
+      console.log("Tourism staff fetched:", staff);
+      return staff;
+    } catch (error) {
+      setError(
+        "An error occurred while fetching tourism staff." +
+          (error instanceof Error ? error.message : String(error))
+      );
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   // Reset the selected accommodation and editing state
   const resetSelectedAccommodation = useCallback(() => {
     setSelectedAccommodation(null);
@@ -171,5 +227,7 @@ export const useAccommodationManager = () => {
     deleteAccommodation,
     resetSelectedAccommodation,
     toggleEditing,
+    assignAccommodationToStaff,
+    getTourismStaff,
   };
 };

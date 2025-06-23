@@ -142,6 +142,8 @@ const {
   deleteAccommodationController,
   viewAccommodationsController,
   viewAccommodationByIdController,
+  assignTourismStaffController,
+  getAllTourismStaffController,
 } = require("../controllers/accommodationController.js");
 
 const {
@@ -474,13 +476,13 @@ app.put(
 );
 app.get(
   "/api/v1/operatorUploadDocu/doc/:documentId",
-  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin", "Tour Operator"]),
+  authenticateTourOperator,
   getOperatorUploadDocuByIdController
 );
 
 app.get(
   "/api/v1/operatorUploadDocu/user/:userId",
-  allowedRoles(["Tourism Staff", "Tourism Officer", "Tour Operator", "Admin"]),
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Tour Operator"]),
   getOperatorUploadByUserIdController
 );
 
@@ -626,8 +628,19 @@ app.delete(
 );
 app.get("/api/v1/accommodations", viewAccommodationsController);
 app.get(
+  "/api/v1/accommodations/tourism-staff",
+  allowedRoles(["Tourism Officer"]),
+  getAllTourismStaffController
+);
+app.get(
   "/api/v1/accommodations/:accommodationId",
   viewAccommodationByIdController
+);
+
+app.put(
+  "/api/v1/accommodations/:accommodationId/assign-staff",
+  allowedRoles(["Tourism Officer"]),
+  assignTourismStaffController
 );
 
 // Visitor Registration Route

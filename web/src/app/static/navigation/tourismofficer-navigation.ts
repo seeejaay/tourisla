@@ -23,6 +23,12 @@ const tourismOfficerNavigation = (): NavItem[] => {
       icon: BookText,
     },
     {
+      name: "Tourism Staff",
+      href: `/tourism-officer/tourism-staff`,
+      title: "Tourism Staff",
+      icon: BookText,
+    },
+    {
       name: "Tourist Spot",
       href: `/tourism-officer/tourist-spot`,
       title: "Tourist Spot",

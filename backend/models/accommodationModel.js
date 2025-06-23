@@ -1,33 +1,23 @@
 const db = require("../db/index.js");
 
 const createAccommodation = async (data) => {
-  console.log("Data received for accommodation creation:", data);
   const {
-    name_of_establishment,
-    type,
-    no_of_rooms,
-    no_of_employees,
-    Year,
-    Region,
-    Province,
-    municipality,
+    "Name of Establishment": name,
+    Type: type,
+    "No. of Rooms": rooms,
+    "Number of Employees": employees,
+    Year: year,
+    Region: region,
+    Province: province,
+    "Municipality / City": municipality,
   } = data;
 
   const result = await db.query(
     `INSERT INTO accommodations
-     ("name_of_establishment", "Type", "no_of_rooms", "number_of_employees", "Year", "Region", "Province", "municipality")
+     ("Name of Establishment", "Type", "No. of Rooms", "Number of Employees", "Year", "Region", "Province", "Municipality / City")
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
      RETURNING *`,
-    [
-      name_of_establishment,
-      type,
-      no_of_rooms,
-      no_of_employees,
-      Year,
-      Region,
-      Province,
-      municipality,
-    ]
+    [name, type, rooms, employees, year, region, province, municipality]
   );
 
   return result.rows[0];
@@ -35,38 +25,28 @@ const createAccommodation = async (data) => {
 
 const editAccommodation = async (id, data) => {
   const {
-    name_of_establishment,
-    type,
-    no_of_rooms,
-    no_of_employees,
-    Year,
-    Region,
-    Province,
-    municipality,
+    "Name of Establishment": name,
+    Type: type,
+    "No. of Rooms": rooms,
+    "Number of Employees": employees,
+    Year: year,
+    Region: region,
+    Province: province,
+    "Municipality / City": municipality,
   } = data;
 
   const result = await db.query(
     `UPDATE accommodations SET
-     "name_of_establishment" = $1,
+     "Name of Establishment" = $1,
      "Type" = $2,
-     "no_of_rooms" = $3,
-     "number_of_employees" = $4,
+     "No. of Rooms" = $3,
+     "Number of Employees" = $4,
      "Year" = $5,
      "Region" = $6,
      "Province" = $7,
-     "municipality" = $8
+     "Municipality / City" = $8
      WHERE id = $9 RETURNING *`,
-    [
-      name_of_establishment,
-      type,
-      no_of_rooms,
-      no_of_employees,
-      Year,
-      Region,
-      Province,
-      municipality,
-      id,
-    ]
+    [name, type, rooms, employees, year, region, province, municipality, id]
   );
 
   return result.rows[0];
@@ -92,10 +72,27 @@ const getAccommodationById = async (id) => {
   return result.rows[0];
 };
 
+const assignAccommodationToStaff = async (staffId, accommodationId) => {
+  const result = await db.query(
+    `UPDATE users SET accommodation_id = $1 WHERE user_id = $2 RETURNING *`,
+    [accommodationId, staffId]
+  );
+  return result.rows[0];
+};
+
+const getAllTourismStaff = async () => {
+  const result = await db.query(
+    `SELECT * FROM users WHERE role = 'Tourism Staff'`
+  );
+  return result.rows;
+};
+
 module.exports = {
   createAccommodation,
   editAccommodation,
   deleteAccommodation,
   getAllAccommodations,
   getAccommodationById,
+  getAllTourismStaff,
+  assignAccommodationToStaff,
 };
