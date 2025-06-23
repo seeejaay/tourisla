@@ -178,6 +178,7 @@ const {
   getAllAccommodationLogsController,
   getAccommodationLogByIdController,
   exportAccommodationLogController,
+  getAccommodationLogsByAccommodationIdController,
 } = require("../controllers/accommodationLogController.js");
 
 const {
@@ -637,6 +638,12 @@ app.get(
   viewAccommodationByIdController
 );
 
+app.get(
+  "/api/v1/accommodations/logs/:accommodationId",
+  allowedRoles(["Tourism Staff"]),
+  getAccommodationLogsByAccommodationIdController
+);
+
 app.put(
   "/api/v1/accommodations/:accommodationId/assign-staff",
   allowedRoles(["Tourism Officer"]),
@@ -781,7 +788,7 @@ app.get(
 // Accommodation Logs Routes
 app.post(
   "/api/v1/accommodation-logs",
-  authenticateTourismStaff,
+  allowedRoles(["Tourism Staff"]),
   createAccommodationLogController
 );
 app.put(
