@@ -1,14 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useArticleManager } from "@/hooks/useArticleManager";
-import { articleFields } from "@/app/static/article/articleFields";
-import { articleSchema } from "@/app/static/article/useArticleSchema";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { articleSchema } from "@/app/static/article/useArticleSchema";
 
 export default function AddArticle({
   onSuccess,
@@ -17,42 +15,42 @@ export default function AddArticle({
 }: {
   onSuccess?: () => void;
   onCancel?: () => void;
-  currentUser: string; // Pass logged in username or user id
+  currentUser: string;
 }) {
   const [form, setForm] = useState({
     title: "",
     author: currentUser,
-    published_date: "",
-    published_at: "",
     body: "",
     video_url: "",
-    thumbnail_url: "",
     tags: "",
     status: "DRAFT",
     is_featured: false,
     updated_by: currentUser,
   });
 
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { add } = useArticleManager();
+  const [preview, setPreview] = useState<string | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
-
     setForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
-  const handleCheckboxChange = (checked: boolean) => {
-    setForm((prev) => ({
-      ...prev,
-      is_featured: checked,
-    }));
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setThumbnail(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => setPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,7 +58,7 @@ export default function AddArticle({
     setLoading(true);
     setError(null);
 
-    const result = articleSchema.safeParse(form);
+    const result = articleSchema.safeParse({ ...form, thumbnail_url: "placeholder" });
     if (!result.success) {
       setError(result.error.errors[0].message);
       setLoading(false);
@@ -68,73 +66,93 @@ export default function AddArticle({
     }
 
     try {
-      await add(form);
+      const formData = new FormData();
+      Object.entries(form).forEach(([key, val]) => {
+        formData.append(key, val.toString());
+      });
+
+      if (thumbnail) {
+        formData.append("thumbnail", thumbnail);
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}articles`, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error("Failed to create article");
+
       onSuccess?.();
     } catch (err) {
-      setError("Failed to create article. " + (err as any)?.message);
+      setError("Failed to submit article. " + (err as any)?.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto pr-2"
+    >
       {error && <div className="text-red-500 text-sm">{error}</div>}
 
-      {articleFields.map((field) => (
+      <div className="flex flex-col gap-1">
+        <Label>Thumbnail Image</Label>
+        <Input type="file" accept="image/*" onChange={handleFileChange} />
+        {preview && <img src={preview} alt="Thumbnail preview" className="mt-2 w-40 rounded" />}
+      </div>
+
+      {[
+        { name: "title", label: "Title" },
+        { name: "body", label: "Content", type: "textarea" },
+        { name: "video_url", label: "Video URL" },
+        { name: "tags", label: "Tags (comma-separated)" },
+      ].map((field) => (
         <div key={field.name} className="flex flex-col gap-1">
           <Label htmlFor={field.name}>{field.label}</Label>
-
           {field.type === "textarea" ? (
             <Textarea
               id={field.name}
               name={field.name}
-              value={form[field.name as keyof typeof form] as string}
+              value={form[field.name as keyof typeof form]}
               onChange={handleChange}
-              placeholder={field.placeholder}
               required={field.name !== "video_url" && field.name !== "tags"}
-              className="w-full border rounded px-2 py-1 min-h-[100px]"
             />
-          ) : field.type === "select" ? (
-            <select
-              id={field.name}
-              name={field.name}
-              value={form[field.name as keyof typeof form] as string}
-              onChange={handleChange}
-              className="w-full border rounded px-2 py-1"
-            >
-              {field.options?.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          ) : field.type === "checkbox" ? (
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id={field.name}
-                checked={form.is_featured}
-                onCheckedChange={handleCheckboxChange}
-              />
-              <Label htmlFor={field.name}>Mark as Featured</Label>
-            </div>
           ) : (
             <Input
               id={field.name}
               name={field.name}
-              value={form[field.name as keyof typeof form] as string}
+              value={form[field.name as keyof typeof form]}
               onChange={handleChange}
-              type={field.type}
-              placeholder={field.placeholder}
-              required={
-                field.name !== "video_url" && field.name !== "tags"
-              }
+              type={field.type || "text"}
+              required={field.name !== "video_url" && field.name !== "tags"}
             />
           )}
         </div>
       ))}
 
-      <div className="flex gap-2 justify-end pt-2">
+      <div className="flex flex-col gap-1">
+        <Label>Status</Label>
+        <select name="status" value={form.status} onChange={handleChange} className="border rounded px-2 py-1">
+          <option value="DRAFT">Draft</option>
+          <option value="PUBLISHED">Published</option>
+        </select>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <Checkbox
+          id="is_featured"
+          checked={form.is_featured}
+          onCheckedChange={(checked) =>
+            setForm((prev) => ({ ...prev, is_featured: checked }))
+          }
+        />
+        <Label htmlFor="is_featured">Featured Article</Label>
+      </div>
+
+      <div className="flex gap-2 justify-end pt-2 sticky bottom-0 bg-white pb-4">
         <Button type="submit" disabled={loading}>
           {loading ? "Saving..." : "Add Article"}
         </Button>

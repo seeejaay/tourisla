@@ -594,12 +594,19 @@ app.get("/api/v1/rules", viewRulesController);
 app.get("/api/v1/rules/:ruleId", viewRuleByIdController);
 
 // Routes — Articles
-app.post("/api/v1/articles", authenticateAdmin, createArticleController);
+app.post(
+  "/api/v1/articles",
+  upload.single("thumbnail"),
+  createArticleController,
+  allowedRoles(["Admin", "Tourism Staff" ])
+);
 app.put(
   "/api/v1/articles/:articleId",
-  authenticateAdmin,
-  editArticleController
+  upload.single("thumbnail"),
+  editArticleController,
+  allowedRoles(["Admin", "Tourism Staff"])
 );
+
 app.delete(
   "/api/v1/articles/:articleId",
   authenticateAdmin,

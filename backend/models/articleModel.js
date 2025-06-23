@@ -1,11 +1,10 @@
 const pool = require("../db/index.js");
 
+// CREATE ARTICLE
 const createArticle = async (data) => {
   const {
     title,
     author,
-    published_date,
-    published_at,
     body,
     video_url,
     thumbnail_url,
@@ -17,17 +16,23 @@ const createArticle = async (data) => {
 
   const result = await pool.query(
     `INSERT INTO articles (
-      title, author, published_date, published_at, body,
-      video_url, thumbnail_url, tags, status, is_featured,
-      updated_by, created_at, updated_at
+      title,
+      author,
+      body,
+      video_url,
+      thumbnail_url,
+      tags,
+      status,
+      is_featured,
+      updated_by,
+      created_at,
+      updated_at
     ) VALUES (
-      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW()
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW()
     ) RETURNING *`,
     [
       title,
       author,
-      published_date,
-      published_at,
       body,
       video_url,
       thumbnail_url,
@@ -41,12 +46,11 @@ const createArticle = async (data) => {
   return result.rows[0];
 };
 
+// EDIT ARTICLE
 const editArticle = async (id, data) => {
   const {
     title,
     author,
-    published_date,
-    published_at,
     body,
     video_url,
     thumbnail_url,
@@ -60,23 +64,19 @@ const editArticle = async (id, data) => {
     `UPDATE articles SET
       title = $1,
       author = $2,
-      published_date = $3,
-      published_at = $4,
-      body = $5,
-      video_url = $6,
-      thumbnail_url = $7,
-      tags = $8,
-      status = $9,
-      is_featured = $10,
-      updated_by = $11,
+      body = $3,
+      video_url = $4,
+      thumbnail_url = $5,
+      tags = $6,
+      status = $7,
+      is_featured = $8,
+      updated_by = $9,
       updated_at = NOW()
-    WHERE id = $12
+    WHERE id = $10
     RETURNING *`,
     [
       title,
       author,
-      published_date,
-      published_at,
       body,
       video_url,
       thumbnail_url,

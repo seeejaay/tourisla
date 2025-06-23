@@ -8,45 +8,61 @@ export default function ViewArticle({ article }: { article: Article }) {
   if (!article) return null;
 
   return (
-    <Card className="max-w-4xl mx-auto">
+    <Card className="w-full">
       <CardHeader>
-        <CardTitle>{article.title}</CardTitle>
+        <CardTitle className="text-2xl font-bold text-gray-800">
+          {article.title}
+        </CardTitle>
+        <p className="text-sm text-gray-600">By {article.author}</p>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <Label className="text-muted-foreground">Author</Label>
-          <p>{article.author}</p>
-        </div>
 
-        <div>
-          <Label className="text-muted-foreground">Published</Label>
-          <p>{article.published_date} at {article.published_at}</p>
-        </div>
-
+      <CardContent className="space-y-6 pb-6">
         {article.thumbnail_url && (
           <div>
             <Label className="text-muted-foreground">Thumbnail</Label>
-            <img src={article.thumbnail_url} alt="thumbnail" className="max-w-sm rounded" />
+            <div className="mt-2">
+              <img
+                src={article.thumbnail_url}
+                alt="Thumbnail"
+                className="w-full max-w-[500px] max-h-[400px] rounded shadow object-contain"
+              />
+            </div>
           </div>
         )}
 
         {article.video_url && (
           <div>
             <Label className="text-muted-foreground">Video</Label>
-            <a href={article.video_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+            <a
+              href={article.video_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline"
+            >
               Watch Video
             </a>
           </div>
         )}
 
-        <div>
-          <Label className="text-muted-foreground">Tags</Label>
-          <p>{article.tags || <span className="italic text-muted-foreground">None</span>}</p>
-        </div>
+        {article.tags && (
+          <div>
+            <Label className="text-muted-foreground">Tags</Label>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {article.tags.split(",").map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded"
+                >
+                  {tag.trim()}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div>
           <Label className="text-muted-foreground">Status</Label>
-          <p>{article.status}</p>
+          <p className="capitalize">{article.status}</p>
         </div>
 
         <div>
@@ -56,7 +72,7 @@ export default function ViewArticle({ article }: { article: Article }) {
 
         <div>
           <Label className="text-muted-foreground">Content</Label>
-          <div className="whitespace-pre-line">{article.body}</div>
+          <div className="whitespace-pre-line text-gray-800">{article.body}</div>
         </div>
       </CardContent>
     </Card>

@@ -1,3 +1,4 @@
+// page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -84,10 +85,6 @@ export default function ArticleAdminPage() {
             <Card key={article.id} className="p-4 space-y-2 shadow-md border">
               <h2 className="font-semibold text-xl">{article.title}</h2>
               <p className="text-sm text-gray-600">By {article.author}</p>
-              <p className="text-sm text-gray-500">
-                {article.published_date} @ {article.published_at}
-              </p>
-
               <div className="flex gap-2 mt-4 flex-wrap">
                 <Button
                   size="sm"
@@ -117,7 +114,7 @@ export default function ArticleAdminPage() {
 
       {/* Add Dialog */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Add New Article</DialogTitle>
             <DialogDescription>
@@ -125,7 +122,7 @@ export default function ArticleAdminPage() {
             </DialogDescription>
           </DialogHeader>
           <AddArticle
-            currentUser={"admin"} // Replace this with real user info if available
+            currentUser={"admin"}
             onSuccess={() => {
               refreshArticles();
               setAddDialogOpen(false);
@@ -137,18 +134,20 @@ export default function ArticleAdminPage() {
 
       {/* View Dialog */}
       <Dialog open={!!selectedArticle} onOpenChange={() => setSelectedArticle(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-hidden sm:max-w-3xl flex flex-col">
           <DialogHeader>
             <DialogTitle>View Article</DialogTitle>
             <DialogDescription>Article details</DialogDescription>
           </DialogHeader>
-          {selectedArticle && <ViewArticle article={selectedArticle} />}
+          <div className="flex-1 overflow-y-auto pr-2">
+            {selectedArticle && <ViewArticle article={selectedArticle} />}
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* Edit Dialog */}
       <Dialog open={!!editDialogArticle} onOpenChange={() => setEditDialogArticle(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Article</DialogTitle>
             <DialogDescription>Modify the article content</DialogDescription>
@@ -169,7 +168,7 @@ export default function ArticleAdminPage() {
 
       {/* Delete Dialog */}
       <Dialog open={!!deleteDialogArticle} onOpenChange={() => setDeleteDialogArticle(null)}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Delete Article</DialogTitle>
             <DialogDescription>
