@@ -75,3 +75,32 @@ export const getAccommodationById = async (accommodationId) => {
     throw error;
   }
 };
+
+export const getTourismStaff = async () => {
+  try {
+    console.log("Fetching tourism staff...");
+    const response = await axios.get(`${API_URL}accommodations/tourism-staff`, {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching tourism staff:", error);
+    throw error;
+  }
+};
+
+export const assignAccommodationToStaff = async (staffId, accommodationId) => {
+  try {
+    const response = await axios.put(
+      `${API_URL}accommodations/${accommodationId}/assign-staff`,
+      { staffId },
+      {
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error assigning accommodation to staff:", error);
+    throw error;
+  }
+};
