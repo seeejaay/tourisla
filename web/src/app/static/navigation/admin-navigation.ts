@@ -1,4 +1,11 @@
-import { BookUser, Home, Megaphone, TreePalm, Users } from "lucide-react";
+import {
+  BookUser,
+  Home,
+  Hotel,
+  Megaphone,
+  TreePalm,
+  Users,
+} from "lucide-react";
 
 const adminNavigation = [
   {
@@ -6,6 +13,12 @@ const adminNavigation = [
     href: "/admin/dashboard",
     title: "Dashboard",
     icon: Home,
+  },
+  {
+    name: "Accommodations",
+    href: "/admin/accommodations",
+    title: "Accommodations",
+    icon: Hotel,
   },
   {
     name: "Announcements",
@@ -18,6 +31,18 @@ const adminNavigation = [
     href: "/admin/users",
     title: "Manage Users",
     icon: Users,
+  },
+  {
+    name: "Tour Guides",
+    href: "/admin/tour-guides",
+    title: "Tour Guides",
+    icon: BookUser,
+  },
+  {
+    name: "Tour Operators",
+    href: "/admin/tour-operators",
+    title: "Tour Operators",
+    icon: BookUser,
   },
   {
     name: "Tourist Spots",

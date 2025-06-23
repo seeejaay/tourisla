@@ -1,13 +1,9 @@
 "use client";
 import Sidebar from "@/components/custom/sidebar";
-
 import type { NavItem } from "@/components/custom/sidebar";
-
 import tourismStaffNavigation from "@/app/static/navigation/tourismstaff-navigation";
-
 import { useAuth } from "@/hooks/useAuth";
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type User = {
@@ -16,6 +12,7 @@ type User = {
   last_name: string;
   email: string;
   role: string;
+  accommodation_id?: string | null;
 };
 
 export default function TourismStaffLayout({
@@ -42,9 +39,16 @@ export default function TourismStaffLayout({
   let navigation: NavItem[] = [];
 
   if (role === "tourism staff") {
-    navigation = tourismStaffNavigation();
+    const nav = tourismStaffNavigation();
+
+    if (user.accommodation_id) {
+      // Only show "Accommodation Reports" if accommodation_id exists
+      navigation = nav.filter((item) => item.name === "Accommodation Reports");
+    } else {
+      // Show all except "Accommodation Reports"
+      navigation = nav.filter((item) => item.name !== "Accommodation Reports");
+    }
   } else {
-    // Default navigation for Tourist or others
     navigation = [];
   }
 

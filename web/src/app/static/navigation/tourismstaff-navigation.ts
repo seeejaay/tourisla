@@ -5,6 +5,7 @@ import {
   TreePalm,
   Megaphone,
   Sailboat,
+  ChartArea,
 } from "lucide-react";
 import type { NavItem } from "@/components/custom/sidebar";
 
@@ -21,6 +22,12 @@ const tourismStaffNavigation = (): NavItem[] => {
       href: `/tourism-staff/announcements`,
       title: "Announcements",
       icon: Megaphone,
+    },
+    {
+      name: "Accommodation Reports",
+      href: `/tourism-staff/accommodation-reports`,
+      title: "Accommodation Reports",
+      icon: ChartArea,
     },
     {
       name: "Rules",

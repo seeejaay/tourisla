@@ -4,8 +4,9 @@ const {
   deleteAccommodation,
   getAllAccommodations,
   getAccommodationById,
+  assignAccommodationToStaff,
+  getAllTourismStaff,
 } = require("../models/accommodationModel.js");
-
 
 const createAccommodationController = async (req, res) => {
   try {
@@ -17,7 +18,6 @@ const createAccommodationController = async (req, res) => {
     res.send(err.message);
   }
 };
-
 
 const editAccommodationController = async (req, res) => {
   try {
@@ -31,7 +31,6 @@ const editAccommodationController = async (req, res) => {
   }
 };
 
-
 const deleteAccommodationController = async (req, res) => {
   try {
     const { accommodationId } = req.params;
@@ -43,7 +42,6 @@ const deleteAccommodationController = async (req, res) => {
   }
 };
 
-
 const viewAccommodationsController = async (req, res) => {
   try {
     const accommodations = await getAllAccommodations();
@@ -53,7 +51,6 @@ const viewAccommodationsController = async (req, res) => {
     res.send(err.message);
   }
 };
-
 
 const viewAccommodationByIdController = async (req, res) => {
   try {
@@ -66,6 +63,50 @@ const viewAccommodationByIdController = async (req, res) => {
   }
 };
 
+const assignTourismStaffController = async (req, res) => {
+  try {
+    let { accommodationId } = req.params;
+    const { staffId } = req.body; // staffId sent in request body
+
+    // If accommodationId is "null" or null, treat as unassign
+    if (accommodationId === "null" || accommodationId === null) {
+      accommodationId = null;
+    }
+
+    if (!staffId) {
+      return res.status(400).json({ error: "staffId is required." });
+    }
+
+    // Assign or unassign the staff to the accommodation (update users table)
+    const updatedStaff = await assignAccommodationToStaff(
+      staffId,
+      accommodationId // can be null
+    );
+
+    if (!updatedStaff) {
+      return res
+        .status(404)
+        .json({ error: "Staff or accommodation not found." });
+    }
+
+    res.json(updatedStaff);
+  } catch (err) {
+    console.log(err.message);
+    res
+      .status(500)
+      .send("Error assigning tourism staff to accommodation: " + err.message);
+  }
+};
+
+const getAllTourismStaffController = async (req, res) => {
+  try {
+    const staff = await getAllTourismStaff();
+    res.json(staff);
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).send("Error fetching tourism staff: " + err.message);
+  }
+};
 
 module.exports = {
   createAccommodationController,
@@ -73,4 +114,6 @@ module.exports = {
   deleteAccommodationController,
   viewAccommodationsController,
   viewAccommodationByIdController,
+  assignTourismStaffController,
+  getAllTourismStaffController,
 };
