@@ -31,6 +31,12 @@ const adminNavigation = [
     title: "Hotline",
     icon: BookUser,
   },
+  {
+    name: "Article",
+    href: "/admin/article",
+    title: "Article",
+    icon: BookUser,
+  },
 ];
 
 export default adminNavigation;
