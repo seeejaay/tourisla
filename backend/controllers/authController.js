@@ -16,7 +16,7 @@ const loginUser = async (req, res) => {
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
-    const status = await statusCheck(email);
+    const status = await statusCheck(Upperemail);
     if (status && status.status === "Inactive") {
       return res.status(401).json({ error: "Account is inactive" });
     }

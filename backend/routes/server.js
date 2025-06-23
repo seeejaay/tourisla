@@ -474,13 +474,13 @@ app.put(
 );
 app.get(
   "/api/v1/operatorUploadDocu/doc/:documentId",
-  authenticateTourOperator,
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin", "Tour Operator"]),
   getOperatorUploadDocuByIdController
 );
 
 app.get(
   "/api/v1/operatorUploadDocu/user/:userId",
-  allowedRoles(["Tourism Staff", "Tourism Officer", "Tour Operator"]),
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Tour Operator", "Admin"]),
   getOperatorUploadByUserIdController
 );
 

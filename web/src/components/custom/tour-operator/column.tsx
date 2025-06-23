@@ -95,13 +95,7 @@ export function columns(
               <DropdownMenuItem onClick={() => setDialogTourOperator(operator)}>
                 View
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() =>
-                  router.push(
-                    `/tourism-staff/tour-operators/${operator.user_id}/documents`
-                  )
-                }
-              >
+              <DropdownMenuItem onClick={() => onViewDocuments(operator)}>
                 View Documents
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onApprove(operator)}>
