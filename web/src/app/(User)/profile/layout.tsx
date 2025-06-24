@@ -6,6 +6,7 @@ import type { NavItem } from "@/components/custom/sidebar";
 import adminNavigation from "@/app/static/navigation/admin-navigation";
 import tourGuideNavigation from "@/app/static/navigation/tourguide-navigtion";
 import operatorNavigation from "@/app/static/navigation/operator-navigation";
+import touristNavigation from "@/app/static/navigation/tourist-navigation";
 
 import { useAuth } from "@/hooks/useAuth";
 import React from "react";
@@ -40,6 +41,7 @@ export default function ProfileLayout({
   if (!user) return <div>Loading...</div>;
 
   const role = user.role.toLowerCase();
+  console.log("User Role:", role);
 
   let navigation: NavItem[] = [];
 
@@ -49,6 +51,8 @@ export default function ProfileLayout({
     navigation = tourGuideNavigation(user.user_id);
   } else if (role === "tour operator") {
     navigation = operatorNavigation(user.user_id);
+  } else if (role === "tourist") {
+    navigation = touristNavigation(user.user_id);
   } else {
     // Default navigation for Tourist or others
     navigation = [];
@@ -56,7 +60,7 @@ export default function ProfileLayout({
 
   return (
     <div className="flex">
-      {role !== "tourist" && <Sidebar navigation={navigation} />}
+      <Sidebar navigation={navigation} />
       <main className="flex-1">{children}</main>
     </div>
   );

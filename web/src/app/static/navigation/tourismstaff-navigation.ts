@@ -6,6 +6,7 @@ import {
   Megaphone,
   Sailboat,
   ChartArea,
+  UserPen,
 } from "lucide-react";
 import type { NavItem } from "@/components/custom/sidebar";
 
@@ -52,6 +53,12 @@ const tourismStaffNavigation = (): NavItem[] => {
       href: `/tourism-staff/tour-operators`,
       title: "Tour Operators",
       icon: Sailboat,
+    },
+    {
+      name: "Visitor Reports",
+      href: `/tourism-staff/visitor-reports`,
+      title: "Visitor Reports",
+      icon: UserPen,
     },
   ];
 };
