@@ -174,7 +174,7 @@ export default function BookingPage() {
     try {
       await create(payload);
       alert("Booking successful!");
-      router.push("/booking/tour-packages");
+      router.push("/tour-packages");
     } catch (err) {
       setFormError("Booking failed. Please try again." + err);
     }
