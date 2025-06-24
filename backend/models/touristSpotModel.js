@@ -178,6 +178,14 @@ const deleteTouristSpotImage = async (imageId) => {
   return result.rows[0]; // contains the image_url
 };
 
+const assignAttractionToStaff = async (staffId, attractionId) => {
+  const result = await db.query(
+    `UPDATE users SET attraction_id = $1 WHERE user_id = $2 RETURNING *`,
+    [attractionId, staffId]
+  );
+  return result.rows[0];
+};
+
 module.exports = {
   createTouristSpot,
   editTouristSpot,
@@ -187,4 +195,5 @@ module.exports = {
   addTouristSpotImages,
   getTouristSpotImages,
   deleteTouristSpotImage,
+  assignAttractionToStaff,
 };

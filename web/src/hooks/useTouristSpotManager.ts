@@ -9,6 +9,7 @@ import {
   viewTouristSpots as apiViewTouristSpot,
   updateTouristSpot as apiUpdateTouristSpot,
   deleteTouristSpot as apiDeleteTouristSpot,
+  assignAttractionToStaff as apiAssignAttractionToStaff,
 } from "@/lib/api/touristSpot";
 
 export const useTouristSpotManager = () => {
@@ -138,6 +139,36 @@ export const useTouristSpotManager = () => {
     },
     []
   );
+
+  const assignAttractionToStaff = useCallback(
+    async (staffId: number, touristSpotId: number | null): Promise<boolean> => {
+      setLoading(true);
+      setError("");
+      try {
+        console.log("Assigning tourist spot to staff", staffId, touristSpotId);
+        const response = await apiAssignAttractionToStaff(
+          staffId,
+          touristSpotId
+        );
+        if (response.error) {
+          setError(response.error);
+          return false;
+        }
+        // Optionally, you can update the state or perform any other actions here
+        return true;
+      } catch (error) {
+        setError(
+          "An error occurred while assigning the tourist spot to staff." +
+            (error instanceof Error ? error.message : String(error))
+        );
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   return {
     touristSpots,
     loading,
@@ -147,5 +178,6 @@ export const useTouristSpotManager = () => {
     viewTouristSpot,
     updateTouristSpot,
     deleteTouristSpot,
+    assignAttractionToStaff,
   };
 };
