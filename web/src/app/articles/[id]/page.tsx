@@ -17,12 +17,14 @@ export default function ArticleDetailPage() {
   useEffect(() => {
     const fetchArticle = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}articles/${id}`);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}articles/${id}`
+        );
         if (!res.ok) throw new Error("Article not found");
         const data = await res.json();
         setArticle(data);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        setError("Error Occured: " + err);
       } finally {
         setLoading(false);
       }
@@ -32,7 +34,12 @@ export default function ArticleDetailPage() {
   }, [id]);
 
   if (loading) return <p className="text-center py-10">Loading...</p>;
-  if (error || !article) return <p className="text-center py-10 text-red-500">{error || "Article not found."}</p>;
+  if (error || !article)
+    return (
+      <p className="text-center py-10 text-red-500">
+        {error || "Article not found."}
+      </p>
+    );
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-8">
@@ -63,9 +70,12 @@ export default function ArticleDetailPage() {
             <div>
               <Label className="text-muted-foreground">Video</Label>
               <div className="mt-2">
-                {article.video_url.includes("youtube.com") || article.video_url.includes("youtu.be") ? (
+                {article.video_url.includes("youtube.com") ||
+                article.video_url.includes("youtu.be") ? (
                   <iframe
-                    src={`https://www.youtube.com/embed/${extractYouTubeId(article.video_url)}`}
+                    src={`https://www.youtube.com/embed/${extractYouTubeId(
+                      article.video_url
+                    )}`}
                     title="YouTube video player"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
@@ -114,7 +124,8 @@ export default function ArticleDetailPage() {
 }
 
 function extractYouTubeId(url: string): string | null {
-  const regex = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+  const regex =
+    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
   const match = url.match(regex);
   return match ? match[1] : "";
 }

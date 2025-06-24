@@ -5,12 +5,20 @@ import { useOperatorQrManager } from "@/hooks/useOperatorQr";
 import { useParams } from "next/navigation";
 import OperatorUploadSchema from "@/app/static/operatorqr/operatorSchema";
 
+type OperatorQr = {
+  id: number;
+  tour_operator_id: number;
+  qr_name: string;
+  qr_image_url: string;
+  created_at: string;
+};
+
 export default function QRCodePage() {
   const { uploadQr, fetchQr, loading, error } = useOperatorQrManager();
   const [qrName, setQrName] = useState("");
   const [qrImage, setQrImage] = useState<File | null>(null);
-  const [uploadedQr, setUploadedQr] = useState<any>(null);
-  const [fetchedQr, setFetchedQr] = useState<any>(null);
+  const [uploadedQr, setUploadedQr] = useState<OperatorQr | null>(null);
+  const [operatorQrs, setOperatorQrs] = useState<OperatorQr[]>([]);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const params = useParams();
@@ -56,7 +64,7 @@ export default function QRCodePage() {
   const handleFetch = async () => {
     try {
       const qrData = await fetchQr(TOUROPERATOR_ID);
-      setFetchedQr(qrData);
+      setOperatorQrs(Array.isArray(qrData.data) ? qrData.data : []);
     } catch (err) {
       // error handled by hook
       console.error("Error fetching QR code:", err);
@@ -134,7 +142,8 @@ export default function QRCodePage() {
                       ></path>
                     </svg>
                     <p className="text-sm text-gray-500 mt-2">
-                      {fileInputRef.current?.files[0]
+                      {fileInputRef.current?.files &&
+                      fileInputRef.current.files[0]
                         ? fileInputRef.current.files[0].name
                         : "Click to select QR image"}
                     </p>
@@ -215,7 +224,7 @@ export default function QRCodePage() {
         {/* Fetch Section */}
         <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            Your QR Code
+            Your QR Codes
           </h2>
           <button
             onClick={handleFetch}
@@ -247,13 +256,13 @@ export default function QRCodePage() {
                 Fetching...
               </span>
             ) : (
-              "Fetch My QR Code"
+              "Fetch My QR Codes"
             )}
           </button>
 
-          {fetchedQr?.data?.length > 0 ? (
+          {operatorQrs.length > 0 ? (
             <div className="space-y-6">
-              {fetchedQr.data.map((qr: any) => (
+              {operatorQrs.map((qr) => (
                 <div
                   key={qr.id}
                   className="mt-3 flex flex-col items-center border-b pb-4 last:border-b-0"
@@ -266,9 +275,13 @@ export default function QRCodePage() {
                     alt={qr.qr_name}
                     className="w-32 h-32 object-contain border-2 border-white shadow-sm mb-2"
                   />
-                  <button className="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                  <a
+                    href={qr.qr_image_url}
+                    download={`qr_${qr.qr_name}.png`}
+                    className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                  >
                     Download QR Code
-                  </button>
+                  </a>
                 </div>
               ))}
             </div>

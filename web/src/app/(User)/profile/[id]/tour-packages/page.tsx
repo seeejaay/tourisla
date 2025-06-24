@@ -20,9 +20,40 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 
+type AssignedGuide = {
+  tourguide_id: number;
+  first_name: string;
+  last_name: string;
+  // Add other fields if present in your assigned_guides objects
+};
+
+type TourPackage = {
+  id: number;
+  touroperator_id: number;
+  package_name: string;
+  location: string;
+  description: string;
+  price: string;
+  duration_days: number;
+  inclusions: string;
+  exclusions: string;
+  available_slots: number;
+  date_start: string;
+  date_end: string;
+  start_time: string;
+  end_time: string;
+  cancellation_days: number;
+  cancellation_note: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  tourguide_id: number | null;
+  assigned_guides: AssignedGuide[];
+};
+
 export default function TourPackagesPage() {
   const { fetchAll, loading, error } = useTourPackageManager();
-  const [packages, setPackages] = useState<any[]>([]);
+  const [packages, setPackages] = useState<TourPackage[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const params = useParams();
 
