@@ -94,11 +94,17 @@ export default function IslandEntryPage() {
     formik.setFieldValue("companions", updated); // <-- sync with Formik
   };
 
-  const handleCompanionChange = (idx: number, field: keyof GroupMember, value: string | boolean | number) => {
+
+  const handleCompanionChange = (
+    idx: number,
+    field: keyof GroupMember,
+    value: string | boolean | number
+  ) => {
     const updated = companions.map((c, i) =>
       i === idx ? { ...c, [field]: value } : c
     );
-    formik.setFieldValue("companions", updated); // <-- sync with Formik
+    setCompanions(updated); // <-- This line is needed!
+    formik.setFieldValue("companions", updated);
   };
 
   const totalPersons = 1 + companions.length;
