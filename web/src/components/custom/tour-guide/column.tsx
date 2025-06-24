@@ -22,17 +22,15 @@ export type TourGuide = {
   mobile_number: string;
   email: string;
   reason_for_applying: string;
-  profile_picture?: File;
-  application_status?: "pending" | "approved" | "rejected";
+  profile_picture?: File | string;
+  application_status?: string;
   user_id?: number;
 };
-import { useRouter } from "next/navigation";
 export function columns(
   setDialogTourGuide: (guide: TourGuide | null) => void,
   onViewDocuments: (guide: TourGuide) => void,
   onApprove: (guide: TourGuide) => void,
-  onReject: (guide: TourGuide) => void,
-  router: ReturnType<typeof useRouter>
+  onReject: (guide: TourGuide) => void
 ): ColumnDef<TourGuide>[] {
   return [
     {
@@ -70,7 +68,7 @@ export function columns(
       enableSorting: true,
     },
     {
-      accessorKey: "applicaiton_status",
+      accessorKey: "application_status",
       header: () => <span className="font-bold">Application Status</span>,
       cell: ({ row }) => {
         const status = row.original.application_status || "Pending";
