@@ -37,11 +37,15 @@ export const useVisitorRegistration = () => {
 
   // Register a new visitor
   const createVisitor = useCallback(
-    async (visitors: Partial<Visitor>[]): Promise<any> => {
+    async (
+      visitors: Partial<Visitor>[]
+    ): Promise<{ visitors: Visitor[] } | null> => {
       setLoading(true);
       setError("");
       try {
+        console.log("Creating visitors with data:", visitors);
         const response = await apiRegisterVisitor(visitors); // expects array
+
         if (response.visitors && Array.isArray(response.visitors)) {
           setVisitors((prev) => [...prev, ...response.visitors]);
         }

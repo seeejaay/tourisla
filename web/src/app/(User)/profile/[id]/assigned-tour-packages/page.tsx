@@ -4,10 +4,31 @@ import { useEffect, useState, useCallback } from "react";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { useParams } from "next/navigation";
-
+type TourPackage = {
+  id: number;
+  touroperator_id: number;
+  package_name: string;
+  location: string;
+  description: string;
+  price: string;
+  duration_days: number;
+  inclusions: string;
+  exclusions: string;
+  available_slots: number;
+  date_start: string;
+  date_end: string;
+  start_time: string;
+  end_time: string;
+  cancellation_days: number;
+  cancellation_note: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  tourguide_id: number | null;
+};
 export default function AssignedTourPackagesPage() {
   const { fetchTourPackagesByGuide, loading, error } = useTourPackageManager();
-  const [packages, setPackages] = useState<any[]>([]);
+  const [packages, setPackages] = useState<TourPackage[]>([]);
   const params = useParams();
 
   // Ensure id is always a string
