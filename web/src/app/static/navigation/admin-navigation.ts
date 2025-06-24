@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   BookUser,
   Home,
   Hotel,
@@ -60,7 +61,7 @@ const adminNavigation = [
     name: "Article",
     href: "/admin/article",
     title: "Article",
-    icon: BookUser,
+    icon: BookOpen,
   },
 ];
 
