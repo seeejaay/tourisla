@@ -14,22 +14,27 @@ export default function EditArticle({
   onCancel,
 }: {
   article: Article;
-  onSave: () => void;
+  onSave: (update: Article) => void;
   onCancel: () => void;
 }) {
   const [form, setForm] = useState<Article>({ ...article });
   const [thumbnail, setThumbnail] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(article.thumbnail_url || null);
+  const [preview, setPreview] = useState<string | null>(
+    article.thumbnail_url || null
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value, type } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]:
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
@@ -48,7 +53,10 @@ export default function EditArticle({
     setLoading(true);
     setError(null);
 
-    const result = articleSchema.safeParse({ ...form, thumbnail_url: "placeholder" });
+    const result = articleSchema.safeParse({
+      ...form,
+      thumbnail_url: "placeholder",
+    });
     if (!result.success) {
       setError(result.error.errors[0].message);
       setLoading(false);
@@ -94,7 +102,13 @@ export default function EditArticle({
       <div className="flex flex-col gap-1">
         <Label>Thumbnail Image</Label>
         <Input type="file" accept="image/*" onChange={handleFileChange} />
-        {preview && <img src={preview} alt="Thumbnail preview" className="mt-2 w-40 rounded" />}
+        {preview && (
+          <img
+            src={preview}
+            alt="Thumbnail preview"
+            className="mt-2 w-40 rounded"
+          />
+        )}
       </div>
 
       {[

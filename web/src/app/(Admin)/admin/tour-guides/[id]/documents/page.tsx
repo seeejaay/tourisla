@@ -11,7 +11,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
+import Image from "next/image";
 type GuideDocument = {
   id?: string | number;
   document_type: string;
@@ -109,7 +109,9 @@ export default function TourGuideDocumentsPage() {
                 <CardContent className="flex-1 flex items-center justify-center">
                   {doc.file_path ? (
                     <div className="flex justify-center w-full">
-                      <img
+                      <Image
+                        width={300}
+                        height={300}
                         src={doc.file_path}
                         alt={doc.document_type}
                         className="object-contain w-full h-full"
