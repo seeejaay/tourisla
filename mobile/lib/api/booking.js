@@ -60,7 +60,7 @@ export const createBooking = async (bookingData) => {
   } catch (error) {
     console.error(
       "Error Creating Booking: ",
-      error
+      error.toJSON ? error.toJSON() : error
     );
     throw error;
   }

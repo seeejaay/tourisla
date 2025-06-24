@@ -601,7 +601,7 @@ app.post(
   "/api/v1/articles",
   upload.single("thumbnail"),
   createArticleController,
-  allowedRoles(["Admin", "Tourism Staff" ])
+  allowedRoles(["Admin", "Tourism Staff"])
 );
 app.put(
   "/api/v1/articles/:articleId",
@@ -753,7 +753,6 @@ app.get(
 app.post(
   "/api/v1/bookings",
   upload.single("proof_of_payment"),
-  allowedRoles(["Tourist"]),
   createBookingController
 );
 app.put(
