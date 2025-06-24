@@ -23,7 +23,7 @@ export const navigation = [
   },
   {
     tag: "Culture",
-    href: "/culture",
+    href: "/articles",
     title: "Culture",
   },
   {
