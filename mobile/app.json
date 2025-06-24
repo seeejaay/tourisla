@@ -62,7 +62,8 @@
           "savePhotosPermission": "Allow $(PRODUCT_NAME) to save brochures and maps to your photos.",
           "isAccessMediaLocationEnabled": true
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
