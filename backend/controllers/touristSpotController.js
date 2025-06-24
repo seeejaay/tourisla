@@ -7,6 +7,7 @@ const {
   deleteTouristSpotImage,
   getTouristSpotImages,
   addTouristSpotImages,
+  assignAttractionToStaff,
 } = require("../models/touristSpotModel");
 
 const {
@@ -76,7 +77,6 @@ const createTouristSpotController = async (req, res) => {
       category: category?.toUpperCase(),
     });
 
-
     let spotImages = [];
     if (imageUrls.length > 0) {
       spotImages = await addTouristSpotImages(spot.id, imageUrls);
@@ -101,7 +101,7 @@ const createTouristSpotController = async (req, res) => {
 const editTouristSpotController = async (req, res) => {
   try {
     const { touristSpotId } = req.params;
-        const {
+    const {
       name,
       type,
       description,
@@ -121,7 +121,6 @@ const editTouristSpotController = async (req, res) => {
       attraction_code,
       category,
     } = req.body;
-    
 
     // Get current tourist spot to access existing images
     const currentSpot = await getTouristSpotById(touristSpotId);
@@ -163,7 +162,6 @@ const editTouristSpotController = async (req, res) => {
       attraction_code: attraction_code?.toUpperCase(),
       category: category?.toUpperCase(),
     });
-
 
     // Upload images to S3
     if (req.files && req.files.length > 0) {
@@ -278,7 +276,9 @@ const deleteTouristSpotImageController = async (req, res) => {
     console.log("Image URL:", imageUrl);
 
     const url = new URL(imageUrl);
-    const s3Key = url.pathname.startsWith("/") ? url.pathname.slice(1) : url.pathname;
+    const s3Key = url.pathname.startsWith("/")
+      ? url.pathname.slice(1)
+      : url.pathname;
     console.log("S3 Key to delete:", s3Key);
 
     try {
@@ -298,6 +298,42 @@ const deleteTouristSpotImageController = async (req, res) => {
   }
 };
 
+const assignAttractionToStaffController = async (req, res) => {
+  try {
+    let { touristSpotId } = req.params;
+    const { staffId } = req.body;
+    console.log("Assigning tourist spot to staff:", {
+      touristSpotId,
+      staffId,
+    });
+    if (touristSpotId === "null" || touristSpotId === null) {
+      touristSpotId = null; // Handle unassign case
+    }
+
+    if (!staffId) {
+      return res.status(400).json({ error: "Staff ID is required." });
+    }
+    console.log(
+      `Assigning tourist spot ID ${touristSpotId} to staff ID ${staffId}`
+    );
+    // Assign the tourist spot to the staff member
+    const result = await assignAttractionToStaff(staffId, touristSpotId);
+
+    if (!result) {
+      return res
+        .status(404)
+        .json({ error: "Tourist spot or staff not found." });
+    }
+
+    res.json({
+      message: "Tourist spot assigned to staff successfully.",
+      data: result,
+    });
+  } catch (err) {
+    console.error("Error assigning tourist spot to staff:", err);
+    res.status(500).json({ error: "Failed to assign tourist spot to staff." });
+  }
+};
 
 module.exports = {
   createTouristSpotController,
@@ -306,4 +342,5 @@ module.exports = {
   viewTouristSpotsController,
   viewTouristSpotByIdController,
   deleteTouristSpotImageController,
+  assignAttractionToStaffController,
 };
