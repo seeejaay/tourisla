@@ -42,7 +42,6 @@ const editAccommodation = async (id, data) => {
     Region,
     Province,
     municipality,
-    id,
   } = data;
 
   const result = await db.query(
