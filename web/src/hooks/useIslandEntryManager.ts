@@ -16,7 +16,7 @@ export function useIslandEntryManager() {
     }
   };
 
-  const register = async (payload: any) => {
+  const register = async (payload: RegistrationPayload) => {
     setLoading(true);
     try {
       const res = await createIslandEntryRegistration(payload);

@@ -45,13 +45,14 @@ export default function IslandEntryPage() {
     initialValues: {
       name: "",
       sex: "",
-      age: "",
+      age: 0,
       is_foreign: false,
       municipality: "",
       province: "",
       country: "",
       companions: [],
       payment_method: "Cash",
+      total_fee: 0,
     },
     validationSchema: yup.object().shape({
       ...islandEntrySchema.fields,
@@ -88,14 +89,15 @@ export default function IslandEntryPage() {
   });
 
   const addCompanion = () => {
-    const updated = [...companions, { name: "", sex: "", age: "", is_foreign: false, municipality: "", province: "", country: "" }];
+    const updated = [...companions, { name: "", sex: "", age: 0, is_foreign: false, municipality: "", province: "", country: "" }];
     setCompanions(updated);
     formik.setFieldValue("companions", updated); // <-- sync with Formik
   };
 
-  const handleCompanionChange = (idx: number, field: string, value: any) => {
-    const updated = companions.map((c, i) => (i === idx ? { ...c, [field]: value } : c));
-    setCompanions(updated);
+  const handleCompanionChange = (idx: number, field: keyof GroupMember, value: string | boolean | number) => {
+    const updated = companions.map((c, i) =>
+      i === idx ? { ...c, [field]: value } : c
+    );
     formik.setFieldValue("companions", updated); // <-- sync with Formik
   };
 
