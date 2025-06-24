@@ -162,6 +162,7 @@ const {
   getIslandEntryMembersController,
   checkPayMongoPaymentStatusController,
   registerIslandWalkInController,
+  getLatestIslandEntryController,
 } = require("../controllers/islandEntryRegisController");
 
 const {
@@ -721,6 +722,7 @@ app.post(
   "/api/v1/island-entry/payment-status",
   checkPayMongoPaymentStatusController
 );
+app.get("/api/v1/island-entry/latest", authenticateUser, getLatestIslandEntryController);
 
 // Routes — Tour Packages
 app.post(
