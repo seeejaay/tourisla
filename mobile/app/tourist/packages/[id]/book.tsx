@@ -1,9 +1,20 @@
 // app/tourist/packages/[id]/book.tsx
 import React, { useEffect, useState, useRef } from "react";
-import { View, Text, ActivityIndicator, StyleSheet, ScrollView, StatusBar, TextInput, TouchableOpacity, Platform, Image } from "react-native";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  StyleSheet,
+  ScrollView,
+  StatusBar,
+  TextInput,
+  TouchableOpacity,
+  Platform,
+  Image,
+} from "react-native";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from "expo-file-system";
 import { useRouter } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
 import { useOperatorQrManager } from "@/hooks/useOperatorQr";
@@ -12,11 +23,11 @@ import { useTourPackageManager } from "@/hooks/useTourPackagesManager";
 import BookingSchemaMobile from "@/static/booking/bookingSchema";
 import { bookingFields } from "@/static/booking/booking";
 
-
 interface TourPackageDetailsScreenProps {
   headerHeight: number;
 }
-const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 0;
+const STATUS_BAR_HEIGHT =
+  Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0;
 export default function BookScreen({ headerHeight }) {
   interface Booking {
     id: number;
@@ -58,7 +69,9 @@ export default function BookScreen({ headerHeight }) {
 
   useEffect(() => {
     async function fetchPackageAndQr() {
-      const pkg = await fetchTourPackage(Array.isArray(packageId) ? packageId[0] : packageId);
+      const pkg = await fetchTourPackage(
+        Array.isArray(packageId) ? packageId[0] : packageId
+      );
       if (pkg) {
         setTourPackage(pkg);
         setForm((prev) => ({
@@ -106,190 +119,221 @@ export default function BookScreen({ headerHeight }) {
     }));
   };
 
-// Handle booking submit
-const handleSubmit = async () => {
-  setFormError(null);
-  console.log("Submitting booking with form data:", form);
+  // Handle booking submit
+  const handleSubmit = async () => {
+    setFormError(null);
+    console.log("Submitting booking with form data:", form);
 
-  // Zod validation
-  const result = BookingSchemaMobile.safeParse(form);
-  if (!result.success) {
-    const errorMessages = Object.values(result.error.flatten().fieldErrors)
-      .flat()
-      .filter(Boolean)
-      .join("\n");
-    setFormError(errorMessages || "Invalid input.");
-    console.error("Validation errors:", errorMessages);
-    return;
-  }
-  if (!qrData) {
-    setFormError("Payment QR code not available.");
-    console.error("Payment QR code not available.");
-    return;
-  }
+    // Zod validation
+    const result = BookingSchemaMobile.safeParse(form);
+    if (!result.success) {
+      const errorMessages = Object.values(result.error.flatten().fieldErrors)
+        .flat()
+        .filter(Boolean)
+        .join("\n");
+      setFormError(errorMessages || "Invalid input.");
+      console.error("Validation errors:", errorMessages);
+      return;
+    }
+    if (!qrData) {
+      setFormError("Payment QR code not available.");
+      console.error("Payment QR code not available.");
+      return;
+    }
 
-  // Prepare booking data
-  const bookingData: any = {
-    ...form,
-    scheduled_date: tourPackage.date_start,
-    package_id: tourPackage.id,
-    operator_qr_id: qrData.id,
-    payment_method: "QR",
+    // Prepare booking data
+    const bookingData: any = {
+      ...form,
+      scheduled_date: tourPackage.date_start,
+      package_id: tourPackage.id,
+      operator_qr_id: qrData.id,
+      payment_method: "QR",
+    };
+
+    // If proof_of_payment is a file, use FormData
+    let payload: any = bookingData;
+    if (form.proof_of_payment) {
+      payload = new FormData();
+
+      // Append all text fields
+      Object.keys(bookingData).forEach((key) => {
+        if (key !== "proof_of_payment") {
+          payload.append(key, bookingData[key]);
+        }
+      });
+
+      // Append the file using the correct structure for React Native
+      payload.append("proof_of_payment", {
+        uri: form.proof_of_payment.uri,
+        name: form.proof_of_payment.name || "proof.jpg",
+        type:
+          form.proof_of_payment.mimeType ||
+          form.proof_of_payment.type ||
+          "image/jpeg",
+      });
+    }
+
+    try {
+      await create(payload);
+      alert("Booking successful!");
+      router.push("/booking/tour-packages");
+    } catch (err) {
+      setFormError("Booking failed. Please try again.");
+    }
   };
 
-  // If proof_of_payment is a file, use FormData
-  let payload: any = bookingData;
-  if (form.proof_of_payment) {
-    payload = new FormData();
-  
-    // Append all text fields
-    Object.keys(bookingData).forEach((key) => {
-      if (key !== "proof_of_payment") {
-        payload.append(key, bookingData[key]);
-      }
-    });
-  
-    // ✅ Convert the picked file into a Blob
-    const fileUri = form.proof_of_payment.uri;
-    const fileBlob = await fetch(fileUri).then(res => res.blob());
-    payload.append(
-      "proof_of_payment",
-      fileBlob,
-      form.proof_of_payment.name
-    );
-  }
-  try {
-    await create(payload);
-    alert("Booking successful!");
-    router.push("/booking/tour-packages");
-  } catch (err) {
-    setFormError("Booking failed. Please try again.");
-  }
-};
-
-
-return (
-  <View style={[styles.container, { paddingTop: headerHeight }]}>
-    <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-        <View style={styles.navbar}>
-        <TouchableOpacity 
+  return (
+    <View style={[styles.container, { paddingTop: headerHeight }]}>
+      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      <View style={styles.navbar}>
+        <TouchableOpacity
           style={styles.navButton}
           onPress={() => router.back()}
         >
           <FontAwesome5 name="arrow-left" size={18} color="#fff" />
         </TouchableOpacity>
-    </View>
-    <ScrollView>
-    {bookingLoading ? (
-      <ActivityIndicator size="large" color="#0ea5e9" style={{ marginTop: 32 }} />
-    ) : error ? (
-      <Text style={styles.errorText}>{error}</Text>
-    ) : (
-      <>
-        {/* Heading */}
-        <Text style={styles.heading}>Book: {tourPackage?.package_name}</Text>
-
-        <Text>Scheduled Date:</Text>
-        <TextInput
-          style={styles.input}
-          value={
-            tourPackage?.date_start
-              ? new Date(tourPackage.date_start)
-                  .toISOString()
-                  .split("T")[0]
-              : ""
-          }
-          readOnly
-          className="w-full border rounded bg-gray-100 cursor-not-allowed"
-        />
-        <Text>Notes</Text>
-        <TextInput
-          style={styles.input}
-          value={form.notes}
-          placeholder="Enter any additional notes"
-          multiline
-          onChangeText={(text) =>
-            setForm((prev) => ({ ...prev, notes: text }))
-          }
-        />
-
-        <Text>Number of Guests:</Text>
-        
-        <View style={styles.spinnerContainer}>
-            <TextInput
-              style={styles.spinnerInput}
-              keyboardType="number-pad"
-              value={String(form.number_of_guests)}
-              onChangeText={(text) => setForm((prev) => ({ ...prev, number_of_guests: Number(text) || 1 }))}
-            />
-            <View style={{ flexDirection: "column", alignItems: "center" }}>
-            <TouchableOpacity
-              onPress={() => setForm((prev) => ({ ...prev, number_of_guests: prev.number_of_guests + 1 }))}
-              style={styles.spinnerButton}
-            >
-              <Text style={styles.spinnerButtonText}>▲</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setForm((prev) => ({ ...prev, number_of_guests: Math.max(1, prev.number_of_guests - 1) }))}
-              style={styles.spinnerButton}
-            >
-              <Text style={styles.spinnerButtonText}>▼</Text>
-            </TouchableOpacity>
-            </View>
-        </View>
-
-        <Text style={styles.textPrice}>Total Price: ₱{form.total_price}</Text>
-
-        <Text>Proof of Payment:</Text>
-        <TouchableOpacity style={styles.uploadButton} onPress={pickProofOfPayment}>
-          <Text style={styles.uploadButtonText}>Pick Proof of Payment</Text>
-        </TouchableOpacity>
-        {form.proof_of_payment && (
-          <Text style={styles.fileSelectedText}>File Selected: {form.proof_of_payment.name}</Text>
-        )}
-        {/* Payment Section */}
-        <Text style={styles.label}>Pay via QR Code</Text>
-        {qrLoading ? (
-          <Text style={styles.helperText}>Loading QR code...</Text>
-        ) : qrError ? (
-          <Text style={styles.errorText}>Failed to load QR code.</Text>
-        ) : qrData && qrData.qr_image_url ? (
-          <View style={{ alignItems: "center", marginBottom: 8 }}>
-            <Image
-              source={{ uri: qrData.qr_image_url }}
-              style={styles.qrImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.helperText}>Scan this QR code to pay the package fee.</Text>
-          </View>
+      </View>
+      <ScrollView>
+        {bookingLoading ? (
+          <ActivityIndicator
+            size="large"
+            color="#0ea5e9"
+            style={{ marginTop: 32 }}
+          />
+        ) : error ? (
+          <Text style={styles.errorText}>{error}</Text>
         ) : (
-          <Text style={styles.helperText}>No QR code available.</Text>
-        )}
+          <>
+            {/* Heading */}
+            <Text style={styles.heading}>
+              Book: {tourPackage?.package_name}
+            </Text>
 
-        <TouchableOpacity
-          onPress={handleSubmit}
-          disabled={bookingLoading}
-          style={[styles.bookButton, bookingLoading && { opacity: 0.5 }]}
-        >
-          <Text style={styles.bookButtonText}>{bookingLoading ? "Processing..." : "Book Now"}</Text>
-        </TouchableOpacity>
-      </>
-    )}
-  </ScrollView>
-  </View>
+            <Text>Scheduled Date:</Text>
+            <TextInput
+              style={styles.input}
+              value={
+                tourPackage?.date_start
+                  ? new Date(tourPackage.date_start).toISOString().split("T")[0]
+                  : ""
+              }
+              readOnly
+              className="w-full border rounded bg-gray-100 cursor-not-allowed"
+            />
+            <Text>Notes</Text>
+            <TextInput
+              style={styles.input}
+              value={form.notes}
+              placeholder="Enter any additional notes"
+              multiline
+              onChangeText={(text) =>
+                setForm((prev) => ({ ...prev, notes: text }))
+              }
+            />
+
+            <Text>Number of Guests:</Text>
+
+            <View style={styles.spinnerContainer}>
+              <TextInput
+                style={styles.spinnerInput}
+                keyboardType="number-pad"
+                value={String(form.number_of_guests)}
+                onChangeText={(text) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    number_of_guests: Number(text) || 1,
+                  }))
+                }
+              />
+              <View style={{ flexDirection: "column", alignItems: "center" }}>
+                <TouchableOpacity
+                  onPress={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      number_of_guests: prev.number_of_guests + 1,
+                    }))
+                  }
+                  style={styles.spinnerButton}
+                >
+                  <Text style={styles.spinnerButtonText}>▲</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      number_of_guests: Math.max(1, prev.number_of_guests - 1),
+                    }))
+                  }
+                  style={styles.spinnerButton}
+                >
+                  <Text style={styles.spinnerButtonText}>▼</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <Text style={styles.textPrice}>
+              Total Price: ₱{form.total_price}
+            </Text>
+
+            <Text>Proof of Payment:</Text>
+            <TouchableOpacity
+              style={styles.uploadButton}
+              onPress={pickProofOfPayment}
+            >
+              <Text style={styles.uploadButtonText}>Pick Proof of Payment</Text>
+            </TouchableOpacity>
+            {form.proof_of_payment && (
+              <Text style={styles.fileSelectedText}>
+                File Selected: {form.proof_of_payment.name}
+              </Text>
+            )}
+            {/* Payment Section */}
+            <Text style={styles.label}>Pay via QR Code</Text>
+            {qrLoading ? (
+              <Text style={styles.helperText}>Loading QR code...</Text>
+            ) : qrError ? (
+              <Text style={styles.errorText}>Failed to load QR code.</Text>
+            ) : qrData && qrData.qr_image_url ? (
+              <View style={{ alignItems: "center", marginBottom: 8 }}>
+                <Image
+                  source={{ uri: qrData.qr_image_url }}
+                  style={styles.qrImage}
+                  resizeMode="contain"
+                />
+                <Text style={styles.helperText}>
+                  Scan this QR code to pay the package fee.
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.helperText}>No QR code available.</Text>
+            )}
+
+            <TouchableOpacity
+              onPress={handleSubmit}
+              disabled={bookingLoading}
+              style={[styles.bookButton, bookingLoading && { opacity: 0.5 }]}
+            >
+              <Text style={styles.bookButtonText}>
+                {bookingLoading ? "Processing..." : "Book Now"}
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   navbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingTop: STATUS_BAR_HEIGHT + 10,
     paddingBottom: 10,
     paddingHorizontal: 16,
-    backgroundColor: 'transparent',
-    position: 'absolute',
+    backgroundColor: "transparent",
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
@@ -299,13 +343,24 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 8,
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(15, 23, 42, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   container: { flex: 1, padding: 16, backgroundColor: "#f8fafc" },
-  heading: { fontSize: 24, fontWeight: "900", color: "#0f172a", marginVertical: 8 , marginTop: 100},
-  bookingCard: { backgroundColor: "#f1f5f9", padding: 12, borderRadius: 8, marginBottom: 8 },
+  heading: {
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#0f172a",
+    marginVertical: 8,
+    marginTop: 100,
+  },
+  bookingCard: {
+    backgroundColor: "#f1f5f9",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
   errorText: { color: "#ef4444", marginVertical: 8 },
   input: {
     padding: 10,
@@ -333,7 +388,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
     minWidth: 120,
   },
-  bookButtonText: { color: "#fff", fontSize: 16, fontWeight: "600", textAlign: "center" },
+  bookButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+  },
   spinnerContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -341,7 +401,7 @@ const styles = StyleSheet.create({
     borderColor: "#cbd5e1",
     borderRadius: 6,
     paddingHorizontal: 4,
-    width: '100%',
+    width: "100%",
     marginBottom: 16,
   },
   spinnerButton: {
@@ -356,8 +416,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   textPrice: {
-    marginBottom: 8, 
-    fontWeight: "700", 
+    marginBottom: 8,
+    fontWeight: "700",
     alignSelf: "flex-end",
     color: "#00a63e",
   },
