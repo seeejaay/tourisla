@@ -1,9 +1,9 @@
 "use client";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useVisitorRegistration } from "@/hooks/useVisitorRegistration";
 
-export default function VisitorRegistrationResult() {
+function VisitorRegistrationResultInner() {
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
   const { getVisitorResultByCode, loading, error } = useVisitorRegistration();
@@ -40,5 +40,13 @@ export default function VisitorRegistrationResult() {
       <p>Show this QR code at the entrance:</p>
       <img src={result.qr_code_url} alt="QR Code" className="w-44 h-44" />
     </div>
+  );
+}
+
+export default function VisitorRegistrationResult() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VisitorRegistrationResultInner />
+    </Suspense>
   );
 }

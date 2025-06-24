@@ -39,9 +39,9 @@ export default function AddAccommodation({
   ) => {
     const { name, value, type } = e.target;
     setForm((prev) => {
-      let newValue: string | number = value;
+      let newValue = value;
       if (type === "number") {
-        newValue = Math.max(1, Number(value));
+        newValue = Math.max(1, Number(value)); // Prevent values below 1
       }
       return {
         ...prev,

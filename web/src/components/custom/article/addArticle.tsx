@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,12 +34,15 @@ export default function AddArticle({
   const [preview, setPreview] = useState<string | null>(null);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value, type } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]:
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
@@ -58,7 +61,10 @@ export default function AddArticle({
     setLoading(true);
     setError(null);
 
-    const result = articleSchema.safeParse({ ...form, thumbnail_url: "placeholder" });
+    const result = articleSchema.safeParse({
+      ...form,
+      thumbnail_url: "placeholder",
+    });
     if (!result.success) {
       setError(result.error.errors[0].message);
       setLoading(false);
@@ -85,7 +91,7 @@ export default function AddArticle({
 
       onSuccess?.();
     } catch (err) {
-      setError("Failed to submit article. " + (err as any)?.message);
+      setError("Failed to submit article. " + err);
     } finally {
       setLoading(false);
     }
@@ -101,7 +107,13 @@ export default function AddArticle({
       <div className="flex flex-col gap-1">
         <Label>Thumbnail Image</Label>
         <Input type="file" accept="image/*" onChange={handleFileChange} />
-        {preview && <img src={preview} alt="Thumbnail preview" className="mt-2 w-40 rounded" />}
+        {preview && (
+          <img
+            src={preview}
+            alt="Thumbnail preview"
+            className="mt-2 w-40 rounded"
+          />
+        )}
       </div>
 
       {[
@@ -135,7 +147,12 @@ export default function AddArticle({
 
       <div className="flex flex-col gap-1">
         <Label>Status</Label>
-        <select name="status" value={form.status} onChange={handleChange} className="border rounded px-2 py-1">
+        <select
+          name="status"
+          value={form.status}
+          onChange={handleChange}
+          className="border rounded px-2 py-1"
+        >
           <option value="DRAFT">Draft</option>
           <option value="PUBLISHED">Published</option>
         </select>
