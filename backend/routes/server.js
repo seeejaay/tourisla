@@ -958,7 +958,7 @@ app.patch(
 
 // Routes for PayMongo
 app.post("/api/v1/paymongo/links", createIslandEntryPaymentLink);
-// app.post("/api/v1/paymongo/webhook", handlePayMongoWebhook);
+app.post("/api/v1/paymongo/webhook", handlePayMongoWebhook);
 app.post("/api/v1/paymongo/manual-confirm", manuallyConfirmPayment);
 
 // Routes for Price Management
@@ -970,7 +970,3 @@ app.patch(
   togglePriceController
 );
 
-// Routes for PayMongo
-app.post("/api/v1/paymongo/links", createIslandEntryPaymentLink);
-app.post("/api/v1/paymongo/webhook", handlePayMongoWebhook);
-app.post("/api/v1/paymongo/manual-confirm", manuallyConfirmPayment);
