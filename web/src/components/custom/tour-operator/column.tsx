@@ -12,7 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
 // Adjust this type to match your TourOperator model
 export type TourOperator = {
   id: number;
@@ -28,8 +27,7 @@ export function columns(
   setDialogTourOperator: (operator: TourOperator | null) => void,
   onViewDocuments: (operator: TourOperator) => void,
   onApprove: (operator: TourOperator) => void,
-  onReject: (operator: TourOperator) => void,
-  router: ReturnType<typeof useRouter>
+  onReject: (operator: TourOperator) => void
 ): ColumnDef<TourOperator>[] {
   return [
     {

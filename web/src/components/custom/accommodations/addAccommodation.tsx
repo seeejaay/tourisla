@@ -22,7 +22,7 @@ export default function AddAccommodation({
 
   const [form, setForm] = useState<AccommodationSchema>({
     name_of_establishment: "",
-    type: "",
+    Type: "",
     no_of_rooms: 1, // Set to minimum valid value
     no_of_employees: 1, // Set to minimum valid value
     Year: 1900,
@@ -38,10 +38,10 @@ export default function AddAccommodation({
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
-    setForm((prev: any) => {
-      let newValue = value;
+    setForm((prev) => {
+      let newValue: string | number = value;
       if (type === "number") {
-        newValue = Math.max(1, Number(value)); // Prevent values below 1
+        newValue = Math.max(1, Number(value));
       }
       return {
         ...prev,

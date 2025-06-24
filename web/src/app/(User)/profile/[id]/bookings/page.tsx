@@ -25,9 +25,6 @@ export default function Bookings() {
     loading: detailsLoading,
   } = useBookingById();
 
-  const [selectedBookingId, setSelectedBookingId] = useState<
-    string | number | null
-  >(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   const params = useParams();
@@ -57,14 +54,12 @@ export default function Bookings() {
 
   // View details
   const handleViewDetails = async (bookingId: string | number) => {
-    setSelectedBookingId(bookingId);
     setDetailsOpen(true);
     await fetchById(bookingId);
   };
 
   const closeDetails = () => {
     setDetailsOpen(false);
-    setSelectedBookingId(null);
   };
 
   return (
