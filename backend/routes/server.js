@@ -503,12 +503,12 @@ app.get(
 );
 app.put(
   "/api/v1/guideApplicants/:applicantId/approve",
-  allowedRoles(["Tourism Staff", "Tourism Officer"]),
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
   approveTourGuideApplicantController
 );
 app.put(
   "/api/v1/guideApplicants/:applicantId/reject",
-  allowedRoles(["Tourism Staff", "Tourism Officer"]),
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
   rejectTourGuideApplicantController
 );
 app.get(

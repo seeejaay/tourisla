@@ -31,14 +31,8 @@ export default function TouristSpotPage() {
     useState<TouristSpot | null>(null);
 
   const { loggedInUser } = useAuth();
-  const {
-    touristSpots,
-    fetchTouristSpots,
-    updateTouristSpot,
-    deleteTouristSpot,
-    loading,
-    error,
-  } = useTouristSpotManager();
+  const { touristSpots, fetchTouristSpots, deleteTouristSpot, loading, error } =
+    useTouristSpotManager();
 
   // Refresh tourist spots after add/edit/delete
   const refreshTouristSpots = async () => {
@@ -128,16 +122,7 @@ export default function TouristSpotPage() {
                 {editDialogTouristSpot && (
                   <EditTouristSpot
                     touristSpot={editDialogTouristSpot}
-                    onSave={async (updatedTouristSpot) => {
-                      // Support FormData or object
-                      let id: number | undefined;
-                      if (updatedTouristSpot instanceof FormData) {
-                        id = editDialogTouristSpot?.id;
-                      } else {
-                        id = updatedTouristSpot.id;
-                      }
-                      if (typeof id !== "number") return;
-                      await updateTouristSpot(id, updatedTouristSpot);
+                    onSuccess={async () => {
                       await refreshTouristSpots();
                       setEditDialogTouristSpot(null);
                     }}

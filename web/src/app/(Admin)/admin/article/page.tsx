@@ -26,20 +26,16 @@ export default function ArticleAdminPage() {
   const router = useRouter();
 
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-  const [editDialogArticle, setEditDialogArticle] = useState<Article | null>(null);
-  const [deleteDialogArticle, setDeleteDialogArticle] = useState<Article | null>(null);
+  const [editDialogArticle, setEditDialogArticle] = useState<Article | null>(
+    null
+  );
+  const [deleteDialogArticle, setDeleteDialogArticle] =
+    useState<Article | null>(null);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   const { loggedInUser } = useAuth();
-  const {
-    articles,
-    fetchArticles,
-    add,
-    edit,
-    remove,
-    loading,
-    error,
-  } = useArticleManager();
+  const { articles, fetchArticles, edit, remove, loading, error } =
+    useArticleManager();
 
   const refreshArticles = async () => {
     await fetchArticles();
@@ -60,7 +56,7 @@ export default function ArticleAdminPage() {
       }
     };
     init();
-  }, [router, loggedInUser]);
+  }, [router, loggedInUser, fetchArticles]);
 
   return (
     <main className="flex flex-col items-center justify-start min-h-screen gap-8 w-full bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4 pb-20">
@@ -93,10 +89,7 @@ export default function ArticleAdminPage() {
                 >
                   View
                 </Button>
-                <Button
-                  size="sm"
-                  onClick={() => setEditDialogArticle(article)}
-                >
+                <Button size="sm" onClick={() => setEditDialogArticle(article)}>
                   Edit
                 </Button>
                 <Button
@@ -133,7 +126,10 @@ export default function ArticleAdminPage() {
       </Dialog>
 
       {/* View Dialog */}
-      <Dialog open={!!selectedArticle} onOpenChange={() => setSelectedArticle(null)}>
+      <Dialog
+        open={!!selectedArticle}
+        onOpenChange={() => setSelectedArticle(null)}
+      >
         <DialogContent className="max-h-[90vh] overflow-hidden sm:max-w-3xl flex flex-col">
           <DialogHeader>
             <DialogTitle>View Article</DialogTitle>
@@ -146,7 +142,10 @@ export default function ArticleAdminPage() {
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog open={!!editDialogArticle} onOpenChange={() => setEditDialogArticle(null)}>
+      <Dialog
+        open={!!editDialogArticle}
+        onOpenChange={() => setEditDialogArticle(null)}
+      >
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Article</DialogTitle>
@@ -155,7 +154,7 @@ export default function ArticleAdminPage() {
           {editDialogArticle && (
             <EditArticle
               article={editDialogArticle}
-              onSave={async (updated) => {
+              onSave={async (updated: Article) => {
                 await edit(updated.id!, updated);
                 await refreshArticles();
                 setEditDialogArticle(null);
@@ -167,19 +166,20 @@ export default function ArticleAdminPage() {
       </Dialog>
 
       {/* Delete Dialog */}
-      <Dialog open={!!deleteDialogArticle} onOpenChange={() => setDeleteDialogArticle(null)}>
+      <Dialog
+        open={!!deleteDialogArticle}
+        onOpenChange={() => setDeleteDialogArticle(null)}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Delete Article</DialogTitle>
-            <DialogDescription>
-              This action cannot be undone.
-            </DialogDescription>
+            <DialogDescription>This action cannot be undone.</DialogDescription>
           </DialogHeader>
           {deleteDialogArticle && (
             <DeleteArticle
               article={deleteDialogArticle}
               onDelete={async (id) => {
-                await remove(id);
+                await remove(Number(id));
                 await refreshArticles();
                 setDeleteDialogArticle(null);
               }}
