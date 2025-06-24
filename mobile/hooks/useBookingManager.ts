@@ -21,7 +21,9 @@ export function useCreateBooking() {
     setLoading(true);
     setError(null);
     try {
+      console.log("Manager Sending data:", bookingData);
       const result = await createBooking(bookingData);
+      console.log("Manager Received data:", result);
       return result;
     } catch (err) {
       setError(err + "Unknown error");
