@@ -7,7 +7,7 @@ const {
 const { getIslandEntryByCode } = require("../models/islandEntryRegisModel");
 const db = require("../db/index");
 
-/// Create PayMongo checkout link
+// Create PayMongo checkout link
 const createIslandEntryPaymentLink = async (req, res) => {
   try {
     const { unique_code } = req.body;
@@ -61,35 +61,41 @@ const createIslandEntryPaymentLink = async (req, res) => {
 }
 };
 
+// Webhook handler for 'link.payment.paid' events
+const handlePayMongoWebhook = async (req, res) => {
+  try {
+    const eventType = req.body?.data?.attributes?.type;
 
-// Webhook handler (commented out until there's real webhook URL)
-// const handlePayMongoWebhook = async (req, res) => {
-//   try {
-//     const event = req.body?.data?.attributes;
+    if (eventType !== "link.payment.paid") {
+      return res.status(200).json({ message: "Event ignored" });
+    }
 
-//     if (!event?.reference_number || !event?.status) {
-//       return res.status(400).json({ error: "Invalid webhook payload" });
-//     }
+    const referenceNumber = req.body?.data?.attributes?.data?.attributes?.reference_number;
+    const status = req.body?.data?.attributes?.data?.attributes?.status;
 
-//     const registration = await getIslandEntryByCode(event.reference_number);
+    if (!referenceNumber || !status) {
+      return res.status(400).json({ error: "Invalid webhook payload" });
+    }
 
-//     if (!registration) {
-//       return res.status(404).json({ error: "Registration not found" });
-//     }
+    const registration = await getIslandEntryByCode(referenceNumber);
 
-//     const newStatus = event.status === "paid" ? "PAID" : "PENDING";
+    if (!registration) {
+      return res.status(404).json({ error: "Registration not found" });
+    }
 
-//     await updateIslandEntryPaymentStatus({
-//       registration_id: registration.id,
-//       status: newStatus,
-//     });
+    const newStatus = status === "paid" ? "PAID" : "PENDING";
 
-//     res.status(200).json({ message: "Payment status updated" });
-//   } catch (error) {
-//     console.error("PayMongo Webhook Error:", error);
-//     res.status(500).json({ error: "Webhook processing failed" });
-//   }
-// };
+    await updateIslandEntryPaymentStatus({
+      registration_id: registration.id,
+      status: newStatus,
+    });
+
+    return res.status(200).json({ message: "Payment status updated" });
+  } catch (error) {
+    console.error("PayMongo Webhook Error:", error);
+    return res.status(500).json({ error: "Webhook processing failed" });
+  }
+};
 
 // Manual payment confirmation for testing (call this in Postman)
 const manuallyConfirmPayment = async (req, res) => {
@@ -120,6 +126,6 @@ const manuallyConfirmPayment = async (req, res) => {
 
 module.exports = {
   createIslandEntryPaymentLink,
-  // handlePayMongoWebhook, // keep for later
+  handlePayMongoWebhook, 
   manuallyConfirmPayment,
 };
