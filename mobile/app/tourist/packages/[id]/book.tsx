@@ -186,7 +186,10 @@ export default function BookScreen({
 
       await create(formData);
       alert("Booking successful!");
-      router.push("/booking/tour-packages");
+      router.replace({
+        pathname: "/tourist/packages/tourist_packages",
+        params: { refresh: new Date().getTime() },
+      });
     } catch (err) {
       setFormError("Booking failed. Please try again.");
       console.error("Booking failed:", err);

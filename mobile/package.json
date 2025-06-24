@@ -60,7 +60,8 @@
     "resend": "^4.5.1",
     "tailwindcss": "^3.4.17",
     "tailwindcss-react-native": "^1.7.10",
-    "zod": "^3.25.51"
+    "zod": "^3.25.51",
+    "expo-dev-client": "~5.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
