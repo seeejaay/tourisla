@@ -63,8 +63,6 @@ export default function LoginScreen() {
     const trimmedPassword = password.trim();
 
     try {
-      console.log("Attempting login with email:", trimmedEmail);
-
       const res = (await login({
         email: trimmedEmail,
         password: trimmedPassword,
