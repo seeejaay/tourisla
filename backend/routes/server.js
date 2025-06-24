@@ -969,4 +969,3 @@ app.patch(
   authenticateTourismOfficer,
   togglePriceController
 );
-
