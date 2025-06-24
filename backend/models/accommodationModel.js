@@ -91,10 +91,18 @@ const getAccommodationById = async (id) => {
   return result.rows[0];
 };
 
+const getAllTourismStaff = async () => {
+  const result = await db.query(
+    "SELECT * FROM users WHERE role = 'Tourism Staff'"
+  );
+  return result.rows;
+};
+
 module.exports = {
   createAccommodation,
   editAccommodation,
   deleteAccommodation,
   getAllAccommodations,
   getAccommodationById,
+  getAllTourismStaff,
 };
