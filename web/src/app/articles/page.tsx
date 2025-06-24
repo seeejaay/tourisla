@@ -18,7 +18,10 @@ export default function PublicArticlesPage() {
   const [page, setPage] = useState(1);
 
   const startIndex = (page - 1) * ARTICLES_PER_PAGE;
-  const paginatedRegular = regular.slice(startIndex, startIndex + ARTICLES_PER_PAGE);
+  const paginatedRegular = regular.slice(
+    startIndex,
+    startIndex + ARTICLES_PER_PAGE
+  );
   const hasMore = startIndex + ARTICLES_PER_PAGE < regular.length;
 
   useEffect(() => {
@@ -32,7 +35,7 @@ export default function PublicArticlesPage() {
     };
 
     load();
-  }, [articles]);
+  }, [articles, fetchArticles]);
 
   return (
     <main className="px-4 py-8 max-w-7xl mx-auto space-y-12">
@@ -43,7 +46,9 @@ export default function PublicArticlesPage() {
       {/* Featured Articles */}
       {featured.length > 0 && (
         <section>
-          <h2 className="text-2xl font-bold text-blue-700 mb-4">🌟 Featured Articles</h2>
+          <h2 className="text-2xl font-bold text-blue-700 mb-4">
+            🌟 Featured Articles
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {featured.map((article) => (
               <Link href={`/articles/${article.id}`} key={article.id}>
@@ -55,7 +60,9 @@ export default function PublicArticlesPage() {
                       className="w-full h-48 object-cover rounded mb-3"
                     />
                   )}
-                  <h3 className="text-xl font-semibold line-clamp-2">{article.title}</h3>
+                  <h3 className="text-xl font-semibold line-clamp-2">
+                    {article.title}
+                  </h3>
                   <p className="text-sm text-gray-600">By {article.author}</p>
                 </Card>
               </Link>

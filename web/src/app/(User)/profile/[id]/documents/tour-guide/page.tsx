@@ -24,7 +24,14 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-
+type GuideDocument = {
+  id: string;
+  tourguide_id: string;
+  document_type: string;
+  file_path: string;
+  requirements: string[];
+  uploaded_at: string;
+};
 export default function TourGuideDocumentsPage() {
   const router = useRouter();
 
@@ -32,7 +39,7 @@ export default function TourGuideDocumentsPage() {
   const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
 
-  const [documents, setDocuments] = useState<any[]>([]);
+  const [documents, setDocuments] = useState<GuideDocument[]>([]);
   const [guideId, setGuideId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -226,7 +233,7 @@ export default function TourGuideDocumentsPage() {
                 <CardFooter className="flex justify-between items-center">
                   <span className="text-sm text-gray-500">
                     {new Date(
-                      doc.upload_date || Date.now()
+                      doc.uploaded_at || Date.now()
                     ).toLocaleDateString()}
                   </span>
                   <div className="flex gap-2">

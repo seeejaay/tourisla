@@ -9,7 +9,7 @@ const AccommodationSchema = z.object({
       /^[a-zA-Z0-9\s]+$/,
       "Name of Establishment must contain only letters, numbers, and spaces"
     ),
-  type: z
+  Type: z
     .string()
     .min(3, "Type of Accommodation is required")
     .regex(
