@@ -91,9 +91,17 @@ const getAccommodationById = async (id) => {
   return result.rows[0];
 };
 
+const assignAccommodationToStaff = async (staffId, accommodationId) => {
+  const result = await db.query(
+    `UPDATE users SET accommodation_id = $1 WHERE user_id = $2 RETURNING *`,
+    [accommodationId, staffId]
+  );
+  return result.rows[0];
+};
+
 const getAllTourismStaff = async () => {
   const result = await db.query(
-    "SELECT * FROM users WHERE role = 'Tourism Staff'"
+    `SELECT * FROM users WHERE role = 'Tourism Staff'`
   );
   return result.rows;
 };
@@ -105,4 +113,5 @@ module.exports = {
   getAllAccommodations,
   getAccommodationById,
   getAllTourismStaff,
+  assignAccommodationToStaff,
 };
