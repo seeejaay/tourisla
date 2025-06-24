@@ -41,6 +41,11 @@ export const navigation = [
     href: "/visitor-registration",
     title: "Visitor Registration",
   },
+  {
+    tag: "Island Entry Registration",
+    href: "/islandEntry-regis",
+    title: "Island Entry Registration",
+  },
 ];
 export const footerNavigation = [
   {
