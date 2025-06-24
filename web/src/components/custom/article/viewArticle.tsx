@@ -4,6 +4,14 @@ import { Article } from "@/app/static/article/useArticleSchema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
+function extractYouTubeId(url: string): string | null {
+  const regex =
+    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+  const match = url.match(regex);
+  return match ? match[1] : "";
+}
+
+
 export default function ViewArticle({ article }: { article: Article }) {
   if (!article) return null;
 
@@ -30,19 +38,32 @@ export default function ViewArticle({ article }: { article: Article }) {
           </div>
         )}
 
-        {article.video_url && (
-          <div>
-            <Label className="text-muted-foreground">Video</Label>
-            <a
-              href={article.video_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 underline"
-            >
-              Watch Video
-            </a>
+      {article.video_url && (
+        <div>
+          <Label className="text-muted-foreground">Video</Label>
+          <div className="mt-2">
+            {article.video_url.includes("youtube.com") || article.video_url.includes("youtu.be") ? (
+              <iframe
+                src={`https://www.youtube.com/embed/${extractYouTubeId(article.video_url)}`}
+                title="YouTube video player"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full max-w-[560px] h-[315px] rounded shadow"
+              />
+            ) : (
+              <a
+                href={article.video_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline"
+              >
+                Watch Video
+              </a>
+            )}
           </div>
+        </div>
         )}
+
 
         {article.tags && (
           <div>
