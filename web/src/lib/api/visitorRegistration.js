@@ -2,58 +2,57 @@ import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export const fetchTouristSpots = async () => {
+export const getVisitorGroupMembers = async (groupId) => {
   try {
-    const response = await axios.get(`${API_URL}tourist-spots`, {
+    const response = await axios.get(`${API_URL}register/members/${groupId}`, {
       withCredentials: true,
     });
 
     if (response.status !== 200) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
     }
+
     return response.data;
   } catch (error) {
     console.error(
-      "Error Fetching Tourist Spots: ",
+      "Error Fetching Visitor Group Members: ",
       error.response?.data || error.message
     );
     throw error;
   }
 };
 
-export const viewTouristSpots = async (touristSpotId) => {
+export const registerVisitor = async (visitors) => {
   try {
-    const response = await axios.get(
-      `${API_URL}tourist-spots/${touristSpotId}`,
-      {
-        withCredentials: true,
-      }
+    console.log("API Registering Visitors: ", visitors);
+    // Wrap visitors in an object with groupMembers property
+    const response = await axios.post(
+      `${API_URL}register`,
+      { groupMembers: visitors }, // <-- FIXED HERE
+      { withCredentials: true }
     );
 
-    if (response.status !== 200) {
+    if (response.status !== 200 && response.status !== 201) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
     }
-    console.log("Tourist Spot Data: ", response.data);
+
     return response.data;
   } catch (error) {
     console.error(
-      "Error Fetching Tourist Spot: ",
+      "Error Registering Visitor: ",
       error.response?.data || error.message
     );
     throw error;
   }
 };
 
-export const createTouristSpot = async (touristSpotData) => {
+export const manualCheckIn = async (visitorId) => {
   try {
     const response = await axios.post(
-      `${API_URL}tourist-spots`, // fixed typo here
-      touristSpotData,
+      `${API_URL}register/manual-check-in/${visitorId}`,
+      {},
       {
         withCredentials: true,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
       }
     );
 
@@ -64,19 +63,18 @@ export const createTouristSpot = async (touristSpotData) => {
     return response.data;
   } catch (error) {
     console.error(
-      "Error Creating Tourist Spot: ",
+      "Error Checking In Visitor: ",
       error.response?.data || error.message
     );
     throw error;
   }
 };
 
-export const updateTouristSpot = async (touristSpotId, touristSpotData) => {
+export const walkInVisitor = async () => {
   try {
-    console.log("Sending Tourist Spot Data: ", touristSpotData);
-    const response = await axios.put(
-      `${API_URL}tourist-spots/${touristSpotId}`,
-      touristSpotData,
+    const response = await axios.post(
+      `${API_URL}register/walk-in`,
+      {},
       {
         withCredentials: true,
       }
@@ -85,20 +83,21 @@ export const updateTouristSpot = async (touristSpotId, touristSpotData) => {
     if (response.status !== 200) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
     }
+
     return response.data;
   } catch (error) {
     console.error(
-      "Error Updating Tourist Spot: ",
+      "Error Processing Walk-In Visitor: ",
       error.response?.data || error.message
     );
     throw error;
   }
 };
 
-export const deleteTouristSpot = async (touristSpotId) => {
+export const getVisitorResult = async (uniqueCode) => {
   try {
-    const response = await axios.delete(
-      `${API_URL}tourist-spots/${touristSpotId}`,
+    const response = await axios.get(
+      `${API_URL}register/result/${uniqueCode}`,
       {
         withCredentials: true,
       }
@@ -111,28 +110,18 @@ export const deleteTouristSpot = async (touristSpotId) => {
     return response.data;
   } catch (error) {
     console.error(
-      "Error Deleting Tourist Spot: ",
+      "Error Fetching Visitor Result: ",
       error.response?.data || error.message
     );
     throw error;
   }
 };
 
-export const assignAttractionToStaff = async (staffId, touristSpotId) => {
+export const getQRCodebyUserId = async (userId) => {
   try {
-    console.log(
-      "API" + "Assigning Staff ID: ",
-      staffId,
-      " to Tourist Spot ID: ",
-      touristSpotId
-    );
-    const response = await axios.put(
-      `${API_URL}tourist-spots/${touristSpotId}/assign-staff`,
-      { staffId },
-      {
-        withCredentials: true,
-      }
-    );
+    const response = await axios.get(`${API_URL}register/qr/${userId}`, {
+      withCredentials: true,
+    });
 
     if (response.status !== 200) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
@@ -141,7 +130,7 @@ export const assignAttractionToStaff = async (staffId, touristSpotId) => {
     return response.data;
   } catch (error) {
     console.error(
-      "Error Assigning Staff to Tourist Spot: ",
+      "Error Fetching QR Code by User ID: ",
       error.response?.data || error.message
     );
     throw error;

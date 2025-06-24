@@ -36,6 +36,11 @@ export const navigation = [
     href: "/tour-packages",
     title: "Tour Packages",
   },
+  {
+    tag: "Visitor Registration",
+    href: "/visitor-registration",
+    title: "Visitor Registration",
+  },
 ];
 export const footerNavigation = [
   {

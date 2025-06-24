@@ -1,11 +1,15 @@
 const db = require("../db/index");
 
 // ✅ Create new visitor registration entry
-const createVisitorRegistration = async ({ unique_code, qr_code_url }) => {
+const createVisitorRegistration = async ({
+  unique_code,
+  qr_code_url,
+  user_id,
+}) => {
   const result = await db.query(
-    `INSERT INTO visitor_registrations (unique_code, qr_code_url) 
-     VALUES ($1, $2) RETURNING *`,
-    [unique_code, qr_code_url]
+    `INSERT INTO visitor_registrations (unique_code, qr_code_url, user_id) 
+     VALUES ($1, $2, $3) RETURNING *`,
+    [unique_code, qr_code_url, user_id]
   );
   return result.rows[0];
 };
@@ -23,9 +27,9 @@ const createVisitorGroupMembers = async (registrationId, members) => {
         member.age,
         member.sex,
         member.is_foreign || false,
-        member.municipality || '',
-        member.province || '',
-        member.country || '',
+        member.municipality || "",
+        member.province || "",
+        member.country || "",
       ]
     )
   );
@@ -61,7 +65,11 @@ const getUserAttractionId = async (userId) => {
 };
 
 // ✅ Log visit for group
-const logAttractionVisitByRegistration = async ({ registrationId, scannedByUserId, touristSpotId }) => {
+const logAttractionVisitByRegistration = async ({
+  registrationId,
+  scannedByUserId,
+  touristSpotId,
+}) => {
   const result = await db.query(
     `INSERT INTO attraction_visitor_logs (registration_id, scanned_by_user_id, tourist_spot_id, visit_date)
      VALUES ($1, $2, $3, CURRENT_DATE)
@@ -72,6 +80,17 @@ const logAttractionVisitByRegistration = async ({ registrationId, scannedByUserI
   return result.rows[0];
 };
 
+const getQRCodebyUserId = async (userId) => {
+  const result = await db.query(
+    `SELECT qr_code_url, unique_code, registration_date
+     FROM visitor_registrations
+     WHERE user_id = $1
+     ORDER BY registration_date DESC
+     LIMIT 1`,
+    [userId]
+  );
+  return result.rows[0];
+};
 
 module.exports = {
   createVisitorRegistration,
@@ -79,5 +98,6 @@ module.exports = {
   getVisitorByUniqueCode,
   isUniqueCodeTaken,
   getUserAttractionId,
-  logAttractionVisitByRegistration, 
+  logAttractionVisitByRegistration,
+  getQRCodebyUserId,
 };
