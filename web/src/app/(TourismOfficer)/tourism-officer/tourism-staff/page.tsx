@@ -7,7 +7,7 @@ import { useAccommodationManager } from "@/hooks/useAccommodationManager";
 import { columns } from "@/components/custom/tourism-staff/columns";
 import DataTable from "@/components/custom/data-table";
 import AssignAccommodation from "@/components/custom/tourism-staff/assignAccomodation";
-// import AssignTouristSpot from "@/components/custom/tourism-staff/assignTouristSpot";
+import AssignTouristSpot from "@/components/custom/tourism-staff/assignTouristSpot";
 import {
   Dialog,
   DialogContent,
@@ -123,7 +123,10 @@ export default function TourismStaffPage() {
                 {assignTouristSpotUser && (
                   <AssignTouristSpot
                     staff={assignTouristSpotUser}
-                    onAssigned={() => setAssignTouristSpotUser(null)}
+                    onAssigned={async () => {
+                      await refreshStaff();
+                      setAssignTouristSpotUser(null);
+                    }}
                     onCancel={() => setAssignTouristSpotUser(null)}
                   />
                 )}
