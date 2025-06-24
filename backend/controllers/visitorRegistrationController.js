@@ -8,6 +8,7 @@ const {
   getVisitorByUniqueCode,
   getUserAttractionId,
   logAttractionVisitByRegistration,
+  getQRCodebyUserId,
 } = require("../models/visitorRegistrationModel");
 
 const db = require("../db/index");
@@ -22,16 +23,19 @@ const s3Client = new S3Client({
 });
 
 const generateCustomCode = () => {
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const numbers = '0123456789';
-  let result = '';
-  for (let i = 0; i < 3; i++) result += letters[Math.floor(Math.random() * letters.length)];
-  for (let i = 0; i < 3; i++) result += numbers[Math.floor(Math.random() * numbers.length)];
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const numbers = "0123456789";
+  let result = "";
+  for (let i = 0; i < 3; i++)
+    result += letters[Math.floor(Math.random() * letters.length)];
+  for (let i = 0; i < 3; i++)
+    result += numbers[Math.floor(Math.random() * numbers.length)];
   return result;
 };
 
 const generateUniqueCode = async () => {
-  let code, taken = true;
+  let code,
+    taken = true;
   while (taken) {
     code = generateCustomCode();
     taken = await isUniqueCodeTaken(code);
@@ -43,8 +47,12 @@ const generateUniqueCode = async () => {
 const registerVisitorController = async (req, res) => {
   try {
     const { groupMembers } = req.body;
-
-    if (!groupMembers || !Array.isArray(groupMembers) || groupMembers.length === 0) {
+    const userId = req.session.user?.user_id ?? req.session.user?.id;
+    if (
+      !groupMembers ||
+      !Array.isArray(groupMembers) ||
+      groupMembers.length === 0
+    ) {
       return res.status(400).json({ error: "Group members are required" });
     }
 
@@ -67,9 +75,13 @@ const registerVisitorController = async (req, res) => {
     const registration = await createVisitorRegistration({
       unique_code: uniqueCode,
       qr_code_url: qrCodeUrl,
+      user_id: userId,
     });
 
-    const members = await createVisitorGroupMembers(registration.id, groupMembers);
+    const members = await createVisitorGroupMembers(
+      registration.id,
+      groupMembers
+    );
 
     res.status(201).json({
       message: "Visitor group registered successfully",
@@ -90,23 +102,31 @@ const manualCheckInController = async (req, res) => {
     const userId = req.session.user?.user_id ?? req.session.user?.id;
 
     if (!userId) {
-      return res.status(403).json({ error: "Invalid session: missing user ID." });
+      return res
+        .status(403)
+        .json({ error: "Invalid session: missing user ID." });
     }
 
     const attractionId = await getUserAttractionId(userId);
 
     if (!attractionId) {
-      return res.status(403).json({ error: "Missing attraction ID for the user." });
+      return res
+        .status(403)
+        .json({ error: "Missing attraction ID for the user." });
     }
 
     if (!unique_code) {
       return res.status(400).json({ error: "Unique code is required." });
     }
 
-    const registration = await getVisitorByUniqueCode(unique_code.trim().toUpperCase());
+    const registration = await getVisitorByUniqueCode(
+      unique_code.trim().toUpperCase()
+    );
 
     if (!registration) {
-      return res.status(404).json({ error: "Visitor not found with that code." });
+      return res
+        .status(404)
+        .json({ error: "Visitor not found with that code." });
     }
 
     // Get group members from that registration
@@ -117,11 +137,13 @@ const manualCheckInController = async (req, res) => {
     const groupMembers = membersResult.rows;
 
     if (groupMembers.length === 0) {
-      return res.status(404).json({ error: "No group members found for this registration." });
+      return res
+        .status(404)
+        .json({ error: "No group members found for this registration." });
     }
 
     // Check if any member has already checked in today
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     const existingLogCheck = await db.query(
       `SELECT 1 FROM attraction_visitor_logs 
        WHERE  registration_id = $1 
@@ -132,7 +154,9 @@ const manualCheckInController = async (req, res) => {
     );
 
     if (existingLogCheck.rows.length > 0) {
-      return res.status(409).json({ error: "This group has already checked in today." });
+      return res
+        .status(409)
+        .json({ error: "This group has already checked in today." });
     }
 
     // Insert logs for all members
@@ -157,7 +181,7 @@ const getVisitorGroupMembersController = async (req, res) => {
   try {
     const uniqueCode = req.params.unique_code?.trim().toUpperCase();
     console.log("🔍 Checking for code:", uniqueCode);
-    
+
     if (!uniqueCode) {
       return res.status(400).json({ error: "Unique code is required." });
     }
@@ -190,17 +214,25 @@ const registerWalkInVisitorController = async (req, res) => {
     const userId = req.session.user?.user_id ?? req.session.user?.id;
 
     if (!userId) {
-      return res.status(403).json({ error: "Invalid session: missing user ID." });
+      return res
+        .status(403)
+        .json({ error: "Invalid session: missing user ID." });
     }
 
-    if (!groupMembers || !Array.isArray(groupMembers) || groupMembers.length === 0) {
+    if (
+      !groupMembers ||
+      !Array.isArray(groupMembers) ||
+      groupMembers.length === 0
+    ) {
       return res.status(400).json({ error: "Group members are required." });
     }
 
     const attractionId = await getUserAttractionId(userId);
 
     if (!attractionId) {
-      return res.status(403).json({ error: "Missing attraction ID for the user." });
+      return res
+        .status(403)
+        .json({ error: "Missing attraction ID for the user." });
     }
 
     const uniqueCode = await generateUniqueCode();
@@ -226,7 +258,10 @@ const registerWalkInVisitorController = async (req, res) => {
     });
 
     // ✅ Add members
-    const members = await createVisitorGroupMembers(registration.id, groupMembers);
+    const members = await createVisitorGroupMembers(
+      registration.id,
+      groupMembers
+    );
 
     // ✅ Log the group check-in (only 1 row in logs)
     const logs = await logAttractionVisitByRegistration({
@@ -243,16 +278,70 @@ const registerWalkInVisitorController = async (req, res) => {
     });
   } catch (error) {
     console.error("Walk-in registration error:", error);
-    res.status(500).json({ error: "Internal server error during walk-in registration." });
+    res
+      .status(500)
+      .json({ error: "Internal server error during walk-in registration." });
   }
 };
 
+const getVisitorResultController = async (req, res) => {
+  try {
+    const uniqueCode = req.params.unique_code?.trim().toUpperCase();
+    if (!uniqueCode) {
+      return res.status(400).json({ error: "Unique code is required." });
+    }
 
+    const registration = await getVisitorByUniqueCode(uniqueCode);
+    if (!registration) {
+      return res.status(404).json({ error: "Visitor registration not found." });
+    }
+
+    // Optionally fetch group members
+    // const members = await getVisitorGroupMembersByRegistrationId(
+    //   registration.id
+    // );
+
+    return res.status(200).json({
+      registration,
+    });
+  } catch (error) {
+    console.error("Error fetching registration result:", error);
+    return res.status(500).json({ error: "Internal server error." });
+  }
+};
+
+const getQRCodebyUserIdController = async (req, res) => {
+  try {
+    const userId = req.session.user?.user_id ?? req.session.user?.id;
+    if (!userId) {
+      return res
+        .status(403)
+        .json({ error: "Invalid session: missing user ID." });
+    }
+
+    const qrCodeData = await getQRCodebyUserId(userId);
+    if (!qrCodeData) {
+      return res
+        .status(404)
+        .json({ error: "QR code not found for this user." });
+    }
+
+    return res.status(200).json({
+      qr_code_url: qrCodeData.qr_code_url,
+      unique_code: qrCodeData.unique_code,
+      message: "QR code fetched successfully.",
+    });
+  } catch (error) {
+    console.error("Error fetching QR code by user ID:", error);
+    return res.status(500).json({ error: "Internal server error." });
+  }
+};
 
 module.exports = {
   registerVisitorController,
   manualCheckInController,
   getVisitorGroupMembersController,
   registerWalkInVisitorController,
+  getVisitorResultController,
+  getQRCodebyUserIdController,
 };
-

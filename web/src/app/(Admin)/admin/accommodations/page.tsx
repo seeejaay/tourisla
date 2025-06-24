@@ -60,7 +60,7 @@ export default function AccommodationsPage() {
       }
     }
     getCurrentUserAndAccommodations();
-  }, [router, loggedInUser]);
+  }, [router, loggedInUser, fetchAccommodations]);
 
   return (
     <>

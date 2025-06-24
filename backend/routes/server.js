@@ -118,6 +118,7 @@ const {
   viewTouristSpotsController,
   viewTouristSpotByIdController,
   deleteTouristSpotImageController,
+  assignAttractionToStaffController,
 } = require("../controllers/touristSpotController");
 
 const {
@@ -151,6 +152,8 @@ const {
   manualCheckInController,
   getVisitorGroupMembersController,
   registerWalkInVisitorController,
+  getVisitorResultController,
+  getQRCodebyUserIdController,
 } = require("../controllers/visitorRegistrationController");
 
 const {
@@ -500,12 +503,12 @@ app.get(
 );
 app.put(
   "/api/v1/guideApplicants/:applicantId/approve",
-  allowedRoles(["Tourism Staff", "Tourism Officer"]),
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
   approveTourGuideApplicantController
 );
 app.put(
   "/api/v1/guideApplicants/:applicantId/reject",
-  allowedRoles(["Tourism Staff", "Tourism Officer"]),
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
   rejectTourGuideApplicantController
 );
 app.get(
@@ -564,6 +567,13 @@ app.put(
   upload.array("images", 5),
   editTouristSpotController
 );
+
+app.put(
+  "/api/v1/tourist-spots/:touristSpotId/assign-staff",
+  allowedRoles(["Tourism Officer"]),
+  assignAttractionToStaffController
+);
+
 app.delete(
   "/api/v1/tourist-spots/:touristSpotId",
   allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"]),
@@ -571,6 +581,7 @@ app.delete(
 );
 app.get("/api/v1/tourist-spots", viewTouristSpotsController);
 app.get("/api/v1/tourist-spots/:touristSpotId", viewTouristSpotByIdController);
+
 app.delete(
   "/api/v1/tourist-spots/images/:imageId",
   allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"]),
@@ -662,9 +673,33 @@ app.get(
   "/api/v1/register/members/:unique_code",
   getVisitorGroupMembersController
 );
-app.post("/api/v1/register", registerVisitorController);
-app.post("/api/v1/register/manual-check-in", manualCheckInController);
-app.post("/api/v1/register/walk-in", registerWalkInVisitorController);
+
+app.get(
+  "/api/v1/register/qr/:user_id",
+  allowedRoles(["Tourist"]),
+  getQRCodebyUserIdController
+);
+
+app.get(
+  "/api/v1/register/result/:unique_code",
+  allowedRoles(["Tourist"]),
+  getVisitorResultController
+);
+app.post(
+  "/api/v1/register",
+  allowedRoles(["Tourist"]),
+  registerVisitorController
+);
+app.post(
+  "/api/v1/register/manual-check-in",
+  allowedRoles(["Touirism Staff"]),
+  manualCheckInController
+);
+app.post(
+  "/api/v1/register/walk-in",
+  allowedRoles(["Touirism Staff"]),
+  registerWalkInVisitorController
+);
 
 // Island Entry Registration Routes
 app.post("/api/v1/island-entry/register", registerIslandEntryController);

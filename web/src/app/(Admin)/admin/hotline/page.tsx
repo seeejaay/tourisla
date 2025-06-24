@@ -60,7 +60,7 @@ export default function HotlinesPage() {
       }
     }
     getCurrentUserAndHotlines();
-  }, [router, loggedInUser]);
+  }, [router, loggedInUser, fetchHotlines]);
 
   return (
     <>

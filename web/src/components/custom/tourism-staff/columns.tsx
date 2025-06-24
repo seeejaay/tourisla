@@ -23,7 +23,8 @@ export const TourismStaffSchema = z.object({
   role: z.literal("Tourism Staff"),
   last_login_at: z.string().nullable(),
   status: z.enum(["Active", "Inactive"]),
-  accommodation_id: z.string().nullable().optional(), // Add if you want to show assigned accommodation
+  accommodation_id: z.string().nullable().optional(),
+  attraction_id: z.string().nullable().optional(), // Add if you want to show assigned accommodation
 });
 
 // Infer the TypeScript type from the Zod schema
@@ -98,6 +99,17 @@ export function columns(
         <span>
           {row.original.accommodation_id
             ? row.original.accommodation_id
+            : "Unassigned"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "attraction_id",
+      header: () => <span className="font-bold">Tourist Spot</span>,
+      cell: ({ row }) => (
+        <span>
+          {row.original.attraction_id
+            ? row.original.attraction_id
             : "Unassigned"}
         </span>
       ),
