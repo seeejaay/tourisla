@@ -273,6 +273,11 @@ app.use(
   })
 );
 
+// Routes for PayMongo (must be placed before app.listen)
+app.post("/api/v1/paymongo/links", createIslandEntryPaymentLink);
+app.post("/api/v1/paymongo/webhook", handlePayMongoWebhook);
+app.post("/api/v1/paymongo/manual-confirm", manuallyConfirmPayment);
+
 const port = process.env.PORT || 3005;
 
 app.listen(port, () => {
@@ -955,11 +960,6 @@ app.patch(
   authenticateTourismOfficer,
   togglePriceController
 );
-
-// Routes for PayMongo
-app.post("/api/v1/paymongo/links", createIslandEntryPaymentLink);
-app.post("/api/v1/paymongo/webhook", handlePayMongoWebhook);
-app.post("/api/v1/paymongo/manual-confirm", manuallyConfirmPayment);
 
 // Routes for Price Management
 app.get("/api/v1/prices/active", getActivePriceController);
