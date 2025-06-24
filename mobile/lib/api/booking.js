@@ -45,23 +45,25 @@ export const getBookingsByGuide = async (guideId) => {
   }
 };
 
-export const createBooking = async (bookingData) => {
+export const createBooking = async (formData) => {
   try {
-    console.log("API Creating Booking with data:", bookingData);
-    console.log("API URL:", `${API_URL}bookings`);
-    const response = await axios.post(`${API_URL}bookings`, bookingData, {
-      withCredentials: true,
+    console.log("API Creating Booking with data:", formData);
+    const response = await fetch(`${API_URL}bookings`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        // Do NOT set Content-Type!
+        // If you need cookies/session, add them here
+      },
+      credentials: "include", // If you need cookies/session
     });
-    if (response.status < 200 || response.status >= 300) {
-      throw new Error(`HTTP Error! Status: ${response.status}`);
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`HTTP Error! Status: ${response.status} - ${err}`);
     }
-    console.log("Booking created successfully:", response);
-    return response.data;
+    return await response.json();
   } catch (error) {
-    console.error(
-      "Error Creating Booking: ",
-      error.toJSON ? error.toJSON() : error
-    );
+    console.error("Error Creating Booking: ", error.message);
     throw error;
   }
 };

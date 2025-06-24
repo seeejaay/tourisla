@@ -1,5 +1,5 @@
-// app/tourist/packages/[id]/book.tsx
 import React, { useEffect, useState, useRef } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   View,
   Text,
@@ -28,7 +28,10 @@ interface TourPackageDetailsScreenProps {
 }
 const STATUS_BAR_HEIGHT =
   Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0;
-export default function BookScreen({ headerHeight }) {
+
+export default function BookScreen({
+  headerHeight,
+}: TourPackageDetailsScreenProps) {
   interface Booking {
     id: number;
     scheduled_date: string;
@@ -141,44 +144,52 @@ export default function BookScreen({ headerHeight }) {
       return;
     }
 
-    // Prepare booking data
-    const bookingData: any = {
-      ...form,
-      scheduled_date: tourPackage.date_start,
-      package_id: tourPackage.id,
-      operator_qr_id: qrData.id,
-      payment_method: "QR",
-    };
+    // Always use FormData for this endpoint
+    const formData = new FormData();
+    formData.append("scheduled_date", String(tourPackage.date_start));
+    formData.append("number_of_guests", String(form.number_of_guests));
+    formData.append("total_price", String(form.total_price));
+    formData.append("notes", form.notes || "");
+    formData.append("package_id", String(tourPackage.id));
+    formData.append("operator_qr_id", String(qrData.id));
+    formData.append("payment_method", "QR");
 
-    // If proof_of_payment is a file, use FormData
-    let payload: any = bookingData;
-    if (form.proof_of_payment) {
-      payload = new FormData();
-
-      // Append all text fields
-      Object.keys(bookingData).forEach((key) => {
-        if (key !== "proof_of_payment") {
-          payload.append(key, bookingData[key]);
-        }
-      });
-
-      // Append the file using the correct structure for React Native
-      payload.append("proof_of_payment", {
-        uri: form.proof_of_payment.uri,
+    if (
+      form.proof_of_payment &&
+      form.proof_of_payment.uri &&
+      form.proof_of_payment.name
+    ) {
+      formData.append("proof_of_payment", {
+        uri: form.proof_of_payment.uri, // from DocumentPicker
         name: form.proof_of_payment.name || "proof.jpg",
-        type:
-          form.proof_of_payment.mimeType ||
-          form.proof_of_payment.type ||
-          "image/jpeg",
+        type: form.proof_of_payment.mimeType || "image/jpeg",
       });
+    } else {
+      setFormError("Proof of payment is required and must be a valid file.");
+      console.error(
+        "Invalid or missing proof_of_payment:",
+        form.proof_of_payment
+      );
+      return;
     }
 
     try {
-      await create(payload);
+      // Set session cookie before making the booking request
+      const sessionValue = await AsyncStorage.getItem("session");
+      if (sessionValue) {
+        await Cookies.set(
+          "https://tourisla-production.up.railway.app",
+          "session",
+          sessionValue
+        );
+      }
+
+      await create(formData);
       alert("Booking successful!");
       router.push("/booking/tour-packages");
     } catch (err) {
       setFormError("Booking failed. Please try again.");
+      console.error("Booking failed:", err);
     }
   };
 
@@ -204,89 +215,124 @@ export default function BookScreen({ headerHeight }) {
           <Text style={styles.errorText}>{error}</Text>
         ) : (
           <>
-            {/* Heading */}
+            {formError && <Text style={styles.errorText}>{formError}</Text>}
+
             <Text style={styles.heading}>
               Book: {tourPackage?.package_name}
             </Text>
 
-            <Text>Scheduled Date:</Text>
-            <TextInput
-              style={styles.input}
-              value={
-                tourPackage?.date_start
-                  ? new Date(tourPackage.date_start).toISOString().split("T")[0]
-                  : ""
+            {bookingFields.map((field) => {
+              // Custom UI for proof_of_payment
+              if (field.name === "proof_of_payment") {
+                return (
+                  <View key={field.name}>
+                    <Text>{field.label || "Proof of Payment"}:</Text>
+                    <TouchableOpacity
+                      style={styles.uploadButton}
+                      onPress={pickProofOfPayment}
+                    >
+                      <Text style={styles.uploadButtonText}>
+                        Pick Proof of Payment
+                      </Text>
+                    </TouchableOpacity>
+                    {form.proof_of_payment && (
+                      <Text style={styles.fileSelectedText}>
+                        File Selected: {form.proof_of_payment.name}
+                      </Text>
+                    )}
+                  </View>
+                );
               }
-              readOnly
-              className="w-full border rounded bg-gray-100 cursor-not-allowed"
-            />
-            <Text>Notes</Text>
-            <TextInput
-              style={styles.input}
-              value={form.notes}
-              placeholder="Enter any additional notes"
-              multiline
-              onChangeText={(text) =>
-                setForm((prev) => ({ ...prev, notes: text }))
+
+              // Custom UI for number_of_guests
+              if (field.name === "number_of_guests") {
+                return (
+                  <View key={field.name}>
+                    <Text>{field.label || "Number of Guests"}:</Text>
+                    <View style={styles.spinnerContainer}>
+                      <TextInput
+                        style={styles.spinnerInput}
+                        keyboardType="number-pad"
+                        value={String(form.number_of_guests)}
+                        onChangeText={(text) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            number_of_guests: Number(text) || 1,
+                          }))
+                        }
+                      />
+                      <View
+                        style={{
+                          flexDirection: "column",
+                          alignItems: "center",
+                        }}
+                      >
+                        <TouchableOpacity
+                          onPress={() =>
+                            setForm((prev) => ({
+                              ...prev,
+                              number_of_guests: prev.number_of_guests + 1,
+                            }))
+                          }
+                          style={styles.spinnerButton}
+                        >
+                          <Text style={styles.spinnerButtonText}>▲</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() =>
+                            setForm((prev) => ({
+                              ...prev,
+                              number_of_guests: Math.max(
+                                1,
+                                prev.number_of_guests - 1
+                              ),
+                            }))
+                          }
+                          style={styles.spinnerButton}
+                        >
+                          <Text style={styles.spinnerButtonText}>▼</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                );
               }
-            />
 
-            <Text>Number of Guests:</Text>
+              // Custom UI for scheduled_date (readonly)
+              if (field.name === "scheduled_date") {
+                return (
+                  <View key={field.name}>
+                    <Text>{field.label || "Scheduled Date"}:</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={
+                        tourPackage?.date_start
+                          ? new Date(tourPackage.date_start)
+                              .toISOString()
+                              .split("T")[0]
+                          : ""
+                      }
+                      editable={false}
+                    />
+                  </View>
+                );
+              }
 
-            <View style={styles.spinnerContainer}>
-              <TextInput
-                style={styles.spinnerInput}
-                keyboardType="number-pad"
-                value={String(form.number_of_guests)}
-                onChangeText={(text) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    number_of_guests: Number(text) || 1,
-                  }))
-                }
-              />
-              <View style={{ flexDirection: "column", alignItems: "center" }}>
-                <TouchableOpacity
-                  onPress={() =>
-                    setForm((prev) => ({
-                      ...prev,
-                      number_of_guests: prev.number_of_guests + 1,
-                    }))
-                  }
-                  style={styles.spinnerButton}
-                >
-                  <Text style={styles.spinnerButtonText}>▲</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() =>
-                    setForm((prev) => ({
-                      ...prev,
-                      number_of_guests: Math.max(1, prev.number_of_guests - 1),
-                    }))
-                  }
-                  style={styles.spinnerButton}
-                >
-                  <Text style={styles.spinnerButtonText}>▼</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+              if (field.name === "total_price") {
+                return (
+                  <View key={field.name}>
+                    <Text style={styles.textPrice}>{field.label}</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={`₱${form.total_price.toFixed(2)}`}
+                      editable={false}
+                    />
+                  </View>
+                );
+              }
+              // Default input for other fields
+            })}
 
-            <Text style={styles.textPrice}>
-              Total Price: ₱{form.total_price}
-            </Text>
-
-            <Text>Proof of Payment:</Text>
-            <TouchableOpacity
-              style={styles.uploadButton}
-              onPress={pickProofOfPayment}
-            >
-              <Text style={styles.uploadButtonText}>Pick Proof of Payment</Text>
-            </TouchableOpacity>
-            {form.proof_of_payment && (
-              <Text style={styles.fileSelectedText}>
-                File Selected: {form.proof_of_payment.name}
-              </Text>
-            )}
             {/* Payment Section */}
             <Text style={styles.label}>Pay via QR Code</Text>
             {qrLoading ? (
