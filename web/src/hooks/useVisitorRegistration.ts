@@ -65,11 +65,12 @@ export const useVisitorRegistration = () => {
 
   // Manual check-in for a visitor
   const checkInVisitor = useCallback(
-    async (visitorId: number): Promise<boolean> => {
+    async (unique_code: string): Promise<boolean> => {
       setLoading(true);
       setError("");
       try {
-        await apiManualCheckIn(visitorId);
+        console.log("Checking in visitor with unique code:", unique_code);
+        await apiManualCheckIn(unique_code);
         return true;
       } catch (error) {
         setError(
