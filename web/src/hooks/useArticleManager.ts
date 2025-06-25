@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   fetchArticles,
   viewArticle,
@@ -19,7 +19,7 @@ export const useArticleManager = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
 
-  const fetchAll = async (): Promise<void> => {
+  const fetchAll = useCallback(async (): Promise<void> => {
     setLoading(true);
     setError("");
     try {
@@ -30,42 +30,45 @@ export const useArticleManager = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const add = async (articleData: ArticleSchema): Promise<Article | null> => {
-    setLoading(true);
-    setError("");
-    try {
-      const response = await createArticle(articleData);
-      setArticles((prev) => [...prev, response]);
-      return response;
-    } catch (err) {
-      setError("Error adding article: " + err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const add = useCallback(
+    async (articleData: ArticleSchema): Promise<Article | null> => {
+      setLoading(true);
+      setError("");
+      try {
+        const response = await createArticle(articleData);
+        setArticles((prev) => [...prev, response]);
+        return response;
+      } catch (err) {
+        setError("Error adding article: " + err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
-  const edit = async (
-    id: number,
-    articleData: ArticleSchema
-  ): Promise<Article | null> => {
-    setLoading(true);
-    setError("");
-    try {
-      const response = await updateArticle(id, articleData);
-      setArticles((prev) => prev.map((a) => (a.id === id ? response : a)));
-      return response;
-    } catch (err) {
-      setError("Error updating article: " + err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const edit = useCallback(
+    async (id: number, articleData: ArticleSchema): Promise<Article | null> => {
+      setLoading(true);
+      setError("");
+      try {
+        const response = await updateArticle(id, articleData);
+        setArticles((prev) => prev.map((a) => (a.id === id ? response : a)));
+        return response;
+      } catch (err) {
+        setError("Error updating article: " + err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
-  const remove = async (id: number): Promise<boolean> => {
+  const remove = useCallback(async (id: number): Promise<boolean> => {
     setLoading(true);
     setError("");
     try {
@@ -78,9 +81,9 @@ export const useArticleManager = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const view = async (id: number): Promise<Article | null> => {
+  const view = useCallback(async (id: number): Promise<Article | null> => {
     setLoading(true);
     setError("");
     try {
@@ -92,11 +95,11 @@ export const useArticleManager = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchAll();
-  }, []);
+  }, [fetchAll]);
 
   return {
     articles,
