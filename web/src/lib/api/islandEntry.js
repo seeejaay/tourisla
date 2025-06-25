@@ -21,3 +21,7 @@ export const getLatestIslandEntry = async () => {
   { withCredentials: true });
   return res.data;
 };
+
+export const registerIslandWalkIn = async (data) => {
+  return axios.post(`${API_URL}island-entry/walk-in`, data, { withCredentials: true });
+};
