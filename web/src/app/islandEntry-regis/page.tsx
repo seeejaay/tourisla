@@ -6,7 +6,7 @@ import { islandEntryFields } from "@/app/static/islandEntry/islandEntryFields";
 import { useFormik } from "formik";
 import { getLatestIslandEntry } from "@/lib/api/islandEntry";
 import * as yup from "yup";
-
+import Header from "@/components/custom/header";
 // RegistrationPayload.ts
 
 export interface GroupMember {
@@ -40,7 +40,7 @@ export default function IslandEntryPage() {
       getLatestIslandEntry().then(setLatestEntry);
     }
   }, [showResult]);
- 
+
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -58,25 +58,25 @@ export default function IslandEntryPage() {
       ...islandEntrySchema.fields,
       companions: yup.array().of(islandEntrySchema),
     }),
-      onSubmit: async (values) => {
-        const groupMembers = [
-          {
-            name: values.name,
-            sex: values.sex,
-            age: values.age,
-            is_foreign: values.is_foreign,
-            municipality: values.municipality,
-            province: values.province,
-            country: values.country,
-          },
-          ...values.companions,
-        ];
+    onSubmit: async (values) => {
+      const groupMembers = [
+        {
+          name: values.name,
+          sex: values.sex,
+          age: values.age,
+          is_foreign: values.is_foreign,
+          municipality: values.municipality,
+          province: values.province,
+          country: values.country,
+        },
+        ...values.companions,
+      ];
 
-        const payload = {
-          groupMembers,
-          payment_method: values.payment_method.toUpperCase(),
-          total_fee: fee ? fee * groupMembers.length : 0,
-        };
+      const payload = {
+        groupMembers,
+        payment_method: values.payment_method.toUpperCase(),
+        total_fee: fee ? fee * groupMembers.length : 0,
+      };
 
       const res = await register(payload);
       if (res) {
@@ -89,11 +89,21 @@ export default function IslandEntryPage() {
   });
 
   const addCompanion = () => {
-    const updated = [...companions, { name: "", sex: "", age: 0, is_foreign: false, municipality: "", province: "", country: "" }];
+    const updated = [
+      ...companions,
+      {
+        name: "",
+        sex: "",
+        age: 0,
+        is_foreign: false,
+        municipality: "",
+        province: "",
+        country: "",
+      },
+    ];
     setCompanions(updated);
     formik.setFieldValue("companions", updated); // <-- sync with Formik
   };
-
 
   const handleCompanionChange = (
     idx: number,
@@ -115,26 +125,41 @@ export default function IslandEntryPage() {
       <div className="max-w-lg mx-auto mt-10 p-6 bg-white rounded shadow">
         <h2 className="text-xl font-bold mb-2">Registration Successful!</h2>
         {latestEntry && (
-        <>
-          <p>Your Unique Code: <span className="font-mono">{latestEntry.unique_code}</span></p>
-          <img src={latestEntry.qr_code_url} alt="QR Code" className="my-4 w-40 h-40" />
+          <>
+            <p>
+              Your Unique Code:{" "}
+              <span className="font-mono">{latestEntry.unique_code}</span>
+            </p>
+            <img
+              src={latestEntry.qr_code_url}
+              alt="QR Code"
+              className="my-4 w-40 h-40"
+            />
           </>
         )}
-        <p className="text-green-700 font-semibold">Show this QR code at the entry point.</p>
+        <p className="text-green-700 font-semibold">
+          Show this QR code at the entry point.
+        </p>
       </div>
     );
   }
 
   return (
+    <>
+      <Header />
       <div className="max-w-lg mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg border border-gray-100">
-        <h1 className="text-3xl font-extrabold mb-6 text-blue-700 text-center">Island Entry Registration</h1>
+        <h1 className="text-3xl font-extrabold mb-6 text-blue-700 text-center">
+          Island Entry Registration
+        </h1>
         <form onSubmit={formik.handleSubmit} className="space-y-5">
           {islandEntryFields.map((field) => {
             if (field.showIf && !field.showIf(formik.values)) return null;
             if (field.type === "select") {
               return (
                 <div key={field.name}>
-                  <label className="block mb-1 font-semibold text-gray-700">{field.label}</label>
+                  <label className="block mb-1 font-semibold text-gray-700">
+                    {field.label}
+                  </label>
                   <select
                     name={field.name}
                     value={formik.values[field.name]}
@@ -143,11 +168,15 @@ export default function IslandEntryPage() {
                   >
                     <option value="">Select</option>
                     {field.options.map((opt: string) => (
-                      <option key={opt} value={opt}>{opt}</option>
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
                     ))}
                   </select>
                   {formik.touched[field.name] && formik.errors[field.name] && (
-                    <div className="text-red-500 text-xs mt-1">{formik.errors[field.name]}</div>
+                    <div className="text-red-500 text-xs mt-1">
+                      {formik.errors[field.name]}
+                    </div>
                   )}
                 </div>
               );
@@ -162,13 +191,17 @@ export default function IslandEntryPage() {
                     onChange={formik.handleChange}
                     className="mr-2 accent-blue-600"
                   />
-                  <label className="font-semibold text-gray-700">{field.label}</label>
+                  <label className="font-semibold text-gray-700">
+                    {field.label}
+                  </label>
                 </div>
               );
             }
             return (
               <div key={field.name}>
-                <label className="block mb-1 font-semibold text-gray-700">{field.label}</label>
+                <label className="block mb-1 font-semibold text-gray-700">
+                  {field.label}
+                </label>
                 <input
                   type={field.type}
                   name={field.name}
@@ -177,7 +210,9 @@ export default function IslandEntryPage() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
                 {formik.touched[field.name] && formik.errors[field.name] && (
-                  <div className="text-red-500 text-xs mt-1">{formik.errors[field.name]}</div>
+                  <div className="text-red-500 text-xs mt-1">
+                    {formik.errors[field.name]}
+                  </div>
                 )}
               </div>
             );
@@ -186,9 +221,14 @@ export default function IslandEntryPage() {
           <div>
             <h3 className="font-bold mb-2 text-gray-800">Companions</h3>
             {companions.map((comp, idx) => (
-              <div key={idx} className="border border-gray-200 p-3 mb-3 rounded-lg bg-gray-50">
+              <div
+                key={idx}
+                className="border border-gray-200 p-3 mb-3 rounded-lg bg-gray-50"
+              >
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-semibold text-blue-600">Companion {idx + 1}</span>
+                  <span className="font-semibold text-blue-600">
+                    Companion {idx + 1}
+                  </span>
                   <button
                     type="button"
                     onClick={() => {
@@ -206,15 +246,25 @@ export default function IslandEntryPage() {
                   if (field.type === "select") {
                     return (
                       <div key={field.name} className="mb-1">
-                        <label className="block text-gray-600">{field.label}</label>
+                        <label className="block text-gray-600">
+                          {field.label}
+                        </label>
                         <select
                           value={comp[field.name]}
-                          onChange={e => handleCompanionChange(idx, field.name, e.target.value)}
+                          onChange={(e) =>
+                            handleCompanionChange(
+                              idx,
+                              field.name,
+                              e.target.value
+                            )
+                          }
                           className="w-full border border-gray-300 rounded-lg px-2 py-1"
                         >
                           <option value="">Select</option>
                           {field.options.map((opt: string) => (
-                            <option key={opt} value={opt}>{opt}</option>
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
                           ))}
                         </select>
                       </div>
@@ -226,7 +276,13 @@ export default function IslandEntryPage() {
                         <input
                           type="checkbox"
                           checked={comp[field.name]}
-                          onChange={e => handleCompanionChange(idx, field.name, e.target.checked)}
+                          onChange={(e) =>
+                            handleCompanionChange(
+                              idx,
+                              field.name,
+                              e.target.checked
+                            )
+                          }
                           className="mr-2 accent-blue-600"
                         />
                         <label className="text-gray-600">{field.label}</label>
@@ -235,11 +291,15 @@ export default function IslandEntryPage() {
                   }
                   return (
                     <div key={field.name} className="mb-1">
-                      <label className="block text-gray-600">{field.label}</label>
+                      <label className="block text-gray-600">
+                        {field.label}
+                      </label>
                       <input
                         type={field.type}
                         value={comp[field.name]}
-                        onChange={e => handleCompanionChange(idx, field.name, e.target.value)}
+                        onChange={(e) =>
+                          handleCompanionChange(idx, field.name, e.target.value)
+                        }
                         className="w-full border border-gray-300 rounded-lg px-2 py-1"
                       />
                     </div>
@@ -257,12 +317,18 @@ export default function IslandEntryPage() {
           </div>
 
           <div>
-            <label className="block font-semibold text-gray-700">Total to Pay:</label>
-            <div className="text-xl font-bold text-green-700">{fee ? `₱${totalFee}` : "Loading..."}</div>
+            <label className="block font-semibold text-gray-700">
+              Total to Pay:
+            </label>
+            <div className="text-xl font-bold text-green-700">
+              {fee ? `₱${totalFee}` : "Loading..."}
+            </div>
           </div>
 
           <div>
-            <label className="block font-semibold mb-1 text-gray-700">Payment Method</label>
+            <label className="block font-semibold mb-1 text-gray-700">
+              Payment Method
+            </label>
             <div className="flex gap-6">
               <label className="flex items-center">
                 <input
@@ -298,5 +364,6 @@ export default function IslandEntryPage() {
           </button>
         </form>
       </div>
+    </>
   );
 }
