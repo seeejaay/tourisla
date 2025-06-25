@@ -1,9 +1,12 @@
 // mobile/tourist/registration/visitor_registration/VisitorRegistrationResultScreen.tsx
-import { View, Text, ActivityIndicator, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, ActivityIndicator, Image, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { useVisitorRegistration } from "@/hooks/useVisitorRegistration";
 import { router } from "expo-router";
+import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
+import * as Sharing from 'expo-sharing';
 
 export default function VisitorRegistrationResultScreen() {
   const { code } = useLocalSearchParams<{ code: string }>();
@@ -25,6 +28,37 @@ export default function VisitorRegistrationResultScreen() {
       });
     }
   }, [code]);
+
+  useEffect(() => {
+    MediaLibrary.requestPermissionsAsync();
+  }, []);
+  
+  const downloadQRCode = async () => {
+    try {
+      if (!result?.qr_code_url) return;
+      const { status } = await MediaLibrary.getPermissionsAsync();
+      if (status !== 'granted') {
+        const request = await MediaLibrary.requestPermissionsAsync();
+        if (request.status !== 'granted') return;
+      }
+  
+      const fileUri = `${FileSystem.cacheDirectory}${result.unique_code}.png`;
+      await FileSystem.downloadAsync(result.qr_code_url, fileUri);
+      await Sharing.shareAsync(fileUri);
+  
+      const asset = await MediaLibrary.createAssetAsync(fileUri);
+      await MediaLibrary.createAlbumAsync('Camera', asset, false);
+      
+      Alert.alert(
+        'Saved',
+        `Check your Gallery app under "Tourisla QR Codes"`
+      );
+      const assets = await MediaLibrary.getAssetsAsync({ first: 1 }); 
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', error.message || 'Could not save image.');
+    }
+  };
 
   if (!code) {
     return (
@@ -70,6 +104,10 @@ export default function VisitorRegistrationResultScreen() {
         style={styles.qrCode}
         resizeMode="contain"
       />
+
+      <TouchableOpacity style={styles.downloadButton} onPress={downloadQRCode}>
+      <Text style={styles.downloadButtonText}>Download QR Code</Text>
+      </TouchableOpacity>
 
       {/* Back to Home Button */}
       <TouchableOpacity
@@ -126,13 +164,26 @@ const styles = StyleSheet.create({
   backButton: {
     backgroundColor: "#075778",
     paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingVertical: 16,
     borderRadius: 8,
     width: "100%",
     marginTop: 20,
-    paddingVertical: 16,
   },
   backButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+    alignSelf: "center",
+  },
+  downloadButton: {
+    backgroundColor: "#0ea5e9",
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderRadius: 8,
+    width: "100%",
+    marginTop: 12,
+  },
+  downloadButtonText: {
     color: "#fff",
     fontWeight: "600",
     fontSize: 16,
