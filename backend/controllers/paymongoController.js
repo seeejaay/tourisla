@@ -64,11 +64,13 @@ const createIslandEntryPaymentLink = async (req, res) => {
 };
 
 const handlePayMongoWebhook = async (req, res) => {
+  console.log("Webhook endpoint hit");
   try {
-    console.log("PayMongo Webhook Received:", req.body);
     const eventType = req.body?.data?.attributes?.type;
+    console.log("Event type:", eventType);
 
     if (eventType !== "link.payment.paid") {
+      console.log("Ignored non-payment event");
       return res.status(200).json({ message: "Event ignored" });
     }
 
@@ -76,32 +78,37 @@ const handlePayMongoWebhook = async (req, res) => {
     const status = req.body?.data?.attributes?.data?.attributes?.status;
 
     if (!referenceNumber || !status) {
+      console.error("Invalid payload — missing reference number or status");
       return res.status(400).json({ error: "Invalid webhook payload" });
     }
 
-    console.log("Received reference number from webhook:", referenceNumber);
+    console.log("Reference Number:", referenceNumber);
+    console.log("Payment Status:", status);
 
-    // 🔧 FIX: normalize the reference number
-    const registration = await getIslandEntryByCode(referenceNumber.trim().toUpperCase());
+    const normalizedRef = referenceNumber.trim().toUpperCase();
+    const registration = await getIslandEntryByCode(normalizedRef);
 
     if (!registration) {
+      console.error("No registration found for reference:", normalizedRef);
       return res.status(404).json({ error: "Registration not found" });
     }
 
     const newStatus = status === "paid" ? "PAID" : "PENDING";
+    console.log(`Updating status to '${newStatus}' for registration_id: ${registration.id}`);
 
     await updateIslandEntryPaymentStatus({
       registration_id: registration.id,
       status: newStatus,
     });
 
+    console.log("Payment status updated successfully");
     return res.status(200).json({ message: "Payment status updated" });
   } catch (error) {
-    console.error("PayMongo Webhook Error:", error);
-    return res.status(500).json({ error: "Webhook processing failed" });
+    console.error("PayMongo Webhook Error:", error.message);
+    console.error(error.stack);
+    return res.status(500).json({ error: error.message, stack: error.stack }); // temporarily show real error
   }
 };
-
 
 // Manual payment confirmation for testing (call this in Postman)
 const manuallyConfirmPayment = async (req, res) => {
