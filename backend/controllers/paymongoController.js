@@ -65,6 +65,7 @@ const createIslandEntryPaymentLink = async (req, res) => {
 
 const handlePayMongoWebhook = async (req, res) => {
   console.log("Webhook endpoint hit");
+
   try {
     const eventType = req.body?.data?.attributes?.type;
     console.log("Event type:", eventType);
@@ -86,18 +87,25 @@ const handlePayMongoWebhook = async (req, res) => {
     console.log("Payment Status:", status);
 
     const normalizedRef = referenceNumber.trim();
-    const registration = await getIslandEntryByCode(normalizedRef);
 
-    if (!registration) {
-      console.error("No registration found for reference:", normalizedRef);
-      return res.status(404).json({ error: "Registration not found" });
+    // 🔍 Lookup registration_id from island_entry_payments
+    const result = await db.query(
+      `SELECT registration_id FROM island_entry_payments WHERE reference_num = $1 LIMIT 1`,
+      [normalizedRef]
+    );
+
+    if (result.rows.length === 0) {
+      console.error("No payment found for reference number:", normalizedRef);
+      return res.status(404).json({ error: "Payment reference not found" });
     }
 
+    const registrationId = result.rows[0].registration_id;
+
     const newStatus = status === "paid" ? "PAID" : "PENDING";
-    console.log(`Updating status to '${newStatus}' for registration_id: ${registration.id}`);
+    console.log(`Updating status to '${newStatus}' for registration_id: ${registrationId}`);
 
     await updateIslandEntryPaymentStatus({
-      registration_id: registration.id,
+      registration_id: registrationId,
       status: newStatus,
     });
 
@@ -106,7 +114,7 @@ const handlePayMongoWebhook = async (req, res) => {
   } catch (error) {
     console.error("PayMongo Webhook Error:", error.message);
     console.error(error.stack);
-    return res.status(500).json({ error: error.message, stack: error.stack }); // temporarily show real error
+    return res.status(500).json({ error: "Webhook processing failed" });
   }
 };
 
