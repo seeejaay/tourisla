@@ -359,6 +359,26 @@ const getLatestIslandEntryController = async (req, res) => {
   }
 };
 
+const markIslandEntryPaidController = async (req, res) => {
+  try {
+    const { unique_code } = req.body;
+    if (!unique_code) return res.status(400).json({ error: "Unique code is required." });
+
+    const registration = await getIslandEntryByCode(unique_code.trim().toUpperCase());
+    if (!registration) return res.status(404).json({ error: "Registration not found." });
+
+    await db.query(
+      `UPDATE island_entry_registration SET status = 'PAID' WHERE id = $1`,
+      [registration.id]
+    );
+
+    res.status(200).json({ message: "Payment status updated to PAID." });
+  } catch (error) {
+    console.error("Error marking payment as received:", error);
+    res.status(500).json({ error: "Failed to update payment status." });
+  }
+};
+
 module.exports = {
   registerIslandEntryController,
   manualIslandEntryCheckInController,
@@ -366,4 +386,5 @@ module.exports = {
   checkPayMongoPaymentStatusController,
   registerIslandWalkInController,
   getLatestIslandEntryController,
+  markIslandEntryPaidController,
 };

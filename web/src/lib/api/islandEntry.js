@@ -25,3 +25,15 @@ export const getLatestIslandEntry = async () => {
 export const registerIslandWalkIn = async (data) => {
   return axios.post(`${API_URL}island-entry/walk-in`, data, { withCredentials: true });
 };
+
+export const getIslandEntryMembers = async (unique_code, string) => {
+  return axios.get(`${API_URL}island-entry/members/${unique_code}`, { withCredentials: true });
+};
+
+export const manualIslandEntryCheckIn = async (unique_code) => {
+  return axios.post(`${API_URL}island-entry/manual-check-in`, { unique_code }, { withCredentials: true });
+};
+
+export const markIslandEntryPaid = async (unique_code) => {
+  return axios.post(`${API_URL}island-entry/mark-paid`, { unique_code }, { withCredentials: true });
+};
