@@ -122,6 +122,7 @@ const registerIslandEntryController = async (req, res) => {
         payment_link: paymongoData.attributes.checkout_url,
         status: paymongoData.attributes.status.toUpperCase(),
         amount: registration.total_fee,
+        reference_num: paymongoData.attributes.reference_number 
       });
     }
 
