@@ -85,7 +85,7 @@ const handlePayMongoWebhook = async (req, res) => {
     console.log("Reference Number:", referenceNumber);
     console.log("Payment Status:", status);
 
-    const normalizedRef = referenceNumber.trim().toUpperCase();
+    const normalizedRef = referenceNumber.trim();
     const registration = await getIslandEntryByCode(normalizedRef);
 
     if (!registration) {
