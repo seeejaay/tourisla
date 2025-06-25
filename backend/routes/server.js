@@ -20,8 +20,7 @@ app.use(
       "http://192.168.0.135:3000",
       "http://192.168.0.130",
       "http://dev.tourisla.local:3000",
-      // change this to your local IP address
-      "https://tourisla-deploy.vercel.app/",
+      "https://tourisla.vercel.app/",
       process.env.CLIENT_URL, // Add this if you want to support env config too
     ],
     credentials: true,
