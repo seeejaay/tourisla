@@ -282,6 +282,18 @@ const registerIslandWalkInController = async (req, res) => {
       return res.status(400).json({ error: "Group members are required" });
     }
 
+     // --- Fetch active price and compute total fee ---
+    const activePrice = await getActivePrice();
+    const isPaymentEnabled = activePrice.is_enabled;
+    let pricePerPerson = 0;
+
+    if (isPaymentEnabled) {
+      pricePerPerson = parseFloat(activePrice.amount);
+    }
+
+    const totalFee = pricePerPerson * groupMembers.length;
+
+
     const uniqueCode = await generateCustomCode(); // custom generator
     const qrData = `${uniqueCode}`;
     const qrBuffer = await QRCode.toBuffer(qrData);
@@ -301,6 +313,8 @@ const registerIslandWalkInController = async (req, res) => {
     const registration = await createIslandEntryRegistration({
       unique_code: uniqueCode,
       qr_code_url: qrCodeUrl,
+      total_fee: totalFee,
+      user_id: userId,
     });
 
     const members = await createIslandEntryMembers(registration.id, groupMembers);
@@ -317,6 +331,7 @@ const registerIslandWalkInController = async (req, res) => {
       registration,
       members,
       logs,
+      total_fee: totalFee,
     });
   } catch (error) {
     console.error("Island walk-in registration error:", error);
