@@ -26,7 +26,7 @@ export default function ManualCheckIn() {
 
   const handleCheckIn = async () => {
     if (!visitorId) return;
-    const checkedIn = await checkInVisitor(visitorId);
+    const checkedIn = await checkInVisitor(uniqueCode);
     if (checkedIn) {
       setSuccess("Visitor checked in successfully!");
     }

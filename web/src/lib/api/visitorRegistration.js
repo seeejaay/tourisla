@@ -46,11 +46,11 @@ export const registerVisitor = async (visitors) => {
   }
 };
 
-export const manualCheckIn = async (visitorId) => {
+export const manualCheckIn = async (unique_code) => {
   try {
     const response = await axios.post(
-      `${API_URL}register/manual-check-in/${visitorId}`,
-      {},
+      `${API_URL}register/manual-check-in`,
+      { unique_code },
       {
         withCredentials: true,
       }
