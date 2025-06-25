@@ -71,6 +71,8 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
       <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
       <View style={[styles.container, { paddingTop: headerHeight }]}>
         <Text style={styles.title}>Explore Tour Packages</Text>
+        <Text style={styles.intro}>
+          Discover our curated tour packages designed to enhance your travel experience.</Text>
 
         {loading && (
           <View style={styles.loadingContainer}>
@@ -115,11 +117,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   title: {
-    fontSize: 24,
+    fontSize: 34,
     fontWeight: '900',
     color: '#0f172a',
     marginVertical: 16,
     marginHorizontal: 16,
+  },
+  intro: {
+    fontSize: 16,
+    color: '#64748b',
+    marginHorizontal: 16,
+    marginBottom: 16,
   },
   listContent: {
     paddingBottom: 24,
@@ -138,7 +146,7 @@ const styles = StyleSheet.create({
   },
   packageName: {
     fontSize: 20,
-    fontWeight: '900',
+    fontWeight: '700',
     color: '#0f172a',
     marginBottom: 0,
   },

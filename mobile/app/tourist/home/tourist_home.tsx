@@ -4,7 +4,8 @@ import {
   Text, 
   StyleSheet, 
   ScrollView, 
-  TouchableOpacity
+  TouchableOpacity,
+  Platform
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -87,8 +88,8 @@ const styles = StyleSheet.create({
   },
   weatherFab: {
     position: 'absolute',
-    bottom: 120, // Increased from 20 to 80 to lift it above the bottom navbar
-    left: 20,
+    bottom: Platform.OS === 'ios' ? 40 : 108,
+    left: 8,
     width: 56,
     height: 56,
     borderRadius: 20,
