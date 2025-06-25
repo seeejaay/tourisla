@@ -1,11 +1,16 @@
 // mobile/tourist/registration/visitor_registration/VisitorRegistrationScreen.tsx
-import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Switch } from "react-native";
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Switch, Platform, StatusBar, Dimensions } from "react-native";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { useVisitorRegistration } from "@/hooks/useVisitorRegistration";
 import { visitorRegistrationFields } from "@/static/visitor-registration/visitor"; 
 import type { Visitor } from "@/static/visitor-registration/visitorSchema";
 import { Picker } from "@react-native-picker/picker";
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
+
+interface TourPackageDetailsScreenProps {
+  headerHeight: number;
+}
 
 const emptyVisitor = () =>
   Object.fromEntries(
@@ -20,7 +25,10 @@ type CreateVisitorResponse = {
   };
 };
 
-export default function VisitorRegistrationScreen() {
+const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 0;
+const { width, height } = Dimensions.get('window');
+
+export default function VisitorRegistrationScreen({ headerHeight }: TourPackageDetailsScreenProps) {
   const [mainVisitor, setMainVisitor] = useState<Partial<Visitor>>(emptyVisitor());
   const [companions, setCompanions] = useState<Partial<Visitor>[]>([]);
   const { createVisitor, loading, error } = useVisitorRegistration();
@@ -74,16 +82,18 @@ export default function VisitorRegistrationScreen() {
                 style={styles.input}
               />
             ) : field.type === "select" ? (
+              <View style={styles.selectWrapper}>
               <Picker
                 selectedValue={String(visitor[field.name as keyof Visitor] || "")}
                 onValueChange={(val) => handleInputChange(index, field.name as keyof Visitor, val)}
-                style={styles.input}
+                style={styles.selectPicker}
               >
                 <Picker.Item label="Select..." value="" />
                 {field.options?.map((opt) => (
                   <Picker.Item key={opt.value} label={opt.label} value={opt.value} />
                 ))}
               </Picker>
+              </View>
             ) : field.type === "checkbox" ? (
               <Switch
                 value={!!visitor[field.name as keyof Visitor]}
@@ -97,7 +107,17 @@ export default function VisitorRegistrationScreen() {
   
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <View style={[styles.container, { paddingTop: headerHeight }]}>
+    <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+    <View style={styles.navbar}>
+    <TouchableOpacity 
+      style={styles.navButton}
+      onPress={() => router.back()}
+    >
+      <FontAwesome5 name="arrow-left" size={18} color="#fff" />
+    </TouchableOpacity>
+    </View>
+    <ScrollView contentContainerStyle={styles.scrollContent}>
       <Text style={styles.heading}>Visitor Registration</Text>
 
       <Text style={styles.sectionTitle}>Main Visitor</Text>
@@ -123,25 +143,53 @@ export default function VisitorRegistrationScreen() {
         <Text style={styles.submitButtonText}>{loading ? "Registering..." : "Register"}</Text>
       </TouchableOpacity>
     </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
     container: { flexGrow: 1, backgroundColor: "#f8fafc" },
-    content: { padding: 16 },
+    navbar: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingTop: STATUS_BAR_HEIGHT + 10,
+      paddingBottom: 10,
+      paddingHorizontal: 16,
+      backgroundColor: 'transparent',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 10,
+    },
+    navButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 8,
+      backgroundColor: 'rgba(15, 23, 42, 0.7)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    scrollContent: {
+      marginHorizontal: 16,
+      marginVertical: 70,
+      paddingBottom: 120,
+    },
   
     heading: {
-      fontSize: 28,
+      fontSize: 30,
       fontWeight: "900",
-      color: "#075778",
+      color: "#000",
       marginBottom: 16,
       textAlign: "center",
+      marginTop: 24,
     },
   
     sectionTitle: {
       fontSize: 20,
-      fontWeight: "700",
-      color: "#075778",
+      fontWeight: "900",
+      color: "#000",
       marginTop: 24,
       marginBottom: 12,
     },
@@ -152,8 +200,8 @@ const styles = StyleSheet.create({
   
     label: {
       fontSize: 14,
-      fontWeight: "600",
-      color: "#075778",
+      fontWeight: "500",
+      color: "#000",
       marginBottom: 6,
     },
   
@@ -170,7 +218,7 @@ const styles = StyleSheet.create({
     companionCard: {
       padding: 16,
       borderRadius: 12,
-      backgroundColor: "#e1edf2",
+      backgroundColor: "#fff",
       marginBottom: 16,
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 1 },
@@ -197,7 +245,7 @@ const styles = StyleSheet.create({
     addButton: {
       paddingVertical: 14,
       borderRadius: 8,
-      backgroundColor: "#075778",
+      backgroundColor: "#4db004",
       alignItems: "center",
       marginVertical: 16,
       shadowColor: "#000",
@@ -226,7 +274,7 @@ const styles = StyleSheet.create({
     submitButton: {
       paddingVertical: 16,
       borderRadius: 8,
-      backgroundColor: "#075778",
+      backgroundColor: "#000",
       alignItems: "center",
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 1 },
@@ -239,6 +287,20 @@ const styles = StyleSheet.create({
       color: "#fff",
       fontWeight: "800",
       fontSize: 18,
+    },
+    selectWrapper: {
+      borderWidth: 1,
+      borderColor: "#ccc",
+      borderRadius: 8,
+      backgroundColor: "#fff",
+      height: 42,
+      justifyContent: "center",
+    },
+    selectPicker: {
+      height: 60,
+      paddingHorizontal: 12,
+      color: "#000",
+      transform: [{ scale: 0.9 }],
     },
   });
   
