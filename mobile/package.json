@@ -17,7 +17,7 @@
     "@react-native-async-storage/async-storage": "2.1.2",
     "@react-native-community/datetimepicker": "8.3.0",
     "@react-native-cookies/cookies": "^6.2.1",
-    "@react-native-picker/picker": "^2.11.0",
+    "@react-native-picker/picker": "^2.11.1",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
@@ -26,6 +26,7 @@
     "expo-blur": "~14.1.5",
     "expo-checkbox": "~4.1.4",
     "expo-constants": "~17.1.6",
+    "expo-dev-client": "~5.2.1",
     "expo-document-picker": "~13.1.6",
     "expo-file-system": "~18.1.10",
     "expo-font": "~13.3.1",
@@ -60,8 +61,7 @@
     "resend": "^4.5.1",
     "tailwindcss": "^3.4.17",
     "tailwindcss-react-native": "^1.7.10",
-    "zod": "^3.25.51",
-    "expo-dev-client": "~5.2.1"
+    "zod": "^3.25.51"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

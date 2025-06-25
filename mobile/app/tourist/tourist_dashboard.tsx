@@ -3,7 +3,8 @@ import TouristHomeScreen from './home/tourist_home';
 import TouristMapScreen from './map/tourist_map';
 import TouristAnnouncementsScreen from './announcements/tourist_announcements';
 import TouristPackagesScreen from './packages/tourist_packages';
-import TouristProfileScreen from './profile/tourist_profile';
+import MoreScreen from './more/MoreScreen';
+import TouristProfile from './profile/tourist_profile';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { StyleSheet, View, Platform, TouchableOpacity, Image, Text, StatusBar, Dimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -12,7 +13,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
 import * as auth from '@/lib/api/auth';
-import TouristTouristSpotsScreen from './tourist_spots/tourist_tourist_spots';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Tab = createBottomTabNavigator();
@@ -169,12 +169,11 @@ function CustomTabBar({ state, descriptors, navigation }) {
             iconName = isFocused ? "map" : "map-outline";
           } else if (route.name === 'Announcements') {
             iconName = isFocused ? "megaphone" : "megaphone-outline";
-          } else if (route.name === 'Tourist Spots') {
-            iconName = isFocused ? "location" : "location-outline";
           } else if (route.name === 'Packages') {
             iconName = isFocused ? "calendar-clear" : "calendar-clear-outline";
+          } else if (route.name === 'More') {
+            iconName = isFocused ? "ellipsis-horizontal" : "ellipsis-horizontal-outline";
           }
-          // Removed Hotlines case
           
           const onPress = () => {
             const event = navigation.emit({
@@ -222,16 +221,6 @@ function CustomTabBar({ state, descriptors, navigation }) {
                   color={isFocused ? '#ffffff' : 'rgba(148, 163, 184, 0.8)'} 
                 />
               </Animated.View>
-              
-              <Text 
-                style={[
-                  styles.tabLabel, 
-                  isFocused ? styles.activeTabLabel : styles.inactiveTabLabel
-                ]}
-                numberOfLines={1}
-              >
-                {label}
-              </Text>
             </TouchableOpacity>
           );
         })}
@@ -252,6 +241,7 @@ export default function TouristDashboard() {
       <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
       <ProfileHeader />
       
+      <View style={styles.tabNavigatorContainer}>
       <Tab.Navigator
         initialRouteName={tab as string || 'Home'}
         tabBar={props => <CustomTabBar {...props} />}
@@ -277,10 +267,19 @@ export default function TouristDashboard() {
         <Tab.Screen name="Packages">
           {() => <TouristPackagesScreen headerHeight={headerHeight} />}
         </Tab.Screen>
-        <Tab.Screen name="Tourist Spots">
-          {() => <TouristTouristSpotsScreen headerHeight={headerHeight} />}
+        <Tab.Screen
+          name="More"
+          options={{ tabBarLabel: 'More' }}
+        >
+          {() => <MoreScreen headerHeight={headerHeight} />}
         </Tab.Screen>
       </Tab.Navigator>
+      </View>
+      <LinearGradient
+          colors={['transparent', '#fff']} // Fade into dark background
+          style={styles.bottomFade}
+          pointerEvents="none"
+        />
     </View>
   );
 }
@@ -369,10 +368,10 @@ const styles = StyleSheet.create({
   },
   customTabBar: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 40 : 30,
+    bottom: Platform.OS === 'ios' ? 40 : 40,
     left: 8,
     right: 8,
-    height: 80,
+    height: 60,
     zIndex: 100,
   },
   tabBarBackground: {
@@ -390,6 +389,7 @@ const styles = StyleSheet.create({
     elevation: 15,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+    paddingBottom: 20,
   },
   tabBarGradient: {
     position: 'absolute',
@@ -439,16 +439,22 @@ const styles = StyleSheet.create({
   activeTabIconContainer: {
     backgroundColor: 'rgba(56, 189, 248, 0.15)',
   },
-  tabLabel: {
-    fontSize: 11,
-    marginTop: 4,
-    textAlign: 'center',
-  },
   activeTabLabel: {
     color: '#ffffff',
     fontWeight: '600',
   },
   inactiveTabLabel: {
-    color: 'rgba(148, 163, 184, 0.8)',
+    color: 'rgba(148, 163, 184, 0.9)',
+  },
+  tabNavigatorContainer: {
+    flex: 1,
+  },
+  bottomFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: Platform.OS === 'ios' ? 0 : 0,
+    height: 80,
+    zIndex: 10,
   },
 });
