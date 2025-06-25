@@ -47,8 +47,10 @@ const createIslandEntryPaymentLink = async (req, res) => {
 
     await saveIslandEntryPayment({
       registration_id: registration.id,
-      checkout_url: paymongoData.attributes.checkout_url,
-      status: paymongoData.attributes.status,
+      payment_link: paymongoData.attributes.checkout_url,
+      status: paymongoData.attributes.status.toUpperCase(),
+      amount,
+      reference_num: paymongoData.attributes.reference_number,
     });
 
     return res.status(200).json({
@@ -61,9 +63,9 @@ const createIslandEntryPaymentLink = async (req, res) => {
 }
 };
 
-// Webhook handler for 'link.payment.paid' events
 const handlePayMongoWebhook = async (req, res) => {
   try {
+    console.log("PayMongo Webhook Received:", req.body);
     const eventType = req.body?.data?.attributes?.type;
 
     if (eventType !== "link.payment.paid") {
@@ -77,7 +79,10 @@ const handlePayMongoWebhook = async (req, res) => {
       return res.status(400).json({ error: "Invalid webhook payload" });
     }
 
-    const registration = await getIslandEntryByCode(referenceNumber);
+    console.log("Received reference number from webhook:", referenceNumber);
+
+    // 🔧 FIX: normalize the reference number
+    const registration = await getIslandEntryByCode(referenceNumber.trim().toUpperCase());
 
     if (!registration) {
       return res.status(404).json({ error: "Registration not found" });
@@ -96,6 +101,7 @@ const handlePayMongoWebhook = async (req, res) => {
     return res.status(500).json({ error: "Webhook processing failed" });
   }
 };
+
 
 // Manual payment confirmation for testing (call this in Postman)
 const manuallyConfirmPayment = async (req, res) => {

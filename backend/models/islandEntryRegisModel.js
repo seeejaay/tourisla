@@ -66,12 +66,12 @@ const logIslandEntryByRegistration = async ({ registrationId, scannedByUserId })
   return result.rows[0];
 };
 
-const saveIslandEntryPayment = async ({ registration_id, amount, status, payment_link }) => {
+const saveIslandEntryPayment = async ({ registration_id, amount, status, payment_link, reference_num }) => {
   const result = await db.query(
     `INSERT INTO island_entry_payments 
-      (registration_id, amount, status, payment_link)
-     VALUES ($1, $2, $3, $4) RETURNING *`,
-    [registration_id, amount, status, payment_link]
+      (registration_id, amount, status, payment_link, reference_num)
+     VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+    [registration_id, amount, status, payment_link, reference_num]
   );
   return result.rows[0];
 };
