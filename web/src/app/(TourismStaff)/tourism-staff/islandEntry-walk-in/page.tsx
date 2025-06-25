@@ -4,6 +4,8 @@ import { islandEntryFields } from "@/app/static/islandEntry/islandEntryFields";
 import Header from "@/components/custom/header";
 import { registerIslandWalkIn } from "@/lib/api/islandEntry";
 import type { AxiosError } from "axios";
+import { getTourismFee } from "@/lib/api/islandEntry";
+import { useEffect } from "react";
 
 export interface GroupMember {
   name: string;
@@ -47,6 +49,16 @@ export default function WalkInIslandEntryPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<WalkInResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fee, setFee] = useState<number>(0);
+
+    useEffect(() => {
+        getTourismFee().then((data) => {
+        setFee(Number(data.amount));
+    });
+    }, []);
+
+    const totalMembers = 1 + companions.length;
+    const totalFee = fee * totalMembers;
 
   const handleMainChange = (field: keyof GroupMember, value: string | boolean | number) => {
     setMain((prev) => ({ ...prev, [field]: value }));
@@ -219,6 +231,10 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
           </div>
 
           {error && <div className="text-red-600">{error}</div>}
+
+            <div className="text-lg font-bold text-blue-700 text-center mb-2">
+                Amount to be paid: <span className="text-green-700">₱{totalFee.toLocaleString()}</span>
+            </div>
 
           <button
             type="submit"
