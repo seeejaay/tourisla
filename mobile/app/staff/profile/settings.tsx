@@ -56,6 +56,10 @@ export default function Settings() {
     router.push('/staff/profile/about/hotlines/staff_hotlines');
   };
 
+  const navigateToTerms = () => {
+    router.push('/staff/profile/about/terms/staff_terms');
+  };
+
   const navigateToRules = () => {
     router.push('/staff/profile/settings/rules/staff_rules');
   };
@@ -235,15 +239,12 @@ export default function Settings() {
           
           {/* Terms and Conditions */}
           <TouchableOpacity 
-            style={styles.subsectionHeader} 
-            onPress={() => toggleSection('terms')}
+            style={styles.subsectionHeader}
+            onPress={navigateToTerms}
+            activeOpacity={0.7}
           >
             <Text style={styles.subsectionTitle}>Terms & Conditions</Text>
-            <Feather 
-              name={expandedSection === 'terms' ? 'chevron-up' : 'chevron-down'} 
-              size={20} 
-              color="#64748b" 
-            />
+            <Feather name="chevron-right" size={20} color="#64748b" />
           </TouchableOpacity>
           
           {expandedSection === 'terms' && (
