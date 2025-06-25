@@ -104,6 +104,8 @@ export default function IslandEntryLookupPage() {
                         try {
                             await manualIslandEntryCheckIn(code.trim());
                             setSuccess("Check-in successful!");
+                            setResult(null);
+                            setCode("");
                         } catch (err) {
                             setError("Check-in failed.");
                         } finally {
@@ -113,7 +115,7 @@ export default function IslandEntryLookupPage() {
                 >
                     Check-in
                 </button>
-                {result.registration.payment_status !== "PAID" && (
+                {result.registration.status !== "PAID" && (
                     <button
                     type="button"
                     className="bg-yellow-600 text-white px-6 py-2 rounded font-bold"
