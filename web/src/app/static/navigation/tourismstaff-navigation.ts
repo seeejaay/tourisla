@@ -72,6 +72,12 @@ const tourismStaffNavigation = (): NavItem[] => {
       title: "Walk In Registration",
       icon: UserPen,
     },
+    {
+      name: "Island Entry Walk-In Registration",
+      href: `/tourism-staff/island-entry-walk-in`,
+      title: "Island Entry Walk-In Registration",
+      icon: UserPen,
+    },
   ];
 };
 
