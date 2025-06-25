@@ -70,17 +70,17 @@ export const manualCheckIn = async (unique_code) => {
   }
 };
 
-export const walkInVisitor = async () => {
+export const walkInVisitor = async (groupMembers) => {
   try {
     const response = await axios.post(
       `${API_URL}register/walk-in`,
-      {},
+      { groupMembers }, // send groupMembers in the body
       {
         withCredentials: true,
       }
     );
 
-    if (response.status !== 200) {
+    if (response.status !== 200 && response.status !== 201) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
     }
 
