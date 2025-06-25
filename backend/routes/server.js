@@ -21,6 +21,7 @@ app.use(
       "http://192.168.0.130",
       "http://dev.tourisla.local:3000",
       // change this to your local IP address
+      "https://tourisla-deploy.vercel.app/",
       process.env.CLIENT_URL, // Add this if you want to support env config too
     ],
     credentials: true,
@@ -162,6 +163,7 @@ const {
   getIslandEntryMembersController,
   checkPayMongoPaymentStatusController,
   registerIslandWalkInController,
+  getLatestIslandEntryController,
 } = require("../controllers/islandEntryRegisController");
 
 const {
@@ -721,6 +723,7 @@ app.post(
   "/api/v1/island-entry/payment-status",
   checkPayMongoPaymentStatusController
 );
+app.get("/api/v1/island-entry/latest", authenticateUser, getLatestIslandEntryController);
 
 // Routes — Tour Packages
 app.post(
@@ -969,4 +972,3 @@ app.patch(
   authenticateTourismOfficer,
   togglePriceController
 );
-

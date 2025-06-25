@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export default function ResetPassword() {
+function ResetPasswordForm() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [message, setMessage] = useState("");
@@ -78,5 +78,13 @@ export default function ResetPassword() {
         )}
       </form>
     </div>
+  );
+}
+
+export default function ResetPassword() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

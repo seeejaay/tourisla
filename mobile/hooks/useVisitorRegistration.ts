@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { Visitor } from "@/app/static/visitor-registration/visitorSchema";
+import type { Visitor } from "@/static/visitor-registration/visitorSchema.js";
 import {
   getVisitorGroupMembers as apiGetVisitorGroupMembers,
   registerVisitor as apiRegisterVisitor,

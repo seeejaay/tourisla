@@ -32,10 +32,11 @@ export const useAccommodationLogsManager = () => {
   }, []);
 
   // Create a log
-  const createLog = useCallback(async (logData: any) => {
+  const createLog = useCallback(async (logData: AccommodationLog) => {
     setLoading(true);
     setError("");
     try {
+      console.log("Creating log with data:", logData);
       const newLog = await createAccommodationLog(logData);
       setLogs((prev) => [...prev, newLog]);
       return newLog;
@@ -48,20 +49,25 @@ export const useAccommodationLogsManager = () => {
   }, []);
 
   // Update a log
-  const updateLog = useCallback(async (id: number, logData: any) => {
-    setLoading(true);
-    setError("");
-    try {
-      const updated = await updateAccommodationLog(id, logData);
-      setLogs((prev) => prev.map((log) => (log.id === id ? updated : log)));
-      return updated;
-    } catch (err) {
-      setError("Error: " + (err instanceof Error ? err.message : String(err)));
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const updateLog = useCallback(
+    async (id: number, logData: AccommodationLog) => {
+      setLoading(true);
+      setError("");
+      try {
+        const updated = await updateAccommodationLog(id, logData);
+        setLogs((prev) => prev.map((log) => (log.id === id ? updated : log)));
+        return updated;
+      } catch (err) {
+        setError(
+          "Error: " + (err instanceof Error ? err.message : String(err))
+        );
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   // Delete a log
   const deleteLog = useCallback(async (id: number) => {
@@ -80,11 +86,11 @@ export const useAccommodationLogsManager = () => {
   }, []);
 
   // Export logs (downloads a file)
-  const exportLogs = useCallback(async (params?: any) => {
+  const exportLogs = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const blob = await exportAccommodationLogs(params);
+      const blob = await exportAccommodationLogs();
       // Download the file
       const url = window.URL.createObjectURL(new Blob([blob]));
       const link = document.createElement("a");
