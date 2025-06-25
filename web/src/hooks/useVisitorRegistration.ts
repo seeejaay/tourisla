@@ -86,13 +86,20 @@ export const useVisitorRegistration = () => {
   );
 
   // Register a walk-in visitor
-  const registerWalkInVisitor =
-    useCallback(async (): Promise<Visitor | null> => {
+  const registerWalkInVisitor = useCallback(
+    async (
+      groupMembers: Partial<Visitor>[]
+    ): Promise<{ gorupMembers: Visitor } | null> => {
       setLoading(true);
       setError("");
       try {
-        const response = await apiWalkInVisitor();
-        setVisitors((prev) => [...prev, response]);
+        console.log("Registering walk-in visitor with data:", groupMembers);
+        const response = await apiWalkInVisitor(groupMembers);
+        // Optionally update visitors state if your API returns the new visitors
+        if (response.members && Array.isArray(response.members)) {
+          setVisitors((prev) => [...prev, ...response.members]);
+        }
+        console.log("Walk-in visitor registered:", response);
         return response;
       } catch (error) {
         setError(
@@ -103,7 +110,9 @@ export const useVisitorRegistration = () => {
       } finally {
         setLoading(false);
       }
-    }, []);
+    },
+    []
+  );
 
   const getVisitorResultByCode = useCallback(async (uniqueCode: string) => {
     setLoading(true);
