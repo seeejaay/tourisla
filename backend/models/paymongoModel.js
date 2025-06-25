@@ -46,21 +46,22 @@ const saveIslandEntryPayment = async ({ registration_id, amount, status, payment
 
 // Update payment status for both payment log and registration
 const updateIslandEntryPaymentStatus = async ({ registration_id, status }) => {
-  // Update in registration table
   await db.query(
     `UPDATE island_entry_registration SET payment_status = $1 WHERE id = $2`,
     [status, registration_id]
   );
 
-  // Update most recent payment row with same registration and status not yet 'PAID'
   await db.query(
-    `UPDATE island_entry_payments 
-     SET status = $1 
-     WHERE registration_id = $2 
-       AND status != 'PAID'
-     ORDER BY id DESC
-     LIMIT 1`,
-    [status, registration_id]
+    `WITH latest_payment AS (
+       SELECT id FROM island_entry_payments 
+       WHERE registration_id = $1 AND status != 'PAID'
+       ORDER BY id DESC
+       LIMIT 1
+     )
+     UPDATE island_entry_payments
+     SET status = $2
+     WHERE id IN (SELECT id FROM latest_payment)`,
+    [registration_id, status]
   );
 };
 
