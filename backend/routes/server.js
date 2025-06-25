@@ -692,12 +692,12 @@ app.post(
 );
 app.post(
   "/api/v1/register/manual-check-in",
-  allowedRoles(["Touirism Staff"]),
+  allowedRoles(["Tourism Staff"]),
   manualCheckInController
 );
 app.post(
   "/api/v1/register/walk-in",
-  allowedRoles(["Touirism Staff"]),
+  allowedRoles(["Tourism Staff"]),
   registerWalkInVisitorController
 );
 

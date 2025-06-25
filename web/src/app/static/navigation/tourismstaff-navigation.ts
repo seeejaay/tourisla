@@ -60,6 +60,12 @@ const tourismStaffNavigation = (): NavItem[] => {
       title: "Visitor Reports",
       icon: UserPen,
     },
+    {
+      name: "Walk In Registration",
+      href: `/tourism-staff/manual-check-in`,
+      title: "Walk In Registration",
+      icon: UserPen,
+    },
   ];
 };
 
