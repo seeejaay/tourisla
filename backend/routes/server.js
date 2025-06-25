@@ -721,7 +721,7 @@ app.get(
   getIslandEntryMembersController
 );
 app.post(
-  "/api/v1/island-entry/payment-status",
+  "/api/v1/island-entry/status",
   checkPayMongoPaymentStatusController
 );
 app.get(
