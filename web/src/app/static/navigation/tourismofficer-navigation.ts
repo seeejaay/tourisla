@@ -39,6 +39,12 @@ const tourismOfficerNavigation = (): NavItem[] => {
       title: "Tourist Spot",
       icon: TreePalm,
     },
+    {
+      name: "Visitor Reports",
+      href: `/tourism-officer/attraction-reports`,
+      title: "Visitor Reports",
+      icon: BookText,
+    },
   ];
 };
 
