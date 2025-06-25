@@ -12,6 +12,27 @@ import {
   assignAccommodationToStaff as apiAssignAccommodationToStaff,
 } from "@/lib/api/accommodations";
 
+export interface TourismStaff {
+  user_id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  nationality: string;
+  role: string;
+  status: string;
+  created_at: string;
+  last_login_at: string;
+  last_login_ip: string;
+  mfa_enabled: boolean;
+  password: string;
+  accommodation_id: number | null;
+  attraction_id: number | null;
+  deleted_at: string | null;
+  reset_password_token: string | null;
+  reset_password_expires: string | null;
+}
+
 export const useAccommodationManager = () => {
   const [accommodations, setAccommodations] = useState<Accommodation[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -180,7 +201,7 @@ export const useAccommodationManager = () => {
   );
 
   // Fetch tourism staff for assignment
-  const getTourismStaff = useCallback(async (): Promise<any[]> => {
+  const getTourismStaff = useCallback(async (): Promise<TourismStaff[]> => {
     setLoading(true);
     setError("");
     try {

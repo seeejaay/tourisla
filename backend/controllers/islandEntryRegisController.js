@@ -10,6 +10,7 @@ const {
   createIslandEntryMembers,
   isIslandCodeTaken,
   saveIslandEntryPayment,
+  getLatestIslandEntryByUserId,
 } = require("../models/islandEntryRegisModel");
 
 const s3Client = new S3Client({
@@ -58,6 +59,9 @@ const registerIslandEntryController = async (req, res) => {
       return res.status(400).json({ error: "Invalid payment method" });
     }
 
+    const userId = req.session.user.user_id ?? req.session.user.id;
+
+
     // Step 1: Generate unique code
     const uniqueCode = await generateUniqueCode();
 
@@ -94,6 +98,7 @@ const registerIslandEntryController = async (req, res) => {
       payment_method,
       payment_status: payment_method === "CASH" ? "UNPAID" : "PENDING",
       total_fee: totalFee,
+      user_id: userId
     });
 
     // Step 5: Save group members
@@ -319,10 +324,28 @@ const registerIslandWalkInController = async (req, res) => {
   }
 };
 
+const getLatestIslandEntryController = async (req, res) => {
+  try {
+    const userId = req.session.user?.user_id ?? req.session.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    const entry = await getLatestIslandEntryByUserId(userId);
+    if (!entry) {
+      return res.status(404).json({ error: "No registration found" });
+    }
+    res.json(entry);
+  } catch (error) {
+    console.error("Error fetching latest registration:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   registerIslandEntryController,
   manualIslandEntryCheckInController,
   getIslandEntryMembersController,
   checkPayMongoPaymentStatusController,
   registerIslandWalkInController,
+  getLatestIslandEntryController,
 };

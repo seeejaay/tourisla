@@ -21,7 +21,7 @@ export default function EditTouristSpot({
   onCancel?: () => void;
 }) {
   // Initialize form with the touristSpot prop
-  const [form, setForm] = useState<Record<string, any>>({ ...touristSpot });
+  const [form, setForm] = useState<Partial<TouristSpot>>({ ...touristSpot });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageFiles, setImageFiles] = useState<File[]>([]);

@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 
 export default function TourGuideListPage() {
+  // Store TourGuide[] (not RawTourGuide[])
   const [data, setData] = useState<TourGuide[]>([]);
   const [dialogTourGuide, setDialogTourGuide] = useState<TourGuide | null>(
     null
@@ -32,9 +33,14 @@ export default function TourGuideListPage() {
   useEffect(() => {
     async function fetchGuides() {
       const guides = await fetchAllTourGuideApplicants();
+      if (!guides) {
+        setData([]);
+        return;
+      }
+      // Map RawTourGuide[] to TourGuide[]
       setData(
-        (guides || []).map((guide: any) => ({
-          id: guide.id,
+        (guides as TourGuide[]).map((guide) => ({
+          id: guide.id ? Number(guide.id) : undefined,
           first_name: guide.first_name,
           last_name: guide.last_name,
           birth_date: guide.birth_date,
@@ -44,7 +50,7 @@ export default function TourGuideListPage() {
           reason_for_applying: guide.reason_for_applying,
           profile_picture: guide.profile_picture,
           application_status: guide.application_status ?? "pending",
-          user_id: guide.user_id,
+          user_id: guide.user_id ? Number(guide.user_id) : undefined,
         }))
       );
     }
@@ -53,28 +59,56 @@ export default function TourGuideListPage() {
 
   // Handler for viewing a tour guide (fetches latest data)
   const handleViewTourGuide = async (guide: TourGuide | null) => {
-    if (!guide?.id) return;
+    if (!guide || !guide.id || !guide.user_id) return;
     const freshGuide = await fetchTourGuideApplicant(guide.user_id.toString());
     setDialogTourGuide(freshGuide);
   };
 
-  // Handler for viewing documents
-  const handleViewDocuments = (guide: TourGuide) => {
-    router.push(`/tour-guides/${guide.id}/documents`);
+  const handleViewDocuments = (guide: TourGuide | null) => {
+    if (!guide || !guide.user_id) return;
+    router.push(`tour-guides/${guide.user_id}/documents`);
   };
 
-  // Handler for approving a tour guide
-  const handleApprove = async (guide: TourGuide) => {
+  const handleApprove = async (guide: TourGuide | null) => {
+    if (!guide || !guide.id) return;
     await approveTourGuideApplicant(guide.id);
     const guides = await fetchAllTourGuideApplicants();
-    setData(guides || []);
+    setData(
+      (guides as TourGuide[]).map((g) => ({
+        id: g.id ? Number(g.id) : undefined,
+        first_name: g.first_name,
+        last_name: g.last_name,
+        birth_date: g.birth_date,
+        sex: g.sex,
+        mobile_number: g.mobile_number,
+        email: g.email,
+        reason_for_applying: g.reason_for_applying,
+        profile_picture: g.profile_picture,
+        application_status: g.application_status ?? "pending",
+        user_id: g.user_id ? Number(g.user_id) : undefined,
+      }))
+    );
   };
 
-  // Handler for rejecting a tour guide
-  const handleReject = async (guide: TourGuide) => {
-    await rejectTourGuideApplicant(guide.id);
+  const handleReject = async (guide: TourGuide | null) => {
+    if (!guide || !guide.id) return;
+    await rejectTourGuideApplicant(guide.id.toString());
     const guides = await fetchAllTourGuideApplicants();
-    setData(guides || []);
+    setData(
+      (guides as TourGuide[]).map((g) => ({
+        id: g.id ? Number(g.id) : undefined,
+        first_name: g.first_name,
+        last_name: g.last_name,
+        birth_date: g.birth_date,
+        sex: g.sex,
+        mobile_number: g.mobile_number,
+        email: g.email,
+        reason_for_applying: g.reason_for_applying,
+        profile_picture: g.profile_picture,
+        application_status: g.application_status ?? "pending",
+        user_id: g.user_id ? Number(g.user_id) : undefined,
+      }))
+    );
   };
 
   return (
@@ -85,8 +119,7 @@ export default function TourGuideListPage() {
           handleViewTourGuide,
           handleViewDocuments,
           handleApprove,
-          handleReject,
-          router
+          handleReject
         )}
         data={data}
         searchPlaceholder="Search by name..."

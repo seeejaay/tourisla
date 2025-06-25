@@ -9,6 +9,47 @@ import Header from "@/components/custom/header";
 import BookingSchema from "@/app/static/booking/bookingSchema";
 import { bookingFields } from "@/app/static/booking/booking";
 
+// Types matching your API response
+type TourPackage = {
+  id: number;
+  touroperator_id: number;
+  package_name: string;
+  location: string;
+  description: string;
+  price: string;
+  duration_days: number;
+  inclusions: string;
+  exclusions: string;
+  available_slots: number;
+  date_start: string;
+  date_end: string;
+  start_time: string;
+  end_time: string;
+  cancellation_days: number;
+  cancellation_note: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  tourguide_id: number | null;
+};
+
+type QrData = {
+  id: number;
+  qr_image_url: string;
+  qr_name: string;
+  tour_operator_id: number;
+  created_at: string;
+};
+
+type BookingForm = {
+  scheduled_date: string;
+  number_of_guests: number;
+  total_price: number;
+  proof_of_payment: File | null;
+  notes: string;
+  [key: string]: string | number | File | null;
+};
+
 export default function BookingPage() {
   const params = useParams();
   const router = useRouter();
@@ -28,9 +69,9 @@ export default function BookingPage() {
   } = useCreateBooking();
 
   // State
-  const [tourPackage, setTourPackage] = useState<any>(null);
-  const [qrData, setQrData] = useState<any>(null);
-  const [form, setForm] = useState<Record<string, any>>({
+  const [tourPackage, setTourPackage] = useState<TourPackage | null>(null);
+  const [qrData, setQrData] = useState<QrData | null>(null);
+  const [form, setForm] = useState<BookingForm>({
     scheduled_date: "",
     number_of_guests: 1,
     total_price: 0,
@@ -45,17 +86,20 @@ export default function BookingPage() {
     async function fetchPackageAndQr() {
       const pkg = await fetchTourPackage(packageId);
       if (pkg) {
-        setTourPackage(pkg);
+        setTourPackage(pkg); // No normalization needed if API matches type
         setForm((prev) => ({
           ...prev,
           total_price: Number(pkg.price) * (prev.number_of_guests || 1),
         }));
-        // Use correct property for operator ID
-        const operatorId = pkg.touroperator_id || pkg.tour_operator_id;
+        const operatorId = pkg.touroperator_id;
         if (operatorId) {
           try {
             const qr = await fetchQr(String(operatorId));
-            setQrData(qr?.data?.[0] || null);
+            setQrData(
+              Array.isArray(qr?.data) && qr.data.length > 0
+                ? (qr.data[0] as QrData)
+                : null
+            );
           } catch {
             setQrData(null);
           }
@@ -63,18 +107,7 @@ export default function BookingPage() {
       }
     }
     fetchPackageAndQr();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [packageId, fetchTourPackage, fetchQr]);
-
-  // Dynamically update total_price when number_of_guests changes
-  useEffect(() => {
-    if (tourPackage) {
-      setForm((prev) => ({
-        ...prev,
-        total_price: Number(tourPackage.price) * (prev.number_of_guests || 1),
-      }));
-    }
-  }, [form.number_of_guests, tourPackage]);
 
   // Handle form input
   const handleChange = (
@@ -113,13 +146,13 @@ export default function BookingPage() {
       setFormError(errorMessages || "Invalid input.");
       return;
     }
-    if (!qrData) {
-      setFormError("Payment QR code not available.");
+    if (!qrData || !tourPackage) {
+      setFormError("Payment QR code or package data not available.");
       return;
     }
 
     // Prepare booking data
-    const bookingData: any = {
+    const bookingData = {
       ...form,
       scheduled_date: tourPackage.date_start,
       package_id: tourPackage.id,
@@ -128,12 +161,12 @@ export default function BookingPage() {
     };
 
     // If proof_of_payment is a file, use FormData
-    let payload: any = bookingData;
+    let payload: FormData | typeof bookingData = bookingData;
     if (form.proof_of_payment) {
       payload = new FormData();
       Object.entries(bookingData).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
-          payload.append(key, value);
+          (payload as FormData).append(key, value as Blob | string);
         }
       });
     }
@@ -141,9 +174,9 @@ export default function BookingPage() {
     try {
       await create(payload);
       alert("Booking successful!");
-      router.push("/booking/tour-packages");
+      router.push("/tour-packages");
     } catch (err) {
-      setFormError("Booking failed. Please try again.");
+      setFormError("Booking failed. Please try again." + err);
     }
   };
 
@@ -184,7 +217,7 @@ export default function BookingPage() {
                 ) : field.type === "textarea" ? (
                   <textarea
                     name={field.name}
-                    value={form[field.name] || ""}
+                    value={(form[field.name] as string) || ""}
                     onChange={handleChange}
                     className="w-full border rounded px-3 py-2"
                   />
@@ -201,7 +234,13 @@ export default function BookingPage() {
                     type={field.type}
                     name={field.name}
                     value={
-                      form[field.name] || (field.type === "number" ? 1 : "")
+                      form[field.name] !== undefined &&
+                      form[field.name] !== null &&
+                      typeof form[field.name] !== "object"
+                        ? form[field.name]
+                        : field.type === "number"
+                        ? 1
+                        : ""
                     }
                     onChange={handleChange}
                     className="w-full border rounded px-3 py-2"

@@ -86,7 +86,7 @@ export default function EditArticle({
 
       onSave(form);
     } catch (err) {
-      setError("Failed to update article. " + (err as any)?.message);
+      setError("Failed to update article. " + err);
     } finally {
       setLoading(false);
     }

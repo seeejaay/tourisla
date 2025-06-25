@@ -9,7 +9,10 @@ import {
   deleteArticle,
 } from "@/lib/api/articles";
 
-import type { Article, ArticleSchema } from "@/app/static/article/useArticleSchema";
+import type {
+  Article,
+  ArticleSchema,
+} from "@/app/static/article/useArticleSchema";
 
 export const useArticleManager = () => {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -22,8 +25,8 @@ export const useArticleManager = () => {
     try {
       const data = await fetchArticles();
       setArticles(data);
-    } catch (err: any) {
-      setError("Error fetching articles: " + (err.message || "Unknown error"));
+    } catch (err) {
+      setError("Error fetching articles: " + err);
     } finally {
       setLoading(false);
     }
@@ -36,25 +39,26 @@ export const useArticleManager = () => {
       const response = await createArticle(articleData);
       setArticles((prev) => [...prev, response]);
       return response;
-    } catch (err: any) {
-      setError("Error adding article: " + (err.message || "Unknown error"));
+    } catch (err) {
+      setError("Error adding article: " + err);
       return null;
     } finally {
       setLoading(false);
     }
   };
 
-  const edit = async (id: number, articleData: ArticleSchema): Promise<Article | null> => {
+  const edit = async (
+    id: number,
+    articleData: ArticleSchema
+  ): Promise<Article | null> => {
     setLoading(true);
     setError("");
     try {
       const response = await updateArticle(id, articleData);
-      setArticles((prev) =>
-        prev.map((a) => (a.id === id ? response : a))
-      );
+      setArticles((prev) => prev.map((a) => (a.id === id ? response : a)));
       return response;
-    } catch (err: any) {
-      setError("Error updating article: " + (err.message || "Unknown error"));
+    } catch (err) {
+      setError("Error updating article: " + err);
       return null;
     } finally {
       setLoading(false);
@@ -68,8 +72,8 @@ export const useArticleManager = () => {
       await deleteArticle(id);
       setArticles((prev) => prev.filter((a) => a.id !== id));
       return true;
-    } catch (err: any) {
-      setError("Error deleting article: " + (err.message || "Unknown error"));
+    } catch (err) {
+      setError("Error deleting article: " + err);
       return false;
     } finally {
       setLoading(false);
@@ -82,8 +86,8 @@ export const useArticleManager = () => {
     try {
       const result = await viewArticle(id);
       return result;
-    } catch (err: any) {
-      setError("Error viewing article: " + (err.message || "Unknown error"));
+    } catch (err) {
+      setError("Error viewing article: " + err);
       return null;
     } finally {
       setLoading(false);

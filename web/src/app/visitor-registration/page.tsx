@@ -6,6 +6,7 @@ import type { Visitor } from "@/app/static/visitor-registration/visitorSchema";
 import { useVisitorRegistration } from "@/hooks/useVisitorRegistration";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/custom/header";
+
 const emptyVisitor = () =>
   Object.fromEntries(
     visitorRegistrationFields.map((f) => [
@@ -13,6 +14,16 @@ const emptyVisitor = () =>
       f.type === "checkbox" ? false : "",
     ])
   ) as Partial<Visitor>;
+
+type FieldValue = string | boolean;
+
+type CreateVisitorResponse = {
+  registration: {
+    unique_code: string;
+    // add other fields if needed
+  };
+  // add other fields if needed
+};
 
 export default function WalkInRegister() {
   const [mainVisitor, setMainVisitor] = useState<Partial<Visitor>>(
@@ -22,7 +33,11 @@ export default function WalkInRegister() {
   const { createVisitor, loading, error } = useVisitorRegistration();
   const router = useRouter();
 
-  const handleInputChange = (idx: number | null, field: string, value: any) => {
+  const handleInputChange = (
+    idx: number | null,
+    field: keyof Visitor,
+    value: FieldValue
+  ) => {
     if (idx === null) {
       setMainVisitor((prev) => ({ ...prev, [field]: value }));
     } else {
@@ -40,10 +55,10 @@ export default function WalkInRegister() {
     setCompanions((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const group = [mainVisitor, ...companions];
-    const response = await createVisitor(group);
+    const response = (await createVisitor(group)) as CreateVisitorResponse;
 
     console.log("Registration response:", response);
 
@@ -82,9 +97,21 @@ export default function WalkInRegister() {
                     </label>
                     {field.type === "select" ? (
                       <select
-                        value={mainVisitor[field.name] ?? ""}
+                        value={
+                          typeof mainVisitor[field.name as keyof Visitor] ===
+                          "boolean"
+                            ? ""
+                            : (mainVisitor[field.name as keyof Visitor] as
+                                | string
+                                | number
+                                | undefined) ?? ""
+                        }
                         onChange={(e) =>
-                          handleInputChange(null, field.name, e.target.value)
+                          handleInputChange(
+                            null,
+                            field.name as keyof Visitor,
+                            e.target.value
+                          )
                         }
                         className="w-full border rounded px-2 py-1"
                       >
@@ -98,17 +125,33 @@ export default function WalkInRegister() {
                     ) : field.type === "checkbox" ? (
                       <input
                         type="checkbox"
-                        checked={!!mainVisitor[field.name]}
+                        checked={!!mainVisitor[field.name as keyof Visitor]}
                         onChange={(e) =>
-                          handleInputChange(null, field.name, e.target.checked)
+                          handleInputChange(
+                            null,
+                            field.name as keyof Visitor,
+                            e.target.checked
+                          )
                         }
                       />
                     ) : (
                       <input
                         type={field.type}
-                        value={mainVisitor[field.name] ?? ""}
+                        value={
+                          typeof mainVisitor[field.name as keyof Visitor] ===
+                          "boolean"
+                            ? ""
+                            : (mainVisitor[field.name as keyof Visitor] as
+                                | string
+                                | number
+                                | undefined) ?? ""
+                        }
                         onChange={(e) =>
-                          handleInputChange(null, field.name, e.target.value)
+                          handleInputChange(
+                            null,
+                            field.name as keyof Visitor,
+                            e.target.value
+                          )
                         }
                         className="w-full border rounded px-2 py-1"
                       />
@@ -150,9 +193,21 @@ export default function WalkInRegister() {
                       </label>
                       {field.type === "select" ? (
                         <select
-                          value={comp[field.name] ?? ""}
+                          value={
+                            typeof mainVisitor[field.name as keyof Visitor] ===
+                            "boolean"
+                              ? ""
+                              : (mainVisitor[field.name as keyof Visitor] as
+                                  | string
+                                  | number
+                                  | undefined) ?? ""
+                          }
                           onChange={(e) =>
-                            handleInputChange(idx, field.name, e.target.value)
+                            handleInputChange(
+                              idx,
+                              field.name as keyof Visitor,
+                              e.target.value
+                            )
                           }
                           className="w-full border rounded px-2 py-1"
                         >
@@ -166,17 +221,33 @@ export default function WalkInRegister() {
                       ) : field.type === "checkbox" ? (
                         <input
                           type="checkbox"
-                          checked={!!comp[field.name]}
+                          checked={!!comp[field.name as keyof Visitor]}
                           onChange={(e) =>
-                            handleInputChange(idx, field.name, e.target.checked)
+                            handleInputChange(
+                              idx,
+                              field.name as keyof Visitor,
+                              e.target.checked
+                            )
                           }
                         />
                       ) : (
                         <input
                           type={field.type}
-                          value={comp[field.name] ?? ""}
+                          value={
+                            typeof mainVisitor[field.name as keyof Visitor] ===
+                            "boolean"
+                              ? ""
+                              : (mainVisitor[field.name as keyof Visitor] as
+                                  | string
+                                  | number
+                                  | undefined) ?? ""
+                          }
                           onChange={(e) =>
-                            handleInputChange(idx, field.name, e.target.value)
+                            handleInputChange(
+                              idx,
+                              field.name as keyof Visitor,
+                              e.target.value
+                            )
                           }
                           className="w-full border rounded px-2 py-1"
                         />

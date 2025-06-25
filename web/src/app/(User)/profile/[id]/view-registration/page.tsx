@@ -29,18 +29,6 @@ export default function ViewRegistration() {
         No registration found for this user.
       </div>
     );
-  const handleDownload = async () => {
-    const response = await fetch(result.qr_code_url, { mode: "cors" });
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `qr-code-${result.unique_code || "visitor"}.png`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
-  };
 
   return (
     <div className="flex justify-center items-center min-h-[60vh] bg-gray-50">

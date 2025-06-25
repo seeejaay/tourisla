@@ -5,7 +5,6 @@ import { useAccommodationLogsManager } from "@/hooks/useAccommodationLogsManager
 import DataTable from "@/components/custom/data-table";
 import { columns as logColumns } from "@/components/custom/accommodations/accommodation-reports/columns";
 import AddAccommodationLog from "@/components/custom/accommodations/addAccomodationLog";
-import DeleteAccommodationLog from "@/components/custom/accommodations/deleteAccommodationLog";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import {
@@ -61,7 +60,7 @@ export default function AccommodationReports() {
   }, [getLogByAccommodationId, loggedInUser, router]);
 
   // Add
-  const handleAdd = async (data: any) => {
+  const handleAdd = async (data: AccommodationLog) => {
     await createLog(data);
     setAddDialogOpen(false);
     refreshLogs();
@@ -69,7 +68,7 @@ export default function AccommodationReports() {
 
   // Edit
   const handleEdit = (log: AccommodationLog) => setEditDialogLog(log);
-  const handleEditSave = async (data: any) => {
+  const handleEditSave = async (data: AccommodationLog) => {
     if (editDialogLog) {
       await updateLog(editDialogLog.id, data);
       setEditDialogLog(null);
