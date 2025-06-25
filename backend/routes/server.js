@@ -689,7 +689,7 @@ app.get(
 
 app.get(
   "/api/v1/register/result/:unique_code",
-  allowedRoles(["Tourist"]),
+  allowedRoles(["Tourist", "Tourism Staff"]),
   getVisitorResultController
 );
 app.post(
@@ -723,7 +723,11 @@ app.post(
   "/api/v1/island-entry/payment-status",
   checkPayMongoPaymentStatusController
 );
-app.get("/api/v1/island-entry/latest", authenticateUser, getLatestIslandEntryController);
+app.get(
+  "/api/v1/island-entry/latest",
+  authenticateUser,
+  getLatestIslandEntryController
+);
 
 // Routes — Tour Packages
 app.post(
