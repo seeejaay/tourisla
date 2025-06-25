@@ -46,15 +46,17 @@ const saveIslandEntryPayment = async ({ registration_id, amount, status, payment
 
 // Update payment status for both payment log and registration
 const updateIslandEntryPaymentStatus = async ({ registration_id, status }) => {
+  // Always update island_entry_registration
   await db.query(
-    `UPDATE island_entry_registration SET payment_status = $1 WHERE id = $2`,
+    `UPDATE island_entry_registration SET status = $1 WHERE id = $2`,
     [status, registration_id]
   );
 
+  // Always update the latest payment record regardless of current status
   await db.query(
     `WITH latest_payment AS (
        SELECT id FROM island_entry_payments 
-       WHERE registration_id = $1 AND status != 'PAID'
+       WHERE registration_id = $1
        ORDER BY id DESC
        LIMIT 1
      )
@@ -64,7 +66,6 @@ const updateIslandEntryPaymentStatus = async ({ registration_id, status }) => {
     [registration_id, status]
   );
 };
-
 
 module.exports = {
   createPayMongoLink,
