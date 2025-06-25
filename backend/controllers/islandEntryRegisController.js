@@ -313,6 +313,8 @@ const registerIslandWalkInController = async (req, res) => {
     const registration = await createIslandEntryRegistration({
       unique_code: uniqueCode,
       qr_code_url: qrCodeUrl,
+      payment_method: "CASH",
+      payment_status: "PAID",
       total_fee: totalFee,
       user_id: userId,
     });
