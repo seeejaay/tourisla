@@ -203,6 +203,7 @@ const {
 
 const {
   exportVisitorLogController,
+  getVisitorLogsWithSpotName,
 } = require("../controllers/exportVisitorLogController");
 const {
   exportVisitorLogGroupController,
@@ -877,6 +878,11 @@ app.delete(
 //tripadvisors
 app.get("/tripadvisor/hotels", getTripadvisorHotelsWithPhotos);
 
+app.get(
+  "/api/v1/visitor-logs",
+  allowedRoles(["Tourism Officer", "Admin"]),
+  getVisitorLogsWithSpotName
+);
 //Individual Visitor Log Export
 app.get("/api/v1/visitor-logs/export", exportVisitorLogController);
 //Visitor Summary Grouped by Month Export
