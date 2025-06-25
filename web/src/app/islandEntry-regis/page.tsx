@@ -7,7 +7,6 @@ import { useFormik } from "formik";
 import { getLatestIslandEntry } from "@/lib/api/islandEntry";
 import * as yup from "yup";
 import Header from "@/components/custom/header";
-// RegistrationPayload.ts
 
 export interface GroupMember {
   name: string;
@@ -21,19 +20,30 @@ export interface GroupMember {
 
 export interface RegistrationPayload {
   groupMembers: GroupMember[];
-  payment_method: string; // e.g. "CASH" or "ONLINE"
+  payment_method: string;
   total_fee: number;
 }
 
 export default function IslandEntryPage() {
   const [companions, setCompanions] = useState<GroupMember[]>([]);
   const [showResult, setShowResult] = useState(false);
-  const { loading, result, fee, fetchFee, register } = useIslandEntryManager();
+  const [showPaymentLink, setShowPaymentLink] = useState(false);
+  const [latestEntry, setLatestEntry] = useState<any>(null);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
+  const {
+    loading,
+    result,
+    fee,
+    fetchFee,
+    register,
+    paymentLink,
+    checkPaymentStatus,
+  } = useIslandEntryManager();
 
   useEffect(() => {
     fetchFee();
   }, []);
-  const [latestEntry, setLatestEntry] = useState(null);
 
   useEffect(() => {
     if (showResult) {
@@ -72,18 +82,31 @@ export default function IslandEntryPage() {
         ...values.companions,
       ];
 
+      if (values.payment_method === "Online" && groupMembers.length < 3) {
+        alert("Online payment is only available for groups of 3 or more.");
+        return;
+      }
+
       const payload = {
         groupMembers,
         payment_method: values.payment_method.toUpperCase(),
         total_fee: fee ? fee * groupMembers.length : 0,
       };
 
-      const res = await register(payload);
-      if (res) {
-        // Fetch the latest entry immediately after registration
-        const latest = await getLatestIslandEntry();
-        setLatestEntry(latest);
-        setShowResult(true);
+      try {
+        const res = await register(payload);
+
+        if (res?.payment_link && values.payment_method === "Online") {
+          setLatestEntry(res);
+          setHasSubmitted(true);
+          setShowPaymentLink(true);
+        } else if (res) {
+          const latest = await getLatestIslandEntry();
+          setLatestEntry(latest);
+          setShowResult(true);
+        }
+      } catch (err) {
+        console.error("Registration failed", err);
       }
     },
   });
@@ -102,7 +125,7 @@ export default function IslandEntryPage() {
       },
     ];
     setCompanions(updated);
-    formik.setFieldValue("companions", updated); // <-- sync with Formik
+    formik.setFieldValue("companions", updated);
   };
 
   const handleCompanionChange = (
@@ -113,7 +136,7 @@ export default function IslandEntryPage() {
     const updated = companions.map((c, i) =>
       i === idx ? { ...c, [field]: value } : c
     );
-    setCompanions(updated); // <-- This line is needed!
+    setCompanions(updated);
     formik.setFieldValue("companions", updated);
   };
 
@@ -127,8 +150,7 @@ export default function IslandEntryPage() {
         {latestEntry && (
           <>
             <p>
-              Your Unique Code:{" "}
-              <span className="font-mono">{latestEntry.unique_code}</span>
+              Your Unique Code: <span className="font-mono">{latestEntry.unique_code}</span>
             </p>
             <img
               src={latestEntry.qr_code_url}
@@ -355,6 +377,40 @@ export default function IslandEntryPage() {
             </div>
           </div>
 
+          {showPaymentLink && latestEntry?.payment_link && (
+            <div className="mt-5 text-center space-y-3">
+              <p className="text-sm text-gray-600">Proceed to online payment:</p>
+              <a
+                href={latestEntry.payment_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold"
+              >
+                Pay via PayMongo
+              </a>
+              <p className="text-sm text-gray-500">
+                After paying, click the button below to confirm.
+              </p>
+              <button
+                type="button"
+                onClick={async () => {
+                  const updated = await checkPaymentStatus(latestEntry.unique_code);
+                  if (updated?.paymongo_status === "PAID") {
+                    setLatestEntry(updated);
+                    setShowResult(true);
+                    setShowPaymentLink(false);
+                  } else {
+                    alert("Payment is still pending. Please try again shortly.");
+                  }
+                }}
+                className="mt-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
+              >
+                Confirm Payment
+              </button>
+            </div>
+          )}
+
+          {!(formik.values.payment_method === "Online" && hasSubmitted && latestEntry?.payment_link) && (
           <button
             type="submit"
             disabled={loading || !fee}
@@ -362,6 +418,7 @@ export default function IslandEntryPage() {
           >
             {loading ? "Registering..." : "Submit"}
           </button>
+        )}
         </form>
       </div>
     </>

@@ -1,13 +1,13 @@
 const db = require("../db/index");
 
 // Create new island entry registration
-const createIslandEntryRegistration = async ({ unique_code, qr_code_url, payment_method, payment_status, total_fee, user_id }) => {
+const createIslandEntryRegistration = async ({ unique_code, qr_code_url, payment_method, status, total_fee, user_id }) => {
   const result = await db.query(
     `INSERT INTO island_entry_registration 
-     (unique_code, qr_code_url, payment_method, payment_status, total_fee, user_id)
+     (unique_code, qr_code_url, payment_method, status, total_fee, user_id)
      VALUES ($1, $2, $3, $4, $5, $6)
      RETURNING *`,
-    [unique_code, qr_code_url, payment_method, payment_status, total_fee, user_id]
+    [unique_code, qr_code_url, payment_method, status, total_fee, user_id]
   );
   return result.rows[0];
 };

@@ -1,10 +1,16 @@
 import { useState } from "react";
-import { createIslandEntryRegistration, getTourismFee } from "../lib/api/islandEntry";
+import {
+  createIslandEntryRegistration,
+  createOnlineIslandEntry,
+  getIslandEntryStatus,
+  getTourismFee,
+} from "@/lib/api/islandEntry";
 
 export function useIslandEntryManager() {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<any>(null);
   const [fee, setFee] = useState<number | null>(null);
+  const [paymentLink, setPaymentLink] = useState<string | null>(null);
 
   const fetchFee = async () => {
     setLoading(true);
@@ -19,13 +25,48 @@ export function useIslandEntryManager() {
   const register = async (payload: RegistrationPayload) => {
     setLoading(true);
     try {
-      const res = await createIslandEntryRegistration(payload);
-      setResult(res);
-      return res;
+      // Block online payment (and alert user) if group is less than 3
+      if (
+        payload.payment_method === "ONLINE" &&
+        payload.groupMembers.length < 3
+      ) {
+        return {
+          error: "Online payment is only allowed for groups of 3 or more.",
+        };
+      }
+
+      if (payload.payment_method === "ONLINE") {
+        const res = await createOnlineIslandEntry(payload);
+        setResult(res);
+        setPaymentLink(res.payment_link);
+        return res;
+      } else {
+        const res = await createIslandEntryRegistration(payload);
+        setResult(res);
+        return res;
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  return { loading, result, fee, fetchFee, register };
+  const checkPaymentStatus = async (uniqueCode: string) => {
+    try {
+      const res = await getIslandEntryStatus(uniqueCode);
+      return res;
+    } catch (err) {
+      console.error("Failed to fetch payment status:", err);
+      return null;
+    }
+  };
+
+  return {
+    loading,
+    result,
+    fee,
+    paymentLink,
+    fetchFee,
+    register,
+    checkPaymentStatus,
+  };
 }
