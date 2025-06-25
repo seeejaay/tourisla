@@ -194,10 +194,10 @@ export default function WalkInRegister() {
                       {field.type === "select" ? (
                         <select
                           value={
-                            typeof mainVisitor[field.name as keyof Visitor] ===
+                            typeof comp[field.name as keyof Visitor] ===
                             "boolean"
                               ? ""
-                              : (mainVisitor[field.name as keyof Visitor] as
+                              : (comp[field.name as keyof Visitor] as
                                   | string
                                   | number
                                   | undefined) ?? ""
@@ -234,10 +234,10 @@ export default function WalkInRegister() {
                         <input
                           type={field.type}
                           value={
-                            typeof mainVisitor[field.name as keyof Visitor] ===
+                            typeof comp[field.name as keyof Visitor] ===
                             "boolean"
                               ? ""
-                              : (mainVisitor[field.name as keyof Visitor] as
+                              : (comp[field.name as keyof Visitor] as
                                   | string
                                   | number
                                   | undefined) ?? ""
