@@ -36,27 +36,29 @@ export default function VisitorRegistrationResultScreen() {
   const downloadQRCode = async () => {
     try {
       if (!result?.qr_code_url) return;
-      const { status } = await MediaLibrary.getPermissionsAsync();
-      if (status !== 'granted') {
-        const request = await MediaLibrary.requestPermissionsAsync();
-        if (request.status !== 'granted') return;
+  
+      // Request permission if not already granted
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permission needed", "We need permission to save to your gallery.");
+        return;
       }
   
+      // Download file to a temp path
       const fileUri = `${FileSystem.cacheDirectory}${result.unique_code}.png`;
       await FileSystem.downloadAsync(result.qr_code_url, fileUri);
-      await Sharing.shareAsync(fileUri);
   
-      const asset = await MediaLibrary.createAssetAsync(fileUri);
-      await MediaLibrary.createAlbumAsync('Camera', asset, false);
-      
+      // Save directly to main Gallery
+      await MediaLibrary.saveToLibraryAsync(fileUri);
+  
       Alert.alert(
-        'Saved',
-        `Check your Gallery app under "Tourisla QR Codes"`
+        "Saved",
+        "Your QR code was saved to your photo gallery!"
       );
-      const assets = await MediaLibrary.getAssetsAsync({ first: 1 }); 
-    } catch (error) {
+  
+    } catch (error: any) {
       console.error(error);
-      Alert.alert('Error', error.message || 'Could not save image.');
+      Alert.alert("Error", error.message || "Could not save image.");
     }
   };
 
