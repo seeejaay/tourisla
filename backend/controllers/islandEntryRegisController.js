@@ -11,6 +11,7 @@ const {
   isIslandCodeTaken,
   saveIslandEntryPayment,
   getLatestIslandEntryByUserId,
+  logIslandEntryByRegistration,
 } = require("../models/islandEntryRegisModel");
 
 const s3Client = new S3Client({
