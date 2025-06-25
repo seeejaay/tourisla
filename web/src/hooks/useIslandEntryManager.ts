@@ -6,9 +6,11 @@ import {
   getTourismFee,
 } from "@/lib/api/islandEntry";
 
+import type { RegistrationPayload } from "@/app/islandEntry-regis/page";
+
 export function useIslandEntryManager() {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<RegistrationPayload>();
   const [fee, setFee] = useState<number | null>(null);
   const [paymentLink, setPaymentLink] = useState<string | null>(null);
 
