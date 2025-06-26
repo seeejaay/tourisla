@@ -254,9 +254,11 @@ const {
 } = require("../controllers/operatorQRController.js");
 
 const {
+  getAllPricesController,
   getActivePriceController,
   createPriceController,
   togglePriceController,
+  updatePriceDetailsController,
 } = require("../controllers/priceManageController.js");
 
 const {
@@ -972,6 +974,7 @@ app.get(
 );
 
 // Routes for Price Management
+app.get("/api/v1/prices", getAllPricesController);
 app.get("/api/v1/prices/active", getActivePriceController);
 app.post("/api/v1/prices", authenticateTourismOfficer, createPriceController);
 app.patch(
@@ -979,14 +982,4 @@ app.patch(
   authenticateTourismOfficer,
   togglePriceController
 );
-
-// Routes for Price Management
-app.get("/api/v1/prices/active", getActivePriceController);
-app.post("/api/v1/prices", authenticateTourismOfficer, createPriceController);
-app.patch(
-  "/api/v1/prices/:id/toggle",
-  authenticateTourismOfficer,
-  togglePriceController
-);
-
-
+app.patch("/api/v1/prices/:id/update", updatePriceDetailsController);
