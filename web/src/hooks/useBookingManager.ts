@@ -35,6 +35,8 @@ export interface Booking {
   status: string;
   created_at: string; // ISO date string
   updated_at: string; // ISO date string
+  tour_operator_name?: string;
+  tour_guides?: { first_name: string; last_name: string }[];
 }
 // Hook for creating a booking
 export function useCreateBooking() {
