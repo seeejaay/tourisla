@@ -709,7 +709,7 @@ app.post(
 );
 app.get(
   "/api/v1/visitor/history",
-  allowedRoles(["Tourist"]),
+  authenticateUser,
   visitorHistoryController
 );
 
