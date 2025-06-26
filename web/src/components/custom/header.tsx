@@ -82,11 +82,11 @@ export default function Header() {
                 )
               )}
             </div>
-            <div className="flex items-center gap-2 bg-neutral-200 rounded-full ">
+            <div className="flex items-center gap-2 bg-neutral-100 rounded-full ">
               <Pill />
               <Button
                 variant="ghost"
-                className="rounded-full h-10 w-10 p-0 relative hover:bg-gray-100 transition-colors group"
+                className="rounded-full h-10 w-10 p-0 relative hover:bg-white transition-colors group"
                 onClick={() => router.push("/announcements")}
                 aria-label="Announcements"
               >
