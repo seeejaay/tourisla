@@ -26,6 +26,7 @@ export const useTouristSpotManager = () => {
     try {
       const data = await apiFetchTouristSpots();
       setTouristSpots(data);
+      console.log("Fetched tourist spots:", data);
       return data;
     } catch (err) {
       setError("Error: " + (err instanceof Error ? err.message : String(err)));
