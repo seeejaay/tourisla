@@ -84,6 +84,14 @@ const deleteQuestion = async (id) => {
   return result.rows[0];
 };
 
+const getAllSpotFeedbacksByUser = async (userId) => {
+  const result = await db.query(
+    `SELECT * FROM feedback_groups WHERE type = 'SPOT' AND submitted_by = $1`,
+    [userId]
+  );
+  return result.rows;
+};
+
 module.exports = {
   createFeedbackGroup,
   submitAnswer,
@@ -93,4 +101,5 @@ module.exports = {
   getQuestionsByType,
   updateQuestion,
   deleteQuestion,
+  getAllSpotFeedbacksByUser,
 };

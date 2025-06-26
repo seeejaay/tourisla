@@ -239,6 +239,7 @@ const {
   editQuestionController,
   deleteQuestionController,
   viewQuestionsByTypeController,
+  getMySpotFeedbacksController,
 } = require("../controllers/feedbackController.js");
 
 const {
@@ -936,7 +937,7 @@ app.delete(
 );
 
 // 5. Anyone can view feedback questions (for form rendering)
-
+app.get("/api/v1/feedback/my-spot-feedbacks", authenticateUser, getMySpotFeedbacksController);
 app.get("/api/v1/feedback/questions/:type", viewQuestionsByTypeController);
 app.get("/api/v1/feedback/questions/:type", viewQuestionsByTypeController);
 
