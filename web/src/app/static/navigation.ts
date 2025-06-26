@@ -46,6 +46,11 @@ export const navigation = [
     href: "/islandEntry-regis",
     title: "Island Entry Registration",
   },
+  {
+    tag: "Incident Report",
+    href: "/incident-report",
+    title: "Incident Report",
+  },
 ];
 export const footerNavigation = [
   {
