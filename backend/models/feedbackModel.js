@@ -92,6 +92,22 @@ const getAllSpotFeedbacksByUser = async (userId) => {
   return result.rows;
 };
 
+const getAllOperatorFeedbacksByUser = async (userId) => {
+  const result = await db.query(
+    `SELECT * FROM feedback_groups WHERE type = 'OPERATOR' AND submitted_by = $1`,
+    [userId]
+  );
+  return result.rows;
+};
+
+const getAllGuideFeedbacksByUser = async (userId) => {
+  const result = await db.query(
+    `SELECT * FROM feedback_groups WHERE type = 'GUIDE' AND submitted_by = $1`,
+    [userId]
+  );
+  return result.rows;
+};
+
 module.exports = {
   createFeedbackGroup,
   submitAnswer,
@@ -102,4 +118,6 @@ module.exports = {
   updateQuestion,
   deleteQuestion,
   getAllSpotFeedbacksByUser,
+  getAllOperatorFeedbacksByUser,
+  getAllGuideFeedbacksByUser,
 };
