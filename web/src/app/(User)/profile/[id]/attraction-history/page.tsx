@@ -22,13 +22,20 @@ export interface VisitorLog {
   registration_id: number; // Make sure this is included!
   // Add other fields if needed
 }
-
+export interface SpotFeedback {
+  id: number;
+  type: string; // e.g., "SPOT"
+  feedback_for_spot_id: number;
+  feedback_for_user_id: number | null;
+  submitted_at: string; // ISO date string
+  submitted_by: number;
+}
 const AttractionHistoryPage = () => {
   const { history, loading, error } = useAttractionHistoryManager();
   const [openId, setOpenId] = useState<number | null>(null);
   const [spots, setSpots] = useState<TouristSpot[]>([]);
   const [feedbackOpenId, setFeedbackOpenId] = useState<number | null>(null);
-  const [mySpotFeedbacks, setMySpotFeedbacks] = useState<any[]>([]);
+  const [mySpotFeedbacks, setMySpotFeedbacks] = useState<SpotFeedback[]>([]);
 
   useEffect(() => {
     fetchTouristSpots().then(setSpots);
@@ -83,6 +90,7 @@ const AttractionHistoryPage = () => {
                 setFeedbackOpenId(null);
                 // Refresh feedbacks after submission
                 const updated = await fetchMySpotFeedbacks();
+                console.log("Updated feedbacks:", updated);
                 setMySpotFeedbacks(updated);
               }}
               feedbackGiven={feedbackGiven}

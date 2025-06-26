@@ -3,7 +3,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Fetch feedback questions for spots
 export const fetchSpotFeedbackQuestions = async () => {
-  const res = await axios.get(`${API_URL}feedback/questions/SPOT`, { withCredentials: true });
+  const res = await axios.get(`${API_URL}feedback/questions/SPOT`, {
+    withCredentials: true,
+  });
   return res.data; // Should be [{ id, question_text }]
 };
 
@@ -21,6 +23,9 @@ export const submitSpotFeedback = async ({ spotId, answers }) => {
 };
 
 export const fetchMySpotFeedbacks = async () => {
-  const res = await axios.get(`${API_URL}feedback/my-spot-feedbacks`, { withCredentials: true });
+  const res = await axios.get(`${API_URL}feedback/my-spot-feedbacks`, {
+    withCredentials: true,
+  });
+
   return res.data; // Array of feedback_groups
 };
