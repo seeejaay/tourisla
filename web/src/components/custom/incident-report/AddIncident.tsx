@@ -41,7 +41,7 @@ export default function AddIncident() {
         setSuccessMsg("Incident report submitted successfully.");
         resetForm();
       } catch (err) {
-        alert("Failed to submit incident report.");
+        alert("Failed to submit incident report." + err);
       }
     },
   });
@@ -59,7 +59,9 @@ export default function AddIncident() {
           {field.type === "textarea" ? (
             <textarea
               name={field.name}
-              value={formik.values[field.name as keyof IncidentFormValues] as string}
+              value={
+                formik.values[field.name as keyof IncidentFormValues] as string
+              }
               onChange={formik.handleChange}
               className="w-full border px-3 py-2 rounded"
               placeholder={field.placeholder}
@@ -79,7 +81,9 @@ export default function AddIncident() {
             <input
               type={field.type}
               name={field.name}
-              value={formik.values[field.name as keyof IncidentFormValues] as string}
+              value={
+                formik.values[field.name as keyof IncidentFormValues] as string
+              }
               onChange={formik.handleChange}
               placeholder={field.placeholder}
               className="w-full border px-3 py-2 rounded"
@@ -91,7 +95,7 @@ export default function AddIncident() {
               <p className="text-sm text-red-600 mt-1">
                 {formik.errors[field.name as keyof IncidentFormValues]}
               </p>
-          )}
+            )}
         </div>
       ))}
 
