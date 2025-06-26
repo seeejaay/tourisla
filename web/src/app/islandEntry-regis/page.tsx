@@ -24,11 +24,21 @@ export interface RegistrationPayload {
   total_fee: number;
 }
 
+export interface LatestEntry {
+  unique_code: string;
+  qr_code_url: string;
+  // payment_method: string;
+  // status: string;
+  // total_fee: number;
+  payment_link?: string;
+  paymongo_status?: string;
+}
+
 export default function IslandEntryPage() {
   const [companions, setCompanions] = useState<GroupMember[]>([]);
   const [showResult, setShowResult] = useState(false);
   const [showPaymentLink, setShowPaymentLink] = useState(false);
-  const [latestEntry, setLatestEntry] = useState<any>(null);
+  const [latestEntry, setLatestEntry] = useState<LatestEntry | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const {
@@ -37,13 +47,13 @@ export default function IslandEntryPage() {
     fee,
     fetchFee,
     register,
-    paymentLink,
+    // paymentLink,
     checkPaymentStatus,
   } = useIslandEntryManager();
 
   useEffect(() => {
     fetchFee();
-  }, []);
+  }, [fetchFee]);
 
   useEffect(() => {
     if (showResult) {
@@ -387,7 +397,7 @@ export default function IslandEntryPage() {
                 className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold"
               >
                 Pay via PayMongo
-              </a>
+              </a> 
               <p className="text-sm text-gray-500">
                 After paying, click the button below to confirm.
               </p>

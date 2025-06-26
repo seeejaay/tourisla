@@ -7,6 +7,7 @@ import {
 } from "@/lib/api/islandEntry";
 
 import type { RegistrationPayload } from "@/app/islandEntry-regis/page";
+import { useCallback } from "react";
 
 export function useIslandEntryManager() {
   const [loading, setLoading] = useState(false);
@@ -14,15 +15,15 @@ export function useIslandEntryManager() {
   const [fee, setFee] = useState<number | null>(null);
   const [paymentLink, setPaymentLink] = useState<string | null>(null);
 
-  const fetchFee = async () => {
-    setLoading(true);
-    try {
-      const data = await getTourismFee();
-      setFee(Number(data.amount));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchFee = useCallback(async () => {
+  setLoading(true);
+  try {
+    const data = await getTourismFee();
+    setFee(Number(data.amount));
+  } finally {
+    setLoading(false);
+  } 
+  }, []);
 
   const register = async (payload: RegistrationPayload) => {
     setLoading(true);
