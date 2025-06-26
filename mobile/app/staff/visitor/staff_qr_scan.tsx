@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, StatusBar } from "react-native";
-import { BarCodeScanner } from "expo-barcode-scanner";
 import { useAuth } from "@/hooks/useAuth"; // assuming you use this for auth
 import axios from "axios";
 
