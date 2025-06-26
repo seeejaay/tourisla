@@ -22,11 +22,6 @@ export const navigation = [
     title: "Culture",
   },
   {
-    tag: "Announcements",
-    href: "/announcements",
-    title: "Announcements",
-  },
-  {
     tag: "Tour Packages",
     href: "/tour-packages",
     title: "Tour Packages",
