@@ -3,6 +3,8 @@
 import Header from "@/components/custom/header";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import MapPage from "@/components/custom/map";
+
 const destinations = [
   {
     title: "Sea",
@@ -30,8 +32,9 @@ export default function Home() {
     <>
       <Header />
       <div className="relative flex w-full min-h-screen bg-gradient-to-b from-white via-blue-50 to-blue-100">
-        <main className="flex-1 transition-opacity duration-300 ">
+        <main className="flex-1 transition-opacity duration-300 min-h-screen">
           <div className="flex flex-col items-center justify-center w-full">
+            {/* Hero Section */}
             <section className="text-center max-w-xl px-4 py-12">
               <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-400 mb-4 tracking-tight">
                 TourIsla
@@ -40,14 +43,15 @@ export default function Home() {
                 Discover the beauty of the islands. Plan your next adventure
                 with us!
               </p>
-              <a
+              <button
                 onClick={() => router.push("/listings")}
                 className="inline-block px-8 py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-medium shadow transition"
               >
                 Explore Now
-              </a>
+              </button>
             </section>
 
+            {/* Featured Destinations */}
             <section
               id="explore"
               className="w-full max-w-6xl px-4 flex flex-col items-center pb-12"
@@ -83,6 +87,20 @@ export default function Home() {
               </div>
             </section>
           </div>
+          {/* Map Section */}
+          <section className="w-full flex justify-center px-4 h-auto py-12">
+            <div className="w-full max-w-6xl bg-white rounded-3xl shadow-2xl p-6 md:p-10 flex flex-col gap-6">
+              <h2 className="text-2xl font-semibold text-blue-700 tracking-tight text-center mb-2">
+                Explore the Map
+              </h2>
+              <p className="text-gray-500 text-center mb-4">
+                Filter and discover tourist spots around Bantayan Island.
+              </p>
+              <div className="w-full  rounded-2xl overflow-hidden  ">
+                <MapPage />
+              </div>
+            </div>
+          </section>
         </main>
       </div>
     </>

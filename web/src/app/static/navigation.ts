@@ -17,11 +17,6 @@ export const navigation = [
     ],
   },
   {
-    tag: "Map",
-    href: "/map",
-    title: "Map",
-  },
-  {
     tag: "Culture",
     href: "/articles",
     title: "Culture",
