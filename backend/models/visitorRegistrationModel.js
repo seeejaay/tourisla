@@ -93,6 +93,21 @@ const getQRCodebyUserId = async (userId) => {
   return result.rows[0];
 };
 
+// ✅ Get visit history for a user
+const getVisitorHistoryByUserId = async (userId) => {
+  // Join logs with registrations, group members, and optionally tourist spots
+  const result = await db.query(
+    `SELECT l.*, r.unique_code, r.qr_code_url, r.registration_date, m.name as member_name, m.age as member_age, m.sex as member_sex, m.is_foreign, m.municipality, m.province, m.country
+     FROM attraction_visitor_logs l
+     JOIN visitor_registrations r ON l.registration_id = r.id
+     LEFT JOIN visitor_group_members m ON m.registration_id = r.id
+     WHERE l.user_id = $1
+     ORDER BY l.visit_date DESC, r.registration_date DESC` ,
+    [userId]
+  );
+  return result.rows;
+};
+
 module.exports = {
   createVisitorRegistration,
   createVisitorGroupMembers,
@@ -101,4 +116,5 @@ module.exports = {
   getUserAttractionId,
   logAttractionVisitByRegistration,
   getQRCodebyUserId,
+  getVisitorHistoryByUserId,
 };

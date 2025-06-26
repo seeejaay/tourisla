@@ -154,6 +154,7 @@ const {
   registerWalkInVisitorController,
   getVisitorResultController,
   getQRCodebyUserIdController,
+  visitorHistoryController,
 } = require("../controllers/visitorRegistrationController");
 
 const {
@@ -681,13 +682,11 @@ app.get(
   "/api/v1/register/members/:unique_code",
   getVisitorGroupMembersController
 );
-
 app.get(
   "/api/v1/register/qr/:user_id",
   allowedRoles(["Tourist"]),
   getQRCodebyUserIdController
 );
-
 app.get(
   "/api/v1/register/result/:unique_code",
   allowedRoles(["Tourist", "Tourism Staff"]),
@@ -707,6 +706,11 @@ app.post(
   "/api/v1/register/walk-in",
   allowedRoles(["Tourism Staff"]),
   registerWalkInVisitorController
+);
+app.get(
+  "/api/v1/visitor/history",
+  allowedRoles(["Tourist"]),
+  visitorHistoryController
 );
 
 // Island Entry Registration Routes
@@ -983,3 +987,5 @@ app.patch(
   authenticateTourismOfficer,
   togglePriceController
 );
+
+

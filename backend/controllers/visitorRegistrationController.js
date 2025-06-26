@@ -9,6 +9,7 @@ const {
   getUserAttractionId,
   logAttractionVisitByRegistration,
   getQRCodebyUserId,
+  getVisitorHistoryByUserId,
 } = require("../models/visitorRegistrationModel");
 
 const db = require("../db/index");
@@ -339,6 +340,24 @@ const getQRCodebyUserIdController = async (req, res) => {
   }
 };
 
+// ✅ Visitor history for logged-in user
+const visitorHistoryController = async (req, res) => {
+  try {
+    const userId = req.session.user?.user_id ?? req.session.user?.id;
+    if (!userId) {
+      return res.status(403).json({ error: "Invalid session: missing user ID." });
+    }
+    const history = await getVisitorHistoryByUserId(userId);
+    return res.status(200).json({
+      message: "Visitor history fetched successfully.",
+      history,
+    });
+  } catch (error) {
+    console.error("Error fetching visitor history:", error);
+    return res.status(500).json({ error: "Internal server error." });
+  }
+};
+
 module.exports = {
   registerVisitorController,
   manualCheckInController,
@@ -346,4 +365,5 @@ module.exports = {
   registerWalkInVisitorController,
   getVisitorResultController,
   getQRCodebyUserIdController,
+  visitorHistoryController,
 };
