@@ -404,15 +404,17 @@ export default function IslandEntryPage() {
               <button
                 type="button"
                 onClick={async () => {
-                  const updated = await checkPaymentStatus(latestEntry.unique_code);
-                  if (updated?.paymongo_status === "PAID") {
-                    setLatestEntry(updated);
-                    setShowResult(true);
-                    setShowPaymentLink(false);
-                  } else {
-                    alert("Payment is still pending. Please try again shortly.");
-                  }
-                }}
+                try {
+                  const updated = await getLatestIslandEntry();
+                  setLatestEntry(updated);
+                  setShowResult(true);
+                  setShowPaymentLink(false);
+                } catch (err) {
+                  console.error("Failed to confirm payment:", err);
+                  alert("Something went wrong while confirming payment.");
+                }
+              }}
+
                 className="mt-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
               >
                 Confirm Payment
