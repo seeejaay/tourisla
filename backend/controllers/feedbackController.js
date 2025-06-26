@@ -1,3 +1,5 @@
+const db = require("../db/index.js");
+
 const {
   createFeedbackGroup,
   submitAnswer,
@@ -7,6 +9,7 @@ const {
   getQuestionsByType,
   updateQuestion,
   deleteQuestion,
+  getAllSpotFeedbacksByUser,
 } = require("../models/feedbackModel.js");
 
 const submitFeedbackController = async (req, res) => {
@@ -15,6 +18,14 @@ const submitFeedbackController = async (req, res) => {
     type = type.toUpperCase();
 
     const submitted_by = req.session.user.user_id ?? req.session.user.id;
+
+    const existing = await db.query(
+      `SELECT 1 FROM feedback_groups WHERE type = $1 AND submitted_by = $2 AND feedback_for_spot_id = $3`,
+      ["SPOT", submitted_by, ref_id]
+    );
+    if (existing.rows.length > 0) {
+      return res.status(409).json({ error: "Feedback already submitted for this spot." });
+    }
 
     let feedbackGroup;
     if (type === "SPOT") {
@@ -111,6 +122,17 @@ const viewQuestionsByTypeController = async (req, res) => {
   }
 };
 
+const getMySpotFeedbacksController = async (req, res) => {
+  try {
+    const userId = req.session.user?.user_id ?? req.session.user?.id;
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+    const feedbacks = await getAllSpotFeedbacksByUser(userId);
+    res.json(feedbacks);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch feedbacks" });
+  }
+};
+
 module.exports = {
   submitFeedbackController,
   viewFeedbackGroupAnswersController,
@@ -119,4 +141,5 @@ module.exports = {
   editQuestionController,
   deleteQuestionController,
   viewQuestionsByTypeController,
+  getMySpotFeedbacksController,
 };
