@@ -82,7 +82,7 @@ export default function Header() {
                 )
               )}
             </div>
-            <div className="flex items-center gap-2 bg-neutral-100 rounded-full ">
+            <div className="flex items-center gap-2 bg-neutral-100 rounded-full transition-all duration-200  ease-in-out">
               <Pill />
               <Button
                 variant="ghost"
@@ -90,7 +90,7 @@ export default function Header() {
                 onClick={() => router.push("/announcements")}
                 aria-label="Announcements"
               >
-                <Megaphone className="w-5 h-5" />
+                <Megaphone className="w-6 h-6" />
               </Button>
               <WeatherWidget />
             </div>
