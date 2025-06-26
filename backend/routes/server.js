@@ -948,12 +948,12 @@ app.post(
 );
 app.get(
   "/api/v1/incident-report",
-  authenticateTourismOfficer,
+  // authenticateTourismOfficer,
   viewAllIncidentReportsController
 );
 app.get(
   "/api/v1/incident-report/user/:userId",
-  authenticateTourismOfficer,
+  // authenticateTourismOfficer,
   viewIncidentReportByUserController
 );
 
