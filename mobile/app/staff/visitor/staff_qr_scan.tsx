@@ -1,141 +1,64 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, StatusBar } from "react-native";
-import { useAuth } from "@/hooks/useAuth"; // assuming you use this for auth
-import axios from "axios";
+import { useCameraPermissions } from 'expo-camera';
+import { router } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
-export default function StaffQRScan() {
-  const { user } = useAuth();
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [scanned, setScanned] = useState(false);
-  const [loading, setLoading] = useState(false);
+export default function StaffQrScan() {
 
-  useEffect(() => {
-    (async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === "granted");
-    })();
-  }, []);
+  const [permission, requestPermission] = useCameraPermissions();
 
-  const handleBarCodeScanned = async ({ data }: { data: string }) => {
-    setScanned(true);
-    setLoading(true);
-
-    try {
-      // Adjust this URL as per your API setup
-      const API_URL = `${process.env.EXPO_PUBLIC_API_URL}/api/v1/register/manual-check-in`;
-      const response = await axios.post(
-        API_URL,
-        { unique_code: data },
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      Alert.alert(
-        "Check-In Successful",
-        `Checked in visitor group: ${response.data.registration.unique_code}`
-      );
-    } catch (error: any) {
-      console.error(error);
-      const message =
-        error?.response?.data?.error ||
-        "Error while checking in. Please try again.";
-      Alert.alert("Error", message);
-    } finally {
-      setLoading(false);
-      setScanned(false); // allow scanning again
-    }
-  };
-
-  if (hasPermission === null) {
-    return (
-      <View style={styles.center}>
-        <Text>Requesting camera permission...</Text>
-      </View>
-    );
-  }
-
-  if (hasPermission === false) {
-    return (
-      <View style={styles.center}>
-        <Text style={{ marginBottom: 8 }}>No access to camera</Text>
-        <TouchableOpacity onPress={() => setHasPermission(null)} style={styles.retryButton}>
-          <Text style={styles.retryButtonText}>Retry Permission</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  const isPermissionGranted = Boolean(permission?.granted);
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      <Text style={styles.title}>Scan Visitor's QR Code</Text>
+    <SafeAreaView style={styleSheet.container}>
+      <StatusBar style="auto" />
 
-      {loading && <ActivityIndicator size="large" color="#0ea5e9" style={styles.spinner} />}
+      <Text style={styleSheet.mainText}>Expo QR Code Scanner</Text>
 
-      <BarCodeScanner
-        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-        style={styles.scanner}
-      />
+      <Pressable
+        style={[styleSheet.mainBtn, styleSheet.btnGreen]}
+        onPress={async () => {
+          const result = await requestPermission();
+          console.log('Permission result:', result); // check status in console
+        }}
+      >
+        <Text>Request Permission</Text>
+      </Pressable>
 
-      {scanned && !loading && (
-        <TouchableOpacity style={styles.scanAgainButton} onPress={() => setScanned(false)}>
-          <Text style={styles.scanAgainText}>Tap to Scan Again</Text>
-        </TouchableOpacity>
-      )}
-    </View>
+      <Pressable onPress={
+        () => {
+          router.push("/staff/visitor/qrScan");
+        }
+      } style={[styleSheet.mainBtn, styleSheet.btnYellow, { opacity: isPermissionGranted ? 1 : 0.5 }]} disabled={!isPermissionGranted} >
+        <Text>Scan Code</Text>
+      </Pressable>
+
+    </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+const styleSheet = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f172a",
-    paddingHorizontal: 16,
-    paddingTop: 48,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    rowGap: 20
   },
-  title: {
-    color: "#fff",
-    fontSize: 24,
-    fontWeight: "700",
-    textAlign: "center",
-    marginBottom: 16,
-  },
-  scanner: {
-    flex: 1,
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  scanAgainButton: {
-    backgroundColor: "#1e293b",
-    padding: 16,
-    borderRadius: 8,
-    marginVertical: 16,
-  },
-  scanAgainText: {
-    color: "#38bdf8",
-    fontSize: 16,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  spinner: {
-    marginVertical: 16,
-  },
-  center: {
-    flex: 1,
+  mainBtn: {
+    width: 200,
+    height: 40,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0f172a",
   },
-  retryButton: {
-    padding: 12,
-    backgroundColor: "#38bdf8",
-    borderRadius: 8,
-    marginTop: 8,
+  btnGreen: {
+    backgroundColor: "#0BCD4C",
   },
-  retryButtonText: {
-    color: "#fff",
-    fontWeight: "600",
+  btnYellow: {
+    backgroundColor: "yellow",
   },
+  mainText: {
+    fontSize: 20,
+    fontWeight: "bold"
+  }
 });
