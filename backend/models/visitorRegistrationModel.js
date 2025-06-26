@@ -69,12 +69,13 @@ const logAttractionVisitByRegistration = async ({
   registrationId,
   scannedByUserId,
   touristSpotId,
+  userId,
 }) => {
   const result = await db.query(
-    `INSERT INTO attraction_visitor_logs (registration_id, scanned_by_user_id, tourist_spot_id, visit_date)
-     VALUES ($1, $2, $3, CURRENT_DATE)
+    `INSERT INTO attraction_visitor_logs (registration_id, scanned_by_user_id, tourist_spot_id, user_id, visit_date)
+     VALUES ($1, $2, $3, $4, CURRENT_DATE)
      RETURNING *`,
-    [registrationId, scannedByUserId, touristSpotId]
+    [registrationId, scannedByUserId, touristSpotId, userId]
   );
 
   return result.rows[0];
