@@ -40,13 +40,14 @@ const createIncidentReport = async ({
 };
 
 const getAllIncidentReports = async () => {
-    // ir is alias for incident_reports
-    // u is alias for users
   const result = await db.query(`
-    SELECT ir.*, u.name AS submitted_by_name
+    SELECT 
+      ir.*, 
+      u.first_name || ' ' || u.last_name AS submitted_by_name,
+      u.role AS submitted_by_role
     FROM incident_report ir
     LEFT JOIN users u ON ir.submitted_by = u.user_id
-    ORDER BY submitted_at DESC
+    ORDER BY ir.submitted_at DESC
   `);
   return result.rows;
 };

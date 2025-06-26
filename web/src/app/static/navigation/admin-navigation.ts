@@ -6,6 +6,7 @@ import {
   Megaphone,
   TreePalm,
   Users,
+  FileWarning,
 } from "lucide-react";
 
 const adminNavigation = [
@@ -62,6 +63,12 @@ const adminNavigation = [
     href: "/admin/article",
     title: "Article",
     icon: BookOpen,
+  },
+  {
+    name: "Incident Reports",
+    href: "/admin/incident-report",
+    title: "Incident Reports",
+    icon: FileWarning,
   },
 ];
 
