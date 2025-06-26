@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { navigation } from "@/app/static/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Megaphone } from "lucide-react";
 import Pill from "@/components/custom/pill";
 import WeatherWidget from "@/components/custom/weather";
 
@@ -82,8 +82,16 @@ export default function Header() {
                 )
               )}
             </div>
-            <div className="ml-6 flex flex-row">
+            <div className="flex items-center gap-2 bg-neutral-100 rounded-full transition-all duration-200  ease-in-out">
               <Pill />
+              <Button
+                variant="ghost"
+                className="rounded-full h-10 w-10 p-0 relative hover:bg-white transition-colors group"
+                onClick={() => router.push("/announcements")}
+                aria-label="Announcements"
+              >
+                <Megaphone className="w-6 h-6" />
+              </Button>
               <WeatherWidget />
             </div>
           </div>

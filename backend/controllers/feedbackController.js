@@ -10,6 +10,8 @@ const {
   updateQuestion,
   deleteQuestion,
   getAllSpotFeedbacksByUser,
+  getAllOperatorFeedbacksByUser,
+  getAllGuideFeedbacksByUser,
 } = require("../models/feedbackModel.js");
 
 const submitFeedbackController = async (req, res) => {
@@ -133,6 +135,28 @@ const getMySpotFeedbacksController = async (req, res) => {
   }
 };
 
+const getMyOperatorFeedbacksController = async (req, res) => {
+  try {
+    const userId = req.session.user?.user_id ?? req.session.user?.id;
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+    const feedbacks = await getAllOperatorFeedbacksByUser(userId);
+    res.json(feedbacks);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch feedbacks" });
+  }
+};
+
+const getMyGuideFeedbacksController = async (req, res) => {
+  try {
+    const userId = req.session.user?.user_id ?? req.session.user?.id;
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+    const feedbacks = await getAllGuideFeedbacksByUser(userId);
+    res.json(feedbacks);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch feedbacks" });
+  }
+};
+
 module.exports = {
   submitFeedbackController,
   viewFeedbackGroupAnswersController,
@@ -142,4 +166,6 @@ module.exports = {
   deleteQuestionController,
   viewQuestionsByTypeController,
   getMySpotFeedbacksController,
+  getMyOperatorFeedbacksController,
+  getMyGuideFeedbacksController,
 };

@@ -240,6 +240,8 @@ const {
   deleteQuestionController,
   viewQuestionsByTypeController,
   getMySpotFeedbacksController,
+  getMyOperatorFeedbacksController,
+  getMyGuideFeedbacksController,
 } = require("../controllers/feedbackController.js");
 
 const {
@@ -940,6 +942,11 @@ app.delete(
 
 // 5. Anyone can view feedback questions (for form rendering)
 app.get("/api/v1/feedback/my-spot-feedbacks", authenticateUser, getMySpotFeedbacksController);
+app.get("/api/v1/feedback/my-operator-feedbacks", authenticateUser, getMyOperatorFeedbacksController);
+app.get("/api/v1/feedback/my-guide-feedbacks", authenticateUser, getMyGuideFeedbacksController);
+
+
+
 app.get("/api/v1/feedback/questions/:type", viewQuestionsByTypeController);
 app.get("/api/v1/feedback/questions/:type", viewQuestionsByTypeController);
 
