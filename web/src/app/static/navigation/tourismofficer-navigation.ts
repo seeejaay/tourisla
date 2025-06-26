@@ -1,4 +1,4 @@
-import { LayoutDashboard, BookText, TreePalm, Megaphone, HelpCircle, ClipboardList } from "lucide-react";
+import { LayoutDashboard, BookText, TreePalm, Megaphone, ClipboardList } from "lucide-react";
 import type { NavItem } from "@/components/custom/sidebar";
 
 const tourismOfficerNavigation = (): NavItem[] => {
