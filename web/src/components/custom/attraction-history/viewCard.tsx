@@ -1,12 +1,12 @@
-import React from "react";
-import type { VisitorLog } from "@/app/(User)/profile/[id]/attraction-history/page"; // Adjust path as needed
+import type { VisitorLog } from "@/app/(User)/profile/[id]/attraction-history/page";
 
 interface ViewCardProps {
   log: VisitorLog;
+  spotName: string;
   onClick: () => void;
 }
 
-export const ViewCard: React.FC<ViewCardProps> = ({ log, onClick }) => (
+export const ViewCard: React.FC<ViewCardProps> = ({ log, spotName, onClick }) => (
   <div
     className="bg-white shadow rounded-lg mb-4 cursor-pointer transition hover:shadow-lg"
     onClick={onClick}
@@ -14,6 +14,9 @@ export const ViewCard: React.FC<ViewCardProps> = ({ log, onClick }) => (
     <div className="p-4 flex items-center justify-between">
       <div>
         <div className="font-semibold text-lg">
+          {spotName}
+        </div>
+        <div className="font-semibold">
           Visit Date: {new Date(log.visit_date).toLocaleDateString()}
         </div>
         <div className="text-gray-600 text-sm">

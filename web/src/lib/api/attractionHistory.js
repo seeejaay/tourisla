@@ -6,3 +6,11 @@ export const fetchAttractionHistory = async () => {
   const res = await axios.get(`${API_URL}visitor/history`, { withCredentials: true });
   return res.data.history;
 };
+
+export const fetchTouristSpots = async () => {
+  const res = await axios.get(`${API_URL}tourist-spots`);
+  return res.data.map((spot) => ({
+    id: spot.id,
+    name: spot.name,
+  }));
+};
