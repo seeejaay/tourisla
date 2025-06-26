@@ -79,15 +79,17 @@ const saveIslandEntryPayment = async ({ registration_id, amount, status, payment
 // Get latest registration by user_id
 const getLatestIslandEntryByUserId = async (userId) => {
   const result = await db.query(
-    `SELECT unique_code, qr_code_url
-     FROM island_entry_registration
-     WHERE user_id = $1
-     ORDER BY registration_date DESC
+    `SELECT r.unique_code, r.qr_code_url, p.status AS paymongo_status
+     FROM island_entry_registration r
+     LEFT JOIN island_entry_payments p ON r.id = p.registration_id
+     WHERE r.user_id = $1
+     ORDER BY r.registration_date DESC
      LIMIT 1`,
     [userId]
   );
   return result.rows[0];
 };
+
 
 module.exports = {
   createIslandEntryRegistration,
