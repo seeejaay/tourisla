@@ -48,7 +48,7 @@ export default function IslandEntryPage() {
     fetchFee,
     register,
     // paymentLink,
-    checkPaymentStatus,
+    // checkPaymentStatus,
   } = useIslandEntryManager();
 
   useEffect(() => {
@@ -172,6 +172,12 @@ export default function IslandEntryPage() {
         <p className="text-green-700 font-semibold">
           Show this QR code at the entry point.
         </p>
+        <button
+          onClick={() => window.location.href = process.env.NEXT_PUBLIC_FRONTEND_URL || "/"}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
+        >
+          Back to Home
+        </button>
       </div>
     );
   }
