@@ -98,6 +98,32 @@ export default function BookingHistoryPage() {
                       ₱{booking.total_price}
                     </span>
                   </div>
+                  <div className="mb-1">
+                    <span className="font-semibold text-gray-700">
+                      Tour Operator:
+                    </span>{" "}
+                    <span className="text-gray-800">
+                      {booking.tour_operator_name || 'N/A'}
+                    </span>
+                  </div>
+                  {booking.tour_guides && booking.tour_guides.length > 0 && (
+                    <div className="mb-1">
+                      <span className="font-semibold text-gray-700">
+                        Tour Guide{booking.tour_guides.length > 1 ? 's' : ''}:
+                      </span>{" "}
+                      <span className="text-gray-800">
+                        {booking.tour_guides
+                          .map(
+                            (g: { first_name: string; last_name: string }) =>
+                              g.first_name && g.last_name
+                                ? `${g.first_name} ${g.last_name}`
+                                : null
+                          )
+                          .filter(Boolean)
+                          .join(", ") || 'N/A'}
+                      </span>
+                    </div>
+                  )}
                   {booking.proof_of_payment && (
                     <div className="mt-2">
                       <a
