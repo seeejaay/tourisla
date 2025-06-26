@@ -97,7 +97,7 @@ const registerIslandEntryController = async (req, res) => {
       unique_code: uniqueCode,
       qr_code_url: qrCodeUrl,
       payment_method,
-      payment_status: payment_method === "CASH" ? "UNPAID" : "PENDING",
+      status: payment_method === "CASH" ? "UNPAID" : "PENDING",
       total_fee: totalFee,
       user_id: userId
     });

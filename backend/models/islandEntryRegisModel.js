@@ -89,6 +89,7 @@ const getLatestIslandEntryByUserId = async (userId) => {
   return result.rows[0];
 };
 
+
 module.exports = {
   createIslandEntryRegistration,
   createIslandEntryMembers,
