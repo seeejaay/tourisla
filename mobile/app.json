@@ -63,8 +63,7 @@
           "isAccessMediaLocationEnabled": true
         }
       ],
-      "expo-web-browser",
-      "expo-barcode-scanner"
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
