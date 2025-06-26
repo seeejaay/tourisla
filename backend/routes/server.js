@@ -944,8 +944,6 @@ app.get("/api/v1/feedback/my-operator-feedbacks", authenticateUser, getMyOperato
 app.get("/api/v1/feedback/my-guide-feedbacks", authenticateUser, getMyGuideFeedbacksController);
 
 
-
-app.get("/api/v1/feedback/questions/:type", viewQuestionsByTypeController);
 app.get("/api/v1/feedback/questions/:type", viewQuestionsByTypeController);
 
 // Routes for Incident Reports
