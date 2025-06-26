@@ -169,7 +169,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
           } else if (route.name === 'Announcements') {
             iconName = isFocused ? "megaphone" : "megaphone-outline";
           } else if (route.name === 'QRScan') {
-            iconName = isFocused ? "qr-code" : "qr-code-outline";
+            iconName = isFocused ? "qrcode" : "qrcode";
             IconComponent = FontAwesome5; // Use FontAwesome5 for QR code
           }
           
