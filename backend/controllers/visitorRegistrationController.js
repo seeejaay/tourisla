@@ -164,6 +164,7 @@ const manualCheckInController = async (req, res) => {
       registrationId: registration.id,
       scannedByUserId: userId,
       touristSpotId: attractionId,
+      userId: registration.user_id, // Pass the user_id from registration
     });
 
     return res.status(200).json({
@@ -268,6 +269,7 @@ const registerWalkInVisitorController = async (req, res) => {
       registrationId: registration.id,
       scannedByUserId: userId,
       touristSpotId: attractionId,
+      userId: registration.user_id, // Pass the user_id from registration
     });
 
     return res.status(201).json({
