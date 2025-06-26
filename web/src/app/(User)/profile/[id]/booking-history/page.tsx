@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useBookingsByTourist } from "@/hooks/useBookingManager";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { OperatorFeedbackModal } from "@/components/custom/booking-history/OperatorFeedbackModal";
+import { GuideFeedbackModal } from "@/components/custom/booking-history/GuideFeedbackModal";
 
 export default function BookingHistoryPage() {
   const { loggedInUser } = useAuth();
@@ -14,6 +16,9 @@ export default function BookingHistoryPage() {
     error,
   } = useBookingsByTourist();
   const router = useRouter();
+  const [operatorFeedbackOpen, setOperatorFeedbackOpen] = useState<null | { bookingId: number; operatorId: number; operatorName: string }>(null);
+  const [guideFeedbackOpen, setGuideFeedbackOpen] = useState<null | { bookingId: number; guideId: number; guideName: string }>(null);
+  
 
   useEffect(() => {
     async function fetchUser() {
@@ -25,6 +30,12 @@ export default function BookingHistoryPage() {
     }
     fetchUser();
   }, [loggedInUser, router, fetchByTourist, userId]);
+
+// Log whenever guideFeedbackOpen changes
+useEffect(() => {
+  console.log("guideFeedbackOpen state changed:", guideFeedbackOpen);
+}, [guideFeedbackOpen]);
+
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -106,18 +117,15 @@ export default function BookingHistoryPage() {
                       {booking.tour_operator_name || 'N/A'}
                     </span>
                   </div>
-                  {booking.tour_guides && booking.tour_guides.length > 0 && (
+                  {(booking.tour_guides as { tourguide_id: number; first_name: string; last_name: string }[] | undefined)?.length > 0 && (
                     <div className="mb-1">
                       <span className="font-semibold text-gray-700">
-                        Tour Guide{booking.tour_guides.length > 1 ? 's' : ''}:
+                        Tour Guide{(booking.tour_guides as { tourguide_id: number; first_name: string; last_name: string }[]).length > 1 ? 's' : ''}:
                       </span>{" "}
                       <span className="text-gray-800">
-                        {booking.tour_guides
-                          .map(
-                            (g: { first_name: string; last_name: string }) =>
-                              g.first_name && g.last_name
-                                ? `${g.first_name} ${g.last_name}`
-                                : null
+                        {(booking.tour_guides as { tourguide_id: number; first_name: string; last_name: string }[])
+                          .map((g) =>
+                            g.first_name && g.last_name ? `${g.first_name} ${g.last_name}` : null
                           )
                           .filter(Boolean)
                           .join(", ") || 'N/A'}
@@ -136,6 +144,37 @@ export default function BookingHistoryPage() {
                       </a>
                     </div>
                   )}
+                  {booking.status === "FINISHED" && (
+                    <>
+                      {console.log("DEBUG: booking.tour_guides for booking", booking.id, booking.tour_guides)}
+                      <div className="flex gap-2 mt-2 flex-wrap">
+                        {(booking.tour_guides as { tourguide_id: number; first_name: string; last_name: string }[] | undefined)?.length > 0 &&
+                          (booking.tour_guides as { tourguide_id: number; first_name: string; last_name: string }[]).map((g) => (
+                            <button
+                              key={g.tourguide_id + "-" + booking.id}
+                              className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                              onClick={() => {
+                                console.log("Opening GuideFeedbackModal with:", {
+                                  bookingId: booking.id,
+                                  guideId: g.tourguide_id,
+                                  guideName: `${g.first_name} ${g.last_name}`,
+                                });
+                                setGuideFeedbackOpen({ bookingId: booking.id, guideId: g.tourguide_id, guideName: `${g.first_name} ${g.last_name}` });
+                              }}
+                            >
+                              Leave Feedback for Tour Guide: {g.first_name} {g.last_name}
+                            </button>
+                          ))}
+                        <button
+                          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                          onClick={() => setOperatorFeedbackOpen({ bookingId: booking.id, operatorId: booking.touroperator_id, operatorName: booking.tour_operator_name || "Tour Operator" })}
+                        >
+                          Leave Feedback for Tour Operator
+                        </button>
+                      </div>
+                    </>
+                  )}
+
                 </div>
                 <div className="mt-4 md:mt-0 md:ml-6 flex flex-col items-end gap-2">
                   <span className="text-xs text-gray-400">
@@ -168,6 +207,23 @@ export default function BookingHistoryPage() {
               </div>
             )}
       </ul>
+      {/* Feedback Modals */}
+      <OperatorFeedbackModal
+        open={!!operatorFeedbackOpen}
+        onClose={() => setOperatorFeedbackOpen(null)}
+        bookingId={operatorFeedbackOpen?.bookingId || null}
+        operatorId={operatorFeedbackOpen?.operatorId || undefined}
+        operatorName={operatorFeedbackOpen?.operatorName || "Tour Operator"}
+      />
+      {guideFeedbackOpen && (
+        <GuideFeedbackModal
+          open={true}
+          onClose={() => setGuideFeedbackOpen(null)}
+          bookingId={guideFeedbackOpen.bookingId}
+          guideId={guideFeedbackOpen.guideId}
+          guideName={guideFeedbackOpen.guideName}
+        />
+      )}
     </div>
   );
 }

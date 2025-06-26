@@ -21,12 +21,26 @@ const submitFeedbackController = async (req, res) => {
 
     const submitted_by = req.session.user.user_id ?? req.session.user.id;
 
-    const existing = await db.query(
-      `SELECT 1 FROM feedback_groups WHERE type = $1 AND submitted_by = $2 AND feedback_for_spot_id = $3`,
-      ["SPOT", submitted_by, ref_id]
-    );
+    let existing;
+    let entity = "spot";
+    if (type === "SPOT") {
+      existing = await db.query(
+        `SELECT 1 FROM feedback_groups WHERE type = $1 AND submitted_by = $2 AND feedback_for_spot_id = $3`,
+        [type, submitted_by, ref_id]
+      );
+      entity = "spot";
+    } else if (type === "GUIDE" || type === "OPERATOR") {
+      existing = await db.query(
+        `SELECT 1 FROM feedback_groups WHERE type = $1 AND submitted_by = $2 AND feedback_for_user_id = $3`,
+        [type, submitted_by, ref_id]
+      );
+      entity = type === "GUIDE" ? "guide" : "operator";
+    } else {
+      return res.status(400).json({ message: "Invalid feedback type" });
+    }
+
     if (existing.rows.length > 0) {
-      return res.status(409).json({ error: "Feedback already submitted for this spot." });
+      return res.status(409).json({ error: `Feedback already submitted for this ${entity}.` });
     }
 
     let feedbackGroup;

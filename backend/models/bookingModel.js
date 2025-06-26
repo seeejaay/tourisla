@@ -59,7 +59,7 @@ const getBookingsByTourist = async (touristId) => {
             tp.package_name, 
             tp.touroperator_id, 
             toa.operator_name AS tour_operator_name,
-            COALESCE(json_agg(json_build_object('first_name', tga.first_name, 'last_name', tga.last_name)) FILTER (WHERE tga.first_name IS NOT NULL), '[]') AS tour_guides
+            COALESCE(json_agg(json_build_object('tourguide_id', tga.id, 'first_name', tga.first_name, 'last_name', tga.last_name)) FILTER (WHERE tga.first_name IS NOT NULL), '[]') AS tour_guides
      FROM bookings b
      JOIN tour_packages tp ON b.tour_package_id = tp.id
      LEFT JOIN touroperator_applicants toa ON tp.touroperator_id = toa.id
