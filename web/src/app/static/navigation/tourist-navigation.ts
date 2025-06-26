@@ -27,6 +27,12 @@ const touristNavigation = (userId: string): NavItem[] => {
       title: "Attraction Visit History",
       icon: QrCode,
     },
+    {
+      name: "Booking History",
+      href: `/profile/${userId}/booking-history`,
+      title: "Booking History",
+      icon: QrCode,
+    },
   ];
 };
 
