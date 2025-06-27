@@ -1,4 +1,4 @@
-const pool = require("../db/index.js");
+const db = require("../db/index.js");
 
 // CREATE ARTICLE
 const createArticle = async (data) => {
@@ -14,7 +14,7 @@ const createArticle = async (data) => {
     updated_by,
   } = data;
 
-  const result = await pool.query(
+  const result = await db.query(
     `INSERT INTO articles (
       title,
       author,
@@ -60,7 +60,7 @@ const editArticle = async (id, data) => {
     updated_by,
   } = data;
 
-  const result = await pool.query(
+  const result = await db.query(
     `UPDATE articles SET
       title = $1,
       author = $2,
@@ -92,17 +92,17 @@ const editArticle = async (id, data) => {
 };
 
 const deleteArticle = async (id) => {
-  await pool.query(`DELETE FROM articles WHERE id = $1`, [id]);
+  await db.query(`DELETE FROM articles WHERE id = $1`, [id]);
   return { message: `Article ${id} deleted` };
 };
 
 const getAllArticles = async () => {
-  const result = await pool.query(`SELECT * FROM articles`);
+  const result = await db.query(`SELECT * FROM articles`);
   return result.rows;
 };
 
 const getArticleById = async (id) => {
-  const result = await pool.query(`SELECT * FROM articles WHERE id = $1`, [id]);
+  const result = await db.query(`SELECT * FROM articles WHERE id = $1`, [id]);
   return result.rows[0];
 };
 
