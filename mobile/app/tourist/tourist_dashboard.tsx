@@ -1,7 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import TouristHomeScreen from './home/tourist_home';
 import TouristMapScreen from './map/tourist_map';
-import TouristAnnouncementsScreen from './announcements/tourist_announcements';
+import TouristActivityScreen from './activity/tourist_activity';
 import TouristPackagesScreen from './packages/tourist_packages';
 import MoreScreen from './more/MoreScreen';
 import TouristProfile from './profile/tourist_profile';
@@ -167,8 +167,8 @@ function CustomTabBar({ state, descriptors, navigation }) {
             iconName = isFocused ? "home" : "home-outline";
           } else if (route.name === 'Map') {
             iconName = isFocused ? "map" : "map-outline";
-          } else if (route.name === 'Announcements') {
-            iconName = isFocused ? "megaphone" : "megaphone-outline";
+          } else if (route.name === 'Activity') {
+            iconName = isFocused ? "pulse" : "pulse-outline";
           } else if (route.name === 'Packages') {
             iconName = isFocused ? "calendar-clear" : "calendar-clear-outline";
           } else if (route.name === 'More') {
@@ -261,8 +261,11 @@ export default function TouristDashboard() {
         >
           {() => <TouristMapScreen headerHeight={headerHeight} />}
         </Tab.Screen>
-        <Tab.Screen name="Announcements">
-          {() => <TouristAnnouncementsScreen headerHeight={headerHeight} />}
+        <Tab.Screen 
+          name="Activity"
+          options={{ tabBarLabel: 'Activity' }}
+        >
+          {() => <TouristActivityScreen headerHeight={headerHeight} />}
         </Tab.Screen>
         <Tab.Screen name="Packages">
           {() => <TouristPackagesScreen headerHeight={headerHeight} />}

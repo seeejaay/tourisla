@@ -119,7 +119,7 @@ export const getVisitorResult = async (uniqueCode) => {
 
 export const getQRCodebyUserId = async (userId) => {
   try {
-    const response = await axios.get(`${API_URL}register/qr/${userId}`, {
+    const response = await axios.get(`${API_URL}register/qr`, {
       withCredentials: true,
     });
 

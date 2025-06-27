@@ -62,7 +62,8 @@
     "tailwindcss": "^3.4.17",
     "tailwindcss-react-native": "^1.7.10",
     "zod": "^3.25.51",
-    "expo-camera": "~16.1.8"
+    "expo-camera": "~16.1.8",
+    "expo-clipboard": "~7.1.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
