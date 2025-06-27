@@ -1,5 +1,6 @@
 const db = require("../db/index.js");
 
+
 const createIncidentReport = async ({
   submitted_by,
   incident_type,
@@ -30,19 +31,20 @@ const createIncidentReport = async ({
       incident_date,
       incident_time,
       description,
-      photo_url
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      photo_url,
+      status
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     RETURNING *`,
-    [submitted_by, role, incident_type, location, incident_date, incident_time, description, photo_url]
+    [submitted_by, role, incident_type, location, incident_date, incident_time, description, photo_url, 'RECEIVED']
   );
-
   return result.rows[0];
 };
 
+
 const getAllIncidentReports = async () => {
   const result = await db.query(`
-    SELECT 
-      ir.*, 
+    SELECT
+      ir.*,
       u.first_name || ' ' || u.last_name AS submitted_by_name,
       u.role AS submitted_by_role
     FROM incident_report ir
@@ -52,6 +54,7 @@ const getAllIncidentReports = async () => {
   return result.rows;
 };
 
+
 const getIncidentReportsByUser = async (userId) => {
   const result = await db.query(`
     SELECT *
@@ -59,12 +62,24 @@ const getIncidentReportsByUser = async (userId) => {
     WHERE submitted_by = $1
     ORDER BY submitted_at DESC
   `, [userId]);
-
   return result.rows;
+};
+
+
+const updateIncidentStatus = async (id, status) => {
+  const result = await db.query(
+    `UPDATE incident_report
+     SET status = $1
+     WHERE id = $2
+     RETURNING *`,
+    [status, id]
+  );
+  return result.rows[0];
 };
 
 module.exports = {
   createIncidentReport,
   getAllIncidentReports,
-  getIncidentReportsByUser
+  getIncidentReportsByUser,
+  updateIncidentStatus
 };

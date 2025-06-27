@@ -2,9 +2,11 @@ const e = require("express");
 const {
   createIncidentReport,
   getAllIncidentReports,
-  getIncidentReportsByUser
+  getIncidentReportsByUser,
+  updateIncidentStatus,
 } = require("../models/incidentRepModel");
-const { s3Client, PutObjectCommand } = require("../utils/s3.js"); 
+const { s3Client, PutObjectCommand } = require("../utils/s3.js");
+
 
 const createIncidentReportController = async (req, res) => {
   try {
@@ -30,9 +32,7 @@ const createIncidentReportController = async (req, res) => {
     }
 
     const submitted_by = req.session.user?.id;
-
     let photo_url = null;
-
     if (req.file) {
       const file = req.file;
       const s3Key = `incident-reports/${Date.now()}_${file.originalname}`;
@@ -66,6 +66,7 @@ const createIncidentReportController = async (req, res) => {
   }
 };
 
+
 const viewAllIncidentReportsController = async (req, res) => {
   try {
     const reports = await getAllIncidentReports();
@@ -75,6 +76,7 @@ const viewAllIncidentReportsController = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
 
 const viewIncidentReportByUserController = async (req, res) => {
   try {
@@ -87,8 +89,36 @@ const viewIncidentReportByUserController = async (req, res) => {
   }
 };
 
+
+const updateIncidentStatusController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const validStatuses = ['RECEIVED', 'RESOLVED', 'ARCHIVED'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    const updated = await updateIncidentStatus(id, status);
+    if (!updated) {
+      return res.status(404).json({ error: 'Incident report not found' });
+    }
+
+    res.status(200).json({
+      message: 'Status updated successfully',
+      report: updated,
+    });
+  } catch (error) {
+    console.error('Error updating status:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
 module.exports = {
   createIncidentReportController,
   viewAllIncidentReportsController,
-  viewIncidentReportByUserController
+  viewIncidentReportByUserController,
+  updateIncidentStatusController
 };
