@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     heading: {
       fontSize: 30,
       fontWeight: "900",
-      color: "#000",
+      color: "#1c5461",
       marginBottom: 16,
       textAlign: "center",
       marginTop: 24,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
       fontSize: 20,
       fontWeight: "900",
-      color: "#000",
+      color: "#1c5461",
       marginTop: 24,
       marginBottom: 12,
     },
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     label: {
       fontSize: 14,
       fontWeight: "500",
-      color: "#000",
+      color: "#1c5461",
       marginBottom: 6,
     },
   
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     submitButton: {
       paddingVertical: 16,
       borderRadius: 8,
-      backgroundColor: "#000",
+      backgroundColor: "#24b4ab",
       alignItems: "center",
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 1 },

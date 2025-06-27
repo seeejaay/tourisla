@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     fontSize: 24,
     fontWeight: "900",
-    color: "#0f172a",
+    color: "#1c5461",
     marginVertical: 16,
   },
   scrollView: {
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   downloadButton: {
-    backgroundColor: "#0ea5e9",
+    backgroundColor: "#24b4ab",
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,

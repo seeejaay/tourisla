@@ -99,7 +99,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 10,
     gap: 8,
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
+    alignItems: 'center', 
+    width: '100%',
   },
   detailsButton: {
     paddingVertical: 6,
@@ -125,8 +127,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#94a3b8',
   },
   qrImage: {
-    width: 64,
-    height: 64,
+    width: 100,
+    height: 100,
     borderRadius: 6,
     borderWidth: 1,
     borderColor: '#cbd5e1',
