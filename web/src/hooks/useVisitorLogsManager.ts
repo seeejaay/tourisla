@@ -15,9 +15,9 @@ export function useVisitorLogsManager() {
       setLoading(true);
       setError(null);
       try {
-        console.log("Exporting visitor logs with params:", params);
+        console.log("Exporting visitor logs with params");
         const result = await exportVisitorLogs(params);
-        console.log("Exported visitor logs:", result);
+        console.log("Exported visitor logs");
         return result;
       } catch (err) {
         setError(String(err) + " Unknown error");
@@ -51,7 +51,7 @@ export function useVisitorLogsManager() {
     setError(null);
     try {
       const result = await getVisitorLogsWithSpotName();
-      console.log("Fetched visitor logs with spot names:", result);
+      console.log("Fetched visitor logs with spot names");
       return result;
     } catch (err) {
       setError(String(err) + " Unknown error");

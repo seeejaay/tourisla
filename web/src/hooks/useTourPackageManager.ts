@@ -26,7 +26,7 @@ export const useTourPackageManager = () => {
 
       const packages = await fetchTourPackages();
       setTourPackages(packages);
-      console.log("API Tour packages fetched successfully:", packages);
+      console.log("API Tour packages fetched successfully");
       return packages;
     } catch (err) {
       setError("Failed to fetch tour packages.");
@@ -43,7 +43,7 @@ export const useTourPackageManager = () => {
     try {
       const packages = await apiFetchAllTourPackages();
       setTourPackages(packages);
-      console.log("API Tour packages fetched successfully:", packages);
+      console.log("API Tour packages fetched successfully");
       return packages;
     } catch (err) {
       setError("Failed to fetch all tour packages.");
@@ -63,7 +63,7 @@ export const useTourPackageManager = () => {
         console.log(`Fetching tour package with ID: ${id}`);
 
         const pkg = await fetchTourPackage(id);
-        console.log("API Tour package fetched successfully:", pkg);
+        console.log("API Tour package fetched successfully");
         return pkg;
       } catch (err) {
         setError("Failed to fetch tour package.");
@@ -81,7 +81,7 @@ export const useTourPackageManager = () => {
     async (data: Partial<TourPackage>): Promise<TourPackage | null> => {
       setLoading(true);
       setError("");
-      console.log("Front end Creating tour package with data:", data);
+      console.log("Front end Creating tour package with data");
       try {
         // const validated = tourPackageSchema.parse(data);
         const newPackage = await createTourPackage(data);

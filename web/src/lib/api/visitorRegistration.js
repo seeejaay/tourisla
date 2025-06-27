@@ -24,7 +24,7 @@ export const getVisitorGroupMembers = async (groupId) => {
 
 export const registerVisitor = async (visitors) => {
   try {
-    console.log("API Registering Visitors: ", visitors);
+    console.log("API Registering Visitors:");
     // Wrap visitors in an object with groupMembers property
     const response = await axios.post(
       `${API_URL}register`,
