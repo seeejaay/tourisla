@@ -32,27 +32,33 @@ const getAllFeedbackByEntity = async (type, entity_id) => {
   let result;
   if (type === "SPOT") {
     result = await db.query(
-      `SELECT fg.id as group_id, fq.question_text, fa.score, fg.submitted_at, fg.submitted_by
-       FROM feedback_answers fa
-       JOIN feedback_questions fq ON fq.id = fa.question_id
-       JOIN feedback_groups fg ON fg.id = fa.feedback_group_id
-       WHERE fg.type = $1 AND fg.feedback_for_spot_id = $2
-       ORDER BY fg.submitted_at DESC`,
-      [type, entity_id]
+      `
+      SELECT fg.id as group_id, fq.question_text, fa.score, fg.submitted_at, fg.submitted_by
+      FROM feedback_answers fa
+      JOIN feedback_questions fq ON fq.id = fa.question_id
+      JOIN feedback_groups fg ON fg.id = fa.feedback_group_id
+      WHERE fg.type = $1 ${entity_id ? "AND fg.feedback_for_spot_id = $2" : ""}
+      ORDER BY fg.submitted_at DESC
+      `,
+      entity_id ? [type, entity_id] : [type]
     );
   } else {
     result = await db.query(
-      `SELECT fg.id as group_id, fq.question_text, fa.score, fg.submitted_at, fg.submitted_by
-       FROM feedback_answers fa
-       JOIN feedback_questions fq ON fq.id = fa.question_id
-       JOIN feedback_groups fg ON fg.id = fa.feedback_group_id
-       WHERE fg.type = $1 AND fg.feedback_for_user_id = $2
-       ORDER BY fg.submitted_at DESC`,
-      [type, entity_id]
+      `
+      SELECT fg.id as group_id, fq.question_text, fa.score, fg.submitted_at, fg.submitted_by
+      FROM feedback_answers fa
+      JOIN feedback_questions fq ON fq.id = fa.question_id
+      JOIN feedback_groups fg ON fg.id = fa.feedback_group_id
+      WHERE fg.type = $1 ${entity_id ? "AND fg.feedback_for_user_id = $2" : ""}
+      ORDER BY fg.submitted_at DESC
+      `,
+      entity_id ? [type, entity_id] : [type]
     );
   }
+
   return result.rows;
 };
+
 
 // Question Management
 const createQuestion = async (type, question_text) => {

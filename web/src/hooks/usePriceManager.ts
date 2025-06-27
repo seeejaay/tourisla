@@ -3,14 +3,20 @@ import {
   fetchAllPrices,
   createPrice,
   togglePriceStatus,
-  updatePriceAmount, 
   updatePriceDetails
 } from "@/lib/api/price";
 import { useState } from "react";
 
+type Price = {
+  id: number;
+  amount: number;
+  is_enabled: boolean;
+  type: string;
+};
+
 export const usePriceManager = () => {
-  const [price, setPrice] = useState<any>(null);
-  const [prices, setPrices] = useState<any[]>([]);
+  const [price, setPrice] = useState<Price | null>(null);
+  const [prices, setPrices] = useState<Price[]>([]);
   const [loading, setLoading] = useState(false);
 
   const getPrice = async () => {

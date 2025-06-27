@@ -51,10 +51,16 @@ const tourismOfficerNavigation = (): NavItem[] => {
       title: "Price Management",
       icon: Wallet,
     },
-        {
+    {
       name: "Feedback Questions",
       href: `/tourism-officer/feedback-questions`,
       title: "Feedback Questions",
+      icon: ClipboardList,
+    },
+    {
+      name: "Feedback Answers",
+      href: `/tourism-officer/feedback`,
+      title: "Feedback Answers",
       icon: ClipboardList,
     },
   ];
