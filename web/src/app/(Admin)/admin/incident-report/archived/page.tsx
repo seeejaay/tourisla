@@ -1,51 +1,40 @@
 "use client";
 import { useIncidentManager } from "@/hooks/useIncidentManager";
 import ViewIncident from "@/components/custom/incident-report/ViewIncident";
-import IncidentTabs from "@/components/custom/incident-report/IncidentTabs"; 
+import IncidentTabs from "@/components/custom/incident-report/IncidentTabs";
 import { useEffect, useState } from "react";
 
-
-export default function AdminIncidentPage() {
+export default function ArchivedIncidentPage() {
   const { reports, getAllReports } = useIncidentManager();
-
 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
-
 
   useEffect(() => {
     getAllReports();
   }, [getAllReports]);
 
-
-  // Only include RECEIVED reports
-  const receivedReports = reports.filter((r) => r.status === "RECEIVED");
-
+  const archivedReports = reports.filter((r) => r.status === "ARCHIVED");
 
   const uniqueIncidentTypes = [
     "All",
-    ...Array.from(new Set(receivedReports.map((r) => r.incident_type))),
+    ...Array.from(new Set(archivedReports.map((r) => r.incident_type))),
   ];
 
-
-  const filteredReports = receivedReports.filter((report) => {
+  const filteredReports = archivedReports.filter((report) => {
     const matchesSearch =
       report.description.toLowerCase().includes(search.toLowerCase()) ||
       report.location.toLowerCase().includes(search.toLowerCase());
-
-
     const matchesType =
       typeFilter === "All" || report.incident_type === typeFilter;
-
-
     return matchesSearch && matchesType;
   });
 
   return (
     <div className="max-w-6xl mx-auto mt-10 px-4">
       {/* Page Title */}
-      <h1 className="text-3xl font-bold mb-4 text-blue-700 text-center">
-        Received Incident Reports
+      <h1 className="text-3xl font-bold mb-4 text-yellow-700 text-center">
+        Archived Incident Reports
       </h1>
 
       {/* Tab Navigation */}
@@ -74,11 +63,9 @@ export default function AdminIncidentPage() {
         </select>
       </div>
 
-
-      {/* Report List */}
       {filteredReports.length === 0 ? (
         <p className="text-center text-gray-600">
-          No received incident reports found.
+          No archived incident reports found.
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

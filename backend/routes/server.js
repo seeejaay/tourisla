@@ -250,6 +250,7 @@ const {
   createIncidentReportController,
   viewAllIncidentReportsController,
   viewIncidentReportByUserController,
+  updateIncidentStatusController
 } = require("../controllers/incidentRepController.js");
 
 const {
@@ -979,6 +980,7 @@ app.get(
   // authenticateTourismOfficer,
   viewIncidentReportByUserController
 );
+app.patch("/api/v1/incident-report/:id/status", updateIncidentStatusController);
 
 // Route for Tour Operator QR Code Upload
 app.post(
