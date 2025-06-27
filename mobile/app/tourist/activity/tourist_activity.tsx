@@ -92,7 +92,7 @@ export default function TouristActivityScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-      <Text style={styles.headertitle}>Recently Booked</Text>  
+      <Text style={styles.headertitle}>Visitor Registration QR</Text>  
       <TouchableOpacity
         style={styles.visitButton}
         onPress={() => {
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1e293b',
     paddingVertical: 14,
     paddingHorizontal: 24,
-    borderRadius: 10,
+    borderRadius: 20,
     alignSelf: 'center',
     width: '100%',
     maxWidth: 420,
