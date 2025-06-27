@@ -27,7 +27,6 @@ export default function FeedbackGroupList({ feedbacks }: FeedbackGroupListProps)
     };
   };
 
-  // Group feedbacks by group_id
   const grouped = feedbacks.reduce<GroupedFeedback>((acc, feedback) => {
     const groupId = feedback.group_id;
     if (!acc[groupId]) {
@@ -45,7 +44,6 @@ export default function FeedbackGroupList({ feedbacks }: FeedbackGroupListProps)
     return acc;
   }, {});
 
-  // Convert to array and sort by submitted_at (desc)
   const feedbackGroups = Object.values(grouped).sort(
     (a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime()
   );
@@ -76,9 +74,11 @@ export default function FeedbackGroupList({ feedbacks }: FeedbackGroupListProps)
                 View Answers
               </button>
             </div>
+
             {selectedGroup === group.group_id && (
               <ViewFeedbackAnswers
                 groupId={group.group_id}
+                answers={group.answers}
                 onClose={() => setSelectedGroup(null)}
               />
             )}

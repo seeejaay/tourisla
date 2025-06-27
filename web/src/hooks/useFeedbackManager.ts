@@ -1,9 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { fetchAllFeedbackByEntity } from "@/lib/api/feedback";
 
+export type FeedbackType = "SPOT" | "GUIDE" | "OPERATOR";
+
+export type Feedback = {
+  group_id: number;
+  question_text: string;
+  score: number;
+  submitted_at: string;
+  submitted_by: string;
+  type: FeedbackType;
+};
+
 export function useFeedbackManager() {
-  const [feedbacks, setFeedbacks] = useState([]);
-  const [typeFilter, setTypeFilter] = useState("ALL");
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [typeFilter, setTypeFilter] = useState<"ALL" | FeedbackType>("ALL");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -16,19 +27,45 @@ export function useFeedbackManager() {
             fetchAllFeedbackByEntity("GUIDE"),
             fetchAllFeedbackByEntity("OPERATOR"),
           ]);
-          setFeedbacks([...spot, ...guide, ...operator]);
+          const tagged = [
+            ...spot.map((f: Feedback) => ({ ...f, type: "SPOT" })),
+            ...guide.map((f: Feedback) => ({ ...f, type: "GUIDE" })),
+            ...operator.map((f: Feedback) => ({ ...f, type: "OPERATOR" })),
+          ];
+          setFeedbacks(tagged);
         } else {
           const data = await fetchAllFeedbackByEntity(typeFilter);
-          setFeedbacks(data);
+          const tagged = data.map((f: Feedback) => ({ ...f, type: typeFilter }));
+          setFeedbacks(tagged);
         }
       } catch (err) {
         console.error("Failed to load feedbacks", err);
+        setFeedbacks([]);
       } finally {
         setLoading(false);
       }
     };
+
     getAllFeedback();
   }, [typeFilter]);
 
-  return { feedbacks, loading, typeFilter, setTypeFilter };
+  // Group feedbacks by submission (group_id)
+  const groupedFeedbacks = useMemo(() => {
+    const groups: Record<number, Feedback[]> = {};
+    for (const entry of feedbacks) {
+      if (!groups[entry.group_id]) {
+        groups[entry.group_id] = [];
+      }
+      groups[entry.group_id].push(entry);
+    }
+    return groups;
+  }, [feedbacks]);
+
+  return {
+    feedbacks,             
+    groupedFeedbacks,      
+    loading,
+    typeFilter,
+    setTypeFilter,
+  };
 }
