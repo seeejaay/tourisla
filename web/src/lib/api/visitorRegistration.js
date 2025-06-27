@@ -119,6 +119,7 @@ export const getVisitorResult = async (uniqueCode) => {
 
 export const getQRCodebyUserId = async (userId) => {
   try {
+    console.log("Fetching QR Code for User ID:", userId);
     const response = await axios.get(`${API_URL}register/qr`, {
       withCredentials: true,
     });
