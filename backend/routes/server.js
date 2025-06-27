@@ -38,9 +38,9 @@ app.use(
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === "production",
-      sameSite: "true", // Set to true in production
-      httpOnly: false,
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      sameSite: "none", // <-- MUST be "none" for cross-site cookies (Vercel + Railway)
+      httpOnly: true, // <-- MUST be true for security and browser compatibility
+      maxAge: 1000 * 60 * 60 * 24,
     },
   })
 );
