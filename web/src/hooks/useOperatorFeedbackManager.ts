@@ -18,47 +18,45 @@ export const useFeedbackManager = () => {
   const [error, setError] = useState<string | null>(null);
 
   // New state for guide feedbacks
-  const [guideFeedbacks, setGuideFeedbacks] = useState<
-    Record<string, Feedback[]>
-  >({});
-  const [guideFeedbacksLoading, setGuideFeedbacksLoading] = useState(false);
-  const [guideFeedbacksError, setGuideFeedbacksError] = useState<string | null>(
-    null
-  );
+  // const [guideFeedbacks, setGuideFeedbacks] = useState<
+  //   Record<string, Feedback[]>
+  // >({});
+  // const [guideFeedbacksLoading, setGuideFeedbacksLoading] = useState(false);
+  // const [guideFeedbacksError, setGuideFeedbacksError] = useState<string | null>(
+  //   null
+  // );
 
   const getFeedback = async (type: string, ref_id: number | string) => {
     setLoading(true);
     setError(null);
     try {
       const data = await fetchFeedbackForEntity({ type, ref_id });
-      setFeedback(data);
-    } catch (err: any) {
-      setError(
-        err?.response?.data?.error || err.message || "Failed to fetch feedback"
+      setFeedback(
+        data.map((item: Omit<Feedback, "type">) => ({ ...item, type }))
       );
+    } catch (err) {
+      setError("Failed to fetch feedback" + err);
     } finally {
       setLoading(false);
     }
   };
 
-  /**
-   * Fetch feedback for the current operator user (resolves applicantId first)
-   * @param {string|number} userId - The current user's id
-   */
   const getOperatorFeedbackByUserId = useCallback(
     async (userId: string | number) => {
       setLoading(true);
       setError(null);
       try {
         const applicant = await fetchOperatorApplicantByUserId(userId);
-        console.log("Operator applicant:", applicant);
-
         const data = await fetchFeedbackForEntity({
           type: "OPERATOR",
           ref_id: applicant.id,
         });
-
-        setFeedback(data);
+        setFeedback(
+          data.map((item: Omit<Feedback, "type">) => ({
+            ...item,
+            type: "OPERATOR",
+          }))
+        );
       } catch (err) {
         setError("Failed to fetch operator feedback" + err);
       } finally {
@@ -68,29 +66,29 @@ export const useFeedbackManager = () => {
     []
   );
 
-  /**
-   * Fetch all guide feedbacks for an operator
-   * @param {string|number} operatorId
-   */
-  const getGuideFeedbacksForOperator = useCallback(
-    async (operatorId: string | number) => {
-      setGuideFeedbacksLoading(true);
-      setGuideFeedbacksError(null);
-      try {
-        const data = await fetchOperatorGuideFeedbacks(operatorId);
-        setGuideFeedbacks(data);
-      } catch (err: any) {
-        setGuideFeedbacksError(
-          err?.response?.data?.error ||
-            err.message ||
-            "Failed to fetch guide feedbacks"
-        );
-      } finally {
-        setGuideFeedbacksLoading(false);
-      }
-    },
-    []
-  );
+  // /**
+  //  * Fetch all guide feedbacks for an operator
+  //  * @param {string|number} operatorId
+  //  */
+  // const getGuideFeedbacksForOperator = useCallback(
+  //   async (operatorId: string | number) => {
+  //     setGuideFeedbacksLoading(true);
+  //     setGuideFeedbacksError(null);
+  //     try {
+  //       const data = await fetchOperatorGuideFeedbacks(operatorId);
+  //       setGuideFeedbacks(data);
+  //     } catch (err: any) {
+  //       setGuideFeedbacksError(
+  //         err?.response?.data?.error ||
+  //           err.message ||
+  //           "Failed to fetch guide feedbacks"
+  //       );
+  //     } finally {
+  //       setGuideFeedbacksLoading(false);
+  //     }
+  //   },
+  //   []
+  // );
 
   return {
     feedback,
@@ -99,9 +97,9 @@ export const useFeedbackManager = () => {
     getFeedback,
     getOperatorFeedbackByUserId,
     // New exports for guide feedbacks
-    guideFeedbacks,
-    guideFeedbacksLoading,
-    guideFeedbacksError,
-    getGuideFeedbacksForOperator,
+    // guideFeedbacks,
+    // guideFeedbacksLoading,
+    // guideFeedbacksError,
+    // getGuideFeedbacksForOperator,
   };
 };

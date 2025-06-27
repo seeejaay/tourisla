@@ -3,14 +3,14 @@ import { fetchAllFeedbackByEntity } from "@/lib/api/feedback";
 
 export type FeedbackType = "SPOT" | "GUIDE" | "OPERATOR";
 
-export type Feedback = {
+export interface Feedback {
   group_id: number;
   question_text: string;
   score: number;
   submitted_at: string;
-  submitted_by: string;
-  type: FeedbackType;
-};
+  submitted_by: number;
+  type: string; // Add this line
+}
 
 export function useFeedbackManager() {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
@@ -35,7 +35,10 @@ export function useFeedbackManager() {
           setFeedbacks(tagged);
         } else {
           const data = await fetchAllFeedbackByEntity(typeFilter);
-          const tagged = data.map((f: Feedback) => ({ ...f, type: typeFilter }));
+          const tagged = data.map((f: Feedback) => ({
+            ...f,
+            type: typeFilter,
+          }));
           setFeedbacks(tagged);
         }
       } catch (err) {
@@ -62,8 +65,8 @@ export function useFeedbackManager() {
   }, [feedbacks]);
 
   return {
-    feedbacks,             
-    groupedFeedbacks,      
+    feedbacks,
+    groupedFeedbacks,
     loading,
     typeFilter,
     setTypeFilter,
