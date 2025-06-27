@@ -248,7 +248,7 @@ const forgotPasswordController = async (req, res) => {
     await setResetPasswordToken(newEmail, token, expires);
 
     //on production, use the actual URL of your frontend
-    const resetLink = `http://localhost:3000/auth/reset-password?token=${token}`;
+    const resetLink = `https://tourisla.space/auth/reset-password?token=${token}`;
     await sendResetPasswordEmail(newEmail, resetLink);
 
     res.status(200).json({

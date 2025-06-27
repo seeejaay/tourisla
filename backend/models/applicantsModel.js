@@ -59,6 +59,14 @@ const rejectTourOperatorApplicantById = async (id) => {
   return result.rows[0];
 };
 
+const getOperatorApplicantByUserId = async (user_id) => {
+  const result = await db.query(
+    "SELECT * FROM touroperator_applicants WHERE user_id = $1 LIMIT 1",
+    [user_id]
+  );
+  return result.rows[0];
+};
+
 module.exports = {
   getTourGuideApplicants,
   getTourGuideApplicantById,
@@ -68,4 +76,5 @@ module.exports = {
   getTourOperatorApplicantById,
   approveTourOperatorApplicantById,
   rejectTourOperatorApplicantById,
+  getOperatorApplicantByUserId,
 };

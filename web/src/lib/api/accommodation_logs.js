@@ -89,10 +89,7 @@ export const getAccommodationLogByAccommodationId = async (accomodation_id) => {
         withCredentials: true,
       }
     );
-    console.log(
-      "Response from getAccommodationLogByAccommodationId:",
-      response.data
-    );
+    console.log("Response from getAccommodationLogByAccommodationId:");
     return response.data;
   } catch (error) {
     console.error("Error fetching accommodation log by ID:", error);

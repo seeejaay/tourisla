@@ -71,7 +71,7 @@ export default function Pill({ className }: PillProps) {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="rounded-full h-10 w-10 p-0 relative hover:bg-gray-100 transition-colors group"
+            className="rounded-full h-10 w-10 p-0 relative hover:bg-white transition-colors group"
             aria-label="Account menu"
           >
             <User className="w-5 h-5" />

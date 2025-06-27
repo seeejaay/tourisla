@@ -46,6 +46,12 @@ const operatorNavigation = (userId: string): NavItem[] => {
       title: "Upload QR Code",
       icon: QrCode,
     },
+    {
+      name: "Feedback",
+      href: `/profile/${userId}/feedback`,
+      title: "Feedback",
+      icon: QrCode,
+    },
   ];
 };
 

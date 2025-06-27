@@ -116,7 +116,7 @@ export function useAuth() {
           router.replace("/");
           return;
         }
-        console.log("Current User:", resCurrentUser);
+        console.log("Fetch user");
         return resCurrentUser;
       } catch (error) {
         setError("An error occurred while fetching the current user." + error);

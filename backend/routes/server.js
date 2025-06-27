@@ -102,6 +102,8 @@ const {
   viewTourOperatorApplicantDetailsController,
   approveTourOperatorApplicantController,
   rejectTourOperatorApplicantController,
+  getOperatorApplicantByUserIdController,
+  getGuideFeedbacksForOperatorController,
 } = require("../controllers/applicantsController.js");
 
 const {
@@ -240,6 +242,8 @@ const {
   deleteQuestionController,
   viewQuestionsByTypeController,
   getMySpotFeedbacksController,
+  getMyOperatorFeedbacksController,
+  getMyGuideFeedbacksController,
 } = require("../controllers/feedbackController.js");
 
 const {
@@ -254,9 +258,11 @@ const {
 } = require("../controllers/operatorQRController.js");
 
 const {
+  getAllPricesController,
   getActivePriceController,
   createPriceController,
   togglePriceController,
+  updatePriceDetailsController,
 } = require("../controllers/priceManageController.js");
 
 const {
@@ -540,6 +546,15 @@ app.put(
   "/api/v1/operatorApplicants/:applicantId/reject",
   allowedRoles(["Tourism Staff", "Tourism Officer"]),
   rejectTourOperatorApplicantController
+);
+app.get(
+  "/api/v1/operator-applicants/by-user/:userId",
+  getOperatorApplicantByUserIdController
+);
+app.get(
+  "/api/v1/operator/:operatorId/guide-feedbacks",
+  allowedRoles(["Tourism Officer", "Tour Operator"]),
+  getGuideFeedbacksForOperatorController
 );
 
 // Routes for Tour Guides applying to Tour Operators
@@ -915,7 +930,7 @@ app.get(
 // - Staff: can view feedback about them
 app.get(
   "/api/v1/feedback/entity",
-  authenticateTourismOfficer, // <- You can add custom middleware to switch dynamically
+  allowedRoles(["Tourism Officer", "Tour Operator", "Tourism Staff"]),
   viewAllFeedbackForEntityController
 );
 
@@ -938,7 +953,10 @@ app.delete(
 
 // 5. Anyone can view feedback questions (for form rendering)
 app.get("/api/v1/feedback/my-spot-feedbacks", authenticateUser, getMySpotFeedbacksController);
-app.get("/api/v1/feedback/questions/:type", viewQuestionsByTypeController);
+app.get("/api/v1/feedback/my-operator-feedbacks", authenticateUser, getMyOperatorFeedbacksController);
+app.get("/api/v1/feedback/my-guide-feedbacks", authenticateUser, getMyGuideFeedbacksController);
+
+
 app.get("/api/v1/feedback/questions/:type", viewQuestionsByTypeController);
 
 // Routes for Incident Reports
@@ -972,6 +990,7 @@ app.get(
 );
 
 // Routes for Price Management
+app.get("/api/v1/prices", getAllPricesController);
 app.get("/api/v1/prices/active", getActivePriceController);
 app.post("/api/v1/prices", authenticateTourismOfficer, createPriceController);
 app.patch(
@@ -979,14 +998,4 @@ app.patch(
   authenticateTourismOfficer,
   togglePriceController
 );
-
-// Routes for Price Management
-app.get("/api/v1/prices/active", getActivePriceController);
-app.post("/api/v1/prices", authenticateTourismOfficer, createPriceController);
-app.patch(
-  "/api/v1/prices/:id/toggle",
-  authenticateTourismOfficer,
-  togglePriceController
-);
-
-
+app.patch("/api/v1/prices/:id/update", updatePriceDetailsController);

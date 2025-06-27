@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   createIslandEntryRegistration,
   createOnlineIslandEntry,
@@ -7,28 +7,26 @@ import {
 } from "@/lib/api/islandEntry";
 
 import type { RegistrationPayload } from "@/app/islandEntry-regis/page";
-import { useCallback } from "react";
 
 export function useIslandEntryManager() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RegistrationPayload>();
-  const [fee, setFee] = useState<number | null>(null);
+  const [fee, setFee] = useState<{ amount: number; is_enabled: boolean } | null>(null);
   const [paymentLink, setPaymentLink] = useState<string | null>(null);
 
   const fetchFee = useCallback(async () => {
-  setLoading(true);
-  try {
-    const data = await getTourismFee();
-    setFee(Number(data.amount));
-  } finally {
-    setLoading(false);
-  } 
+    setLoading(true);
+    try {
+      const data = await getTourismFee(); 
+      setFee(data); 
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const register = async (payload: RegistrationPayload) => {
     setLoading(true);
     try {
-      // Block online payment (and alert user) if group is less than 3
       if (
         payload.payment_method === "ONLINE" &&
         payload.groupMembers.length < 3

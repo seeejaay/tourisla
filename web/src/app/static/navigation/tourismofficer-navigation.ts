@@ -1,4 +1,4 @@
-import { LayoutDashboard, BookText, TreePalm, Megaphone } from "lucide-react";
+import { LayoutDashboard, BookText, TreePalm, Megaphone, Wallet, ClipboardList } from "lucide-react";
 import type { NavItem } from "@/components/custom/sidebar";
 
 const tourismOfficerNavigation = (): NavItem[] => {
@@ -44,6 +44,24 @@ const tourismOfficerNavigation = (): NavItem[] => {
       href: `/tourism-officer/attraction-reports`,
       title: "Visitor Reports",
       icon: BookText,
+    },
+    {
+      name: "Price Management",
+      href: `/tourism-officer/price-management`,
+      title: "Price Management",
+      icon: Wallet,
+    },
+    {
+      name: "Feedback Questions",
+      href: `/tourism-officer/feedback-questions`,
+      title: "Feedback Questions",
+      icon: ClipboardList,
+    },
+    {
+      name: "Feedback Answers",
+      href: `/tourism-officer/feedback`,
+      title: "Feedback Answers",
+      icon: ClipboardList,
     },
   ];
 };
