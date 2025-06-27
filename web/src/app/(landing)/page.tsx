@@ -92,7 +92,7 @@ export default function Home() {
             </p>
             <div className="flex gap-4">
               <button
-                onClick={() => router.push("/explore")}
+                onClick={() => router.push("/listings")}
                 className="px-8 py-4 rounded-full bg-[#019375] hover:bg-[#017a60] text-white font-bold shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
               >
                 <Users className="inline mr-2 w-5 h-5" /> Explore Accommodation
