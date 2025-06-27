@@ -1,44 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { useFeedbackManager } from "@/hooks/useFeedbackManager";
+import { FeedbackType, useFeedbackManager } from "@/hooks/useFeedbackManager";
 import FeedbackFilterBar from "@/components/custom/feedback/FeedbackFilterBar";
 import ViewFeedbackAnswers from "@/components/custom/feedback/ViewFeedbackAnswers";
 
-type Feedback = {
-  group_id: number;
-  submitted_at: string;
-  submitted_by: string;
-  question_text: string;
-  score: number;
-};
-
-type GroupedFeedback = {
-  group_id: number;
-  submitted_at: string;
-  submitted_by: string;
-  answers: { question_text: string; score: number }[];
-};
-
 export default function FeedbackPage() {
-  const { feedbacks, loading, typeFilter, setTypeFilter } = useFeedbackManager();
+  const {
+    groupedFeedbacks, 
+    loading,
+    typeFilter,
+    setTypeFilter,
+  } = useFeedbackManager();
+
   const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
 
-  const grouped = feedbacks.reduce<Record<number, GroupedFeedback>>((acc, feedback: Feedback) => {
-    const groupId = feedback.group_id;
-    if (!acc[groupId]) {
-      acc[groupId] = {
-        group_id: groupId,
-        submitted_at: feedback.submitted_at,
-        submitted_by: feedback.submitted_by,
-        answers: [],
-      };
-    }
-    acc[groupId].answers.push({ question_text: feedback.question_text, score: feedback.score });
-    return acc;
-  }, {});
-
-  const feedbackGroups = Object.values(grouped);
+  const feedbackGroups = Object.entries(groupedFeedbacks).map(([group_id, answers]) => ({
+    group_id: Number(group_id),
+    submitted_at: answers[0].submitted_at,
+    submitted_by: answers[0].submitted_by,
+    type: answers[0].type,
+    answers: answers.map((a) => ({
+      question_text: a.question_text,
+      score: a.score,
+    })),
+  }));
 
   return (
     <div className="max-w-6xl mx-auto mt-10 mb-8 px-4">
@@ -49,7 +35,7 @@ export default function FeedbackPage() {
       {/* Filter */}
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-6 mt-4">
         <div className="w-full md:w-1/3">
-          <FeedbackFilterBar value={typeFilter} onChange={setTypeFilter} />
+          <FeedbackFilterBar value={typeFilter} onChange={(value) => setTypeFilter(value as FeedbackType | "ALL")} />
         </div>
       </div>
 
@@ -66,6 +52,7 @@ export default function FeedbackPage() {
                   <p className="text-sm text-gray-500">
                     Date: {new Date(group.submitted_at).toLocaleString()}
                   </p>
+                  <p className="text-sm text-gray-500">Type: {group.type}</p>
                 </div>
                 <button
                   className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700"
@@ -77,6 +64,7 @@ export default function FeedbackPage() {
               {selectedGroup === group.group_id && (
                 <ViewFeedbackAnswers
                   groupId={group.group_id}
+                  answers={group.answers}
                   onClose={() => setSelectedGroup(null)}
                 />
               )}
