@@ -10,6 +10,9 @@ interface ViewCardProps {
   feedbackGiven?: boolean;
 }
 
+const toTitleCase = (str: string) =>
+  str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase());
+
 export const ViewCard: React.FC<ViewCardProps> = ({
   log,
   spotName,
@@ -21,7 +24,7 @@ export const ViewCard: React.FC<ViewCardProps> = ({
     <View style={styles.card}>
       <View style={styles.content}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.spotName}>{spotName}</Text>
+          <Text style={styles.spotName}>{toTitleCase(spotName)}</Text>
           <Text style={styles.boldText}>
             Visit Date: {new Date(log.visit_date).toLocaleDateString()}
           </Text>

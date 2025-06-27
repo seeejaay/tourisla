@@ -184,7 +184,8 @@ const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 5
+    marginBottom: 5,
+    fontFamily: 'Poppins-Black',
   },
   heroSubtitle: {
     fontSize: 14,
