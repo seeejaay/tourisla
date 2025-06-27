@@ -387,16 +387,6 @@ export default function AdminProfile() {
                 </View>
               </View>
             </View>
-            
-            {/* Activity section */}
-            <View style={styles.activitySection}>
-              <Text style={styles.sectionTitle}>Recent Activity</Text>
-              <View style={styles.emptyActivity}>
-                <Feather name="calendar" size={40} color="#cbd5e1" />
-                <Text style={styles.emptyActivityText}>No recent activity</Text>
-                <Text style={styles.emptyActivitySubtext}>Your trips and bookings will appear here</Text>
-              </View>
-            </View>
           </>
         )}
       </Animated.ScrollView>
@@ -683,35 +673,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  activitySection: {
-    paddingHorizontal: 20,
-    marginTop: 20,
-  },
-  emptyActivity: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 30,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
-  },
-  emptyActivityText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#0f172a',
-    marginTop: 15,
-    marginBottom: 5,
-  },
-  emptyActivitySubtext: {
-    fontSize: 14,
-    color: '#64748b',
-    textAlign: 'center',
   },
   centered: {
     flex: 1,
