@@ -5,6 +5,7 @@ const app = express();
 app.set("trust proxy", 1);
 
 const session = require("express-session");
+const pgSession = require("connect-pg-simple")(session);
 const { getPresignedUrl } = require("../utils/s3.js");
 const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
@@ -33,6 +34,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   session({
+    store: new pgSession({
+      pool: db.pool, // Use the existing pool from db/index.js
+      tableName: "session", // Optional: specify a custom table name
+    }),
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
