@@ -26,11 +26,6 @@ export default function OperatorFeedbackPage() {
     if (operatorId) getOperatorFeedbackByUserId(operatorId);
   }, [operatorId, getOperatorFeedbackByUserId]);
 
-  // Fetch guides under operator
-  useEffect(() => {
-    if (!operatorId) return;
-    fetchOperatorGuides(operatorId).then(setGuides);
-  }, [operatorId]);
 
   // Fetch feedback for each guide
   const fetchGuideFeedback = useCallback(
