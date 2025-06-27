@@ -1,6 +1,6 @@
 "use client";
 import Sidebar from "@/components/custom/sidebar";
-import adminNavigation from "@/app/static/navigation/admin-navigation";
+import DirectorNavigation from "@/app/static/navigation/director-navigation";
 
 export default function CulturalDirectorLayout({
   children,
@@ -9,7 +9,7 @@ export default function CulturalDirectorLayout({
 }) {
   return (
     <div className="flex">
-      <Sidebar navigation={adminNavigation} />
+      <Sidebar navigation={DirectorNavigation} />
       <main className="flex-1 ">{children}</main>
     </div>
   );

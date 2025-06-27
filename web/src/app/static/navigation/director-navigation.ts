@@ -1,6 +1,6 @@
 import { BookOpen, BookUser, Home, Megaphone } from "lucide-react";
 
-const adminNavigation = [
+const DirectorNavigation = [
   {
     name: "Home",
     href: "/cultural-director/dashboard",
@@ -27,4 +27,4 @@ const adminNavigation = [
   },
 ];
 
-export default adminNavigation;
+export default DirectorNavigation;
