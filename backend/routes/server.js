@@ -1,16 +1,16 @@
 require("dotenv").config();
 const express = require("express");
+const app = express();
+
+app.set("trust proxy", 1);
+
 const session = require("express-session");
 const { getPresignedUrl } = require("../utils/s3.js");
 const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
 const { allowedRoles } = require("../middleware/middleware.js");
 const db = require("../db/index.js");
-const app = express();
 const cors = require("cors");
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
@@ -20,12 +20,31 @@ app.use(
       "http://192.168.0.135:3000",
       "http://192.168.0.130",
       "http://dev.tourisla.local:3000",
-      "https://tourisla.vercel.app/",
+      "https://tourisla.vercel.app",
+      "https://tourisla.space",
+
       process.env.CLIENT_URL, // Add this if you want to support env config too
     ],
     credentials: true,
   })
 );
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "true", // Set to true in production
+      httpOnly: false,
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    },
+  })
+);
+
 // Controllers
 const { loginUser, logoutUser } = require("../controllers/authController.js");
 const {
@@ -250,7 +269,7 @@ const {
   createIncidentReportController,
   viewAllIncidentReportsController,
   viewIncidentReportByUserController,
-  updateIncidentStatusController
+  updateIncidentStatusController,
 } = require("../controllers/incidentRepController.js");
 
 const {
@@ -271,19 +290,6 @@ const {
   handlePayMongoWebhook,
   manuallyConfirmPayment,
 } = require("../controllers/paymongoController.js");
-
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production", // Set to true in production
-      httpOnly: false,
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
-    },
-  })
-);
 
 // Routes for PayMongo (must be placed before app.listen)
 app.post("/api/v1/paymongo/links", createIslandEntryPaymentLink);
