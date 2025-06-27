@@ -7,10 +7,15 @@ interface OperatorFeedbackListProps {
   error?: string | null;
 }
 
-export const OperatorFeedbackList: React.FC<OperatorFeedbackListProps> = ({ feedback, loading, error }) => {
+export const OperatorFeedbackList: React.FC<OperatorFeedbackListProps> = ({
+  feedback,
+  loading,
+  error,
+}) => {
   if (loading) return <div className="text-blue-600">Loading feedback...</div>;
   if (error) return <div className="text-red-600">{error}</div>;
-  if (!feedback || feedback.length === 0) return <div className="text-gray-500">No feedback found.</div>;
+  if (!feedback || feedback.length === 0)
+    return <div className="text-gray-500">No feedback found.</div>;
 
   return (
     <div className="overflow-x-auto">
@@ -20,16 +25,16 @@ export const OperatorFeedbackList: React.FC<OperatorFeedbackListProps> = ({ feed
             <th className="py-2 px-4 text-left">Question</th>
             <th className="py-2 px-4 text-left">Score</th>
             <th className="py-2 px-4 text-left">Submitted At</th>
-            <th className="py-2 px-4 text-left">Submitted By (User ID)</th>
           </tr>
         </thead>
         <tbody>
           {feedback.map((item, idx) => (
-            <tr key={item.group_id + '-' + idx} className="border-t">
+            <tr key={item.group_id + "-" + idx} className="border-t">
               <td className="py-2 px-4">{item.question_text}</td>
               <td className="py-2 px-4">{item.score}</td>
-              <td className="py-2 px-4">{new Date(item.submitted_at).toLocaleString()}</td>
-              <td className="py-2 px-4">{item.submitted_by}</td>
+              <td className="py-2 px-4">
+                {new Date(item.submitted_at).toLocaleString()}
+              </td>
             </tr>
           ))}
         </tbody>
