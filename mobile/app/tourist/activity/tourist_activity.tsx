@@ -14,6 +14,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useVisitorRegistration } from '@/hooks/useVisitorRegistration';
 import { useAuth } from '@/hooks/useAuth';
 import { router } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
 
 interface QRResult {
   qr_code_url: string;
@@ -90,8 +91,19 @@ export default function TouristActivityScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.scroll}>
-      <Text style={styles.headertitle}>Recently Booked</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      <Text style={styles.headertitle}>Recently Booked</Text>  
+      <TouchableOpacity
+        style={styles.visitButton}
+        onPress={() => {
+          router.push('/tourist/activity/attraction_history/visitHistory');
+        }}
+      >
+        <View style={styles.visitButtonContent}>
+          <Text style={styles.visitButtonText}>View Visit History</Text>
+          <Feather name="arrow-right" size={14} color="#9d9d9d" style={{ marginLeft: 6 }} />
+        </View>
+      </TouchableOpacity>
       <View style={styles.card}>
         <Text style={styles.title}>Your Registration</Text>
 
@@ -131,130 +143,160 @@ export default function TouristActivityScreen() {
           <Text style={styles.error}>No QR code available for this user.</Text>
         )}
       </View>
-
       <TouchableOpacity
         style={styles.historyButton}
         onPress={() => {
-          router.push('/tourist/activity/attraction_history/visitHistory');
+          router.push('/tourist/activity/booking_history/visitHistory');
         }}
       >
-        <Text style={styles.historyButtonText}>View Visit History</Text>
+        <Text style={styles.historyButtonText}>View Booking History</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: {
-    flexGrow: 1,
+  container: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
+    marginVertical: 50,
+  },
+  scrollContent: {
     padding: 16,
-    backgroundColor: '#f8fafc',
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: 80,
+    paddingBottom: 80,
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#f8fafc',
+    padding: 20,
+    backgroundColor: '#f9fafb',
+  },
+  headertitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#1c5461',
+    marginBottom: 16,
+  },
+  visitButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   card: {
     width: '100%',
-    maxWidth: 400,
-    backgroundColor: '#ffffff',
+    maxWidth: 420,
+    backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 24,
+    padding: 20,
     shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 10,
-    elevation: 5,
-    alignItems: 'center',
-    gap: 20,
-  },
-  headertitle: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#111827',
-    marginBottom: 16,
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 8,
+    elevation: 4,
+    marginBottom: 20,
+    alignSelf: 'center',
   },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '900',
-    color: '#000',
+    color: '#7f7971',
+    marginBottom: 12,
+    textAlign: 'center',
   },
   section: {
-    alignItems: 'center',
-    width: '100%',
-    gap: 8,
+    marginTop: 10,
+    marginBottom: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: '#fffff1',
   },
   label: {
     fontSize: 14,
-    color: '#475569',
+    color: '#1c5461',
+    marginBottom: 6,
+    fontWeight: '700',
   },
   codeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
   },
   code: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'monospace',
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#fff',
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: 6,
-    color: '#0f172a',
+    borderColor: '#cbd5e1',
+    borderWidth: 1,
+    color: '#1e293b',
+    flex: 1,
   },
   copyButton: {
-    backgroundColor: '#075778',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    backgroundColor: '#029375',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginLeft: 10,
     borderRadius: 6,
   },
   copyText: {
     color: '#ffffff',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
   },
   qrBox: {
-    backgroundColor: '#f1f5f9',
-    padding: 16,
-    borderRadius: 10,
+    marginTop: 10,
     alignItems: 'center',
     gap: 10,
   },
   qr: {
-    width: 180,
-    height: 180,
+    width: 200,
+    height: 200,
+    borderRadius: 8,
+    borderColor: '#cbd5e1',
+    borderWidth: 1,
   },
   viewButton: {
-    backgroundColor: '#075778',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+    backgroundColor: '#029375',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
   },
   error: {
     color: '#ef4444',
-    fontSize: 16,
+    fontSize: 15,
     textAlign: 'center',
-  },
-  labelText: {
-    fontSize: 14,
-    color: '#6b7280',
+    marginTop: 10,
   },
   historyButton: {
-    marginTop: 20,
-    backgroundColor: '#334155',
-    paddingVertical: 12,
+    marginTop: 12,
+    backgroundColor: '#1e293b',
+    paddingVertical: 14,
     paddingHorizontal: 24,
-    borderRadius: 8,
+    borderRadius: 10,
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 420,
   },
   historyButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     textAlign: 'center',
+  },
+  visitButton: {
+    alignSelf: 'flex-end',
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginBottom: 10,
+  },
+  
+  visitButtonText: {
+    color: '#9d9d9d',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });

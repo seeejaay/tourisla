@@ -70,9 +70,9 @@ function ProfileHeader() {
       
       {/* Header with gradient background */}
       <LinearGradient
-        colors={['#0f172a', '#1e293b']}
+        colors={['#014b55', '#014e65']}
         start={{ x: 0, y: 0 }}
-        end={{ x: 7, y: 0 }}
+        end={{ x: 0, y: 3 }}
         style={styles.headerContainer}
       >
         {/* Left side - User profile */}
@@ -183,7 +183,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
               {isFocused && (
                 <View style={styles.activeTabIndicator}>
                   <LinearGradient
-                    colors={['#38bdf8', '#0ea5e9']}
+                    colors={['#f9fbf2', '#afeed5']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={styles.activeTabGradient}
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   avatarPlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#38bdf8',
+    backgroundColor: '#d0c7a2',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -363,12 +363,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
+    shadowOffset: { width: 10, height: 10 },
+    shadowOpacity: 0.2,
     shadowRadius: 20,
-    elevation: 15,
+    elevation: 4,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+    paddingBottom: 20,
   },
   tabBarGradient: {
     position: 'absolute',
@@ -416,7 +417,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   activeTabIconContainer: {
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    backgroundColor: 'rgba(27, 229, 188, 0.15)',
   },
   tabLabel: {
     fontSize: 11,
