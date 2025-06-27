@@ -37,7 +37,11 @@ export default function WalkInRegister() {
   // Initialize main visitor with logged-in user data if available
   useEffect(() => {
     async function checkUser() {
-      await loggedInUser(router);
+      const checkLogin = await loggedInUser(router);
+      if (!checkLogin) {
+        router.push("/auth/login");
+        return;
+      }
     }
     checkUser();
   }, [loggedInUser, router]);
