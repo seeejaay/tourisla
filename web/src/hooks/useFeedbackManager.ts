@@ -1,7 +1,3 @@
-import { useState, useCallback } from "react";
-import { fetchFeedbackForEntity, fetchOperatorApplicantByUserId } from "@/lib/api/getFeedback";
-
-export interface Feedback {
 import { useState, useEffect, useMemo } from "react";
 import { fetchAllFeedbackByEntity } from "@/lib/api/feedback";
 
