@@ -18,20 +18,27 @@ const ViewFeedbackAnswers: React.FC<ViewFeedbackAnswersProps> = ({
 }) => {
   return (
     <div className="mt-2 border-t pt-2">
-      <p className="font-semibold text-gray-700 mb-2">Answers for Group ID: {groupId}</p>
-      <ul className="list-disc ml-5 text-sm">
+      {/* Top row: Title + Close button aligned horizontally */}
+      <div className="flex justify-between items-center mb-2">
+        <p className="font-semibold text-gray-700">
+          Answers for Group ID: {groupId}
+        </p>
+        <button
+          className="bg-red-600 text-white text-sm px-3 py-1 rounded hover:bg-red-700 transition"
+          onClick={onClose}
+        >
+          Close
+        </button>
+      </div>
+
+      {/* Answers list */}
+      <ul className="list-disc ml-5 text-sm text-gray-800">
         {answers.map((ans, index) => (
           <li key={index}>
             <strong>{ans.question_text}</strong>: {ans.score}
           </li>
         ))}
       </ul>
-      <button
-        className="mt-3 text-sm text-blue-600 hover:underline"
-        onClick={onClose}
-      >
-        Close
-      </button>
     </div>
   );
 };
