@@ -1,6 +1,6 @@
 import type { VisitorLog } from "@/app/tourist/activity/attraction_history/visitHistory";
 import React from 'react';
-import { Modal, View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { Modal, View, SafeAreaView, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
 
 interface DetailsModalProps {
   open: boolean;
@@ -15,7 +15,7 @@ export const DetailsModal: React.FC<DetailsModalProps> = ({ open, onClose, group
 
   return (
     <Modal open={open} transparent animationType="fade">
-      <View style={styles.overlay}>
+      <SafeAreaView style={styles.overlay}>
         <View style={styles.container}>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeText}>×</Text>
@@ -41,7 +41,7 @@ export const DetailsModal: React.FC<DetailsModalProps> = ({ open, onClose, group
             ))}
           </ScrollView>
         </View>
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 };

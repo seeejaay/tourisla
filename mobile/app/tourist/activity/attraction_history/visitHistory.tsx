@@ -7,6 +7,9 @@ import {
   ActivityIndicator,
   Alert,
   Modal,
+  TouchableOpacity,
+  StatusBar,
+  Platform,
 } from 'react-native';
 import { useAttractionHistoryManager } from '@/hooks/useAttractionHistoryManager';
 import { fetchTouristSpots } from '@/lib/api/touristSpot';
@@ -14,6 +17,12 @@ import { fetchMySpotFeedbacks } from '@/lib/api/feedback';
 import { ViewCard } from '@/components/attraction-history/viewCard';
 import { DetailsModal } from '@/components/attraction-history/detailsModal';
 import { FeedbackModal } from '@/components/attraction-history/FeedbackModal';
+import { useRouter } from 'expo-router';
+import { FontAwesome5 } from '@expo/vector-icons';
+
+interface TourPackageDetailsScreenProps {
+  headerHeight: number;
+}
 
 interface VisitorLog {
   id: number;
@@ -30,6 +39,9 @@ interface TouristSpot {
   name: string;
 }
 
+const STATUS_BAR_HEIGHT =
+  Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0;
+
 interface SpotFeedback {
   id: number;
   type: string;
@@ -39,12 +51,15 @@ interface SpotFeedback {
   submitted_by: number;
 }
 
-export default function VisitHistoryScreen() {
+export default function VisitHistoryScreen({
+  headerHeight,
+}: TourPackageDetailsScreenProps) {
   const { history, loading, error } = useAttractionHistoryManager();
   const [spots, setSpots] = useState<TouristSpot[]>([]);
   const [openId, setOpenId] = useState<number | null>(null);
   const [feedbackOpenId, setFeedbackOpenId] = useState<number | null>(null);
   const [mySpotFeedbacks, setMySpotFeedbacks] = useState<SpotFeedback[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     fetchTouristSpots().then(setSpots);
@@ -79,6 +94,16 @@ export default function VisitHistoryScreen() {
   }
 
   return (
+    <View style={[styles.container, { paddingTop: headerHeight }]}>
+    <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+    <View style={styles.navbar}>
+      <TouchableOpacity
+        style={styles.navButton}
+        onPress={() => router.back()}
+      >
+        <FontAwesome5 name="arrow-left" size={18} color="#fff" />
+      </TouchableOpacity>
+    </View>
     <ScrollView contentContainerStyle={styles.scroll}>
       <Text style={styles.title}>My Visit History</Text>
       {history.length === 0 ? (
@@ -120,14 +145,43 @@ export default function VisitHistoryScreen() {
         })
       )}
     </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f1f5f9',
+  },
+  navbar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: STATUS_BAR_HEIGHT + 10,
+    paddingBottom: 10,
+    paddingHorizontal: 16,
+    backgroundColor: "transparent",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  navButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: "rgba(15, 23, 42, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   scroll: {
     flexGrow: 1,
     padding: 16,
     backgroundColor: '#f1f5f9',
+    marginTop: STATUS_BAR_HEIGHT + 50,
+    height: '100%',
   },
   center: {
     flex: 1,
@@ -139,7 +193,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '900',
-    color: '#0f172a',
+    color: '#1c5461',
     marginBottom: 20,
   },
   label: {
