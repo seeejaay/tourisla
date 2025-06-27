@@ -80,7 +80,10 @@ const viewAllFeedbackForEntityController = async (req, res) => {
     const { type, ref_id } = req.query;
     const upperType = type.toUpperCase();
 
-    const feedbackList = await getAllFeedbackByEntity(upperType, ref_id);
+    // Convert empty string or undefined to null
+    const refId = ref_id ?? null;
+
+    const feedbackList = await getAllFeedbackByEntity(upperType, refId);
     res.json(feedbackList);
   } catch (err) {
     console.error(err.message);
