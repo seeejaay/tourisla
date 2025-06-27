@@ -97,7 +97,7 @@ export const getBookingsByTourist = async (touristId) => {
   try {
     console.log("API Fetching Bookings for Tourist ID:", touristId);
     const response = await axios.get(
-      `${API_URL}bookings/tourist/${touristId}`,
+      `${API_URL}bookings/tourist`,
       {
         withCredentials: true,
       }

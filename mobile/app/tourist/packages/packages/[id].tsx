@@ -48,6 +48,27 @@ export default function TourPackageDetailsScreen({ headerHeight }: TourPackageDe
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const formatDate = (isoDate: string | undefined): string => {
+    if (!isoDate) return '';
+    const date = new Date(isoDate);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const formatTime = (time: string | undefined): string => {
+    if (!time) return '';
+    const [hour, minute] = time.split(':');
+    const date = new Date();
+    date.setHours(parseInt(hour), parseInt(minute));
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  };
+
   useEffect(() => {
     const loadPackage = async () => {
       try {
@@ -107,41 +128,81 @@ export default function TourPackageDetailsScreen({ headerHeight }: TourPackageDe
         </View>
     <ScrollView contentContainerStyle={styles.scrollContent}>
     <View style={styles.content}>
-      {pkg.package_name && <Text style={styles.packageName}>{pkg.package_name}{pkg.id}</Text>}
-      {pkg.location && <Text style={styles.packageLocation}>{pkg.location}</Text>}
+      {pkg.package_name && (
+        <Text style={styles.packageName}>
+          {pkg.package_name
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')}
+          {pkg.id}
+        </Text>
+      )}
+      {pkg.location && (
+        <Text style={styles.packageLocation}>
+          {pkg.location
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')}
+        </Text>
+      )}
+      {pkg.description && (
+        <Text style={styles.packageDescription}>{pkg.description.charAt(0).toUpperCase() + pkg.description.slice(1).toLowerCase()}</Text>
+      )}
+      <View style={styles.gridContainer}>
+        <View style={styles.gridItem}>
+          {pkg.inclusions !== undefined && (
+            <View style={styles.packagegroup1}>
+              <Text style={styles.gridLabelBlue}>Inclusions:</Text>
+              <Text style={styles.textcontent}>{pkg.inclusions}</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.gridItem}>
+          {pkg.available_slots !== undefined && (
+            <View style={styles.packagegroup1}>
+              <Text style={styles.gridLabelBlue}>Available Slots:</Text>
+              <Text style={styles.textcontent}>{pkg.available_slots}</Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.gridItem}>
+          {pkg.exclusions !== undefined && (
+            <View style={styles.packagegroup1}>
+              <Text style={styles.gridLabelBlue}>Exclusions:</Text>
+              <Text style={styles.textcontent}>{pkg.exclusions}</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.gridItem}>
+          {pkg.start_time && pkg.end_time && (
+            <View style={styles.scheduleCard}>
+              <Text style={styles.scheduleLabel}>🗓️ Schedule</Text>
+              <View style={styles.scheduleRow}>
+                <Text style={styles.scheduleDate}>
+                  {formatDate(pkg.date_start)}
+                </Text>
+                <Text style={styles.scheduleDate}>→</Text>
+                <Text style={styles.scheduleDate}>
+                  {formatDate(pkg.date_end)}
+                </Text>
+              </View>
+              <View style={styles.scheduleRow}>
+                <Text style={styles.scheduleTime}>
+                  {formatTime(pkg.start_time)} - {formatTime(pkg.end_time)}
+                </Text>
+              </View>
+            </View>
+          )}
+        </View>
+      </View>
       {pkg.price !== undefined && (
         <View style={styles.pricecontent}>
           <Text style={styles.packagePrice}>₱{pkg.price}</Text>
           <Text style={styles.packagePriceText}>per person</Text>
         </View>
-      )}
-      {pkg.description && (
-        <Text style={styles.packageDescription}>{pkg.description.charAt(0).toUpperCase() + pkg.description.slice(1).toLowerCase()}</Text>
-      )}
-      {pkg.inclusions !== undefined && (
-        <View style={styles.packagegroup1}>
-            <Text style={{ color: "#3747e6", fontWeight: "500", fontSize: 16 }}>Inclusions:</Text>
-            <Text style={styles.textcontent}>{pkg.inclusions}</Text>
-        </View>
-      )} 
-      {pkg.exclusions !== undefined && (
-        <View style={styles.packagegroup2}>
-            <Text style={{ color: "#c50007", fontWeight: "500", fontSize: 16 }}>Exclusions:</Text>
-            <Text style={styles.textcontent}>{pkg.exclusions}</Text>
-        </View>
-      )} 
-      {pkg.available_slots !== undefined && (
-        <View style={styles.packagegroup3}>
-            <Text style={{ color: "#368236", fontWeight: "500", fontSize: 16 }}>Available Slots:</Text>
-            <Text style={styles.textcontent}>{pkg.available_slots}</Text>
-        </View>
-      )}  
-      {pkg.start_time && pkg.end_time && (
-            <View style={styles.packagegroup4}>
-            <Text style={{ color: "#dfa716", fontWeight: "500", fontSize: 16 }}>Schedule:</Text>
-            <Text style={styles.textcontent}>{pkg.date_start} - {pkg.date_end}</Text>
-            <Text style={styles.textcontent}>{pkg.start_time} - {pkg.end_time}</Text>
-            </View>
       )}
         <TouchableOpacity style={styles.bookButton} onPress={() => router.push(`/tourist/packages/${pkg.id}/book`)}>
         <Text style={styles.bookButtonText}>Book Now</Text>
@@ -182,18 +243,9 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
-    alignItems: "center",
   },
   content: {
-    padding: 16,
-    backgroundColor: "#fff",
     margin: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 2,
-    borderRadius: 12,
   },
   centerContent: {
     flex: 1,
@@ -203,9 +255,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8fafc",
   },
   packageName: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "900",
-    color: "#0f172a",
+    color: "#1c5461",
     marginBottom: 2,
   },
   packageLocation: {
@@ -218,45 +270,77 @@ const styles = StyleSheet.create({
     color: "#475569",
     marginBottom: 16,
   },
+  gridContainer: {
+    flexDirection: "column",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  row: {
+    flexDirection: "column",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  gridItem: {
+    flex: 1,
+  },
+  gridLabelBlue: {
+    color: "#646e50",
+    fontWeight: "500",
+    fontSize: 16,
+  },
   packagegroup1: {
     ...sharedPackageGroupStyle,
-    backgroundColor: '#eff6ff',
-  },
-  packagegroup2: {
-    ...sharedPackageGroupStyle,
-    backgroundColor: '#fef2f2',
-  },
-  packagegroup3: {
-    ...sharedPackageGroupStyle,
-    backgroundColor: '#f0fdf4',
-  },
-  packagegroup4: {
-    ...sharedPackageGroupStyle,
-    backgroundColor: '#fefce8',
+    backgroundColor: '#b9dadb',
   },
   textcontent: {
     color: "#4c4c4c",
     fontWeight: "500",
   },
-  packageDuration: {
-    fontSize: 14,
-    color: "#64748b",
+  scheduleCard: {
+    ...sharedPackageGroupStyle,
+    backgroundColor: '#fefce8',
+    borderLeftWidth: 4,
+    borderLeftColor: '#eab308', // Yellow highlight
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  
+  scheduleLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#92400e',
     marginBottom: 8,
   },
+  
+  scheduleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  scheduleDate: {
+    fontSize: 14,
+    color: '#444',
+    fontWeight: '500',
+  },
+  scheduleTime: {
+    fontSize: 14,
+    color: '#1c1917',
+    fontStyle: 'italic',
+  },
   pricecontent: {
-    marginBottom: 16,
-    flexDirection: "row",
+    marginTop: 16,
+    flexDirection: "column",
+    alignItems: "flex-end",
   },
   packagePrice: {
-    fontSize: 18,
+    fontSize: 30,
     fontWeight: "700",
     color: "#00a63e",
   },
   packagePriceText: {
-    left: 8,
     fontSize: 14,
     color: "#475569",
-    alignSelf: "center",
   },
   loadingText: {
     marginTop: 8,
@@ -274,12 +358,13 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   bookButton: {
-    backgroundColor: "#0ea5e9",
+    backgroundColor: "#24b4ab",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
     alignSelf: "center",
     marginTop: 24,
+    width: "100%"
   },
   bookButtonText: {
     color: "#fff",
