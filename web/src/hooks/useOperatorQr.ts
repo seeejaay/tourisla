@@ -16,9 +16,9 @@ export function useOperatorQrManager() {
         formData.append("tour_operator_id", touroperator_id);
         formData.append("qr_name", qr_name);
 
-        console.log("Uploading QR code for tour operator:", formData);
+        console.log("Uploading QR code for tour operator");
         const result = await uploadOperatorQr(formData);
-        console.log("Upload result:", result);
+        console.log("Upload result");
         return result;
       } catch (error) {
         setError(error + "Unknown error");
@@ -35,10 +35,10 @@ export function useOperatorQrManager() {
     setError(null);
 
     try {
-      console.log(`Fetching QR code for tour operator: ${touroperator_id}`);
+      console.log(`Fetching QR code for tour operator`);
 
       const qrData = await getOperatorQrById(touroperator_id);
-      console.log("Fetched QR data:", qrData);
+      console.log("Fetched QR data");
       return qrData;
     } catch (error) {
       setError(error + "Unknown error");

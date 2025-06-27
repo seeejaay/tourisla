@@ -36,7 +36,7 @@ export const useAccommodationLogsManager = () => {
     setLoading(true);
     setError("");
     try {
-      console.log("Creating log with data:", logData);
+      console.log("Creating log with data");
       const newLog = await createAccommodationLog(logData);
       setLogs((prev) => [...prev, newLog]);
       return newLog;
@@ -132,7 +132,7 @@ export const useAccommodationLogsManager = () => {
           accommodationId
         );
         setLogs(response); // <-- This line updates the logs state!
-        console.log("Fetched log by accommodation ID:", response);
+        console.log("Fetched log by accommodation ID");
         return response;
       } catch (err) {
         setError(

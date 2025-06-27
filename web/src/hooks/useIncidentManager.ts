@@ -25,7 +25,7 @@ export function useIncidentManager() {
   const getAllReports = async () => {
     try {
       const data = await fetchAllIncidentReports();
-      console.log("Fetched incidents:", data);
+      console.log("Fetched incidents");
       setReports(data);
     } catch (error) {
       console.error("Failed to fetch incident reports:", error);

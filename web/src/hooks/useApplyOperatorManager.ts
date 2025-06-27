@@ -19,15 +19,13 @@ export function useApplyOperatorManager() {
       setLoading(true);
       setError(null);
       try {
-        console.log(
-          `Applying to tour operator: ${touroperator_id} by tour guide: ${tourguide_id}`
-        );
+        console.log(`Applying to tour operator by tour guide`);
         const result = await applyToTourOperator(
           tourguide_id,
           touroperator_id,
           reason_for_applying
         );
-        console.log("Application result:", result);
+        console.log("Application result:");
         return result;
       } catch (error) {
         setError(error + "Unknown error");
@@ -44,7 +42,7 @@ export function useApplyOperatorManager() {
     setError(null);
     try {
       const applications = await fetchApplicationsForTourOperator(operatorId);
-      console.log("Fetched applications:", applications);
+      console.log("Fetched applications");
       return applications;
     } catch (error) {
       setError(error + "Unknown error");

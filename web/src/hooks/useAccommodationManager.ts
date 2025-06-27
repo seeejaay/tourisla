@@ -96,7 +96,7 @@ export const useAccommodationManager = () => {
       try {
         const response = await apiViewAccommodation(id);
         setSelectedAccommodation(response);
-        console.log("Accommodation viewed:", response);
+        console.log("Accommodation viewed");
         return response;
       } catch (error) {
         setError(
@@ -174,9 +174,7 @@ export const useAccommodationManager = () => {
       setLoading(true);
       setError("");
       try {
-        console.log(
-          `Assigning accommodation ID ${accommodationId} to staff ID ${staffId}`
-        );
+        console.log(`Assigning accommodation ID to Staff ID`);
         const response = await apiAssignAccommodationToStaff(
           staffId,
           accommodationId
@@ -206,7 +204,7 @@ export const useAccommodationManager = () => {
     setError("");
     try {
       const staff = await apiGetTourismStaff();
-      console.log("Tourism staff fetched:", staff);
+      console.log("Tourism staff fetched");
       return staff;
     } catch (error) {
       setError(
