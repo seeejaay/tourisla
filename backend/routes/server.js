@@ -1,7 +1,6 @@
 require("dotenv").config();
 const express = require("express");
 const session = require("express-session");
-const pgSession = require("connect-pg-simple")(session);
 const { getPresignedUrl } = require("../utils/s3.js");
 const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
@@ -12,7 +11,7 @@ const cors = require("cors");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.set("trust proxy", 1);
+
 app.use(
   cors({
     origin: [
@@ -21,29 +20,10 @@ app.use(
       "http://192.168.0.135:3000",
       "http://192.168.0.130",
       "http://dev.tourisla.local:3000",
-      "https://tourisla.vercel.app",
-      "https://tourisla.space",
-
+      "https://tourisla.vercel.app/",
       process.env.CLIENT_URL, // Add this if you want to support env config too
     ],
     credentials: true,
-  })
-);
-app.use(
-  session({
-    store: new pgSession({
-      pool: db.pool, // Use your existing pg Pool
-      tableName: "session",
-    }),
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production", // true on Railway
-      sameSite: "none", // Required for cross-site cookies
-      httpOnly: true, // More secure, prevents JS access
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
-    },
   })
 );
 // Controllers
@@ -290,6 +270,19 @@ const {
   handlePayMongoWebhook,
   manuallyConfirmPayment,
 } = require("../controllers/paymongoController.js");
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // Set to true in production
+      httpOnly: false,
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    },
+  })
+);
 
 // Routes for PayMongo (must be placed before app.listen)
 app.post("/api/v1/paymongo/links", createIslandEntryPaymentLink);
