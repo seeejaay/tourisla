@@ -1,5 +1,8 @@
 import { useState, useCallback } from "react";
-import { fetchFeedbackForEntity, fetchOperatorApplicantByUserId } from "@/lib/api/getFeedback";
+import {
+  fetchFeedbackForEntity,
+  fetchOperatorApplicantByUserId,
+} from "@/lib/api/getFeedback";
 
 export interface Feedback {
   group_id: number;
@@ -15,9 +18,13 @@ export const useFeedbackManager = () => {
   const [error, setError] = useState<string | null>(null);
 
   // New state for guide feedbacks
-  const [guideFeedbacks, setGuideFeedbacks] = useState<Record<string, Feedback[]>>({});
+  const [guideFeedbacks, setGuideFeedbacks] = useState<
+    Record<string, Feedback[]>
+  >({});
   const [guideFeedbacksLoading, setGuideFeedbacksLoading] = useState(false);
-  const [guideFeedbacksError, setGuideFeedbacksError] = useState<string | null>(null);
+  const [guideFeedbacksError, setGuideFeedbacksError] = useState<string | null>(
+    null
+  );
 
   const getFeedback = async (type: string, ref_id: number | string) => {
     setLoading(true);
@@ -26,7 +33,9 @@ export const useFeedbackManager = () => {
       const data = await fetchFeedbackForEntity({ type, ref_id });
       setFeedback(data);
     } catch (err: any) {
-      setError(err?.response?.data?.error || err.message || "Failed to fetch feedback");
+      setError(
+        err?.response?.data?.error || err.message || "Failed to fetch feedback"
+      );
     } finally {
       setLoading(false);
     }
@@ -36,37 +45,52 @@ export const useFeedbackManager = () => {
    * Fetch feedback for the current operator user (resolves applicantId first)
    * @param {string|number} userId - The current user's id
    */
-  const getOperatorFeedbackByUserId = useCallback(async (userId: string | number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const applicant = await fetchOperatorApplicantByUserId(userId);
-      if (!applicant?.id) throw new Error("Operator applicant not found");
-      const data = await fetchFeedbackForEntity({ type: "OPERATOR", ref_id: applicant.id });
-      setFeedback(data);
-    } catch (err: any) {
-      setError(err?.response?.data?.error || err.message || "Failed to fetch operator feedback");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const getOperatorFeedbackByUserId = useCallback(
+    async (userId: string | number) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const applicant = await fetchOperatorApplicantByUserId(userId);
+        console.log("Operator applicant:", applicant);
+
+        const data = await fetchFeedbackForEntity({
+          type: "OPERATOR",
+          ref_id: applicant.id,
+        });
+
+        setFeedback(data);
+      } catch (err) {
+        setError("Failed to fetch operator feedback" + err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   /**
    * Fetch all guide feedbacks for an operator
    * @param {string|number} operatorId
    */
-  const getGuideFeedbacksForOperator = useCallback(async (operatorId: string | number) => {
-    setGuideFeedbacksLoading(true);
-    setGuideFeedbacksError(null);
-    try {
-      const data = await fetchOperatorGuideFeedbacks(operatorId);
-      setGuideFeedbacks(data);
-    } catch (err: any) {
-      setGuideFeedbacksError(err?.response?.data?.error || err.message || "Failed to fetch guide feedbacks");
-    } finally {
-      setGuideFeedbacksLoading(false);
-    }
-  }, []);
+  const getGuideFeedbacksForOperator = useCallback(
+    async (operatorId: string | number) => {
+      setGuideFeedbacksLoading(true);
+      setGuideFeedbacksError(null);
+      try {
+        const data = await fetchOperatorGuideFeedbacks(operatorId);
+        setGuideFeedbacks(data);
+      } catch (err: any) {
+        setGuideFeedbacksError(
+          err?.response?.data?.error ||
+            err.message ||
+            "Failed to fetch guide feedbacks"
+        );
+      } finally {
+        setGuideFeedbacksLoading(false);
+      }
+    },
+    []
+  );
 
   return {
     feedback,
