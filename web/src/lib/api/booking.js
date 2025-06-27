@@ -4,7 +4,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const completeBooking = async (bookingId) => {
   try {
-    console.log("API Completing Booking with ID");
+    console.log("API Completing Booking with ID:", bookingId);
     const response = await axios.put(
       `${API_URL}bookings/guide/${bookingId}/finish`,
       {},
@@ -27,7 +27,7 @@ export const completeBooking = async (bookingId) => {
 
 export const getBookingsByGuide = async (guideId) => {
   try {
-    console.log("API Fetching Bookings for Guide ID");
+    console.log("API Fetching Bookings for Guide ID:", guideId);
     const response = await axios.get(`${API_URL}bookings/guide`, {
       params: { guideId },
       withCredentials: true,
@@ -47,7 +47,7 @@ export const getBookingsByGuide = async (guideId) => {
 
 export const createBooking = async (bookingData) => {
   try {
-    console.log("API Creating Booking with data");
+    console.log("API Creating Booking with data:", bookingData);
     const response = await axios.post(`${API_URL}bookings`, bookingData, {
       withCredentials: true,
     });
@@ -65,7 +65,7 @@ export const createBooking = async (bookingData) => {
 };
 export const updateBookingStatus = async (bookingId, status) => {
   try {
-    console.log("API Updating Booking Status for ID");
+    console.log("API Updating Booking Status for ID:", bookingId, "to", status);
     const response = await axios.put(
       `${API_URL}bookings/${bookingId}/status`,
       { status },
@@ -110,7 +110,7 @@ export const getBookingsByTourist = async (touristId) => {
 
 export const getBookingsByPackage = async (packageId) => {
   try {
-    console.log("API Fetching Bookings for Package ID");
+    console.log("API Fetching Bookings for Package ID:", packageId);
     const response = await axios.get(
       `${API_URL}bookings/package/${packageId}`,
       {
@@ -132,7 +132,7 @@ export const getBookingsByPackage = async (packageId) => {
 
 export const getBookingById = async (bookingId) => {
   try {
-    console.log("API Fetching Booking by ID");
+    console.log("API Fetching Booking by ID:", bookingId);
     const response = await axios.get(`${API_URL}bookings/${bookingId}`, {
       withCredentials: true,
     });
@@ -151,7 +151,12 @@ export const getBookingById = async (bookingId) => {
 
 export const getFilteredBookingsByTourist = async (touristId, filter) => {
   try {
-    console.log("API Fetching Filtered Bookings for Tourist ID");
+    console.log(
+      "API Fetching Filtered Bookings for Tourist ID:",
+      touristId,
+      "with filter:",
+      filter
+    );
     const response = await axios.get(
       `${API_URL}bookings/tourist/${touristId}/filter`,
       {
@@ -174,7 +179,7 @@ export const getFilteredBookingsByTourist = async (touristId, filter) => {
 
 export const cancelBooking = async (bookingId) => {
   try {
-    console.log("API Cancelling Booking with ID");
+    console.log("API Cancelling Booking with ID:", bookingId);
     const response = await axios.put(`${API_URL}bookings/${bookingId}/cancel`, {
       withCredentials: true,
     });
@@ -193,7 +198,7 @@ export const cancelBooking = async (bookingId) => {
 
 export const getBookingsByOperator = async (operatorId) => {
   try {
-    console.log("API Fetching Bookings for Operator ID");
+    console.log("API Fetching Bookings for Operator ID:", operatorId);
     const response = await axios.get(
       `${API_URL}bookings/operator/${operatorId}`,
       {

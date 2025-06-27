@@ -7,7 +7,7 @@ export const fetchTripadvisorHotels = async () => {
       throw new Error("Failed to fetch hotels from Tripadvisor");
     }
     const data = await response.json();
-    console.log("Fetched Tripadvisor hotels data:");
+    console.log("Fetched Tripadvisor hotels data:", data);
     // If your backend returns an array directly:
     return Array.isArray(data) ? data : data.data;
   } catch (error) {

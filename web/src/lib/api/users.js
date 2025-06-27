@@ -18,7 +18,7 @@ export const fetchUsers = async () => {
 
 export const createUser = async (userData) => {
   try {
-    console.log("Sending user data to API");
+    console.log("Sending user data to API:", userData);
     const response = await axios.post(`${API_URL}users`, userData, {
       withCredentials: true,
     });

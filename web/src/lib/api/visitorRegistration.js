@@ -24,7 +24,7 @@ export const getVisitorGroupMembers = async (groupId) => {
 
 export const registerVisitor = async (visitors) => {
   try {
-    console.log("API Registering Visitors:");
+    console.log("API Registering Visitors: ", visitors);
     // Wrap visitors in an object with groupMembers property
     const response = await axios.post(
       `${API_URL}register`,
@@ -119,7 +119,6 @@ export const getVisitorResult = async (uniqueCode) => {
 
 export const getQRCodebyUserId = async (userId) => {
   try {
-    console.log("Fetching QR Code for User ID:", userId);
     const response = await axios.get(`${API_URL}register/qr/${userId}`, {
       withCredentials: true,
     });

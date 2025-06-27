@@ -160,7 +160,7 @@ export const useTourGuideManager = () => {
     setError("");
     try {
       const data = await apiFetchAllTourGuideApplicants();
-      console.log("Fetched all tour guide applicants");
+      console.log("Fetched all tour guide applicants:", data);
       return data;
     } catch (error) {
       setError(

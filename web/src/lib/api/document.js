@@ -5,7 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 // Upload a document for a guide
 export const uploadGuideDocument = async (guideId, formData) => {
   try {
-    console.log("Uploading guide document with formData");
+    console.log("Uploading guide document with formData:", formData);
     const response = await axios.post(
       `${API_URL}guideUploadDocu/${guideId}`,
       formData,
@@ -14,7 +14,7 @@ export const uploadGuideDocument = async (guideId, formData) => {
         withCredentials: true,
       }
     );
-    console.log("Upload Response");
+    console.log("Upload Response:", response);
     return response.data;
   } catch (error) {
     console.error("Error uploading guide document:", error);
@@ -79,7 +79,7 @@ export const getGuideDocumentsByUserId = async (userId) => {
 
 export const uploadOperatorDocument = async (operatorId, formData) => {
   try {
-    console.log("Uploading operator document with formData");
+    console.log("Uploading operator document with formData:", formData);
     const response = await axios.post(
       `${API_URL}operatorUploadDocu/${operatorId}`,
       formData,
@@ -88,7 +88,7 @@ export const uploadOperatorDocument = async (operatorId, formData) => {
         withCredentials: true,
       }
     );
-    console.log("Upload Response");
+    console.log("Upload Response:", response);
     return response.data;
   } catch (error) {
     console.error("Error uploading operator document:", error);
@@ -98,7 +98,7 @@ export const uploadOperatorDocument = async (operatorId, formData) => {
 
 export const editOperatorDocument = async (docuId, formData) => {
   try {
-    console.log("Editing operator document with formData");
+    console.log("Editing operator document with formData:", formData);
 
     const response = await axios.put(
       `${API_URL}operatorUploadDocu/${docuId}`,

@@ -1,8 +1,6 @@
 import * as yup from "yup";
 
-
 export interface IncidentReport {
-  status: string;
   id: number;
   submitted_by?: number;
   submitted_by_name?: string;
@@ -16,7 +14,6 @@ export interface IncidentReport {
   incident_date: string;
   incident_time: string;
 }
-
 
 export const incidentSchema = yup.object().shape({
   incident_type: yup.string().required("Incident type is required"),
