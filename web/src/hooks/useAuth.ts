@@ -52,7 +52,6 @@ export function useAuth() {
         }
       }
       setLoading(false);
-      console.log("Login successful:", resLogin);
       return resLogin;
     } catch (err) {
       setError("An error occurred during login: " + err);
@@ -117,7 +116,7 @@ export function useAuth() {
           router.replace("/");
           return;
         }
-        console.log("Fetch user");
+        console.log("Current User:", resCurrentUser);
         return resCurrentUser;
       } catch (error) {
         setError("An error occurred while fetching the current user." + error);
