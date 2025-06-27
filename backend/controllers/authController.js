@@ -37,15 +37,7 @@ const loginUser = async (req, res) => {
     await loginDate(email, ipAddress);
     res.status(200).json({
       message: "Login successful",
-      user: {
-        id: user.user_id,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        email: user.email,
-        phone_number: user.phone_number,
-        role: user.role,
-        nationality: user.nationality,
-      },
+      user: req.session.user, // Return user from session
     });
   } catch (error) {
     console.error("Error during login:", error);

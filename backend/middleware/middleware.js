@@ -1,5 +1,6 @@
 // Middleware to check if the user is authenticated
 const authenticateUser = (req, res, next) => {
+  console.log("Session:", req.session);
   if (!req.session || !req.session.user) {
     return res.status(401).json({ error: "Unauthorized: Please log in" });
   }
