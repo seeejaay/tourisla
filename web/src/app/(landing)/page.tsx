@@ -201,7 +201,7 @@ export default function Home() {
           <div className="max-w-6xl mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
-                Island Locations
+                Bantayan Island
               </h2>
               <div className="w-24 h-1 bg-[#3e979f] mx-auto mb-6"></div>
               <p className="text-lg text-[#51702c] max-w-3xl mx-auto">
