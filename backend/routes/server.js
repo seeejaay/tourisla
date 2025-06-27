@@ -102,6 +102,8 @@ const {
   viewTourOperatorApplicantDetailsController,
   approveTourOperatorApplicantController,
   rejectTourOperatorApplicantController,
+  getOperatorApplicantByUserIdController,
+  getGuideFeedbacksForOperatorController,
 } = require("../controllers/applicantsController.js");
 
 const {
@@ -545,6 +547,15 @@ app.put(
   allowedRoles(["Tourism Staff", "Tourism Officer"]),
   rejectTourOperatorApplicantController
 );
+app.get(
+  "/api/v1/operator-applicants/by-user/:userId",
+  getOperatorApplicantByUserIdController
+);
+app.get(
+  "/api/v1/operator/:operatorId/guide-feedbacks",
+  allowedRoles(["Tourism Officer", "Tour Operator"]),
+  getGuideFeedbacksForOperatorController
+);
 
 // Routes for Tour Guides applying to Tour Operators
 app.post(
@@ -919,7 +930,7 @@ app.get(
 // - Staff: can view feedback about them
 app.get(
   "/api/v1/feedback/entity",
-  authenticateTourismOfficer, // <- You can add custom middleware to switch dynamically
+  allowedRoles(["Tourism Officer", "Tour Operator"]),
   viewAllFeedbackForEntityController
 );
 
