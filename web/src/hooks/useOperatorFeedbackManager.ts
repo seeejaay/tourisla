@@ -32,7 +32,7 @@ export const useFeedbackManager = () => {
     try {
       const data = await fetchFeedbackForEntity({ type, ref_id });
       setFeedback(data);
-    } catch (err: any) {
+    } catch (err) {
       setError(
         err?.response?.data?.error || err.message || "Failed to fetch feedback"
       );
@@ -79,7 +79,7 @@ export const useFeedbackManager = () => {
       try {
         const data = await fetchOperatorGuideFeedbacks(operatorId);
         setGuideFeedbacks(data);
-      } catch (err: any) {
+      } catch (err) {
         setGuideFeedbacksError(
           err?.response?.data?.error ||
             err.message ||

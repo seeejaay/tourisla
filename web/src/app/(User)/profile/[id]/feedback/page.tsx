@@ -8,10 +8,7 @@ export default function OperatorFeedbackPage() {
   const { feedback, loading, error, getOperatorFeedbackByUserId } =
     useFeedbackManager();
   const [operatorId, setOperatorId] = useState<number | null>(null);
-  const [guides, setGuides] = useState<any[]>([]);
-  const [guidesFeedback, setGuidesFeedback] = useState<
-    Record<number, { feedback: any[]; loading: boolean; error: string | null }>
-  >({});
+
   const { loggedInUser } = useAuth();
   const router = useRouter();
   // ...existing code...
@@ -21,12 +18,12 @@ export default function OperatorFeedbackPage() {
       const id = res?.data?.user?.id || res?.data?.user?.user_id;
       if (id) {
         setOperatorId(id);
-        console.log("Operator ID:", id);
-        getOperatorFeedbackByUserId(id);
+
+        getOperatorFeedbackByUserId(operatorId);
       }
     }
     fetchUserAndFeedback();
-  }, [loggedInUser, router, getOperatorFeedbackByUserId]);
+  }, [loggedInUser, router, getOperatorFeedbackByUserId, operatorId]);
   // ...existing code...
 
   // Fetch feedback for each guide
@@ -45,7 +42,7 @@ export default function OperatorFeedbackPage() {
         ...prev,
         [guideId]: { feedback: data, loading: false, error: null },
       }));
-    } catch (err: any) {
+    } catch (err) {
       setGuidesFeedback((prev) => ({
         ...prev,
         [guideId]: {
