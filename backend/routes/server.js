@@ -930,7 +930,7 @@ app.get(
 // - Staff: can view feedback about them
 app.get(
   "/api/v1/feedback/entity",
-  allowedRoles(["Tourism Officer", "Tour Operator"]),
+  allowedRoles(["Tourism Officer", "Tour Operator", "Tourism Staff"]),
   viewAllFeedbackForEntityController
 );
 
