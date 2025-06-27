@@ -35,6 +35,7 @@ const loginUser = async (req, res) => {
       nationality: user.nationality,
     };
     await loginDate(email, ipAddress);
+    console.log("User logged in:", req.session.user);
     res.status(200).json({
       message: "Login successful",
       user: {
