@@ -20,9 +20,11 @@ export default function Login() {
 
     try {
       if (!(await loginUser(email, password, router))) {
+        console.log("Login failed");
         setError("Invalid email or password");
         return;
       }
+      console.log("Login successful");
       setError("");
     } catch (err) {
       setError("An error occurred during login: " + err);

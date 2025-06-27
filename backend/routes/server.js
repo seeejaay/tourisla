@@ -11,7 +11,7 @@ const cors = require("cors");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.set("trust proxy", 1);
 app.use(
   cors({
     origin: [
@@ -21,6 +21,7 @@ app.use(
       "http://192.168.0.130",
       "http://dev.tourisla.local:3000",
       "https://tourisla.vercel.app/",
+      "https://tourisla.space",
       process.env.CLIENT_URL, // Add this if you want to support env config too
     ],
     credentials: true,
@@ -723,11 +724,7 @@ app.post(
   allowedRoles(["Tourism Staff"]),
   registerWalkInVisitorController
 );
-app.get(
-  "/api/v1/visitor/history",
-  authenticateUser,
-  visitorHistoryController
-);
+app.get("/api/v1/visitor/history", authenticateUser, visitorHistoryController);
 
 // Island Entry Registration Routes
 app.post("/api/v1/island-entry/register", registerIslandEntryController);
@@ -740,10 +737,7 @@ app.get(
   "/api/v1/island-entry/members/:unique_code",
   getIslandEntryMembersController
 );
-app.post(
-  "/api/v1/island-entry/status",
-  checkPayMongoPaymentStatusController
-);
+app.post("/api/v1/island-entry/status", checkPayMongoPaymentStatusController);
 app.get(
   "/api/v1/island-entry/latest",
   authenticateUser,
@@ -952,10 +946,21 @@ app.delete(
 );
 
 // 5. Anyone can view feedback questions (for form rendering)
-app.get("/api/v1/feedback/my-spot-feedbacks", authenticateUser, getMySpotFeedbacksController);
-app.get("/api/v1/feedback/my-operator-feedbacks", authenticateUser, getMyOperatorFeedbacksController);
-app.get("/api/v1/feedback/my-guide-feedbacks", authenticateUser, getMyGuideFeedbacksController);
-
+app.get(
+  "/api/v1/feedback/my-spot-feedbacks",
+  authenticateUser,
+  getMySpotFeedbacksController
+);
+app.get(
+  "/api/v1/feedback/my-operator-feedbacks",
+  authenticateUser,
+  getMyOperatorFeedbacksController
+);
+app.get(
+  "/api/v1/feedback/my-guide-feedbacks",
+  authenticateUser,
+  getMyGuideFeedbacksController
+);
 
 app.get("/api/v1/feedback/questions/:type", viewQuestionsByTypeController);
 

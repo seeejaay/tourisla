@@ -52,6 +52,7 @@ export function useAuth() {
         }
       }
       setLoading(false);
+      console.log("Login successful:", resLogin);
       return resLogin;
     } catch (err) {
       setError("An error occurred during login: " + err);
