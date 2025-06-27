@@ -1,12 +1,12 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { visitorRegistrationFields } from "@/app/static/visitor-registration/visitor";
 import type { Visitor } from "@/app/static/visitor-registration/visitorSchema";
 import { useVisitorRegistration } from "@/hooks/useVisitorRegistration";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/custom/header";
-
+import { useAuth } from "@/hooks/useAuth";
 const emptyVisitor = () =>
   Object.fromEntries(
     visitorRegistrationFields.map((f) => [
@@ -26,12 +26,21 @@ type CreateVisitorResponse = {
 };
 
 export default function WalkInRegister() {
+  const { loggedInUser } = useAuth();
   const [mainVisitor, setMainVisitor] = useState<Partial<Visitor>>(
     emptyVisitor()
   );
   const [companions, setCompanions] = useState<Partial<Visitor>[]>([]);
   const { createVisitor, loading, error } = useVisitorRegistration();
   const router = useRouter();
+
+  // Initialize main visitor with logged-in user data if available
+  useEffect(() => {
+    async function checkUser() {
+      await loggedInUser(router);
+    }
+    checkUser();
+  }, [loggedInUser, router]);
 
   const handleInputChange = (
     idx: number | null,

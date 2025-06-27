@@ -2,7 +2,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import { useVisitorRegistration } from "@/hooks/useVisitorRegistration";
-
+import Header from "@/components/custom/header";
 function VisitorRegistrationResultInner() {
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
@@ -31,15 +31,18 @@ function VisitorRegistrationResultInner() {
   if (!result) return <div>Loading...</div>;
 
   return (
-    <div className="flex flex-col items-center gap-4 mt-8">
-      <h2 className="text-2xl font-semibold">Registration Complete!</h2>
-      <p>
-        Your unique code:{" "}
-        <span className="font-mono">{result.unique_code}</span>
-      </p>
-      <p>Show this QR code at the entrance:</p>
-      <img src={result.qr_code_url} alt="QR Code" className="w-44 h-44" />
-    </div>
+    <>
+      <Header />
+      <div className="flex flex-col items-center gap-4 mt-8">
+        <h2 className="text-2xl font-semibold">Registration Complete!</h2>
+        <p>
+          Your unique code:{" "}
+          <span className="font-mono">{result.unique_code}</span>
+        </p>
+        <p>Show this QR code at the entrance:</p>
+        <img src={result.qr_code_url} alt="QR Code" className="w-44 h-44" />
+      </div>
+    </>
   );
 }
 
