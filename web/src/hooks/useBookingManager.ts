@@ -4,7 +4,7 @@ import {
   // getBookingsByGuide,
   createBooking,
   updateBookingStatus,
-  // getBookingsByTourist,
+  getBookingsByTourist,
   // getBookingsByPackage,
   getBookingById,
   // getFilteredBookingsByTourist,
@@ -35,6 +35,8 @@ export interface Booking {
   status: string;
   created_at: string; // ISO date string
   updated_at: string; // ISO date string
+  tour_operator_name?: string;
+  tour_guides?: { first_name: string; last_name: string }[];
 }
 // Hook for creating a booking
 export function useCreateBooking() {
@@ -45,7 +47,7 @@ export function useCreateBooking() {
     setLoading(true);
     setError(null);
     try {
-      console.log("Creating booking with data:", bookingData);
+      console.log("Creating booking with data");
       const result = await createBooking(bookingData);
       return result;
     } catch (err) {
@@ -85,29 +87,30 @@ export function useCreateBooking() {
 // }
 
 // Hook for fetching bookings by tourist
-// export function useBookingsByTourist() {
-//   const [data, setData] = useState<any[]>([]);
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState<string | null>(null);
+export function useBookingsByTourist() {
+  const [data, setData] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-//   const fetchByTourist = useCallback(async (touristId: string | number) => {
-//     setLoading(true);
-//     setError(null);
-//     try {
-//       const result = await getBookingsByTourist(touristId);
-//       console.log("Fetched bookings by tourist:", result);
-//       setData(result);
-//       return result;
-//     } catch (err) {
-//       setError(err + "Unknown error");
-//       setData([]);
-//     } finally {
-//       setLoading(false);
-//     }
-//   }, []);
+  const fetchByTourist = useCallback(async (touristId: string | number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      console.log("Fetching bookings for tourist ID");
+      const result = await getBookingsByTourist(touristId);
+      console.log("Fetched bookings by tourist");
+      setData(result);
+      return result;
+    } catch (err) {
+      setError(err + "Unknown error");
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-//   return { data, fetchByTourist, loading, error };
-// }
+  return { data, fetchByTourist, loading, error };
+}
 
 // Hook for fetching bookings by package
 // export function useBookingsByPackage() {
@@ -266,7 +269,7 @@ export function useBookingsByOperator() {
     setError(null);
     try {
       const result = await apigetBookingsByOperator(operatorId);
-      console.log("Fetched bookings by operator:", result);
+      console.log("Fetched bookings by operator");
       setData(result);
       return result;
     } catch (err) {

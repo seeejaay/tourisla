@@ -24,7 +24,7 @@ export const fetchTourOperatorApplicants = async () => {
 // Fetch one operator applicant by ID
 export const fetchTourOperatorApplicant = async (operatorId) => {
   try {
-    console.log("Fetching Tour Operator Applicant with ID:", operatorId);
+    console.log("Fetching Tour Operator Applicant with ID");
     const response = await axios.get(`${API_URL}operatorRegis/${operatorId}`, {
       withCredentials: true,
     });
@@ -44,7 +44,7 @@ export const fetchTourOperatorApplicant = async (operatorId) => {
 // Create operator applicant (with file upload support)
 export const createTourOperatorApplicant = async (operatorData) => {
   try {
-    console.log("Creating Tour Operator Applicant with data:", operatorData);
+    console.log("Creating Tour Operator Applicant with data");
     const response = await axios.post(`${API_URL}operatorRegis`, operatorData, {
       headers: {
         "Content-Type": "application/json",

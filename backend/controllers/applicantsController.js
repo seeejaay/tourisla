@@ -7,7 +7,9 @@ const {
   getTourOperatorApplicantById,
   approveTourOperatorApplicantById,
   rejectTourOperatorApplicantById,
+  getOperatorApplicantByUserId,
 } = require("../models/applicantsModel.js");
+const db = require("../db/index.js");
 
 // from admin side: manually verify tour guide and tour operator applicants
 
@@ -129,6 +131,53 @@ const rejectTourOperatorApplicantController = async (req, res) => {
   }
 };
 
+const getOperatorApplicantByUserIdController = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const applicant = await getOperatorApplicantByUserId(userId);
+    if (!applicant) {
+      return res.status(404).json({ error: "Operator applicant not found" });
+    }
+    res.json(applicant);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * Get all feedback for guides under a specific operator
+ * - Finds all approved tourguide_applications_to_operators for the operator
+ * - Gets all feedback_groups for those tourguide_ids with type 'GUIDE'
+ * - Returns feedbacks grouped by guide_id
+ */
+const getGuideFeedbacksForOperatorController = async (req, res) => {
+  try {
+    const { operatorId } = req.params;
+    // 1. Find all approved guide applications to this operator
+    const guideRows = await db.query(
+      `SELECT tourguide_id FROM tourguide_applications_to_operators WHERE touroperator_id = $1 AND application_status = 'APPROVED'`,
+      [operatorId]
+    );
+    const guideIds = guideRows.rows.map(r => r.tourguide_id);
+    if (guideIds.length === 0) return res.json({});
+
+    // 2. Get all feedback_groups for these guides with type 'GUIDE'
+    const feedbackRows = await db.query(
+      `SELECT * FROM feedback_groups WHERE type = 'GUIDE' AND feedback_for_user_id = ANY($1)`,
+      [guideIds]
+    );
+    // 3. Group feedbacks by guide_id
+    const grouped = {};
+    feedbackRows.rows.forEach(fb => {
+      if (!grouped[fb.feedback_for_user_id]) grouped[fb.feedback_for_user_id] = [];
+      grouped[fb.feedback_for_user_id].push(fb);
+    });
+    res.json(grouped);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 module.exports = {
   viewTourGuideApplicantsController,
   viewTourGuideApplicantDetailsController,
@@ -137,5 +186,7 @@ module.exports = {
   viewTourOperatorApplicantsController,
   viewTourOperatorApplicantDetailsController,
   approveTourOperatorApplicantController,
-  rejectTourOperatorApplicantController
+  rejectTourOperatorApplicantController,
+  getOperatorApplicantByUserIdController,
+  getGuideFeedbacksForOperatorController,
 };

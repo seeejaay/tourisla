@@ -43,7 +43,7 @@ export const useVisitorRegistration = () => {
       setLoading(true);
       setError("");
       try {
-        console.log("Creating visitors with data:", visitors);
+        console.log("Creating visitors with data");
         const response = await apiRegisterVisitor(visitors); // expects array
 
         if (response.visitors && Array.isArray(response.visitors)) {
@@ -69,7 +69,7 @@ export const useVisitorRegistration = () => {
       setLoading(true);
       setError("");
       try {
-        console.log("Checking in visitor with unique code:", unique_code);
+        console.log("Checking in visitor with unique code");
         await apiManualCheckIn(unique_code);
         return true;
       } catch (error) {
@@ -93,13 +93,13 @@ export const useVisitorRegistration = () => {
       setLoading(true);
       setError("");
       try {
-        console.log("Registering walk-in visitor with data:", groupMembers);
+        console.log("Registering walk-in visitor with data");
         const response = await apiWalkInVisitor(groupMembers);
         // Optionally update visitors state if your API returns the new visitors
         if (response.members && Array.isArray(response.members)) {
           setVisitors((prev) => [...prev, ...response.members]);
         }
-        console.log("Walk-in visitor registered:", response);
+        console.log("Walk-in visitor registered");
         return response;
       } catch (error) {
         setError(
@@ -139,7 +139,7 @@ export const useVisitorRegistration = () => {
       setError("");
       try {
         const response = await apiGetQRCodebyUserId(userId);
-        console.log(response); // If response is just a string, return as qr_code_url
+        // If response is just a string, return as qr_code_url
 
         if (typeof response === "string") {
           return { qr_code_url: response };

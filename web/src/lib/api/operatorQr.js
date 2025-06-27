@@ -19,7 +19,7 @@ export const uploadOperatorQr = async (formData) => {
 
 export const getOperatorQrById = async (touroperator_id) => {
   try {
-    console.log("Fetching QR codes for Tour Operator ID:", touroperator_id);
+    console.log("Fetching QR codes for Tour Operator ID");
     const response = await axios.get(
       `${API_URL}operator-qr/${touroperator_id}`,
       {

@@ -99,8 +99,8 @@ export default function IslandEntryPage() {
 
       const payload = {
         groupMembers,
-        payment_method: values.payment_method.toUpperCase(),
-        total_fee: fee ? fee * groupMembers.length : 0,
+        payment_method: fee?.is_enabled ? values.payment_method.toUpperCase() : "NOT_REQUIRED",
+        total_fee: fee ? fee.amount * groupMembers.length : 0,
       };
 
       try {
@@ -151,7 +151,7 @@ export default function IslandEntryPage() {
   };
 
   const totalPersons = 1 + companions.length;
-  const totalFee = fee ? fee * totalPersons : 0;
+  const totalFee = fee?.is_enabled ? fee.amount * totalPersons : 0;
 
   if (showResult && result) {
     return (
@@ -354,78 +354,82 @@ export default function IslandEntryPage() {
             </button>
           </div>
 
-          <div>
-            <label className="block font-semibold text-gray-700">
-              Total to Pay:
-            </label>
-            <div className="text-xl font-bold text-green-700">
-              {fee ? `₱${totalFee}` : "Loading..."}
-            </div>
-          </div>
-
-          <div>
-            <label className="block font-semibold mb-1 text-gray-700">
-              Payment Method
-            </label>
-            <div className="flex gap-6">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="payment_method"
-                  value="Cash"
-                  checked={formik.values.payment_method === "Cash"}
-                  onChange={formik.handleChange}
-                  className="mr-2 accent-blue-600"
-                />
-                Cash
+          {fee?.is_enabled && (
+            <div>
+              <label className="block font-semibold text-gray-700">
+                Total to Pay:
               </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="payment_method"
-                  value="Online"
-                  checked={formik.values.payment_method === "Online"}
-                  onChange={formik.handleChange}
-                  className="mr-2 accent-blue-600"
-                />
-                Online
+              <div className="text-xl font-bold text-green-700">
+                ₱{totalFee}
+              </div>
+            </div>
+          )}
+
+          {fee?.is_enabled && (
+            <div>
+              <label className="block font-semibold mb-1 text-gray-700">
+                Payment Method
               </label>
+              <div className="flex gap-6">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="payment_method"
+                    value="Cash"
+                    checked={formik.values.payment_method === "Cash"}
+                    onChange={formik.handleChange}
+                    className="mr-2 accent-blue-600"
+                  />
+                  Cash
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="payment_method"
+                    value="Online"
+                    checked={formik.values.payment_method === "Online"}
+                    onChange={formik.handleChange}
+                    className="mr-2 accent-blue-600"
+                  />
+                  Online
+                </label>
+              </div>
             </div>
-          </div>
+            )}
 
-          {showPaymentLink && latestEntry?.payment_link && (
-            <div className="mt-5 text-center space-y-3">
-              <p className="text-sm text-gray-600">Proceed to online payment:</p>
-              <a
-                href={latestEntry.payment_link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold"
-              >
-                Pay via PayMongo
-              </a> 
-              <p className="text-sm text-gray-500">
-                After paying, click the button below to confirm.
-              </p>
-              <button
-                type="button"
-                onClick={async () => {
-                try {
-                  const updated = await getLatestIslandEntry();
-                  setLatestEntry(updated);
-                  setShowResult(true);
-                  setShowPaymentLink(false);
-                } catch (err) {
-                  console.error("Failed to confirm payment:", err);
-                  alert("Something went wrong while confirming payment.");
-                }
-              }}
+            {showPaymentLink && latestEntry?.payment_link && (
+              <div className="mt-5 text-center space-y-3">
+                <p className="text-sm text-gray-600">Proceed to online payment:</p>
+                <a
+                  href={latestEntry.payment_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold"
+                >
+                  Pay via PayMongo
+                </a> 
+                <p className="text-sm text-gray-500">
+                  After paying, click the button below to confirm.
+                </p>
+                <button
+                  type="button"
+                  onClick={async () => {
+                  try {
+                    const updated = await getLatestIslandEntry();
+                    setLatestEntry(updated);
+                    setShowResult(true);
+                    setShowPaymentLink(false);
+                  } catch (err) {
+                    console.error("Failed to confirm payment:", err);
+                    alert("Something went wrong while confirming payment.");
+                  }
+                }}
 
-                className="mt-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
-              >
-                Confirm Payment
-              </button>
-            </div>
+                  className="mt-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
+                >
+                  Confirm Payment
+                </button>
+              </div>
           )}
 
           {!(formik.values.payment_method === "Online" && hasSubmitted && latestEntry?.payment_link) && (

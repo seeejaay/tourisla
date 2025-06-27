@@ -5,7 +5,7 @@ import {
   DropdownMenuContent,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Cloud } from "lucide-react";
+import { Cloud, Loader2 } from "lucide-react";
 import { useWeather } from "@/hooks/useWeather"; // your custom hook
 
 export default function WeatherWidget() {
@@ -13,8 +13,8 @@ export default function WeatherWidget() {
 
   if (loading)
     return (
-      <div className="w-full flex justify-center items-center py-8">
-        <span className="text-gray-500">Loading weather...</span>
+      <div className="w-full flex justify-center items-center">
+        <Loader2 className="animate-spin w-6 h-6 text-blue-500 mr-2" />
       </div>
     );
 
@@ -30,7 +30,7 @@ export default function WeatherWidget() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="inline-flex items-center rounded-full space-x-2"
+          className="rounded-full h-10 w-10 p-0 relative hover:bg-white transition-colors group"
         >
           <Cloud className="w-5 h-5" />
         </Button>

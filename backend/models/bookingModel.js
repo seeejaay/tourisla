@@ -55,9 +55,19 @@ const updateBookingStatus = async (bookingId, status) => {
 // get all bookings for a specific tourist
 const getBookingsByTourist = async (touristId) => {
   const result = await db.query(
-    `SELECT * FROM bookings
-     WHERE tourist_id = $1
-     ORDER BY scheduled_date DESC`,
+    `SELECT b.*, 
+            tp.package_name, 
+            tp.touroperator_id, 
+            toa.operator_name AS tour_operator_name,
+            COALESCE(json_agg(json_build_object('tourguide_id', tga.id, 'first_name', tga.first_name, 'last_name', tga.last_name)) FILTER (WHERE tga.first_name IS NOT NULL), '[]') AS tour_guides
+     FROM bookings b
+     JOIN tour_packages tp ON b.tour_package_id = tp.id
+     LEFT JOIN touroperator_applicants toa ON tp.touroperator_id = toa.id
+     LEFT JOIN tourguide_assignments tgas ON tp.id = tgas.tour_package_id
+     LEFT JOIN tourguide_applicants tga ON tgas.tourguide_id = tga.id
+     WHERE b.tourist_id = $1
+     GROUP BY b.id, tp.package_name, tp.touroperator_id, toa.operator_name
+     ORDER BY b.scheduled_date DESC`,
     [touristId]
   );
   return result.rows;
