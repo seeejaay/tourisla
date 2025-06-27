@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import { fetchFeedbackForEntity, fetchOperatorApplicantByUserId } from "@/lib/api/getFeedback";
-import { fetchOperatorGuideFeedbacks } from "@/lib/api/getOperatorGuideFeedbacks"; // <-- import the new API
 
 export interface Feedback {
   group_id: number;
