@@ -126,13 +126,13 @@ export default function Home() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center mt-12">
               <div className="p-6 bg-white rounded-xl shadow-md border border-[#7b9997]/20">
                 <div className="text-4xl font-bold text-[#1c5461] mb-2">
-                  50+
+                  10+
                 </div>
                 <div className="text-[#51702c]">Beaches</div>
               </div>
               <div className="p-6 bg-white rounded-xl shadow-md border border-[#7b9997]/20">
                 <div className="text-4xl font-bold text-[#1c5461] mb-2">
-                  30+
+                  10+
                 </div>
                 <div className="text-[#51702c]">Hiking Trails</div>
               </div>
