@@ -7,6 +7,7 @@ import {
   Sailboat,
   ChartArea,
   UserPen,
+  ClipboardList
 } from "lucide-react";
 import type { NavItem } from "@/components/custom/sidebar";
 
@@ -83,6 +84,12 @@ const tourismStaffNavigation = (): NavItem[] => {
       href: `/tourism-staff/islandEntry-lookup`,
       title: "Island Entry Check-in",
       icon: UserPen,
+    },
+    {
+      name: "Tourist Spot Feedback",
+      href: `/tourism-staff/spot-feedback`,
+      title: "Tourist Spot Feedback",
+      icon: ClipboardList,
     },
   ];
 };
