@@ -22,6 +22,7 @@ app.use(
       "http://dev.tourisla.local:3000",
       "https://tourisla.vercel.app/",
       "https://tourisla.space",
+      "https://tourisla.space/",
       process.env.CLIENT_URL, // Add this if you want to support env config too
     ],
     credentials: true,
