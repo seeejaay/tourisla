@@ -99,7 +99,9 @@ export default function IslandEntryPage() {
 
       const payload = {
         groupMembers,
-        payment_method: fee?.is_enabled ? values.payment_method.toUpperCase() : "NOT_REQUIRED",
+        payment_method: fee?.is_enabled
+          ? values.payment_method.toUpperCase()
+          : "NOT_REQUIRED",
         total_fee: fee ? fee.amount * groupMembers.length : 0,
       };
 
@@ -160,7 +162,8 @@ export default function IslandEntryPage() {
         {latestEntry && (
           <>
             <p>
-              Your Unique Code: <span className="font-mono">{latestEntry.unique_code}</span>
+              Your Unique Code:{" "}
+              <span className="font-mono">{latestEntry.unique_code}</span>
             </p>
             <img
               src={latestEntry.qr_code_url}
@@ -173,7 +176,9 @@ export default function IslandEntryPage() {
           Show this QR code at the entry point.
         </p>
         <button
-          onClick={() => window.location.href = process.env.NEXT_PUBLIC_FRONTEND_URL || "/"}
+          onClick={() =>
+            (window.location.href = process.env.NEXT_PUBLIC_FRONTEND_URL || "/")
+          }
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
         >
           Back to Home
@@ -395,25 +400,27 @@ export default function IslandEntryPage() {
                 </label>
               </div>
             </div>
-            )}
+          )}
 
-            {showPaymentLink && latestEntry?.payment_link && (
-              <div className="mt-5 text-center space-y-3">
-                <p className="text-sm text-gray-600">Proceed to online payment:</p>
-                <a
-                  href={latestEntry.payment_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold"
-                >
-                  Pay via PayMongo
-                </a> 
-                <p className="text-sm text-gray-500">
-                  After paying, click the button below to confirm.
-                </p>
-                <button
-                  type="button"
-                  onClick={async () => {
+          {showPaymentLink && latestEntry?.payment_link && (
+            <div className="mt-5 text-center space-y-3 bg-red-500">
+              <p className="text-sm text-gray-600">
+                Proceed to online payment:
+              </p>
+              <a
+                href={latestEntry.payment_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold"
+              >
+                Pay via PayMongo
+              </a>
+              <p className="text-sm text-gray-500">
+                After paying, click the button below to confirm.
+              </p>
+              <button
+                type="button"
+                onClick={async () => {
                   try {
                     const updated = await getLatestIslandEntry();
                     setLatestEntry(updated);
@@ -424,23 +431,26 @@ export default function IslandEntryPage() {
                     alert("Something went wrong while confirming payment.");
                   }
                 }}
-
-                  className="mt-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
-                >
-                  Confirm Payment
-                </button>
-              </div>
+                className="mt-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
+              >
+                Confirm Payment
+              </button>
+            </div>
           )}
 
-          {!(formik.values.payment_method === "Online" && hasSubmitted && latestEntry?.payment_link) && (
-          <button
-            type="submit"
-            disabled={loading || !fee}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg w-full font-bold text-lg shadow transition"
-          >
-            {loading ? "Registering..." : "Submit"}
-          </button>
-        )}
+          {!(
+            formik.values.payment_method === "Online" &&
+            hasSubmitted &&
+            latestEntry?.payment_link
+          ) && (
+            <button
+              type="submit"
+              disabled={loading || !fee}
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg w-full font-bold text-lg shadow transition"
+            >
+              {loading ? "Registering..." : "Submit"}
+            </button>
+          )}
         </form>
       </div>
     </>
