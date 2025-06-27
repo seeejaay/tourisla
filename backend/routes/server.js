@@ -919,7 +919,7 @@ app.get(
 // - Staff: can view feedback about them
 app.get(
   "/api/v1/feedback/entity",
-  authenticateTourismOfficer, // <- You can add custom middleware to switch dynamically
+  // authenticateTourismOfficer, // <- You can add custom middleware to switch dynamically
   viewAllFeedbackForEntityController
 );
 
