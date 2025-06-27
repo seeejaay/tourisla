@@ -3,32 +3,16 @@ import {
   submitIncidentReport,
   fetchAllIncidentReports,
   fetchIncidentReportsByUser,
-  updateIncidentStatus,
 } from "@/lib/api/incident";
-export interface IncidentReport {
-  id: number;
-  submitted_by: number | null;
-  role: string;
-  incident_type: string;
-  location: string;
-  incident_date: string;
-  incident_time: string;
-  description: string;
-  photo_url: string | null;
-  submitted_at: string | null;
-  status: "RECEIVED" | "RESOLVED" | "ARCHIVED";
-}
-
 
 export function useIncidentManager() {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [reports, setReports] = useState<IncidentReport[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [reports, setReports] = useState([]);
 
-
-  const submitReport = async (formData: FormData): Promise<IncidentReport> => {
+  const submitReport = async (formData: FormData) => {
     setLoading(true);
     try {
-      const response: IncidentReport = await submitIncidentReport(formData);
+      const response = await submitIncidentReport(formData);
       return response;
     } catch (error) {
       console.error("Failed to submit incident report:", error);
@@ -38,48 +22,24 @@ export function useIncidentManager() {
     }
   };
 
-
-  const getAllReports = async (): Promise<void> => {
+  const getAllReports = async () => {
     try {
-      const data: IncidentReport[] = await fetchAllIncidentReports();
+      const data = await fetchAllIncidentReports();
+      console.log("Fetched incidents:", data);
       setReports(data);
     } catch (error) {
       console.error("Failed to fetch incident reports:", error);
     }
   };
 
-
-  const getMyReports = async (userId: number): Promise<void> => {
+  const getMyReports = async (userId: number) => {
     try {
-      const data: IncidentReport[] = await fetchIncidentReportsByUser(userId);
+      const data = await fetchIncidentReportsByUser(userId);
       setReports(data);
     } catch (error) {
       console.error("Failed to fetch user incident reports:", error);
     }
   };
-
-
-  const changeStatus = async (
-    id: number,
-    status: "RECEIVED" | "RESOLVED" | "ARCHIVED"
-  ): Promise<IncidentReport> => {
-    try {
-      setLoading(true);
-      const updated: { report: IncidentReport } = await updateIncidentStatus(id, status);
-      setReports((prev) =>
-        prev.map((r) =>
-          r.id === id ? { ...r, status: updated.report.status } : r
-        )
-      );
-      return updated.report;
-    } catch (error) {
-      console.error("Failed to update incident status:", error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
 
   return {
     loading,
@@ -87,9 +47,5 @@ export function useIncidentManager() {
     submitReport,
     getAllReports,
     getMyReports,
-    changeStatus,
   };
 }
-
-
-

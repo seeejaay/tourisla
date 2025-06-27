@@ -43,7 +43,7 @@ export const useDocumentManager = () => {
         console.log("Creating document for guide");
         const doc = await uploadGuideDocument(guideId, formData);
         setGuideDocument(doc);
-        console.log("Document created");
+        console.log("Document created:", doc);
         return doc;
       } catch (error: unknown) {
         if (error instanceof Error) {
@@ -64,7 +64,7 @@ export const useDocumentManager = () => {
     async (docuId: string, documentData: FormData) => {
       setLoading(true);
       setError(null);
-      console.log("Sending document data for edit");
+      console.log("Sending document data for edit:", docuId, documentData);
       try {
         const doc = await apiEditGuideDocument(docuId, documentData);
         setGuideDocument(doc);
@@ -81,7 +81,7 @@ export const useDocumentManager = () => {
 
   // Guide: Fetch by ID
   const fetchGuideDocument = useCallback(async (docuId: string) => {
-    console.log("Fetching guide document by ID");
+    console.log("Fetching guide document by ID:", docuId);
     setLoading(true);
     setError(null);
     try {
@@ -103,7 +103,7 @@ export const useDocumentManager = () => {
       console.log("Fetching guide documents by user ID:", guideId);
       const docs = await getGuideDocumentsByUserId(guideId);
       setGuideDocument(docs);
-      console.log("Fetched guide documents");
+      console.log("Fetched guide documents:", docs);
       return docs;
     } catch (error) {
       setError(error + "Unknown error");
@@ -121,7 +121,7 @@ export const useDocumentManager = () => {
         console.log("Creating document for operator");
         const doc = await uploadOperatorDocument(operatorId, formData);
         // setOperatorDocument(doc); // Uncomment if you want to store operator document
-        console.log("Operator document created");
+        console.log("Operator document created:", doc);
         return doc;
       } catch (error: unknown) {
         if (error instanceof Error) {
@@ -141,7 +141,11 @@ export const useDocumentManager = () => {
     async (docuId: string, documentData: FormData) => {
       setLoading(true);
       setError(null);
-      console.log("Sending operator document data for edit");
+      console.log(
+        "Sending operator document data for edit:",
+        docuId,
+        documentData
+      );
       try {
         const doc = await editOperatorUploadDocu(docuId, documentData);
         // setOperatorDocument(doc); // Uncomment if you want to store operator document
@@ -157,7 +161,7 @@ export const useDocumentManager = () => {
   );
 
   const fetchOperatorDocument = useCallback(async (docuId: string) => {
-    console.log("Fetching operator document by ID");
+    console.log("Fetching operator document by ID:", docuId);
     setLoading(true);
     setError(null);
     try {

@@ -9,13 +9,17 @@ export const applyToTourOperator = async (
   reason_for_applying
 ) => {
   try {
-    console.log("Applying to tour operator");
+    console.log("Applying to tour operator:", {
+      tourguide_id,
+      touroperator_id,
+      reason_for_applying,
+    });
     const response = await axios.post(
       `${API_URL}applyToOperator`,
       { tourguide_id, touroperator_id, reason_for_applying },
       { withCredentials: true }
     );
-    console.log("Application response");
+    console.log("Application response:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error applying to tour operator:", error);

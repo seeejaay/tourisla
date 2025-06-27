@@ -68,8 +68,8 @@ export const createAnnouncement = async (announcementData) => {
 
 export const updateAnnouncement = async (announcementId, announcementData) => {
   try {
-    console.log("Sending id to API:");
-    // Log data being sent to the API
+    console.log("Sending id to API:", announcementId);
+    console.log("Sending data", announcementData); // Log data being sent to the API
     const response = await axios.put(
       `${API_URL}announcements/${announcementId}`,
       announcementData,
@@ -84,7 +84,7 @@ export const updateAnnouncement = async (announcementId, announcementData) => {
       );
     }
 
-    console.log("API Response"); // Log the API response
+    console.log("API Response:", response.data); // Log the API response
     return response.data; // Return response data
   } catch (error) {
     console.error(

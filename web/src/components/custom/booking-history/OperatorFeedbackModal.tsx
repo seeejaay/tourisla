@@ -23,28 +23,22 @@ export const OperatorFeedbackModal: React.FC<OperatorFeedbackModalProps> = ({
   operatorId,
   onSubmitted,
 }) => {
-  const [questions, setQuestions] = useState<
-    { id: number; question_text: string }[]
-  >([]);
+  const [questions, setQuestions] = useState<{ id: number; question_text: string }[]>([]);
   const [answers, setAnswers] = useState<{ [id: number]: number }>({});
   const [loading, setLoading] = useState(false);
   const [feedbackGiven, setFeedbackGiven] = useState(false);
 
-  useEffect(() => {
+ useEffect(() => {
     if (open && operatorId) {
-      fetchOperatorFeedbackQuestions().then(setQuestions);
-      setAnswers({});
-      // Check if feedback already given
-      fetchMyOperatorFeedbacks().then(
-        (groups: { feedback_for_user_id: number }[]) => {
-          const found = groups.some(
-            (g) => g.feedback_for_user_id === operatorId
-          );
-          setFeedbackGiven(found);
-        }
-      );
+        fetchOperatorFeedbackQuestions().then(setQuestions);
+        setAnswers({});
+        // Check if feedback already given
+        fetchMyOperatorFeedbacks().then((groups: { feedback_for_user_id: number }[]) => {
+        const found = groups.some((g) => g.feedback_for_user_id === operatorId);
+        setFeedbackGiven(found);
+    });
     }
-  }, [open, operatorId]);
+ }, [open, operatorId]);
 
   const handleSelect = (questionId: number, score: number) => {
     setAnswers((prev) => ({ ...prev, [questionId]: score }));
@@ -60,9 +54,7 @@ export const OperatorFeedbackModal: React.FC<OperatorFeedbackModalProps> = ({
           score: answers[q.id],
         })),
       });
-      if (onSubmitted) {
-        onSubmitted();
-      }
+      onSubmitted && onSubmitted();
       onClose();
     } catch {
       alert("Failed to submit feedback.");
@@ -75,10 +67,7 @@ export const OperatorFeedbackModal: React.FC<OperatorFeedbackModalProps> = ({
   if (feedbackGiven) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div
-          className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-          onClick={onClose}
-        />
+        <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
         <div className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md z-10">
           <button
             className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center rounded-full bg-red-500 text-white text-2xl font-bold shadow hover:bg-red-600 transition"
@@ -88,9 +77,7 @@ export const OperatorFeedbackModal: React.FC<OperatorFeedbackModalProps> = ({
             ×
           </button>
           <h2 className="text-xl font-bold mb-4">Feedback Already Submitted</h2>
-          <div className="text-center text-lg text-green-600 font-semibold">
-            Thank you for your feedback!
-          </div>
+          <div className="text-center text-lg text-green-600 font-semibold">Thank you for your feedback!</div>
         </div>
       </div>
     );
@@ -98,10 +85,7 @@ export const OperatorFeedbackModal: React.FC<OperatorFeedbackModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md z-10">
         <button
           className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center rounded-full bg-red-500 text-white text-2xl font-bold shadow hover:bg-red-600 transition"
@@ -110,11 +94,9 @@ export const OperatorFeedbackModal: React.FC<OperatorFeedbackModalProps> = ({
         >
           ×
         </button>
-        <h2 className="text-xl font-bold mb-4">
-          Leave Feedback for {operatorName}
-        </h2>
+        <h2 className="text-xl font-bold mb-4">Leave Feedback for {operatorName}</h2>
         <form
-          onSubmit={(e) => {
+          onSubmit={e => {
             e.preventDefault();
             handleSubmit();
           }}

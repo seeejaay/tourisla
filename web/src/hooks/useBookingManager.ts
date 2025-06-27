@@ -47,7 +47,7 @@ export function useCreateBooking() {
     setLoading(true);
     setError(null);
     try {
-      console.log("Creating booking with data");
+      console.log("Creating booking with data:", bookingData);
       const result = await createBooking(bookingData);
       return result;
     } catch (err) {
@@ -96,9 +96,9 @@ export function useBookingsByTourist() {
     setLoading(true);
     setError(null);
     try {
-      console.log("Fetching bookings for tourist ID");
+      console.log("Fetching bookings for tourist ID:", touristId);
       const result = await getBookingsByTourist(touristId);
-      console.log("Fetched bookings by tourist");
+      console.log("Fetched bookings by tourist:", result);
       setData(result);
       return result;
     } catch (err) {
@@ -269,7 +269,7 @@ export function useBookingsByOperator() {
     setError(null);
     try {
       const result = await apigetBookingsByOperator(operatorId);
-      console.log("Fetched bookings by operator");
+      console.log("Fetched bookings by operator:", result);
       setData(result);
       return result;
     } catch (err) {

@@ -36,7 +36,7 @@ export default function SignUp() {
   useEffect(() => {
     async function fetchUser() {
       const res = await loggedInUser(router);
-      if (res?.data?.user?.role === "Admin") {
+      if (res?.data?.user?.role?.toLowerCase() === "admin") {
         setIsAdmin(true);
       }
     }

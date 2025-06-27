@@ -146,7 +146,7 @@ export const useTouristSpotManager = () => {
       setLoading(true);
       setError("");
       try {
-        console.log("Assigning tourist spot to staff");
+        console.log("Assigning tourist spot to staff", staffId, touristSpotId);
         const response = await apiAssignAttractionToStaff(
           staffId,
           touristSpotId
