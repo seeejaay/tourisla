@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "900",
-    color: "#075778",
+    color: "#1c5461",
     marginBottom: 16,
   },
   message: {
@@ -147,8 +147,8 @@ const styles = StyleSheet.create({
   },
   code: {
     fontSize: 18,
-    fontWeight: "700",
-    color: "#075778",
+    fontWeight: "900",
+    color: "#237e73",
     fontFamily: "monospace",
     marginVertical: 8,
   },
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   downloadButton: {
-    backgroundColor: "#0ea5e9",
+    backgroundColor: "#24b4ab",
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderRadius: 8,

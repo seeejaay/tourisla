@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, Platform, TouchableOpacity, StyleSheet } from 'react-native';
 import { type VisitorLog } from '@/app/tourist/activity/attraction_history/visitHistory';
 
 interface ViewCardProps {
@@ -31,8 +31,16 @@ export const ViewCard: React.FC<ViewCardProps> = ({
           <Text style={styles.subText}>
             Registration: {new Date(log.registration_date).toLocaleDateString()}
           </Text>
-
-          <View style={styles.buttonRow}>
+        </View>
+        <View style={styles.qrContainer}>
+          <Image
+            source={{ uri: log.qr_code_url }}
+            style={styles.qrImage}
+            resizeMode="contain"
+          />
+        </View>
+      </View>
+      <View style={styles.buttonRow}>
             <TouchableOpacity style={styles.detailsButton} onPress={onClick}>
               <Text style={styles.detailsText}>View Details</Text>
             </TouchableOpacity>
@@ -48,15 +56,7 @@ export const ViewCard: React.FC<ViewCardProps> = ({
                 {feedbackGiven ? 'Feedback Submitted' : 'Leave Feedback'}
               </Text>
             </TouchableOpacity>
-          </View>
         </View>
-
-        <Image
-          source={{ uri: log.qr_code_url }}
-          style={styles.qrImage}
-          resizeMode="contain"
-        />
-      </View>
     </View>
   );
 };
@@ -64,72 +64,88 @@ export const ViewCard: React.FC<ViewCardProps> = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    marginBottom: 16,
-    padding: 12,
-    elevation: 4,
+    borderRadius: 16,
+    marginBottom: 20,
+    padding: 16,
+    elevation: 3,
     shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 3 },
     shadowRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   content: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
+    gap: 8,
   },
   spotName: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '800',
     color: '#0f172a',
+    marginBottom: 4,
   },
   boldText: {
     fontWeight: '600',
     color: '#1f2937',
+    fontSize: 14,
+    marginTop: 2,
   },
   subText: {
     fontSize: 13,
     color: '#475569',
+    marginTop: 2,
   },
   mono: {
-    fontFamily: 'monospace',
+    fontFamily: Platform.select({ ios: 'Courier', android: 'monospace' }),
     color: '#1e293b',
   },
   buttonRow: {
     flexDirection: 'row',
-    marginTop: 10,
-    gap: 8,
-    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginTop: 12,
   },
   detailsButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: '#374151',
-    borderRadius: 6,
+    flex: 1, 
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    backgroundColor: '#64c5a5',
+    borderRadius: 8,
   },
   detailsText: {
     color: '#ffffff',
     fontWeight: '600',
+    fontSize: 14,
+    textAlign: 'center',
   },
   feedbackButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: '#2563eb',
-    borderRadius: 6,
+    flex: 1, 
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    backgroundColor: '#0086ad',
+    borderRadius: 8,
   },
   feedbackText: {
     color: '#ffffff',
     fontWeight: '600',
+    fontSize: 14,
+    textAlign: 'center',
   },
   disabledButton: {
     backgroundColor: '#94a3b8',
   },
+  qrContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   qrImage: {
-    width: 64,
-    height: 64,
-    borderRadius: 6,
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#cbd5e1',
-    marginTop: 4,
   },
 });

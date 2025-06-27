@@ -43,26 +43,46 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
   const renderPackage = ({ item }: { item: TourPackage }) => (
     <View style={styles.packageCard}>
       {item.package_name ? (
-        <Text style={styles.packageName}>{item.package_name}</Text>
+        <Text style={styles.packageName}>
+          {item.package_name
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ')
+          }
+        </Text>
       ) : null}
       {item.location ? (
-        <Text style={styles.packageLocation}>{item.location}</Text>
+        <Text style={styles.packageLocation}>
+        {item.location
+          .toLowerCase()
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
+        }
+      </Text>
       ) : null}
-      {item.description ? (
+      {/* {item.description ? (
         <Text style={styles.packageDescription}>
           {item.description.charAt(0).toUpperCase() + item.description.slice(1).toLowerCase()}
         </Text>
-      ) : null}
+      ) : null} */}
       {item.price ? (
-        <Text style={styles.packagePrice}>Price: ₱{item.price}</Text>
+        <View style={styles.cardFooter}>
+          <View style={styles.packagePriceContainer}>
+            <Text style={styles.packagePrice}>Price:</Text>
+            <Text style={styles.price}>₱{item.price}</Text>
+          </View>
+          <View style={styles.packagePriceContainer}>
+          <TouchableOpacity
+            style={styles.detailsButton}
+            onPress={() => router.push(`/tourist/packages/packages/${item.id}`)}
+          >
+            <Text style={styles.detailsButtonText}>View Details</Text>
+          </TouchableOpacity>
+          </View>
+        </View>
       ) : null}
-
-      <TouchableOpacity
-        style={styles.detailsButton}
-        onPress={() => router.push(`/tourist/packages/packages/${item.id}`)}
-      >
-        <Text style={styles.detailsButtonText}>View Details</Text>
-      </TouchableOpacity>
     </View>
   );
 
@@ -119,35 +139,35 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 34,
     fontWeight: '900',
-    color: '#0f172a',
-    marginVertical: 16,
+    color: '#1c5461',
+    marginTop: 16,
     marginHorizontal: 16,
   },
   intro: {
     fontSize: 16,
     color: '#64748b',
     marginHorizontal: 16,
-    marginBottom: 16,
+    marginBottom: 24,
   },
   listContent: {
     paddingBottom: 24,
   },
   packageCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#daf8e4',
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 1, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOffset: { width: 1, height: 5 },
+    shadowOpacity: 0.4,
     shadowRadius: 4,
-    elevation: 2,
+    elevation: 1,
     marginHorizontal: 16,
   },
   packageName: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#0f172a',
+    fontWeight: '900',
+    color: '#0c5e58',
     marginBottom: 0,
   },
   packageDescription: {
@@ -155,15 +175,31 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginBottom: 8,
   },
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginTop: 12,
+  },
+  packagePriceContainer: {
+    flexDirection: 'column',
+    width: '50%',
+  },
   packagePrice: {
-    fontSize: 14,
-    color: '#0ea5e9',
-    fontWeight: '500',
+    fontSize: 11,
+    color: '#a0b4b8',
+    fontWeight: '900',
+  },
+  price: {
+    fontSize: 22,
+    color: '#1ca949',
+    fontWeight: '900',
   },
   packageLocation: {
     fontSize: 12,
     color: '#737385',
     marginBottom: 20,
+    fontWeight: '600',
   },
   loadingContainer: {
     flex: 1,
@@ -193,15 +229,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   detailsButton: {
-    backgroundColor: '#0ea5e9',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
     borderRadius: 8,
     marginTop: 8,
     alignSelf: 'flex-end',
   },
   detailsButtonText: {
-    color: 'white',
-    fontWeight: '600',
+    color: 'gray',
+    fontWeight: '700',
   },
 });

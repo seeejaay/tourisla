@@ -1,168 +1,338 @@
-import React, { useEffect, useCallback, useState } from "react";
-import { View, Text, FlatList, ActivityIndicator, StyleSheet } from "react-native";
-import { useTourPackageManager } from "@/hooks/useTourPackagesManager";
-import { useAuth } from "@/hooks/useAuth";
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  Platform,
+  Dimensions
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { MaterialCommunityIcons, Feather, FontAwesome5, Entypo, MaterialIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as auth from '@/lib/api/auth';
 
-export default function GuideHome() {
-  const [tourGuideId, setTourGuideId] = useState<number | null>(null);
-  const { loggedInUser } = useAuth();
-  const { fetchTourPackagesByGuide, loading, error } = useTourPackageManager();
-  const [user, setUser] = useState<any>(null); // Adjust type as needed
-  const [packages, setPackages] = useState<any[]>([]);
+const { width } = Dimensions.get('window');
+
+const destinations = [
+  {
+    title: 'Pristine Beaches',
+    description: 'Relax on untouched shores with crystal-clear waters and powdery white sand.',
+    image: require('@/assets/images/nature/sea.jpg'),
+    icon: <FontAwesome5 name="umbrella-beach" size={24} color="#3e979f" />,
+  },
+  {
+    title: 'Jungle Trails',
+    description: 'Explore lush jungle paths leading to breathtaking viewpoints and hidden waterfalls.',
+    image: require('@/assets/images/nature/sun.jpg'),
+    icon: <FontAwesome5 name="leaf" size={24} color="#51702c" />,
+  },
+  {
+    title: 'Marine Adventures',
+    description: 'Discover vibrant coral reefs teeming with tropical fish and marine life.',
+    image: require('@/assets/images/nature/sand.jpg'),
+    icon: <FontAwesome5 name="swimmer" size={24} color="#1c5461" />,
+  },
+];
+
+const locations = [
+  { name: 'Sillon', region: 'North' },
+  { name: 'Bantigue', region: 'East' },
+  { name: 'Montalban', region: 'West' },
+  { name: 'Obo-ob', region: 'South' },
+  { name: 'Santa Fe', region: 'North' },
+  { name: 'Ticad', region: 'East' },
+  { name: 'Sulangan', region: 'West' },
+];
+
+export default function TouristHome() {
+  const router = useRouter();
+  const [userName, setUserName] = useState('');
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   useEffect(() => {
-    let isMounted = true;
-    async function getUserAndGuide() {
-      const fetchedUser = await loggedInUser();
-      if (!isMounted || !fetchedUser) return;
-  
-      setUser(fetchedUser); 
-      console.log("GuideHome fetched user:", fetchedUser);
-      const id = fetchedUser?.data?.user?.user_id;
-      console.log('GuideHome user_id:', id); 
-      setTourGuideId(id);
-    }
-    getUserAndGuide();
-    return () => { isMounted = false; };
-  }, [loggedInUser]);
+    const getUserName = async () => {
+      try {
+        const user = await auth.getCurrentUser();
+        if (user && user.name) {
+          setUserName(user.name.split(' ')[0]);
+        }
+      } catch (error) {
+        console.error('Error getting user name:', error);
+      }
+    };
 
-  const loadPackages = useCallback(async () => {
-    if (!tourGuideId) return;
-    const data = await fetchTourPackagesByGuide(tourGuideId);
-    setPackages(Array.isArray(data?.tourPackages) ? data.tourPackages : []);
-  }, [fetchTourPackagesByGuide, tourGuideId]);
-  console.log("AssignedTourPackagesPage packages:", packages);
-
-  useEffect(() => {
-    loadPackages();
-  }, [loadPackages]);
-
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#3b82f6" />
-        <Text style={styles.loadingText}>Loading assigned tour packages...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.errorTitle}>Error</Text>
-        <Text style={styles.errorMessage}>{error}</Text>
-      </View>
-    );
-  }
-
-  if (packages.length === 0) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.emptyTitle}>No assigned tour packages found</Text>
-        <Text style={styles.emptySubtitle}>You currently have no assigned tour packages.</Text>
-      </View>
-    );
-  }
+    getUserName();
+  }, []);
 
   return (
-    <FlatList
-      data={packages}
-      keyExtractor={(pkg) => pkg.id?.toString()}
-      contentContainerStyle={styles.listContent}
-      ListHeaderComponent={
-        <>
-          <Text style={styles.heading}>Assigned Tour Packages</Text>
-          <Text style={styles.subheading}>View all tour packages assigned to you.</Text>
-        </>
-      }
-      renderItem={({ item: pkg }) => (
-        <View style={styles.card}>
-          <Text style={styles.packageName}>{pkg.package_name}</Text>
-          <Text style={styles.description}>{pkg.description}</Text>
-          <Text style={styles.info}>Location: {pkg.location}</Text>
-          <Text style={styles.info}>Price: ₱{pkg.price}</Text>
-          <Text style={styles.info}>Duration: {pkg.duration_days} days</Text>
-          <Text style={styles.info}>Slots: {pkg.available_slots}</Text>
-          <Text style={styles.date}>{pkg.date_start} – {pkg.date_end}</Text>
+    <View style={[styles.container, { paddingTop: headerHeight }]}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Hero Section */}
+        <View style={styles.heroSection}>
+          <Image
+            source={require('@/assets/images/Bantayan_Map.webp')}
+            style={styles.heroImage}
+          />
+          <View style={styles.heroOverlay} />
+          <View style={styles.heroTextContainer}>
+            <Text style={styles.heroTitle}>Discover Island Paradise</Text>
+            <Text style={styles.heroSubtitle}>
+              Where emerald jungles meet turquoise waters in perfect harmony
+            </Text>
+            <View style={styles.heroButtons}>
+              <TouchableOpacity
+                style={styles.exploreBtn}
+                onPress={() => router.push('/explore')}
+              >
+                <FontAwesome5 name="users" size={16} color="#fff" />
+                <Text style={styles.exploreBtnText}> Explore Accommodation</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.contactBtn}
+                onPress={() => router.push('#contact')}
+              >
+                <Feather name="phone" size={16} color="#fff" />
+                <Text style={styles.contactBtnText}> Contact Us</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-      )}
-    />
+
+        {/* Unique Experiences */}
+        <View style={styles.heroSection2}>
+        <Text style={styles.sectionTitle}>Unique Experiences</Text>
+        {destinations.map((item, index) => (
+          <View key={index} style={styles.card}>
+            <Image source={item.image} style={styles.cardImage} />
+            <View style={styles.iconWrapper}>
+                <View style={styles.iconCircle}>{item.icon}</View>
+            </View>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>{item.title}</Text>
+              <Text style={styles.cardText}>{item.description}</Text>
+            </View>
+          </View>
+        ))}
+        </View>
+
+        {/* Locations */}
+        <View style={styles.heroSection3}>
+        <Text style={styles.sectionTitle}>Bantayan Island</Text>
+        <View style={styles.locationsContainer}>
+          {locations.map((loc, index) => (
+            <View key={index} style={styles.locationBox}>
+              <Text style={styles.locationName}>{loc.name}</Text>
+              <Text style={styles.locationRegion}>{loc.region}</Text>
+            </View>
+          ))}
+        </View>
+        </View>
+      </ScrollView>
+
+      {/* Weather FAB Button */}
+      <TouchableOpacity
+        style={styles.weatherFab}
+        onPress={() => router.push('/guide/weather')}
+        activeOpacity={0.8}
+      >
+        <MaterialCommunityIcons name="weather-partly-cloudy" size={24} color="white" />
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  listContent: {
-    padding: 16,
-    backgroundColor: "transparent",
-    marginTop: 100,
-  },
-  centered: {
+  container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 24,
-    backgroundColor: "#f9fafb",
+    backgroundColor: '#f8fafc'
   },
-  loadingText: {
-    marginTop: 8,
-    color: "#6b7280",
+  scrollContent: {
+    paddingBottom: 80
   },
-  errorTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#ef4444",
+  heroSection: {
+    marginTop: 80,
+    height: 300,
+    overflow: 'hidden',
+    position: 'relative'
   },
-  errorMessage: {
-    color: "#b91c1c",
-    marginTop: 4,
-    textAlign: "center",
+  heroImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+    position: 'absolute'
   },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#111827",
-    marginBottom: 4,
+  heroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(28, 84, 97, 0.6)'
   },
-  emptySubtitle: {
-    color: "#6b7280",
-    textAlign: "center",
+  heroTextContainer: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16
   },
-  heading: {
-    fontSize: 24,
-    fontWeight: "900",
-    color: "#111827",
-    marginBottom: 4,
+  heroTitle: {
+    marginTop: 20,
+    fontSize: 40,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 5
   },
-  subheading: {
+  heroSubtitle: {
     fontSize: 14,
-    color: "#6b7280",
-    marginBottom: 16,
+    color: '#ddddd1',
+    marginBottom: 20
+  },
+  heroButtons: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingHorizontal: 20,
+  },
+  exploreBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#019375',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 2,
+
+  },
+  exploreBtnText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 12,
+
+  },
+  contactBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: '#fff',
+    borderWidth: 1.5,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    justifyContent: 'center',
+  },
+  contactBtnText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    marginLeft: 6,
+    fontSize: 12,
+  },
+  heroSection2: {
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 25,
+    fontWeight: '900',
+    color: '#1c5461',
+    marginVertical: 16,
+    textAlign: 'center'
   },
   card: {
-    backgroundColor: "#ffffff",
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    marginBottom: 12,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    marginBottom: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  packageName: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#111827",
-    marginBottom: 4,
+  cardImage: {
+    width: '100%',
+    height: 180,
+    resizeMode: 'cover'
   },
-  description: {
-    color: "#374151",
-    marginBottom: 8,
+  iconWrapper: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    zIndex: 10
   },
-  info: {
-    color: "#6b7280",
+  iconCircle: {
+    backgroundColor: '#e0f2f1',
+    padding: 10,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  cardContent: {
+    padding: 16
+  },
+  iconBox: {
+    marginBottom: 8
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#1c5461',
+    marginBottom: 6
+  },
+  cardText: {
     fontSize: 14,
+    color: '#51702c'
   },
-  date: {
-    color: "#9ca3af",
+  heroSection3: {
+    paddingVertical: 20,
+    marginBottom: 80,
+    backgroundColor: '#fffff1',
+  },
+  locationsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+  },
+  locationBox: {
+    width: '32%',
+    backgroundColor: '#fff',
+    borderRadius: 6,
+    padding: 10,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 1, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  locationName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#1c5461',
+  },
+  locationRegion: {
     fontSize: 12,
-    marginTop: 8,
+    color: '#7b9997'
   },
+  weatherFab: {
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 40 : 108,
+    left: 8,
+    width: 56,
+    height: 56,
+    borderRadius: 20,
+    backgroundColor: '#24b4ab',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5
+  }
 });
