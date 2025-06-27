@@ -87,3 +87,23 @@ export const fetchMyGuideFeedbacks = async () => {
   });
   return res.data;
 };
+
+// Fetch all feedback for a given type (SPOT, GUIDE, OPERATOR)
+export const fetchAllFeedbackByEntity = async (type, refId = null) => {
+  const res = await axios.get(`${API_URL}feedback/entity`, {
+    params: {
+      type,
+      ref_id: refId,
+    },
+    withCredentials: true,
+  });
+  return res.data;
+};
+
+// Fetch detailed answers for a specific feedback group
+export const fetchFeedbackGroupAnswers = async (groupId) => {
+  const res = await axios.get(`${API_URL}feedback/group/${groupId}`, {
+    withCredentials: true,
+  });
+  return res.data; // [{ question_text, score }]
+};
