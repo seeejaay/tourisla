@@ -8,14 +8,25 @@ import {
   TouchableOpacity,
   Linking,
   Alert,
+  StatusBar,
+  Platform,
 } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { useBookingsByTourist } from '@/hooks/useBookingManager';
 import { useRouter } from 'expo-router';
 import { OperatorFeedbackModal } from "@/components/booking-history/OperatorFeedbackModal";
 import { GuideFeedbackModal } from "@/components/booking-history/GuideFeedbackModal";
+import { FontAwesome5 } from '@expo/vector-icons';
 
-export default function BookingHistoryScreen() {
+interface TourPackageDetailsScreenProps {
+  headerHeight: number;
+}
+
+const STATUS_BAR_HEIGHT =
+  Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0;
+
+export default function BookingHistoryScreen({headerHeight,
+}: TourPackageDetailsScreenProps) {
   const { loggedInUser } = useAuth();
   const [userId, setUserId] = useState<number | null>(null);
   const { 
@@ -46,7 +57,17 @@ export default function BookingHistoryScreen() {
   }, [guideFeedbackOpen]);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={[styles.outerContainer, { paddingTop: headerHeight }]}>
+    <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+    <View style={styles.navbar}>
+      <TouchableOpacity
+        style={styles.navButton}
+        onPress={() => router.back()}
+      >
+        <FontAwesome5 name="arrow-left" size={18} color="#fff" />
+      </TouchableOpacity>
+    </View>
+    <ScrollView contentContainerStyle={styles.scrollContent}>
       <Text style={styles.header}>Booking History</Text>
 
       {loading && (
@@ -80,7 +101,7 @@ export default function BookingHistoryScreen() {
             </Text>
           </View>
 
-          <Text style={styles.item}><Text style={styles.label}>Package:</Text> {booking.package_name || booking.tour_package_id}</Text>
+          <Text style={styles.itemName}>{booking.package_name || booking.tour_package_id}</Text>
           <Text style={styles.item}><Text style={styles.label}>Date:</Text> {new Date(booking.scheduled_date).toLocaleDateString()}</Text>
           <Text style={styles.item}><Text style={styles.label}>Guests:</Text> {booking.number_of_guests}</Text>
           <Text style={styles.item}><Text style={styles.label}>Total:</Text> ₱{booking.total_price}</Text>
@@ -158,63 +179,97 @@ export default function BookingHistoryScreen() {
     />
     )}
     </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    paddingBottom: 40,
-    backgroundColor: '#f9fafb',
+  outerContainer: {
+    flex: 1,
+    backgroundColor: '#f1f5f9',
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 120,
+    marginTop: STATUS_BAR_HEIGHT + 50,
+  },
+  navbar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: STATUS_BAR_HEIGHT + 10,
+    paddingBottom: 10,
+    paddingHorizontal: 16,
+    backgroundColor: "transparent",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  navButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: "rgba(15, 23, 42, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   center: {
     alignItems: 'center',
-    marginVertical: 20,
+    marginVertical: 24,
   },
   header: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#0f172a',
-    marginBottom: 20,
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#1c5461',
+    marginBottom: 24,
     textAlign: 'center',
   },
   loadingText: {
     marginTop: 10,
-    color: '#1e293b',
+    color: '#334155',
+    fontSize: 14,
   },
   errorText: {
     color: '#ef4444',
     textAlign: 'center',
+    fontSize: 14,
+    marginTop: 12,
   },
   empty: {
     color: '#64748b',
     fontSize: 16,
+    textAlign: 'center',
   },
   card: {
     backgroundColor: '#ffffff',
-    padding: 16,
-    marginBottom: 16,
-    borderRadius: 12,
-    elevation: 3,
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 20,
+    elevation: 4,
     shadowColor: '#000',
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.06,
     shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    alignItems: 'center',
+    marginBottom: 12,
   },
   id: {
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '700',
     color: '#2563eb',
   },
   status: {
-    fontWeight: 'bold',
+    fontWeight: '700',
     fontSize: 12,
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    borderRadius: 10,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 12,
     overflow: 'hidden',
     textTransform: 'uppercase',
   },
@@ -232,39 +287,47 @@ const styles = StyleSheet.create({
   },
   item: {
     fontSize: 14,
-    marginBottom: 4,
     color: '#1f2937',
+    lineHeight: 20,
+  },
+  itemName: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0f172a',
   },
   label: {
     fontWeight: '600',
-    color: '#475569',
+    color: '#334155',
   },
   link: {
     color: '#1d4ed8',
     textDecorationLine: 'underline',
-    marginTop: 6,
+    fontSize: 14,
+    marginTop: 8,
+    fontWeight: '500',
   },
   feedbackRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
-    marginTop: 10,
+    justifyContent: 'flex-start',
+    gap: 8,
+    marginTop: 14,
   },
   feedbackButton: {
     backgroundColor: '#059669',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginBottom: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
   },
   feedbackText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
   },
   timestamp: {
-    marginTop: 6,
+    marginTop: 12,
     fontSize: 11,
     color: '#94a3b8',
+    fontStyle: 'italic',
   },
 });
