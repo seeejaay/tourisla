@@ -23,12 +23,12 @@ app.use(
       "http://dev.tourisla.local:3000",
       "https://tourisla.vercel.app",
       "https://tourisla.space",
-
-      process.env.CLIENT_URL, // Add this if you want to support env config too
-    ],
+      process.env.CLIENT_URL,
+    ].filter(Boolean), // <--- This removes undefined/null/empty values
     credentials: true,
   })
 );
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
