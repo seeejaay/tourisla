@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, useCallback } from "react";
-import { useFeedbackManager } from "@/hooks/useFeedbackManager";
+import { useFeedbackManager } from "@/hooks/useOperatorFeedbackManager";
 import { OperatorFeedbackList } from "@/components/custom/feedback/OperatorFeedbackList";
 import { useAuth } from "@/hooks/useAuth";
 
