@@ -150,7 +150,7 @@ export default function TouristAnnouncementsScreen({ headerHeight }: TourPackage
           style={styles.navButton}
           onPress={() => router.back()}
         >
-          <FontAwesome5 name="arrow-left" size={18} color="#fff" />
+          <FontAwesome5 name="arrow-left" size={18} color="#000" />
         </TouchableOpacity>
         </View>
 
@@ -375,15 +375,14 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         zIndex: 10,
-      },
+    },
       navButton: {
         width: 40,
         height: 40,
         borderRadius: 8,
-        backgroundColor: 'rgba(15, 23, 42, 0.7)',
         justifyContent: 'center',
         alignItems: 'center',
-      },
+    },
     safeContainer: {
         flex: 1,
         backgroundColor: '#f8fafc',
