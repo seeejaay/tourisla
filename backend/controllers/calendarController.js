@@ -17,7 +17,6 @@ const authorizeGoogleCalendarController = async (req, res) => {
     }
     const userId = req.user.id;
     const guide = await getGuideRegisById(userId);
-    console.log("Authorizing Google Calendar for guide:", guide);
     if (!guide) {
       return res.status(404).json({ error: "Guide not found." });
     }
@@ -27,7 +26,8 @@ const authorizeGoogleCalendarController = async (req, res) => {
       prompt: "consent",
       state: JSON.stringify({ userId: guide.id }),
     });
-    res.redirect(authUrl);
+    // Instead of res.redirect(authUrl);
+    res.json({ authUrl }); // <--- Send as JSON
   } catch (err) {
     console.error("Error in authorizeGoogleCalendarController:", err);
     res.status(500).json({ error: "Internal server error" });
