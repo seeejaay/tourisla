@@ -50,7 +50,7 @@ export default function ArticleDetailPage() {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gradient-to-b to-[#b6e0e4] via-[#f0f0f0] from-[#e6f7fa]">
+      <div className="min-h-screen ">
         <main className="max-w-5xl mx-auto px-4 pt-32 pb-16">
           {/* Title over image if present */}
           {article.thumbnail_url ? (
@@ -75,8 +75,16 @@ export default function ArticleDetailPage() {
           {/* Author and tags */}
           <div className="mb-6">
             <p className="text-md text-[#1c5461] mb-2">
-              BY:{" "}
+              Posted By:{" "}
               <span className="font-bold">{toTitleCase(article.author)}</span>
+              <span className="text-gray-500">
+                {" | " +
+                  new Date(article.created_at).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+              </span>
             </p>
             {article.tags && (
               <div className="flex flex-wrap gap-2">
@@ -92,6 +100,12 @@ export default function ArticleDetailPage() {
             )}
           </div>
 
+          {/* Content */}
+          <section className="mb-8">
+            <div className=" text-gray-800 text-lg leading-relaxed  text-justify ">
+              {toTitleCase(article.body)}
+            </div>
+          </section>
           {/* Video */}
           {article.video_url && (
             <div className="mb-8">
@@ -107,13 +121,6 @@ export default function ArticleDetailPage() {
               </div>
             </div>
           )}
-
-          {/* Content */}
-          <section>
-            <div className="whitespace-pre-line text-gray-800 text-lg leading-relaxed bg-[#f1f1f1] rounded-xl p-6 shadow-inner">
-              {article.body}
-            </div>
-          </section>
         </main>
       </div>
     </>
