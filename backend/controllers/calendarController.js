@@ -10,23 +10,28 @@ const { getGuideRegisById } = require("../models/guideRegisModel.js");
 // FOR TOUR GUIDES ONLY
 // Redirects user to Google's consent page for Calendar access
 const authorizeGoogleCalendarController = async (req, res) => {
-  console.log("Authorizing Google Calendar for user:", req.session.user);
-  const userId = req.session.user.id;
-  if (!userId) {
-    return res.status(401).json({ error: "Unauthorized access." });
+  try {
+    if (!req.user || !req.user.id) {
+      console.log("No user or user.id in request:", req.user);
+      return res.status(401).json({ error: "Unauthorized access." });
+    }
+    const userId = req.user.id;
+    const guide = await getGuideRegisById(userId);
+    console.log("Authorizing Google Calendar for guide:", guide);
+    if (!guide) {
+      return res.status(404).json({ error: "Guide not found." });
+    }
+    const authUrl = oauth2Client.generateAuthUrl({
+      access_type: "offline",
+      scope: SCOPES,
+      prompt: "consent",
+      state: JSON.stringify({ userId: guide.id }),
+    });
+    res.redirect(authUrl);
+  } catch (err) {
+    console.error("Error in authorizeGoogleCalendarController:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
-  const guide = await getGuideRegisById(userId);
-  console.log("Authorizing Google Calendar for guide:", guide);
-  if (!guide) {
-    return res.status(404).json({ error: "Guide not found." });
-  }
-  const authUrl = oauth2Client.generateAuthUrl({
-    access_type: "offline",
-    scope: SCOPES,
-    prompt: "consent",
-    state: JSON.stringify({ userId: guide.id }),
-  });
-  res.redirect(authUrl);
 };
 
 // Handles Google’s redirect, exchanges code for tokens, saves tokens
