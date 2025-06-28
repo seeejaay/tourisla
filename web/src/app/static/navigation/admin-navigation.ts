@@ -35,18 +35,6 @@ const adminNavigation = [
     icon: Users,
   },
   {
-    name: "Tour Guides",
-    href: "/admin/tour-guides",
-    title: "Tour Guides",
-    icon: BookUser,
-  },
-  {
-    name: "Tour Operators",
-    href: "/admin/tour-operators",
-    title: "Tour Operators",
-    icon: BookUser,
-  },
-  {
     name: "Tourist Spots",
     href: "/admin/tourist-spot",
     title: "Tourist Spots",
