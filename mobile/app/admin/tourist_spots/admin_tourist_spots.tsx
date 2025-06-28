@@ -315,6 +315,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
+    marginTop: 50,
   },
   searchContainer: {
     paddingHorizontal: 16,
@@ -368,7 +369,7 @@ const styles = StyleSheet.create({
     color: '#64748b',
   },
   activeFilterChipText: {
-    color: '#0ea5e9',
+    color: '#1c5c0e',
     fontWeight: '600',
   },
   listContainer: {
@@ -540,11 +541,11 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     right: 16,
-    bottom: Platform.OS === 'ios' ? 140 : 130, // Match the position used in other tourist pages
-    backgroundColor: "#0f172a",
+    bottom: Platform.OS === 'ios' ? 50 : 50, // Match the position used in other tourist pages
+    backgroundColor: "#24b4ab",
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
     elevation: 8,

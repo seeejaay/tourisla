@@ -283,6 +283,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
+    marginTop: 50,
   },
   searchContainer: {
     paddingHorizontal: 16,
@@ -336,7 +337,7 @@ const styles = StyleSheet.create({
     color: '#64748b',
   },
   activeFilterChipText: {
-    color: '#0ea5e9',
+    color: '#1c5c0e',
     fontWeight: '600',
   },
   listContainer: {

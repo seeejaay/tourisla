@@ -1,8 +1,8 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AdminHomeScreen from './home/admin_home';
 import AdminMapScreen from './map/admin_map';
-import AdminAnnouncementsScreen from './announcements/admin_announcements';
-import AdminProfileScreen from './profile/admin_profile';
+import MoreScreen from './more/MoreScreen';
+import AdminProfile from './profile/admin_profile';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { StyleSheet, View, Platform, TouchableOpacity, Image, Text, StatusBar, Dimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
 import * as auth from '@/lib/api/auth';
-import AdminTouristSpotsScreen from './tourist_spots/admin_tourist_spots';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Tab = createBottomTabNavigator();
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -25,8 +25,10 @@ function ProfileHeader() {
     const fetchCurrentUser = async () => {
       try {
         setLoading(true);
+        
+        // First try to get the role from the API
         const response = await auth.currentUser();
-        console.log("User data response:", JSON.stringify(response));
+        console.log("API Response:", JSON.stringify(response));
         
         let userData = null;
         if (response && response.data && response.data.user) {
@@ -39,7 +41,20 @@ function ProfileHeader() {
           userData = response;
         }
         
-        console.log("Extracted user data:", userData);
+        // If no role in the API response, try to get it from AsyncStorage
+        if (userData && !userData.role) {
+          try {
+            const storedRole = await AsyncStorage.getItem('role');
+            if (storedRole) {
+              console.log("Using role from AsyncStorage:", storedRole);
+              userData.role = storedRole;
+            }
+          } catch (storageError) {
+            console.error("Failed to get role from storage:", storageError);
+          }
+        }
+        
+        console.log("Final user data with role:", JSON.stringify(userData));
         setCurrentUser(userData);
       } catch (error) {
         console.error("Failed to fetch user data:", error);
@@ -106,7 +121,7 @@ function ProfileHeader() {
                     : 'Unknown User'}
                 </Text>
                 <Text style={styles.userRole}>
-                  {currentUser ? formatRole(currentUser.role) : 'Unknown Role'}
+                  {currentUser && currentUser.role ? formatRole(currentUser.role) : 'User'}
                 </Text>
               </>
             )}
@@ -129,9 +144,9 @@ function CustomTabBar({ state, descriptors, navigation }) {
     <View style={[styles.customTabBar]}>
       <View style={styles.tabBarBackground}>
         <LinearGradient
-          colors={['#0f172a', '#1e293b']}
+          colors={['#014b55', '#014e65']}
           start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 3 }}
           style={styles.tabBarGradient}
         />
         <View style={styles.tabBarInnerShadow} />
@@ -150,12 +165,13 @@ function CustomTabBar({ state, descriptors, navigation }) {
             iconName = isFocused ? "home" : "home-outline";
           } else if (route.name === 'Map') {
             iconName = isFocused ? "map" : "map-outline";
-          } else if (route.name === 'Announcements') {
-            iconName = isFocused ? "megaphone" : "megaphone-outline";
-          } else if (route.name === 'Tourist Spots') {
-            iconName = isFocused ? "location" : "location-outline";
+          } else if (route.name === 'Activity') {
+            iconName = isFocused ? "pulse" : "pulse-outline";
+          } else if (route.name === 'Packages') {
+            iconName = isFocused ? "calendar-clear" : "calendar-clear-outline";
+          } else if (route.name === 'More') {
+            iconName = isFocused ? "ellipsis-horizontal" : "ellipsis-horizontal-outline";
           }
-          // Removed Hotlines case
           
           const onPress = () => {
             const event = navigation.emit({
@@ -185,7 +201,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
                   <LinearGradient
                     colors={['#f9fbf2', '#afeed5']}
                     start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
+                    end={{ x: 2, y: 0 }}
                     style={styles.activeTabGradient}
                   />
                 </View>
@@ -203,16 +219,6 @@ function CustomTabBar({ state, descriptors, navigation }) {
                   color={isFocused ? '#ffffff' : 'rgba(148, 163, 184, 0.8)'} 
                 />
               </Animated.View>
-              
-              <Text 
-                style={[
-                  styles.tabLabel, 
-                  isFocused ? styles.activeTabLabel : styles.inactiveTabLabel
-                ]}
-                numberOfLines={1}
-              >
-                {label}
-              </Text>
             </TouchableOpacity>
           );
         })}
@@ -233,6 +239,7 @@ export default function AdminDashboard() {
       <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
       <ProfileHeader />
       
+      <View style={styles.tabNavigatorContainer}>
       <Tab.Navigator
         initialRouteName={tab as string || 'Home'}
         tabBar={props => <CustomTabBar {...props} />}
@@ -252,14 +259,19 @@ export default function AdminDashboard() {
         >
           {() => <AdminMapScreen headerHeight={headerHeight} />}
         </Tab.Screen>
-        <Tab.Screen name="Announcements">
-          {() => <AdminAnnouncementsScreen headerHeight={headerHeight} />}
+        <Tab.Screen
+          name="More"
+          options={{ tabBarLabel: 'More' }}
+        >
+          {() => <MoreScreen headerHeight={headerHeight} />}
         </Tab.Screen>
-        <Tab.Screen name="Tourist Spots">
-          {() => <AdminTouristSpotsScreen headerHeight={headerHeight} />}
-        </Tab.Screen>
-        {/* Removed Hotlines Tab.Screen */}
       </Tab.Navigator>
+      </View>
+      <LinearGradient
+          colors={['transparent', '#fff']} // Fade into dark background
+          style={styles.bottomFade}
+          pointerEvents="none"
+        />
     </View>
   );
 }
@@ -348,10 +360,10 @@ const styles = StyleSheet.create({
   },
   customTabBar: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 40 : 30,
+    bottom: Platform.OS === 'ios' ? 40 : 40,
     left: 8,
     right: 8,
-    height: 80,
+    height: 60,
     zIndex: 100,
   },
   tabBarBackground: {
@@ -419,16 +431,22 @@ const styles = StyleSheet.create({
   activeTabIconContainer: {
     backgroundColor: 'rgba(27, 229, 188, 0.15)',
   },
-  tabLabel: {
-    fontSize: 11,
-    marginTop: 4,
-    textAlign: 'center',
-  },
   activeTabLabel: {
     color: '#ffffff',
     fontWeight: '600',
   },
   inactiveTabLabel: {
-    color: 'rgba(148, 163, 184, 0.8)',
+    color: 'rgba(148, 163, 184, 0.9)',
+  },
+  tabNavigatorContainer: {
+    flex: 1,
+  },
+  bottomFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: Platform.OS === 'ios' ? 0 : 0,
+    height: 80,
+    zIndex: 10,
   },
 });

@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   contentContainer: {
-    backgroundColor: '#0f172a',
+    backgroundColor: '#0c5e58',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     marginTop: -24,
@@ -599,9 +599,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   descriptionContainer: {
-    backgroundColor: '#1e293b',
-    borderRadius: 16,
-    padding: 20,
     marginBottom: 16,
   },
   descriptionLabel: {
@@ -611,14 +608,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   descriptionText: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 14,
+    lineHeight: 18,
     color: '#cbd5e1',
   },
   feeContainer: {
-    backgroundColor: '#1e293b',
-    borderRadius: 16,
-    padding: 20,
     marginBottom: 16,
   },
   feeLabel: {
@@ -630,7 +624,6 @@ const styles = StyleSheet.create({
   feeContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   feeText: {
     fontSize: 16,
@@ -645,9 +638,6 @@ const styles = StyleSheet.create({
     marginLeft: 22,
   },
   daysContainer: {
-    backgroundColor: '#1e293b',
-    borderRadius: 16,
-    padding: 20,
     marginBottom: 16,
   },
   daysLabel: {
@@ -732,7 +722,7 @@ const styles = StyleSheet.create({
   rulesContainer: {
     backgroundColor: '#1e293b',
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
     marginBottom: 16,
   },
   rulesLabel: {
@@ -742,8 +732,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   rulesText: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 14,
+    lineHeight: 18,
     color: '#cbd5e1',
   },
   paginationContainer: {

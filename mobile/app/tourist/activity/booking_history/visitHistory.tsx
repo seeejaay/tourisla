@@ -17,6 +17,7 @@ import { useRouter } from 'expo-router';
 import { OperatorFeedbackModal } from "@/components/booking-history/OperatorFeedbackModal";
 import { GuideFeedbackModal } from "@/components/booking-history/GuideFeedbackModal";
 import { FontAwesome5 } from '@expo/vector-icons';
+import { cancelBooking } from '@/lib/api/booking';
 
 interface TourPackageDetailsScreenProps {
   headerHeight: number;
@@ -157,6 +158,37 @@ export default function BookingHistoryScreen({headerHeight,
 
           <Text style={styles.timestamp}>Booked: {new Date(booking.created_at).toLocaleString()}</Text>
           <Text style={styles.timestamp}>Updated: {new Date(booking.updated_at).toLocaleString()}</Text>
+          {(booking.status === 'APPROVED' || booking.status === 'PENDING') && (
+            <TouchableOpacity
+              style={[styles.feedbackButton, { backgroundColor: '#dc2626', marginTop: 12 }]}
+              onPress={() => {
+                Alert.alert(
+                  "Cancel Booking?",
+                  "Are you sure you want to cancel this booking?",
+                  [
+                    { text: "No", style: "cancel" },
+                    {
+                      text: "Yes",
+                      style: "destructive",
+                      onPress: async () => {
+                        try {
+                          const result = await cancelBooking(booking.id);
+                          Alert.alert("Cancelled", result.message || "Booking cancelled successfully");
+                          if (userId) fetchByTourist(userId);
+                        } catch (err) {
+                          Alert.alert("Error", err?.response?.data?.error || "Failed to cancel.");
+                        }
+                      },
+                    },
+                  ]
+                );
+              }
+            }
+            >
+              <Text style={styles.feedbackText}>Cancel Booking</Text>
+            </TouchableOpacity>
+          )}
+
         </View>
       ))}
     {operatorFeedbackOpen && (
@@ -315,7 +347,7 @@ const styles = StyleSheet.create({
   },
   feedbackButton: {
     backgroundColor: '#059669',
-    paddingVertical: 8,
+    paddingVertical: 12,
     paddingHorizontal: 14,
     borderRadius: 10,
   },

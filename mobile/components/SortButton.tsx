@@ -19,7 +19,7 @@ export default function SortButton({ sortOption, setSortOption }: SortButtonProp
     <View>
       <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
         <Pressable style={styles.sortButton} onPress={() => setModalVisible(true)}>
-            <FontAwesome name="sort" size={24} color="#fff" />
+            <FontAwesome name="sort" size={24} color="#4c4c4c" />
         </Pressable>
       </View>
 
@@ -43,7 +43,7 @@ export default function SortButton({ sortOption, setSortOption }: SortButtonProp
                   setModalVisible(false);
                 }}
               >
-                <Text style={{ color: sortOption === option.value ? "#fff" : "#374151" }}>
+                <Text style={{ color: sortOption === option.value ? "#fff" : "#374151", fontWeight: "900" }}>
                   {option.label}
                 </Text>
               </Pressable>
@@ -57,11 +57,15 @@ export default function SortButton({ sortOption, setSortOption }: SortButtonProp
 
 const styles = StyleSheet.create({
   sortButton: {
-    backgroundColor: "#38bdf8",
-    paddingVertical: 8,
+    height: '100%',
+    width: 55,
+    backgroundColor: "#fff",
+    paddingVertical: 16,
     paddingHorizontal: 16,
     borderRadius: 14,
-    alignSelf: "flex-start",
+    borderWidth: 1,
+    borderColor: '#ececee',
+    alignItems: "center",
   },
   overlay: {
     flex: 1,
@@ -73,22 +77,23 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 12,
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
-    marginTop: 140,
-    paddingVertical: 10,
-    paddingHorizontal: 5,
-    gap: 5,
+    marginTop: 90,
+    gap: 2,
+    padding: 5,
     width: 180,
-    marginRight: 24,
+    marginRight: 20,
     alignSelf: "flex-end",
   },
   optionButton: {
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: 10,
-    backgroundColor: "#f3f4f6",
+    borderRadius: 8,
+    borderColor: '#ececee',
+    borderWidth: 1,
     alignItems: "flex-end",
+    overflow: "hidden",
   },
   selectedOption: {
-    backgroundColor: "#38bdf8",
+    backgroundColor: "#00bbbb",
   },
 });

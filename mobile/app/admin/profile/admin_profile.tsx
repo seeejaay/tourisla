@@ -214,7 +214,7 @@ export default function AdminProfile() {
     <View style={styles.container}>
       {/* Header with gradient background */}
       <LinearGradient
-        colors={['#23a9f2', '#0f172a']}
+        colors={['#44eebb', '#13404d']}
         start={{ x: 1, y: 2 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -338,7 +338,7 @@ export default function AdminProfile() {
               {/* Email card */}
               <View style={styles.infoCard}>
                 <View style={styles.infoIconContainer}>
-                  <Feather name="mail" size={20} color="#38bdf8" />
+                  <Feather name="mail" size={20} color="#64c5a5" />
                 </View>
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>Email</Text>
@@ -352,7 +352,7 @@ export default function AdminProfile() {
               {/* Phone card */}
               <View style={styles.infoCard}>
                 <View style={styles.infoIconContainer}>
-                  <Feather name="phone" size={20} color="#38bdf8" />
+                  <Feather name="phone" size={20} color="#64c5a5" />
                 </View>
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>Phone</Text>
@@ -366,7 +366,7 @@ export default function AdminProfile() {
               {/* Nationality card */}
               <View style={styles.infoCard}>
                 <View style={styles.infoIconContainer}>
-                  <Feather name="flag" size={20} color="#38bdf8" />
+                  <Feather name="flag" size={20} color="#64c5a5" />
                 </View>
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>Nationality</Text>
@@ -377,7 +377,7 @@ export default function AdminProfile() {
               {/* Account type card */}
               <View style={styles.infoCard}>
                 <View style={styles.infoIconContainer}>
-                  <Feather name="user" size={20} color="#38bdf8" />
+                  <Feather name="user" size={20} color="#64c5a5" />
                 </View>
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>Account Type</Text>
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
     height: 86,
     borderRadius: 43,
     borderWidth: 2,
-    borderColor: '#38bdf8',
+    borderColor: '#64c5a5',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 3,
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
   profileImageInitials: {
     fontSize: 30,
     fontWeight: 'bold',
-    color: '#38bdf8',
+    color: '#64c5a5',
   },
   statsContainer: {
     flex: 1,

@@ -8,13 +8,17 @@ import {
     Modal, 
     SafeAreaView,
     TextInput,
+    Platform,
+    Dimensions,
+    TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useEffect, useState, useCallback } from "react";
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from "react-native-vector-icons/Feather";
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import SortButton from "../../../components/SortButton";
-import { fetchAnnouncements } from "../../../lib/api/announcement";
+import { fetchAnnouncements, deleteAnnouncement } from "../../../lib/api/announcement";
 import { LinearGradient } from 'expo-linear-gradient';
 
 interface Announcement {
@@ -23,43 +27,80 @@ interface Announcement {
     description: string;
     location: string;
     category: string;
-    date_posted: string; // Assuming this is a string in ISO format
+    date_posted: string;
 }
 
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
+const { width, height } = Dimensions.get('window');
 
-export default function TouristAnnouncementsScreen({ headerHeight }) {
+interface TourPackageDetailsScreenProps {
+    headerHeight: number;
+}
+
+export default function TouristAnnouncementsScreen({ headerHeight }: TourPackageDetailsScreenProps) {
     const router = useRouter();
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [sortOption, setSortOption] = useState("newest");
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedAnnouncementId, setSelectedAnnouncementId] = useState<string | null>(null);
+
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [showFilters, setShowFilters] = useState(false);
 
+    // Function to get category color
+    const getCategoryColor = (category: string) => {
+        const colors: Record<string, string> = {
+            EVENTS: "#4f46e5",
+            FIESTA: "#f59e0b",
+            CULTURAL_TOURISM: "#10b981",
+            ENVIRONMENTAL_COASTAL: "#059669",
+            HOLIDAY_SEASONAL: "#f97316",
+            GOVERNMENT_PUBLIC_SERVICE: "#6366f1",
+            STORM_SURGE: "#dc2626",
+            TSUNAMI: "#b91c1c",
+            GALE_WARNING: "#ef4444",
+            MONSOON_LOW_PRESSURE: "#7c3aed",
+            RED_TIDE: "#c026d3",
+            JELLYFISH_BLOOM: "#8b5cf6",
+            FISH_KILL: "#ec4899",
+            PROTECTED_WILDLIFE: "#14b8a6",
+            OIL_SPILL: "#4b5563",
+            COASTAL_EROSION: "#78716c",
+            CORAL_BLEACHING: "#f43f5e",
+            HEAT_WAVE: "#f97316",
+            FLOOD_LANDSLIDE: "#0ea5e9",
+            DENGUE_WATERBORNE: "#84cc16",
+            POWER_INTERRUPTION: "#64748b",
+        };
+        
+        return colors[category] || "#6b7280";
+    };
+
     useFocusEffect(
         useCallback(() => {
-          const loadData = async () => {
-            setLoading(true);
-            try {
-              console.log("Loading tourist announcements data...");
-              const data = await fetchAnnouncements();
-              console.log(`Received ${data?.length || 0} tourist announcements`);
-              setAnnouncements(data || []);
-              setError(null);
-            } catch (err) {
-              console.error("Failed to fetch tourist announcements", err);
-              // Don't show the error to the user
-              console.log("Error suppressed from UI");
-              // Set empty array to avoid showing previous data
-              setAnnouncements([]);
-            } finally {
-              setLoading(false);
-            }
-          };
-      
-          loadData();
+            const loadData = async () => {
+                setLoading(true);
+                try {
+                    console.log("Loading announcements data...");
+                    const data = await fetchAnnouncements();
+                    console.log(`Received ${data?.length || 0} announcements`);
+                    setAnnouncements(data || []);
+                    setError("");
+                } catch (err) {
+                    console.error("Failed to fetch announcements", err);
+                    // Don't show the error to the user
+                    console.log("Error suppressed from UI");
+                    // Set empty array to avoid showing previous data
+                    setAnnouncements([]);
+                } finally {
+                    setLoading(false);
+                }
+            };
+        
+            loadData();
         }, [])
     );
 
@@ -82,32 +123,60 @@ export default function TouristAnnouncementsScreen({ headerHeight }) {
         return 0;
     });
 
+    const handleDelete = async () => {
+        if (!selectedAnnouncementId) return;
+
+        try {
+            await deleteAnnouncement(selectedAnnouncementId);
+            setAnnouncements((prev) => prev.filter((item) => item.id !== selectedAnnouncementId));
+            setModalVisible(false);
+        } catch (err) {
+            console.error("Failed to delete announcement", err);
+        }
+    };
+
+    const openDeleteModal = (id: string) => {
+        setSelectedAnnouncementId(id);
+        setModalVisible(true);
+    };
+
     return (
         <SafeAreaView style={styles.safeContainer}>
         <View style={styles.container}>
 
+        <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+        <View style={styles.navbar}>
+        <TouchableOpacity 
+          style={styles.navButton}
+          onPress={() => router.back()}
+        >
+          <FontAwesome5 name="arrow-left" size={18} color="#fff" />
+        </TouchableOpacity>
+        </View>
+
             <ScrollView
             style={[styles.scrollView, { marginTop: headerHeight }]}
             contentContainerStyle={{ paddingBottom: 120 }}
+            showsVerticalScrollIndicator={false}
             >
 
             {/* Filter Tags in Grid Layout */}
-            <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
+            <View style={{ paddingHorizontal: 16, paddingTop: 10,borderWidth: 1.5, backgroundColor: '#f8fafc', borderColor: '#ececee', borderRadius: 0, marginBottom: 12 }}>
                 {/* Search and Sort Row */}
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                    <View style={[styles.searchContainer, { flex: 1 }]}>
-                        <Icon name="search" size={16} color="#6b7280" style={{ marginRight: 8 }} />
+                <View style={[styles.searchContainer]}>
+                <View style={styles.searchRow}>
+                    <View style={styles.searchInputContainer}>
+                        <Icon name="search" size={16} color="#0c5e58" style={{ marginRight: 8 }} />
                         <TextInput
-                            style={styles.searchInput}
+                            style={[styles.searchInput, { fontSize: 14 }]}
                             placeholder="Search announcements..."
                             placeholderTextColor="#9ca3af"
                             value={searchQuery}
                             onChangeText={setSearchQuery}
                         />
                     </View>
-                    
-                    {/* Sorting Options */}
                     <SortButton sortOption={sortOption || "recent"} setSortOption={setSortOption} />
+                </View>
                 </View>
                 
                 {/* Filter Toggle Button Row */}
@@ -194,10 +263,8 @@ export default function TouristAnnouncementsScreen({ headerHeight }) {
             <View style={styles.contentContainer}>
                 {loading ? (
                 <Text style={styles.message}>Loading...</Text>
-                ) : error ? (
-                <Text style={styles.error}>{error}</Text>
                 ) : filteredAnnouncements.length === 0 ? (
-                <Text style={styles.message}>No announcements found.</Text>
+                <Text style={styles.message}>No announcements available at this time.</Text>
                 ) : (
                 filteredAnnouncements.map((item) => (
                     <Pressable 
@@ -206,28 +273,43 @@ export default function TouristAnnouncementsScreen({ headerHeight }) {
                         onPress={() => router.push(`/guide/announcements/guide_announcement_view?id=${item.id}`)}
                     >
                         <LinearGradient
-                            colors={['#0f172a', '#1e293b']}
+                            colors={['#fff', '#fff']}
                             style={styles.cardGradient}
                         />
                         
                         <View style={styles.cardContent}>
-                            <View style={[
-                                styles.categoryIndicator, 
-                                getCategoryColor(item.category)
-                            ]} />
+                            {/* Left color indicator */}
+                            <View 
+                                style={[
+                                    styles.categoryIndicator, 
+                                    { backgroundColor: getCategoryColor(item.category) }
+                                ]} 
+                            />
                             
-                            {/* Main content section */}
+                            {/* Main content */}
                             <View style={styles.mainContent}>
                                 <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">
-                                    {item.title}
+                                    {item.title
+                                        .replace(/_/g, " ")
+                                        .toLowerCase()
+                                        .replace(/\b\w/g, (char) => char.toUpperCase())
+                                    }
                                 </Text>
                                 <Text style={styles.categoryText}>
-                                    {item.category.replace(/_/g, " ")}
+                                    {item.category
+                                        .replace(/_/g, " ")
+                                        .toLowerCase()
+                                        .replace(/\b\w/g, (char) => char.toUpperCase())
+                                    }
                                 </Text>
                             </View>
                             
-                            {/* Right section with date */}
+                            {/* Right section with actions */}
                             <View style={styles.rightSection}>
+                                {/* Action buttons */}
+                                <View style={styles.actionButtons}>
+                                </View>
+                                
                                 {/* Date at bottom right */}
                                 <Text style={styles.dateText} numberOfLines={1} ellipsizeMode="tail">
                                     {new Date(item.date_posted).toLocaleDateString("en-US", {
@@ -243,64 +325,86 @@ export default function TouristAnnouncementsScreen({ headerHeight }) {
                 )}
             </View>
             </ScrollView>
+
+            {/* Delete Modal */}
+            <Modal
+                visible={modalVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContainer}>
+                        <Text style={styles.modalTitle}>Confirm Delete</Text>
+                        <Text style={styles.modalMessage}>
+                            Are you sure you want to delete this announcement?
+                        </Text>
+                        <View style={styles.modalActions}>
+                            <Pressable
+                                style={styles.modalCancelButton}
+                                onPress={() => setModalVisible(false)}
+                            >
+                                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+                            </Pressable>
+                            <Pressable
+                                style={styles.modalDeleteButton}
+                                onPress={handleDelete}
+                            >
+                                <Text style={styles.modalDeleteButtonText}>Delete</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
         </SafeAreaView>
     );
 }
 
-// Function to get category color
-const getCategoryColor = (category: string) => {
-    const colors: Record<string, object> = {
-        EVENTS: { backgroundColor: '#4f46e5' },
-        FIESTA: { backgroundColor: '#f59e0b' },
-        CULTURAL_TOURISM: { backgroundColor: '#10b981' },
-        ENVIRONMENTAL_COASTAL: { backgroundColor: '#059669' },
-        HOLIDAY_SEASONAL: { backgroundColor: '#f97316' },
-        GOVERNMENT_PUBLIC_SERVICE: { backgroundColor: '#6366f1' },
-        STORM_SURGE: { backgroundColor: '#dc2626' },
-        TSUNAMI: { backgroundColor: '#b91c1c' },
-        GALE_WARNING: { backgroundColor: '#ef4444' },
-        MONSOON_LOW_PRESSURE: { backgroundColor: '#7c3aed' },
-        RED_TIDE: { backgroundColor: '#c026d3' },
-        JELLYFISH_BLOOM: { backgroundColor: '#8b5cf6' },
-        FISH_KILL: { backgroundColor: '#ec4899' },
-        PROTECTED_WILDLIFE: { backgroundColor: '#14b8a6' },
-        OIL_SPILL: { backgroundColor: '#4b5563' },
-        COASTAL_EROSION: { backgroundColor: '#78716c' },
-        CORAL_BLEACHING: { backgroundColor: '#f43f5e' },
-        HEAT_WAVE: { backgroundColor: '#f97316' },
-        FLOOD_LANDSLIDE: { backgroundColor: '#0ea5e9' },
-        DENGUE_WATERBORNE: { backgroundColor: '#84cc16' },
-        POWER_INTERRUPTION: { backgroundColor: '#64748b' },
-    };
-    
-    return colors[category] || { backgroundColor: '#6b7280' };
-};
-
 const styles = StyleSheet.create({
+    navbar: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingTop: STATUS_BAR_HEIGHT + 10,
+        paddingBottom: 10,
+        paddingHorizontal: 16,
+        backgroundColor: 'transparent',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 10,
+      },
+      navButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 8,
+        backgroundColor: 'rgba(15, 23, 42, 0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
     safeContainer: {
         flex: 1,
-        backgroundColor: "#f8fafc",
+        backgroundColor: '#f8fafc',
     },
     container: {
         flex: 1,
-        backgroundColor: "#f8fafc",
+        backgroundColor: '#f8fafc',
     },
+
     scrollView: {
         flex: 1,
         marginTop: 50 + STATUS_BAR_HEIGHT,
     },
     contentContainer: {
-        padding: 16,
+        paddingHorizontal: 16,
     },
     card: {
         borderRadius: 12,
-        marginBottom: 12,
-        shadowColor: "#000",
-        shadowOpacity: 0.15,
-        shadowRadius: 5,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 3,
+        marginBottom: 6,
+        borderColor: '#ececee',
+        borderWidth: 1,
         overflow: 'hidden',
         position: 'relative',
     },
@@ -324,19 +428,17 @@ const styles = StyleSheet.create({
     },
     mainContent: {
         flex: 1,
-        paddingVertical: 16,
         paddingHorizontal: 16,
         justifyContent: 'center',
     },
     cardTitle: {
         fontSize: 16,
-        fontWeight: "bold",
-        color: "#ffffff",
-        marginBottom: 4,
+        fontWeight: "900",
+        color: "#000",
     },
     categoryText: {
         fontSize: 12,
-        color: '#8ecae6',
+        color: '#000',
         fontWeight: '500',
     },
     rightSection: {
@@ -347,26 +449,15 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
         paddingVertical: 12,
     },
+    actionButtons: {
+        flexDirection: 'row',
+        gap: 8,
+    },
     dateText: {
         fontSize: 11,
-        color: '#a8dadc',
-        fontWeight: '400',
+        color: '#4c4c4c',
+        fontWeight: '800',
         maxWidth: 90,
-    },
-    searchContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#e5e7eb",
-        borderRadius: 12,
-        paddingHorizontal: 12,
-        marginBottom: 10,
-        marginTop: 8,
-        height: 40,
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: 14,
-        color: "#111827",
     },
     message: {
         textAlign: "center",
@@ -380,10 +471,95 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "red",
     },
+    modalOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+    },
+    modalContainer: {
+        width: "80%",
+        backgroundColor: "#ffffff",
+        borderRadius: 12,
+        padding: 20,
+        alignItems: "center",
+        elevation: 5,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: "bold",
+        marginBottom: 10,
+    },
+    modalMessage: {
+        fontSize: 14,
+        color: "#374151",
+        textAlign: "center",
+        marginBottom: 20,
+    },
+    modalActions: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        width: "100%",
+    },
+    modalCancelButton: {
+        flex: 1,
+        backgroundColor: "#6c757d",
+        padding: 10,
+        borderRadius: 6,
+        marginRight: 5,
+        alignItems: "center",
+    },
+    modalCancelButtonText: {
+        color: "#ffffff",
+        fontWeight: "bold",
+    },
+    modalDeleteButton: {
+        flex: 1,
+        backgroundColor: "#dc3545",
+        padding: 10,
+        borderRadius: 6,
+        marginLeft: 5,
+        alignItems: "center",
+    },
+    modalDeleteButtonText: {
+        color: "#ffffff",
+        fontWeight: "bold",
+    },
+    searchContainer: {
+        marginTop: STATUS_BAR_HEIGHT + 50,
+        backgroundColor: '#f8fafc',
+        zIndex: 10,
+      },
+      searchRow: {
+        flexDirection: 'row',
+        alignItems: 'center', 
+        justifyContent: 'space-between', 
+        marginBottom: 12, // Add spacing below the row
+      },
+      searchInputContainer: {
+        flex: 1, // Allow the search input to take up available space
+        flexDirection: 'row', // Align the search icon and input horizontally
+        alignItems: 'center', // Vertically center the icon and input
+        backgroundColor: '#ffffff',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#ececee',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        marginRight: 8, // Add spacing between the search input and SortButton
+      },
+      searchIcon: {
+        marginRight: 8, // Add spacing between the icon and the input text
+      },
+      searchInput: {
+        flex: 1, // Allow the input to take up remaining space in the container
+        fontSize: 16,
+        color: '#0f172a',
+      },
     filterContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 12,
+        gap: 4,
         marginBottom: 12,
     },
     filterTag: {
@@ -396,7 +572,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     filterTagSelected: {
-        backgroundColor: '#1194fe',
+        backgroundColor: '#b6a59e',
     },
     filterTagText: {
         fontSize: 10,
@@ -410,7 +586,7 @@ const styles = StyleSheet.create({
     },
     clearFiltersButton: {
         backgroundColor: '#6c757d',
-        paddingVertical: 8,
+        paddingVertical: 16,
         paddingHorizontal: 16,
         borderRadius: 20,
         justifyContent: 'center',
@@ -422,26 +598,18 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     filterToggleRow: {
-        marginBottom: 12,
+
+        marginVertical: 12,
     },
     filterToggleButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#f1f5f9',
-        paddingVertical: 8,
-        paddingHorizontal: 12,
         borderRadius: 8,
         alignSelf: 'flex-start',
         position: 'relative',
-        // Shadow for Android
-        elevation: 2,
-        shadowColor: "#000",
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 2 },
     },
     filterToggleText: {
-        color: '#475569',
+        color: '#1c5461',
         fontSize: 14,
         fontWeight: '900',
     },
@@ -462,14 +630,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     filtersSection: {
-        backgroundColor: '#f8fafc',
-        borderRadius: 8,
-        padding: 12,
         marginBottom: 12,
-        elevation: 2,
-        shadowColor: "#000",
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 2 },
     },
 });

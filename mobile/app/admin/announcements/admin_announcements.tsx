@@ -9,11 +9,14 @@ import {
     SafeAreaView,
     TextInput,
     Platform,
+    Dimensions,
+    TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useEffect, useState, useCallback } from "react";
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from "react-native-vector-icons/Feather";
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import SortButton from "../../../components/SortButton";
 import { fetchAnnouncements, deleteAnnouncement } from "../../../lib/api/announcement";
 import { LinearGradient } from 'expo-linear-gradient';
@@ -28,8 +31,13 @@ interface Announcement {
 }
 
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
+const { width, height } = Dimensions.get('window');
 
-export default function AdminAnnouncementsScreen({ headerHeight = 50 }) {
+interface TourPackageDetailsScreenProps {
+    headerHeight: number;
+}
+
+export default function AdminAnnouncementsScreen({ headerHeight }: TourPackageDetailsScreenProps) {
     const router = useRouter();
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
@@ -136,7 +144,15 @@ export default function AdminAnnouncementsScreen({ headerHeight = 50 }) {
         <SafeAreaView style={styles.safeContainer}>
         <View style={styles.container}>
 
-            {/* Header removed */}
+        <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+        <View style={styles.navbar}>
+        <TouchableOpacity 
+          style={styles.navButton}
+          onPress={() => router.back()}
+        >
+          <FontAwesome5 name="arrow-left" size={18} color="#fff" />
+        </TouchableOpacity>
+        </View>
 
             <ScrollView
             style={[styles.scrollView, { marginTop: headerHeight }]}
@@ -145,22 +161,22 @@ export default function AdminAnnouncementsScreen({ headerHeight = 50 }) {
             >
 
             {/* Filter Tags in Grid Layout */}
-            <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
+            <View style={{ paddingHorizontal: 16, paddingTop: 10,borderWidth: 1.5, backgroundColor: '#f8fafc', borderColor: '#ececee', borderRadius: 0, marginBottom: 12 }}>
                 {/* Search and Sort Row */}
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                    <View style={[styles.searchContainer, { flex: 1 }]}>
-                        <Icon name="search" size={16} color="#6b7280" style={{ marginRight: 8 }} />
+                <View style={[styles.searchContainer]}>
+                <View style={styles.searchRow}>
+                    <View style={styles.searchInputContainer}>
+                        <Icon name="search" size={16} color="#0c5e58" style={{ marginRight: 8 }} />
                         <TextInput
-                            style={styles.searchInput}
+                            style={[styles.searchInput, { fontSize: 14 }]}
                             placeholder="Search announcements..."
                             placeholderTextColor="#9ca3af"
                             value={searchQuery}
                             onChangeText={setSearchQuery}
                         />
                     </View>
-                    
-                    {/* Sorting Options */}
                     <SortButton sortOption={sortOption || "recent"} setSortOption={setSortOption} />
+                </View>
                 </View>
                 
                 {/* Filter Toggle Button Row */}
@@ -257,7 +273,7 @@ export default function AdminAnnouncementsScreen({ headerHeight = 50 }) {
                         onPress={() => router.push(`/admin/announcements/admin_announcement_view?id=${item.id}`)}
                     >
                         <LinearGradient
-                            colors={['#0f172a', '#1e293b']}
+                            colors={['#fff', '#fff']}
                             style={styles.cardGradient}
                         />
                         
@@ -273,10 +289,18 @@ export default function AdminAnnouncementsScreen({ headerHeight = 50 }) {
                             {/* Main content */}
                             <View style={styles.mainContent}>
                                 <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">
-                                    {item.title}
+                                    {item.title
+                                        .replace(/_/g, " ")
+                                        .toLowerCase()
+                                        .replace(/\b\w/g, (char) => char.toUpperCase())
+                                    }
                                 </Text>
                                 <Text style={styles.categoryText}>
-                                    {item.category.replace(/_/g, " ")}
+                                    {item.category
+                                        .replace(/_/g, " ")
+                                        .toLowerCase()
+                                        .replace(/\b\w/g, (char) => char.toUpperCase())
+                                    }
                                 </Text>
                             </View>
                             
@@ -363,6 +387,28 @@ export default function AdminAnnouncementsScreen({ headerHeight = 50 }) {
 }
 
 const styles = StyleSheet.create({
+    navbar: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingTop: STATUS_BAR_HEIGHT + 10,
+        paddingBottom: 10,
+        paddingHorizontal: 16,
+        backgroundColor: 'transparent',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 10,
+      },
+      navButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 8,
+        backgroundColor: 'rgba(15, 23, 42, 0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
     safeContainer: {
         flex: 1,
         backgroundColor: '#f8fafc',
@@ -377,16 +423,13 @@ const styles = StyleSheet.create({
         marginTop: 50 + STATUS_BAR_HEIGHT,
     },
     contentContainer: {
-        padding: 16,
+        paddingHorizontal: 16,
     },
     card: {
         borderRadius: 12,
-        marginBottom: 12,
-        shadowColor: "#000",
-        shadowOpacity: 0.15,
-        shadowRadius: 5,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 3,
+        marginBottom: 6,
+        borderColor: '#ececee',
+        borderWidth: 1,
         overflow: 'hidden',
         position: 'relative',
     },
@@ -410,19 +453,17 @@ const styles = StyleSheet.create({
     },
     mainContent: {
         flex: 1,
-        paddingVertical: 16,
         paddingHorizontal: 16,
         justifyContent: 'center',
     },
     cardTitle: {
         fontSize: 16,
-        fontWeight: "bold",
-        color: "#ffffff",
-        marginBottom: 4,
+        fontWeight: "900",
+        color: "#000",
     },
     categoryText: {
         fontSize: 12,
-        color: '#8ecae6',
+        color: '#000',
         fontWeight: '500',
     },
     rightSection: {
@@ -439,8 +480,8 @@ const styles = StyleSheet.create({
     },
     dateText: {
         fontSize: 11,
-        color: '#a8dadc',
-        fontWeight: '400',
+        color: '#4c4c4c',
+        fontWeight: '800',
         maxWidth: 90,
     },
     editButton: {
@@ -466,11 +507,11 @@ const styles = StyleSheet.create({
     fab: {
         position: "absolute",
         right: 16,
-        bottom: Platform.OS === 'ios' ? 140 : 130, 
-        backgroundColor: "#0f172a",
+        bottom: Platform.OS === 'ios' ? 50 : 50, // Match the position used in other tourist pages 
+        backgroundColor: "#24b4ab",
         width: 56,
         height: 56,
-        borderRadius: 28,
+        borderRadius: 16,
         justifyContent: "center",
         alignItems: "center",
         elevation: 8,
@@ -547,24 +588,40 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
     searchContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#e5e7eb",
+        marginTop: STATUS_BAR_HEIGHT + 50,
+        backgroundColor: '#f8fafc',
+        zIndex: 10,
+      },
+      searchRow: {
+        flexDirection: 'row',
+        alignItems: 'center', 
+        justifyContent: 'space-between', 
+        marginBottom: 12, // Add spacing below the row
+      },
+      searchInputContainer: {
+        flex: 1, // Allow the search input to take up available space
+        flexDirection: 'row', // Align the search icon and input horizontally
+        alignItems: 'center', // Vertically center the icon and input
+        backgroundColor: '#ffffff',
         borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#ececee',
         paddingHorizontal: 12,
-        marginBottom: 10,
-        marginTop: 8,
-        height: 40,
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: 14,
-        color: "#111827",
-    },
+        paddingVertical: 8,
+        marginRight: 8, // Add spacing between the search input and SortButton
+      },
+      searchIcon: {
+        marginRight: 8, // Add spacing between the icon and the input text
+      },
+      searchInput: {
+        flex: 1, // Allow the input to take up remaining space in the container
+        fontSize: 16,
+        color: '#0f172a',
+      },
     filterContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 12,
+        gap: 4,
         marginBottom: 12,
     },
     filterTag: {
@@ -577,7 +634,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     filterTagSelected: {
-        backgroundColor: '#1194fe',
+        backgroundColor: '#b6a59e',
     },
     filterTagText: {
         fontSize: 10,
@@ -591,7 +648,7 @@ const styles = StyleSheet.create({
     },
     clearFiltersButton: {
         backgroundColor: '#6c757d',
-        paddingVertical: 8,
+        paddingVertical: 16,
         paddingHorizontal: 16,
         borderRadius: 20,
         justifyContent: 'center',
@@ -603,20 +660,18 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     filterToggleRow: {
-        marginBottom: 12,
+
+        marginVertical: 12,
     },
     filterToggleButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#f1f5f9',
-        paddingVertical: 8,
-        paddingHorizontal: 12,
         borderRadius: 8,
         alignSelf: 'flex-start',
         position: 'relative',
     },
     filterToggleText: {
-        color: '#475569',
+        color: '#1c5461',
         fontSize: 14,
         fontWeight: '900',
     },
@@ -637,14 +692,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     filtersSection: {
-        backgroundColor: '#f8fafc',
-        borderRadius: 8,
-        padding: 12,
         marginBottom: 12,
-        elevation: 2,
-        shadowColor: "#000",
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 2 },
     },
 });
