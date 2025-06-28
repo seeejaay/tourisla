@@ -5,19 +5,17 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  ActivityIndicator,
   StyleSheet,
-  Platform,
   Dimensions,
   StatusBar
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useArticleManager } from "@/hooks/useArticleManager";
 import { Article } from "@/static/article/useArticleSchema";
-import { FontAwesome5 } from "@expo/vector-icons";
+import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 interface TourPackageDetailsScreenProps {
     headerHeight: number;
@@ -48,151 +46,274 @@ export default function CultureScreen({ headerHeight }: TourPackageDetailsScreen
 
   return (
     <View style={styles.container}>
-    <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-    <View style={styles.navbar}>
-    <TouchableOpacity 
-      style={styles.navButton}
-      onPress={() => router.back()}
-    >
-      <FontAwesome5 name="arrow-left" size={18} color="#fff" />
-    </TouchableOpacity>
-    </View>
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Featured Section */}
-      {featured.length > 0 && (
+      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      
+      {/* Enhanced Header */}
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="chevron-back" size={24} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Cultural Articles</Text>
+        <View style={{ width: 24 }} /> {/* Spacer for balance */}
+      </View>
+
+      <ScrollView 
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Featured Section - Now with horizontal scroll */}
+        {featured.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Featured Articles</Text>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.featuredContainer}
+            >
+              {featured.map((article) => (
+                <TouchableOpacity
+                  key={article.id}
+                  style={styles.featuredCard}
+                  onPress={() => router.push(`/tourist/culture/${article.id}`)}
+                >
+                  {article.thumbnail_url && (
+                    <Image 
+                      source={{ uri: article.thumbnail_url }} 
+                      style={styles.featuredThumbnail} 
+                    />
+                  )}
+                  <View style={styles.featuredTextContainer}>
+                    <Text style={styles.featuredTitle} numberOfLines={2}>{article.title}</Text>
+                    <Text style={styles.featuredAuthor}>By {article.author}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Regular Articles - Vertical List with "View All" button */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🌟 Featured Articles</Text>
-          {featured.map((article) => (
+          <View style={styles.moreHeader}>
+            <Text style={styles.sectionTitle}>More to Explore</Text>
+            <TouchableOpacity onPress={() => router.push("/tourist/culture")}>
+              <Text style={styles.viewAllText}>See All</Text>
+            </TouchableOpacity>
+          </View>
+
+          {paginatedRegular.slice(0, 3).map((article) => (
             <TouchableOpacity
               key={article.id}
-              style={styles.card}
-              onPress={() => router.push(`/articles/${article.id}`)}
+              style={styles.articleCardVertical}
+              onPress={() => router.push(`/tourist/culture/${article.id}`)}
             >
               {article.thumbnail_url && (
-                <Image source={{ uri: article.thumbnail_url }} style={styles.thumbnail} />
+                <Image 
+                  source={{ uri: article.thumbnail_url }} 
+                  style={styles.articleThumbnailVertical} 
+                />
               )}
-              <Text style={styles.title}>{article.title}</Text>
-              <Text style={styles.author}>By {article.author}</Text>
+              <View style={styles.articleTextVertical}>
+                <Text style={styles.articleTitle} numberOfLines={2}>
+                  {article.title.replace(/\b\w/g, char => char.toUpperCase())}
+                </Text>
+                <Text style={styles.articleTags} numberOfLines={2}>
+                  {article.tags?.split(',').map(tag => tag.trim()).join(' • ')}
+                </Text>
+                <Text style={styles.articleAuthor}>By {article.author}</Text>
+              </View>
             </TouchableOpacity>
           ))}
-        </View>
-      )}
 
-      {/* Regular Articles Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>More Articles</Text>
-        {paginatedRegular.map((article) => (
-          <TouchableOpacity
-            key={article.id}
-            style={styles.card}
-            onPress={() => router.push(`/articles/${article.id}`)}
-          >
-            {article.thumbnail_url && (
-              <Image source={{ uri: article.thumbnail_url }} style={styles.thumbnail} />
+          {/* Modern Pagination */}
+          <View style={styles.pagination}>
+            {page > 1 && (
+              <TouchableOpacity 
+                onPress={() => setPage((p) => p - 1)} 
+                style={[styles.paginationButton, styles.prevButton]}
+              >
+                <Ionicons name="chevron-back" size={16} color="#1d4ed8" />
+                <Text style={styles.paginationButtonText}>Previous</Text>
+              </TouchableOpacity>
             )}
-            <Text style={styles.title}>{article.title}</Text>
-            <Text style={styles.author}>By {article.author}</Text>
-          </TouchableOpacity>
-        ))}
-
-        {/* Pagination Controls */}
-        <View style={styles.pagination}>
-          {page > 1 && (
-            <TouchableOpacity onPress={() => setPage((p) => p - 1)} style={styles.button}>
-              <Text style={styles.buttonText}>Previous</Text>
-            </TouchableOpacity>
-          )}
-          {hasMore && (
-            <TouchableOpacity onPress={() => setPage((p) => p + 1)} style={styles.button}>
-              <Text style={styles.buttonText}>Load More</Text>
-            </TouchableOpacity>
-          )}
+            {hasMore && (
+              <TouchableOpacity 
+                onPress={() => setPage((p) => p + 1)} 
+                style={[styles.paginationButton, styles.nextButton]}
+              >
+                <Text style={styles.paginationButtonText}>Load More</Text>
+                <Ionicons name="chevron-forward" size={16} color="#1d4ed8" />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  navbar: {
+  container: {
+    flex: 1,
+    backgroundColor: "#f8fafc",
+  },
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: STATUS_BAR_HEIGHT + 10,
-    paddingBottom: 10,
-    paddingHorizontal: 16,
-    backgroundColor: 'transparent',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-},
-  navButton: {
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    backgroundColor: '#0f172a',
+  },
+  backButton: {
     width: 40,
     height: 40,
-    borderRadius: 8,
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  container: {
-    paddingHorizontal: 16,
-    paddingTop: 20,
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  scrollContainer: {
     paddingBottom: 40,
-    backgroundColor: "#f9fafb",
   },
   section: {
-    marginBottom: 32,
+    marginBottom: 24,
+    paddingHorizontal: 16,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "700",
-    color: "#1e40af",
-    marginBottom: 12,
-  },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 12,
+    fontWeight: '700',
+    color: '#1e293b',
     marginBottom: 16,
+    marginTop: 8,
+  },
+  featuredContainer: {
+    paddingBottom: 8,
+  },
+  featuredCard: {
+    width: width * 0.75,
+    marginRight: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
     elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
   },
-  thumbnail: {
-    width: "100%",
-    height: 180,
-    borderRadius: 10,
-    marginBottom: 8,
+  featuredThumbnail: {
+    width: '100%',
+    height: 160,
   },
-  title: {
+  featuredTextContainer: {
+    padding: 12,
+  },
+  featuredTitle: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#111827",
+    fontWeight: '600',
+    color: '#1e293b',
     marginBottom: 4,
   },
-  author: {
+  featuredAuthor: {
     fontSize: 12,
-    color: "#6b7280",
+    color: '#64748b',
+  },
+  articlesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  articleCard: {
+    width: '48%',
+    marginBottom: 16,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 4,
+  },
+  articleThumbnail: {
+    width: '100%',
+    height: 120,
+  },
+  articleTextContainer: {
+    padding: 10,
+  },
+  articleTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1e293b',
+    marginBottom: 4,
+  },
+  articleAuthor: {
+    fontSize: 11,
+    color: '#64748b',
   },
   pagination: {
-    flexDirection: "row",
-    justifyContent: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 24,
     gap: 12,
-    marginTop: 16,
   },
-  button: {
+  paginationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor: "#1d4ed8",
-    borderRadius: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#fff',
   },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "600",
+  prevButton: {
+    paddingRight: 12,
   },
+  nextButton: {
+    paddingLeft: 12,
+  },
+  paginationButtonText: {
+    fontSize: 14,
+    color: '#1d4ed8',
+    fontWeight: '500',
+  },
+  moreHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  viewAllText: {
+    fontSize: 14,
+    color: '#979a9f',
+    fontWeight: '700',
+  },
+  articleCardVertical: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  articleThumbnailVertical: {
+    width: 120,
+    height: 100,
+  },
+  articleTextVertical: {
+    flex: 1,
+    padding: 10,
+    justifyContent: 'center',
+  },  
+
 });

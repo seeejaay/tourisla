@@ -208,7 +208,7 @@ export default function AdminAnnouncementViewScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: '#00365e',
   },
   navbar: {
     flexDirection: 'row',
@@ -296,11 +296,11 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '800',
     color: '#fff',
-    marginBottom: 12,
-    lineHeight: 32,
+    marginBottom: 6,
+    lineHeight: 25,
   },
   locationContainer: {
     flexDirection: 'row',
@@ -308,25 +308,22 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   locationText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#cbd5e1',
     marginLeft: 8,
   },
   descriptionContainer: {
-    backgroundColor: '#1e293b',
-    borderRadius: 16,
-    padding: 16,
     marginBottom: 16,
   },
   descriptionLabel: {
     fontSize: 18,
     fontWeight: '700',
     color: '#fff',
-    marginBottom: 12,
+    marginBottom: 6,
   },
   descriptionText: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 14,
+    lineHeight: 20,
     color: '#cbd5e1',
   },
   loadingContainer: {
