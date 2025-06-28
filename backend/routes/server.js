@@ -801,7 +801,7 @@ app.get(
 // Routes for Google Calendar integration
 app.get(
   "/api/v1/calendar/authorize",
-
+  allowedRoles(["Tour Guide"]),
   authorizeGoogleCalendarController
 );
 app.get(
