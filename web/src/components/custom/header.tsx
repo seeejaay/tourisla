@@ -6,9 +6,16 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { navigation } from "@/app/static/navigation";
-import { Menu, X, Megaphone } from "lucide-react";
+import { Menu, X, Megaphone, ChevronDown } from "lucide-react";
 import Pill from "@/components/custom/pill";
 import WeatherWidget from "@/components/custom/weather";
+
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 export default function Header() {
   const pathName = usePathname();
@@ -28,10 +35,10 @@ export default function Header() {
   return (
     <>
       <nav
-        className={`fixed w-full z-30 transition-all duration-300 ${
+        className={`fixed w-full z-30 transition-all duration-300 bg-white ${
           scrolled
-            ? "bg-white/95 backdrop-blur-md shadow-sm py-2"
-            : "bg-transparent py-4"
+            ? "bg-white/95 backdrop-blur-md shadow-md py-2"
+            : "bg-gradient-to-b from-[#e6f7fa]/80 to-transparent py-4"
         }`}
       >
         <div className="container mx-auto px-4 flex justify-between items-center">
@@ -42,8 +49,9 @@ export default function Header() {
               alt="Tourisla Logo"
               width={128}
               height={128}
-              className="hover:scale-105 transition-transform duration-300 cursor-pointer"
+              className="hover:scale-110 transition-transform duration-300 cursor-pointer "
               onClick={() => router.push("/")}
+              priority
             />
           </div>
 
@@ -52,45 +60,76 @@ export default function Header() {
             <div className="flex space-x-6">
               {navigation.map((item) =>
                 item.dropdown ? (
-                  <div key={item.tag} className="relative group">
+                  <div
+                    key={item.tag}
+                    className="relative flex items-center group"
+                  >
+                    {/* Parent Link */}
                     <Link
-                      href={item.href}
-                      className="font-semibold text-blue-600"
+                      href={item.href || "#"}
+                      className={`font-semibold px-3 py-2 rounded-lg transition-colors flex items-center gap-1
+              ${
+                pathName === item.href
+                  ? "bg-[#3e979f]/10 text-[#3e979f]"
+                  : "text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] focus:bg-[#e6f7fa] focus:text-[#3e979f]"
+              }
+            `}
                     >
                       {item.title}
                     </Link>
-                    <div className="absolute left-0 mt-2 w-40 bg-white rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50">
-                      {item.dropdown.map((sub) => (
-                        <Link
-                          key={sub.tag}
-                          href={sub.href}
-                          className="block px-4 py-2 hover:bg-indigo-50"
+                    {/* Dropdown Trigger */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          className="ml-1 px-1 py-2 rounded-lg hover:bg-[#e6f7fa] focus:bg-[#e6f7fa] transition-colors"
+                          tabIndex={0}
+                          aria-label={`Show ${item.title} menu`}
+                          type="button"
                         >
-                          {sub.title}
-                        </Link>
-                      ))}
-                    </div>
+                          <ChevronDown className="w-4 h-4 text-[#1c5461] group-hover:text-[#3e979f]" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        className="w-48 mt-2 bg-white rounded-xl shadow-lg border border-[#e6f7fa]"
+                        align="start"
+                      >
+                        {item.dropdown.map((sub) => (
+                          <DropdownMenuItem asChild key={sub.tag}>
+                            <Link
+                              href={sub.href}
+                              className="block px-4 py-2 rounded-lg transition-colors text-[#51702c] font-medium hover:bg-[#e6f7fa] hover:text-[#3e979f] focus:bg-[#e6f7fa] focus:text-[#3e979f]"
+                            >
+                              {sub.title}
+                            </Link>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 ) : (
                   <Link
                     key={item.tag}
                     href={item.href}
-                    className="font-semibold text-blue-600"
+                    className={`font-semibold px-3 py-2 rounded-lg transition-colors ${
+                      pathName === item.href
+                        ? "bg-[#3e979f]/10 text-[#3e979f]"
+                        : "text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] focus:bg-[#e6f7fa] focus:text-[#3e979f]"
+                    }`}
                   >
                     {item.title}
                   </Link>
                 )
               )}
             </div>
-            <div className="flex items-center gap-2 bg-neutral-100 rounded-full transition-all duration-200  ease-in-out">
+            <div className="flex items-center gap-2 bg-[#e6f7fa] rounded-full px-3 py-1 shadow-inner">
               <Pill />
               <Button
                 variant="ghost"
-                className="rounded-full h-10 w-10 p-0 relative hover:bg-white transition-colors group"
+                className="rounded-full h-10 w-10 p-0 relative hover:bg-[#3e979f]/10 transition-colors group"
                 onClick={() => router.push("/announcements")}
                 aria-label="Announcements"
               >
-                <Megaphone className="w-6 h-6" />
+                <Megaphone className="w-6 h-6 text-[#1c5461] group-hover:text-[#3e979f] transition" />
               </Button>
               <WeatherWidget />
             </div>
@@ -101,15 +140,15 @@ export default function Header() {
             <Pill className="mr-2" />
             <WeatherWidget />
             <Button
-              className="lg:hidden hover:bg-gray-100 rounded-full w-10 h-10 p-2 cursor-pointer transition-all duration-200 flex items-center justify-center"
+              className="lg:hidden hover:bg-[#e6f7fa] rounded-full w-10 h-10 p-2 cursor-pointer transition-all duration-200 flex items-center justify-center"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Menu"
               variant={"ghost"}
             >
               {isMobileMenuOpen ? (
-                <X className="w-5 h-5 text-gray-700" />
+                <X className="w-5 h-5 text-[#1c5461]" />
               ) : (
-                <Menu className="w-5 h-5 text-gray-700" />
+                <Menu className="w-5 h-5 text-[#1c5461]" />
               )}
             </Button>
           </div>
@@ -122,7 +161,7 @@ export default function Header() {
             onClick={() => setIsMobileMenuOpen(false)}
           >
             <div
-              className="absolute top-20 right-4 w-64 bg-white rounded-xl shadow-xl p-4 transition-all duration-300 transform translate-y-0"
+              className="absolute top-20 right-4 w-72 bg-white rounded-2xl shadow-2xl p-6 transition-all duration-300 transform translate-y-0 border border-[#e6f7fa]"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex flex-col space-y-2">
@@ -136,7 +175,7 @@ export default function Header() {
                           )
                         }
                         variant={"ghost"}
-                        className={`w-full justify-start px-4 py-3 rounded-lg text-left text-gray-700 hover:bg-gray-100`}
+                        className="w-full justify-start px-4 py-3 rounded-lg text-left text-[#1c5461] hover:bg-[#e6f7fa] font-semibold"
                       >
                         {item.title}
                       </Button>
@@ -151,7 +190,7 @@ export default function Header() {
                                 setOpenDropdown(null);
                               }}
                               variant={"ghost"}
-                              className="w-full justify-start px-4 py-2 rounded-lg text-left text-gray-600 hover:bg-indigo-50"
+                              className="w-full justify-start px-4 py-2 rounded-lg text-left text-[#51702c] hover:bg-[#e6f7fa] font-medium"
                             >
                               {sub.title}
                             </Button>
@@ -170,8 +209,8 @@ export default function Header() {
                       variant={"ghost"}
                       className={`w-full justify-start px-4 py-3 rounded-lg text-left ${
                         pathName === item.href
-                          ? "bg-blue-50 text-blue-600 font-medium"
-                          : "text-gray-700 hover:bg-gray-100"
+                          ? "bg-[#3e979f]/10 text-[#3e979f] font-semibold"
+                          : "text-[#1c5461] hover:bg-[#e6f7fa]"
                       }`}
                     >
                       {item.title}
@@ -183,8 +222,6 @@ export default function Header() {
           </div>
         )}
       </nav>
-      {/* Spacer to account for fixed header */}
-      <div className="h-20 lg:h-24"></div>
     </>
   );
 }

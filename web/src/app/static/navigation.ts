@@ -22,19 +22,26 @@ export const navigation = [
     title: "Culture",
   },
   {
+    tag: "Registration",
+    title: "Registration",
+    href: "#",
+    dropdown: [
+      {
+        tag: "Visitor Registration",
+        href: "/visitor-registration",
+        title: "Visitor Registration",
+      },
+      {
+        tag: "Island Entry Registration",
+        href: "/islandEntry-regis",
+        title: "Island Entry Registration",
+      },
+    ],
+  },
+  {
     tag: "Tour Packages",
     href: "/tour-packages",
     title: "Tour Packages",
-  },
-  {
-    tag: "Visitor Registration",
-    href: "/visitor-registration",
-    title: "Visitor Registration",
-  },
-  {
-    tag: "Island Entry Registration",
-    href: "/islandEntry-regis",
-    title: "Island Entry Registration",
   },
   {
     tag: "Incident Report",
