@@ -214,7 +214,7 @@ export default function TouristProfile() {
     <View style={styles.container}>
       {/* Header with gradient background */}
       <LinearGradient
-        colors={['#23a9f2', '#0f172a']}
+        colors={['#44eebb', '#13404d']}
         start={{ x: 1, y: 2 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
     height: 86,
     borderRadius: 43,
     borderWidth: 2,
-    borderColor: '#38bdf8',
+    borderColor: '#64c5a5',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 3,
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
   profileImageInitials: {
     fontSize: 30,
     fontWeight: 'bold',
-    color: '#38bdf8',
+    color: '#64c5a5',
   },
   statsContainer: {
     flex: 1,

@@ -26,7 +26,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 // Use the exact path you specified
 const mapImage = require("../../../assets/maps/cebu_tourist_map.webp");
 
-export default function AdminMapScreen({ headerHeight }) {
+export default function TouristMapScreen({ headerHeight }) {
   const [fullscreenVisible, setFullscreenVisible] = useState(false);
   const [downloadLoading, setDownloadLoading] = useState(false);
 
@@ -144,7 +144,7 @@ export default function AdminMapScreen({ headerHeight }) {
                   color="#ffffff"
                   style={styles.downloadIcon}
                 />
-                <Text style={styles.downloadText}>Save Map to Gallery</Text>
+                <Text style={styles.downloadText}>Download Map to Gallery</Text>
               </>
             )}
           </TouchableOpacity>
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     fontSize: 24,
     fontWeight: "900",
-    color: "#0f172a",
+    color: "#1c5461",
     marginVertical: 16,
   },
   scrollView: {
@@ -221,6 +221,7 @@ const styles = StyleSheet.create({
     position: "relative",
     borderRadius: 8,
     overflow: "hidden",
+    backgroundColor: "#000",
   },
   mapImage: {
     width: SCREEN_WIDTH - 32,
@@ -265,8 +266,8 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   downloadButton: {
-    backgroundColor: "#0ea5e9",
-    borderRadius: 8,
+    backgroundColor: "#24b4ab",
+    borderRadius: 20,
     paddingVertical: 12,
     paddingHorizontal: 16,
     flexDirection: "row",

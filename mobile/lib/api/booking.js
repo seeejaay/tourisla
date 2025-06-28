@@ -187,9 +187,13 @@ export const getFilteredBookingsByTourist = async (touristId, filter) => {
 export const cancelBooking = async (bookingId) => {
   try {
     console.log("API Cancelling Booking with ID:", bookingId);
-    const response = await axios.put(`${API_URL}bookings/${bookingId}/cancel`, {
-      withCredentials: true,
-    });
+    const response = await axios.put(
+      `${API_URL}bookings/${bookingId}/cancel`,
+      {}, // empty body (if needed)
+      {
+        withCredentials: true, // <-- now placed correctly
+      }
+    );
     if (response.status < 200 || response.status >= 300) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
     }
