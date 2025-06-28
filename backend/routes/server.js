@@ -13,22 +13,6 @@ const { allowedRoles } = require("../middleware/middleware.js");
 const db = require("../db/index.js");
 const cors = require("cors");
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "http://192.168.0.130:3000",
-      "http://192.168.0.135:3000",
-      "http://192.168.0.130",
-      "http://dev.tourisla.local:3000",
-      "https://tourisla.vercel.app",
-      "https://tourisla.space",
-      process.env.CLIENT_URL,
-    ].filter(Boolean), // <--- This removes undefined/null/empty values
-    credentials: true,
-  })
-);
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -47,6 +31,21 @@ app.use(
       httpOnly: true, // <-- MUST be true for security and browser compatibility
       maxAge: 1000 * 60 * 60 * 24,
     },
+  })
+);
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "http://192.168.0.130:3000",
+      "http://192.168.0.135:3000",
+      "http://192.168.0.130",
+      "http://dev.tourisla.local:3000",
+      "https://tourisla.vercel.app",
+      "https://tourisla.space",
+      process.env.CLIENT_URL,
+    ].filter(Boolean), // <--- This removes undefined/null/empty values
+    credentials: true,
   })
 );
 
