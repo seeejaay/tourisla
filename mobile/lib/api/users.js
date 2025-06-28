@@ -3,9 +3,7 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const fetchUsers = async () => {
   try {
-    // Ensure the URL has the correct format with a trailing slash
-    const baseUrl = API_URL.endsWith('/') ? API_URL : `${API_URL}/`;
-    const response = await axios.get(`${baseUrl}users`, {
+    const response = await axios.get(`${API_URL}users`, {
       withCredentials: true,
     });
     if (response.status !== 200) {
@@ -21,8 +19,7 @@ export const fetchUsers = async () => {
 export const createUser = async (userData) => {
   try {
     console.log("Sending user data to API:", userData);
-    const url = getApiUrl('users'); // Use getApiUrl helper
-    const response = await axios.post(url, userData, {
+    const response = await axios.post(`${API_URL}users`, userData, {
       withCredentials: true,
     });
     if (response.status !== 201) {
@@ -58,30 +55,21 @@ export const viewOneUser = async (userId) => {
 
 export const editUser = async (userData) => {
   try {
-    console.log("Payload sent to API:", userData); // Debug log
-    
-    if (!userData.user_id) {
-      throw new Error("User ID is required for updating a user");
-    }
-    
-    const url = getApiUrl(`users/${userData.user_id}`);
-    console.log("API URL:", url);
-    
-    const response = await axios.put(url, userData, {
-      withCredentials: true,
-    });
-    
-    console.log("API response:", response.data); // Debug log
-    
+    const response = await axios.put(
+      `${API_URL}users/${userData.user_id}`,
+      userData,
+      {
+        withCredentials: true,
+      }
+    );
     if (response.status !== 200) {
       throw new Error(
         `Failed to edit user. Server responded with status: ${response.status}`
       );
     }
-    
     return response.data;
   } catch (error) {
-    console.error("Error editing user:", error.response?.data || error.message); // Debug log
+    console.error("Error editing user:", error.response?.data || error.message);
     throw error;
   }
 };

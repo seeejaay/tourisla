@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 import { useArticleManager } from "@/hooks/useArticleManager";
 import { Article } from "@/static/article/useArticleSchema";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
 const { width } = Dimensions.get('window');
@@ -47,19 +48,14 @@ export default function CultureScreen({ headerHeight }: TourPackageDetailsScreen
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      
-      {/* Enhanced Header */}
-      <View style={styles.header}>
+      <View style={styles.navbar}>
         <TouchableOpacity 
-          style={styles.backButton}
+          style={styles.navButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="chevron-back" size={24} color="#fff" />
+          <FontAwesome5 name="arrow-left" size={18} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Cultural Articles</Text>
-        <View style={{ width: 24 }} /> {/* Spacer for balance */}
-      </View>
-
+        </View>
       <ScrollView 
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
@@ -67,7 +63,7 @@ export default function CultureScreen({ headerHeight }: TourPackageDetailsScreen
         {/* Featured Section - Now with horizontal scroll */}
         {featured.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Featured Articles</Text>
+            <Text style={styles.mainTitle}>Featured Articles</Text>
             <ScrollView 
               horizontal 
               showsHorizontalScrollIndicator={false}
@@ -75,21 +71,29 @@ export default function CultureScreen({ headerHeight }: TourPackageDetailsScreen
             >
               {featured.map((article) => (
                 <TouchableOpacity
-                  key={article.id}
-                  style={styles.featuredCard}
-                  onPress={() => router.push(`/tourist/culture/${article.id}`)}
-                >
-                  {article.thumbnail_url && (
-                    <Image 
-                      source={{ uri: article.thumbnail_url }} 
-                      style={styles.featuredThumbnail} 
+                key={article.id}
+                style={styles.featuredCard}
+                onPress={() => router.push(`/tourist/culture/${article.id}`)}
+              >
+                {article.thumbnail_url && (
+                  <View style={styles.featuredImageContainer}>
+                    <Image
+                      source={{ uri: article.thumbnail_url }}
+                      style={styles.featuredThumbnail}
                     />
-                  )}
-                  <View style={styles.featuredTextContainer}>
-                    <Text style={styles.featuredTitle} numberOfLines={2}>{article.title}</Text>
-                    <Text style={styles.featuredAuthor}>By {article.author}</Text>
+                    <LinearGradient
+                      colors={["transparent", "rgba(0,0,0,0.7)"]}
+                      style={styles.featuredOverlay}
+                    />
+                    <View style={styles.featuredTextOverlay}>
+                      <Text style={styles.featuredTitleOverlay} numberOfLines={2}>
+                        {article.title}
+                      </Text>
+                      <Text style={styles.featuredAuthorOverlay}>By {article.author}</Text>
+                    </View>
                   </View>
-                </TouchableOpacity>
+                )}
+              </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
@@ -98,7 +102,7 @@ export default function CultureScreen({ headerHeight }: TourPackageDetailsScreen
         {/* Regular Articles - Vertical List with "View All" button */}
         <View style={styles.section}>
           <View style={styles.moreHeader}>
-            <Text style={styles.sectionTitle}>More to Explore</Text>
+            <Text style={styles.sectionTitle}>More Articles</Text>
             <TouchableOpacity onPress={() => router.push("/tourist/culture")}>
               <Text style={styles.viewAllText}>See All</Text>
             </TouchableOpacity>
@@ -119,9 +123,6 @@ export default function CultureScreen({ headerHeight }: TourPackageDetailsScreen
               <View style={styles.articleTextVertical}>
                 <Text style={styles.articleTitle} numberOfLines={2}>
                   {article.title.replace(/\b\w/g, char => char.toUpperCase())}
-                </Text>
-                <Text style={styles.articleTags} numberOfLines={2}>
-                  {article.tags?.split(',').map(tag => tag.trim()).join(' • ')}
                 </Text>
                 <Text style={styles.articleAuthor}>By {article.author}</Text>
               </View>
@@ -156,42 +157,49 @@ export default function CultureScreen({ headerHeight }: TourPackageDetailsScreen
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f8fafc",
-  },
-  header: {
+  navbar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: STATUS_BAR_HEIGHT + 10,
-    paddingBottom: 16,
-    paddingHorizontal: 20,
-    backgroundColor: '#0f172a',
+    paddingBottom: 10,
+    backgroundColor: 'transparent',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
   },
-  backButton: {
+  navButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#fff',
+  container: {
+    flex: 1,
+    backgroundColor: "#f8fafc",
   },
   scrollContainer: {
+    marginTop: 50 + STATUS_BAR_HEIGHT,
     paddingBottom: 40,
   },
   section: {
     marginBottom: 24,
     paddingHorizontal: 16,
   },
+  mainTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#1c5461',
+    marginBottom: 16,
+    marginTop: 8,
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1e293b',
+    color: '#1c5461',
     marginBottom: 16,
     marginTop: 8,
   },
@@ -199,7 +207,8 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   featuredCard: {
-    width: width * 0.75,
+    width: width * 0.6, // narrower for portrait feel
+    height: 240,        // taller card
     marginRight: 16,
     borderRadius: 12,
     overflow: 'hidden',
@@ -211,8 +220,9 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   featuredThumbnail: {
-    width: '100%',
-    height: 160,
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover", // keep it neat and cropped
   },
   featuredTextContainer: {
     padding: 12,
@@ -253,7 +263,7 @@ const styles = StyleSheet.create({
   },
   articleTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '900',
     color: '#1e293b',
     marginBottom: 4,
   },
@@ -315,5 +325,41 @@ const styles = StyleSheet.create({
     padding: 10,
     justifyContent: 'center',
   },  
-
+  featuredImageContainer: {
+    position: "relative",
+    width: "100%",
+    height: "100%", // fill full card height
+  },
+  
+  featuredOverlay: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: "100%",
+    borderRadius: 12,
+  },
+  
+  featuredTextOverlay: {
+    position: "absolute",
+    bottom: 12,
+    left: 12,
+    right: 12,
+  },
+  
+  featuredTitleOverlay: {
+    color: "#fff",
+    fontSize: 18, // slightly larger
+    fontWeight: "900",
+    textShadowColor: "rgba(0, 0, 0, 0.7)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  
+  featuredAuthorOverlay: {
+    color: "#e2e8f0",
+    fontSize: 12,
+    marginTop: 2,
+  },
+  
 });

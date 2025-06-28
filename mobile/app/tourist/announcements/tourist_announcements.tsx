@@ -368,7 +368,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingTop: STATUS_BAR_HEIGHT + 10,
         paddingBottom: 10,
-        paddingHorizontal: 16,
         backgroundColor: 'transparent',
         position: 'absolute',
         top: 0,

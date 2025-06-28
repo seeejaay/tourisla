@@ -9,15 +9,44 @@ import {
   StyleSheet,
   Linking,
   Dimensions,
+  StatusBar,
+  Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Article } from "@/static/article/useArticleSchema";
 import { Ionicons } from "@expo/vector-icons";
 import { WebView } from 'react-native-webview';
+import { LinearGradient } from "expo-linear-gradient";
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
+
+const STATUS_BAR_HEIGHT =
+  Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0;
+
+interface TourPackageDetailsScreenProps {
+  headerHeight: number;
+}
 
 const { width } = Dimensions.get("window");
 
-export default function ArticleDetailMobile() {
+export default function ArticleDetailMobile({
+  headerHeight,
+}: TourPackageDetailsScreenProps) {
+  function capitalizeWords(str: string): string {
+    return str
+      .toLowerCase()
+      .split(" ")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
+  function formatDate(dateStr: string): string {
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    return new Date(dateStr).toLocaleDateString("en-US", options);
+  }
+  
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [article, setArticle] = useState<Article | null>(null);
@@ -54,53 +83,67 @@ export default function ArticleDetailMobile() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="#1d4ed8" />
-        <Text style={styles.backText}>Back</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.title}>{article.title}</Text>
-      <Text style={styles.author}>By {article.author}</Text>
-
+    <ScrollView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      <View style={styles.navbar}>
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => router.back()}
+        >
+          <FontAwesome5 name="arrow-left" size={18} color="#fff" />
+        </TouchableOpacity>
+      </View>
       {article.thumbnail_url && (
-        <Image source={{ uri: article.thumbnail_url }} style={styles.thumbnail} resizeMode="contain" />
-      )}
-
-      {article.video_url && (
-        <View style={{ marginBottom: 20 }}>
-          <Text style={styles.label}>Video</Text>
-          {article.video_url.includes("youtube.com") || article.video_url.includes("youtu.be") ? (
-            <View style={styles.videoContainer}>
-              <WebView
-                source={{ uri: `https://www.youtube.com/embed/${extractYouTubeId(article.video_url)}` }}
-                style={styles.video}
-              />
-            </View>
-          ) : (
-            <TouchableOpacity onPress={() => Linking.openURL(article.video_url)}>
-              <Text style={styles.link}>Watch Video</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
-
-      {article.tags && (
-        <View style={styles.tagWrapper}>
-          <Text style={styles.label}>Tags</Text>
-          <View style={styles.tags}>
-            {article.tags.split(",").map((tag, idx) => (
-              <View key={idx} style={styles.tag}>
-                <Text style={styles.tagText}>{tag.trim()}</Text>
-              </View>
-            ))}
+        <View style={styles.thumbnailContainer}>
+          <Image source={{ uri: article.thumbnail_url }} style={styles.thumbnail} />
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.6)']}
+            style={styles.imageOverlay}
+          />
+          <View style={styles.titleOverlay}>
+            <Text style={styles.titleInImage}>{capitalizeWords(article.title)}</Text>
           </View>
         </View>
       )}
+  
+      <View style={styles.content}>
+        <View style={styles.metaRow}>
+          <Text style={styles.author}>Posted By {capitalizeWords(article.author)}</Text>
+          <Text style={styles.date}>• {formatDate(article.created_at)}</Text>
+        </View>
 
-      <View>
-        <Text style={styles.label}>Content</Text>
-        <Text style={styles.body}>{article.body}</Text>
+        {article.tags && (
+          <View style={styles.tagWrapper}>
+            <View style={styles.tags}>
+              {article.tags.split(",").map((tag, idx) => (
+                <View key={idx} style={styles.tag}>
+                  <Text style={styles.tagText}>{tag.trim()}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+  
+        <View>
+          <Text style={styles.body}>{article.body}</Text>
+        </View>
+
+        {article.video_url && (
+          <View style={styles.videoWrapper}>
+            {article.video_url.includes("youtube.com") || article.video_url.includes("youtu.be") ? (
+              <View style={styles.videoContainer}>
+                <WebView
+                  source={{ uri: `https://www.youtube.com/embed/${extractYouTubeId(article.video_url)}` }}
+                  style={styles.video}
+                />
+              </View>
+            ) : (
+              <TouchableOpacity onPress={() => Linking.openURL(article.video_url)}>
+                <Text style={styles.link}>Watch Video</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -113,41 +156,69 @@ function extractYouTubeId(url: string): string | null {
 }
 
 const styles = StyleSheet.create({
+  navbar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: STATUS_BAR_HEIGHT + 10,
+    paddingBottom: 10,
+    paddingHorizontal: 16,
+    backgroundColor: "transparent",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  navButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: "rgba(15, 23, 42, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   container: {
     flex: 1,
     backgroundColor: "#f8fafc",
   },
   content: {
-    padding: 16,
     paddingBottom: 40,
   },
-  backButton: {
+  metaRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
-  },
-  backText: {
-    marginLeft: 8,
-    fontSize: 16,
-    color: "#1d4ed8",
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#1e293b",
+    paddingHorizontal: 16,
     marginBottom: 4,
   },
   author: {
     fontSize: 14,
     color: "#64748b",
+    marginRight: 6,
+    fontWeight: "900",
+  },
+  date: {
+    fontSize: 14,
+    color: "#94a3b8",
+    fontWeight: "700",
+  },
+  thumbnailContainer: {
+    position: 'relative',
+    width: width,
+    height: 300,
     marginBottom: 16,
   },
   thumbnail: {
     width: "100%",
-    height: 200,
-    borderRadius: 8,
-    marginBottom: 16,
-    backgroundColor: "#e2e8f0",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  imageOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 160,
   },
   videoContainer: {
     height: 200,
@@ -177,14 +248,15 @@ const styles = StyleSheet.create({
   },
   tagWrapper: {
     marginBottom: 16,
+    paddingHorizontal: 16,
   },
   tags: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
+    gap: 2,
   },
   tag: {
-    backgroundColor: "#dbeafe",
+    backgroundColor: "#0c5e58",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
@@ -192,21 +264,25 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   tagText: {
-    color: "#1e3a8a",
+    color: "#fff",
     fontSize: 12,
-    fontWeight: "500",
+    fontWeight: "800",
   },
   body: {
-    fontSize: 15,
+    fontSize: 12,
     color: "#1f2937",
-    lineHeight: 22,
+    lineHeight: 15,
     marginTop: 4,
-    whiteSpace: "pre-line",
+    paddingHorizontal: 16,
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  videoWrapper: {
+    paddingHorizontal: 16,
+    marginBottom: 20,
   },
   videoContainer: {
     height: 200,
@@ -220,5 +296,19 @@ const styles = StyleSheet.create({
   video: {
     height: "100%",
     width: "100%",
+  },
+  titleOverlay: {
+    position: 'absolute',
+    bottom: 20,
+    left: 16,
+    right: 16,
+  },
+  titleInImage: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
+    textShadowColor: 'rgba(0, 0, 0, 0.7)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
 });
