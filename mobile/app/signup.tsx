@@ -22,7 +22,6 @@ export default function SignUpScreen() {
     selectFields().find((field) => field.name === "nationality")?.options || [];
 
   // Replace captcha with a simple verification
-  const [isVerified, setIsVerified] = useState(false);
 
   const [form, setForm] = useState({
     first_name: "",
@@ -44,30 +43,6 @@ export default function SignUpScreen() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Simple verification challenge
-  const [verificationCode, setVerificationCode] = useState("");
-  const [expectedCode, setExpectedCode] = useState("");
-  const [showVerification, setShowVerification] = useState(false);
-
-  // Generate a random 4-digit code
-  const generateVerificationCode = () => {
-    const code = Math.floor(1000 + Math.random() * 9000).toString();
-    setExpectedCode(code);
-    setShowVerification(true);
-    return code;
-  };
-
-  const verifyCode = () => {
-    if (verificationCode === expectedCode) {
-      setIsVerified(true);
-      setShowVerification(false);
-      Alert.alert("Success", "Verification completed");
-    } else {
-      Alert.alert("Error", "Incorrect verification code. Please try again.");
-      setVerificationCode("");
-    }
-  };
-
   const handleSignUp = async () => {
     const {
       first_name,
@@ -81,7 +56,7 @@ export default function SignUpScreen() {
       role,
       status,
     } = form;
-
+  
     if (
       !first_name ||
       !last_name ||
@@ -94,24 +69,17 @@ export default function SignUpScreen() {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
-
+  
     if (password !== confirm_password) {
       Alert.alert("Error", "Passwords do not match");
       return;
     }
-
+  
     if (!terms) {
       Alert.alert("Notice", "You must agree to the terms and conditions");
       return;
     }
-
-    if (!isVerified) {
-      Alert.alert("Notice", "Please complete the verification");
-      const code = generateVerificationCode();
-      Alert.alert("Verification Code", `Your verification code is: ${code}`);
-      return;
-    }
-
+  
     try {
       const userData = {
         first_name,
@@ -124,16 +92,15 @@ export default function SignUpScreen() {
         terms,
         role,
         status,
-        // Use a fixed token for development
         captchaToken: "mobile-app-verification-token",
       };
-
+  
       console.log("Sending user data:", {
         ...userData,
         password: "[MASKED]",
         confirm_password: "[MASKED]",
       });
-
+  
       await registerUser(userData);
       Alert.alert("Success", "Registration successful!", [
         { text: "OK", onPress: () => router.push("/login") },
@@ -143,38 +110,6 @@ export default function SignUpScreen() {
     }
   };
 
-  if (showVerification) {
-    return (
-      <View style={styles.verificationContainer}>
-        <Text style={styles.verificationTitle}>Enter Verification Code</Text>
-        <Text style={styles.verificationSubtitle}>
-          Please enter the 4-digit code: {expectedCode}
-        </Text>
-        <TextInput
-          style={styles.verificationInput}
-          value={verificationCode}
-          onChangeText={setVerificationCode}
-          keyboardType="number-pad"
-          maxLength={4}
-          placeholder="Enter 4-digit code"
-        />
-        <View style={styles.verificationButtons}>
-          <TouchableOpacity
-            style={[styles.button, styles.cancelButton]}
-            onPress={() => setShowVerification(false)}
-          >
-            <Text style={styles.buttonText}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, styles.verifyButton]}
-            onPress={verifyCode}
-          >
-            <Text style={styles.buttonText}>Verify</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
@@ -292,32 +227,6 @@ export default function SignUpScreen() {
             </Text>
           </View>
 
-          {/* Verification */}
-          <View style={styles.verificationRow}>
-            <Text style={styles.verificationLabel}>
-              {isVerified ? "✓ Verification Completed" : "Verify you're human"}
-            </Text>
-            <TouchableOpacity
-              style={[
-                styles.verificationButton,
-                isVerified ? styles.verificationCompleted : {},
-              ]}
-              onPress={() => {
-                if (!isVerified) {
-                  const code = generateVerificationCode();
-                  Alert.alert(
-                    "Verification Code",
-                    `Your verification code is: ${code}`
-                  );
-                }
-              }}
-            >
-              <Text style={styles.verificationButtonText}>
-                {isVerified ? "Verified" : "Verify Now"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
           {/* Sign Up Button */}
           <TouchableOpacity onPress={handleSignUp} style={styles.signupButton}>
             <Text style={styles.signupButtonText}>SIGN UP</Text>
@@ -405,31 +314,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     color: "#0f172a",
   },
-  verificationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginVertical: 15,
-  },
-  verificationLabel: {
-    fontSize: 16,
-    color: "#0f172a",
-    flex: 1,
-  },
-  verificationButton: {
-    backgroundColor: "#0f172a",
-    padding: 10,
-    borderRadius: 8,
-    width: 120,
-    alignItems: "center",
-  },
-  verificationCompleted: {
-    backgroundColor: "#10b981",
-  },
-  verificationButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
   signupButton: {
     backgroundColor: "#0f172a",
     padding: 15,
@@ -448,42 +332,6 @@ const styles = StyleSheet.create({
     color: "#0f172a",
     marginBottom: 20,
   },
-  verificationContainer: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f8f9fb",
-  },
-  verificationTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-    color: "#0f172a",
-  },
-  verificationSubtitle: {
-    fontSize: 16,
-    marginBottom: 20,
-    textAlign: "center",
-    color: "#64748b",
-  },
-  verificationInput: {
-    width: "80%",
-    height: 50,
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 18,
-    textAlign: "center",
-    marginBottom: 20,
-    backgroundColor: "#fff",
-  },
-  verificationButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "80%",
-  },
   button: {
     padding: 15,
     borderRadius: 8,
@@ -492,9 +340,6 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     backgroundColor: "#ef4444",
-  },
-  verifyButton: {
-    backgroundColor: "#0f172a",
   },
   buttonText: {
     color: "#fff",

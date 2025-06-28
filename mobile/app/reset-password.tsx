@@ -1,59 +1,149 @@
-// app/reset-password.tsx
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useAuth } from '@/hooks/useAuth';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from "react-native";
+import { useRouter, SearchParams } from "expo-router";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function ResetPasswordScreen() {
-  const { token } = useLocalSearchParams(); // token from the email reset link
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const { handleResetPassword, error } = useAuth();
   const router = useRouter();
+  const searchParams = SearchParams();
+  const token = searchParams?.token;
+
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [message, setMessage] = useState("");
+  const { handleResetPassword, loading, error } = useAuth();
 
   const handleSubmit = async () => {
-    const result = await handleResetPassword(token as string, password, confirm);
-    if (result) {
-      Alert.alert('Success', 'Password reset successfully!');
-      router.replace('/login');
+    setMessage("");
+    if (!token) {
+      setMessage("Invalid or missing token.");
+      return;
+    }
+    if (password !== confirm) {
+      setMessage("Passwords do not match.");
+      return;
+    }
+    const resResetPassword = await handleResetPassword(token, password, confirm);
+    if (resResetPassword) {
+      setMessage("Password reset successful! You can now log in.");
+      setTimeout(() => router.push("/auth/login"), 2000);
+    } else {
+      setMessage(error || "Reset failed. The link may be invalid or expired.");
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Reset Password</Text>
-      <TextInput
-        placeholder="New Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Confirm Password"
-        secureTextEntry
-        value={confirm}
-        onChangeText={setConfirm}
-        style={styles.input}
-      />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <TouchableOpacity onPress={handleSubmit} style={styles.button}>
-        <Text style={styles.buttonText}>Reset Password</Text>
-      </TouchableOpacity>
-    </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.select({ ios: "padding", android: undefined })}
+    >
+      <View style={styles.card}>
+        <Text style={styles.title}>Reset Password</Text>
+
+        <Text style={styles.label}>New Password</Text>
+        <TextInput
+          style={styles.input}
+          secureTextEntry
+          placeholder="Enter new password"
+          value={password}
+          onChangeText={setPassword}
+        />
+
+        <Text style={styles.label}>Confirm Password</Text>
+        <TextInput
+          style={styles.input}
+          secureTextEntry
+          placeholder="Confirm new password"
+          value={confirm}
+          onChangeText={setConfirm}
+        />
+
+        <TouchableOpacity
+          style={[styles.button, loading && styles.buttonDisabled]}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Reset Password</Text>
+          )}
+        </TouchableOpacity>
+
+        {!!message && <Text style={styles.message}>{message}</Text>}
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#fff' },
-  title: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#007dab' },
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 12 },
-  button: {
-    backgroundColor: '#007dab',
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
+  container: {
+    flex: 1,
+    backgroundColor: "#e0f2fe",
+    justifyContent: "center",
+    padding: 20,
   },
-  buttonText: { color: '#fff', fontWeight: 'bold' },
-  error: { color: 'red', textAlign: 'center', marginBottom: 10 },
+  card: {
+    backgroundColor: "#fff",
+    padding: 24,
+    borderRadius: 12,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center",
+    color: "#0f172a",
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#334155",
+    marginBottom: 6,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    backgroundColor: "#f8fafc",
+    marginBottom: 16,
+  },
+  button: {
+    backgroundColor: "#2563eb",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonDisabled: {
+    backgroundColor: "#93c5fd",
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  message: {
+    marginTop: 16,
+    textAlign: "center",
+    fontSize: 13,
+    color: "#475569",
+  },
 });
