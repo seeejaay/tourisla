@@ -17,7 +17,6 @@ async function sendWelcomeEmail(email, firstName, lastName) {
             <table width="480" cellpadding="0" cellspacing="0" style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 32px;">
             <tr>
               <td align="center" style="padding-bottom: 24px;">
-              <img src="https://tourisla.space/logo.png" alt="Tourisla Logo" width="80" style="display:block; margin-bottom:16px;" />
               <h1 style="color: #2a7ae4; margin: 0 0 8px 0; font-size: 28px;">Welcome to Tourisla, ${firstName} ${lastName}!</h1>
               </td>
             </tr>
@@ -65,10 +64,7 @@ const sendResetPasswordEmail = async (email, resetLink) => {
           <td align="center">
           <table width="480" cellpadding="0" cellspacing="0" style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 32px;">
             <tr>
-            <td align="center" style="padding-bottom: 24px;">
-              <img src="https://tourisla.space/logo.png" alt="Tourisla Logo" width="80" style="display:block; margin-bottom:16px;" />
-              <h1 style="color: #2a7ae4; margin: 0 0 8px 0; font-size: 24px;">Password Reset Request</h1>
-            </td>
+           
             </tr>
             <tr>
             <td style="color: #333; font-size: 16px; line-height: 1.6; padding-bottom: 24px;">

@@ -1,332 +1,276 @@
 "use client";
 
 import Header from "@/components/custom/header";
+import Footer from "@/components/custom/footer";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import MapPage from "@/components/custom/map";
-import { Umbrella, Fish, MapPin, Star, Leaf, Phone, Users } from "lucide-react";
+import { Umbrella, MapPin, Leaf, Phone, Users, ArrowRight } from "lucide-react";
 
-const destinations = [
+import { useArticleManager } from "@/hooks/useArticleManager";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+const touristSpots = [
   {
-    title: "Pristine Beaches",
-    description:
-      "Relax on untouched shores with crystal-clear waters and powdery white sand.",
     image: "/images/nature/sea.jpg",
-    alt: "Beach",
-    icon: <Umbrella className="w-6 h-6 text-[#3e979f]" />,
   },
   {
-    title: "Jungle Trails",
-    description:
-      "Explore lush jungle paths leading to breathtaking viewpoints and hidden waterfalls.",
     image: "/images/nature/sun.jpg",
-    alt: "Trails",
-    icon: <Leaf className="w-6 h-6 text-[#51702c]" />,
   },
   {
-    title: "Marine Adventures",
-    description:
-      "Discover vibrant coral reefs teeming with tropical fish and marine life.",
     image: "/images/nature/sand.jpg",
-    alt: "Marine life",
-    icon: <Fish className="w-6 h-6 text-[#1c5461]" />,
   },
-];
-
-const testimonials = [
-  {
-    name: "Sarah Johnson",
-    comment:
-      "The beaches were absolutely pristine - exactly as pictured! Our island tour guide was incredibly knowledgeable.",
-    avatar: "/images/femaleavatar.png",
-    rating: 5,
-  },
-  {
-    name: "Michael Chen",
-    comment:
-      "The jungle trek to the waterfalls was challenging but so rewarding. Bring good shoes!",
-    avatar: "/images/maleavatar.png",
-    rating: 4,
-  },
-  {
-    name: "Elena Rodriguez",
-    comment:
-      "Snorkeling here was magical. We saw sea turtles and so many colorful fish right near shore.",
-    avatar: "/images/maleavatar.png",
-    rating: 5,
-  },
-];
-
-const locations = [
-  { name: "Sillon", region: "North" },
-  { name: "Bantigue", region: "East" },
-  { name: "Montalban", region: "West" },
-  { name: "Obo-ob", region: "South" },
-  { name: "Santa Fe", region: "North" },
-  { name: "Ticad", region: "East" },
-  { name: "Sulangan", region: "West" },
 ];
 
 export default function Home() {
   const router = useRouter();
+
+  const { articles, loading: loadingArticles } = useArticleManager();
+
   return (
     <>
       <Header />
-      <div className="w-full bg-[#fffff1]">
+      <main className="w-full bg-[#fffff1]">
         {/* Hero Section */}
-        <section className="relative h-[80vh] min-h-[500px] w-full overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1c5461]/90 via-[#1c5461]/40 to-transparent z-10" />
+        <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
           <Image
             src="/images/Bantayan_Map.webp"
-            alt="Tropical island beach"
+            alt="Bantayan Island Aerial View"
             fill
             className="object-cover object-center"
             priority
           />
-          <div className="relative z-20 h-full flex flex-col items-center justify-center text-center px-4">
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 tracking-tight drop-shadow-xl">
-              Discover Island Paradise
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1c5461]/90 via-[#1c5461]/50 to-transparent z-10" />
+          <div className="relative z-20 text-center px-4">
+            <h1 className="text-5xl md:text-6xl font-extrabold text-white drop-shadow-xl mb-6">
+              Discover <span className="text-[#f8d56b]">Bantayan</span> Island
             </h1>
-            <p className="text-xl text-[#ddddd1] max-w-2xl mb-10 drop-shadow-md">
+            <p className="text-xl md:text-2xl text-[#ddddd1] drop-shadow-md max-w-3xl mx-auto mb-10">
               Where emerald jungles meet turquoise waters in perfect harmony
             </p>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap justify-center gap-4">
               <button
                 onClick={() => router.push("/listings")}
-                className="px-8 py-4 rounded-full bg-[#019375] hover:bg-[#017a60] text-white font-bold shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
+                className="px-8 py-4 rounded-full bg-[#019375] hover:bg-[#017a60] text-white font-semibold shadow-lg hover:shadow-xl transition"
               >
-                <Users className="inline mr-2 w-5 h-5" /> Explore Accommodation
+                <Users className="inline w-5 h-5 mr-2" /> Explore Accommodation
               </button>
               <button
                 onClick={() => router.push("#contact")}
-                className="px-8 py-4 rounded-full bg-transparent border-2 border-white text-white font-bold hover:bg-white/20 transition-all flex items-center"
+                className="px-8 py-4 rounded-full border-2 border-white text-white font-semibold hover:bg-white/10 transition"
               >
-                <Phone className="inline mr-2 w-5 h-5" /> Contact Us
+                <Phone className="inline w-5 h-5 mr-2" /> Contact Us
               </button>
             </div>
           </div>
         </section>
 
-        {/* Intro Section */}
-        <section className="py-20 bg-[#fffff1]">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
-                Your Island Escape Awaits
-              </h2>
-              <div className="w-24 h-1 bg-[#3e979f] mx-auto mb-6"></div>
-              <p className="text-lg text-[#51702c] max-w-3xl mx-auto">
-                Immerse yourself in nature&apos;s beauty with our curated
-                eco-tourism experiences that respect and preserve the local
-                environment.
-              </p>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center mt-12">
-              <div className="p-6 bg-white rounded-xl shadow-md border border-[#7b9997]/20">
-                <div className="text-4xl font-bold text-[#1c5461] mb-2">
-                  10+
-                </div>
-                <div className="text-[#51702c]">Beaches</div>
-              </div>
-              <div className="p-6 bg-white rounded-xl shadow-md border border-[#7b9997]/20">
-                <div className="text-4xl font-bold text-[#1c5461] mb-2">
-                  10+
-                </div>
-                <div className="text-[#51702c]">Hiking Trails</div>
-              </div>
-              <div className="p-6 bg-white rounded-xl shadow-md border border-[#7b9997]/20">
-                <div className="text-4xl font-bold text-[#1c5461] mb-2">
-                  100+
-                </div>
-                <div className="text-[#51702c]">Marine Species</div>
-              </div>
-              <div className="p-6 bg-white rounded-xl shadow-md border border-[#7b9997]/20">
-                <div className="text-4xl font-bold text-[#1c5461] mb-2">
-                  24/7
-                </div>
-                <div className="text-[#51702c]">Guide Support</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Featured Experiences */}
-        <section id="explore" className="py-20 bg-white">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
-                Unique Experiences
-              </h2>
-              <div className="w-24 h-1 bg-[#3e979f] mx-auto mb-6"></div>
-              <p className="text-lg text-[#51702c] max-w-3xl mx-auto">
-                Discover authentic activities that connect you with the
-                island&apos;s natural wonders
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {destinations.map((dest, index) => (
-                <div
-                  key={index}
-                  className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 bg-[#fffff1] border border-[#7b9997]/20"
-                >
-                  <div className="relative h-64">
-                    <Image
-                      src={dest.image}
-                      alt={dest.alt}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#1c5461]/80 to-transparent" />
-                    <div className="absolute top-4 left-4 bg-white p-3 rounded-full shadow-md border border-[#7b9997]/20">
-                      {dest.icon}
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-2xl font-bold mb-2 text-[#1c5461]">
-                      {dest.title}
-                    </h3>
-                    <p className="text-[#51702c]">{dest.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Locations Section */}
-        <section className="py-20 bg-[#fffff1]">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
-                Bantayan Island
-              </h2>
-              <div className="w-24 h-1 bg-[#3e979f] mx-auto mb-6"></div>
-              <p className="text-lg text-[#51702c] max-w-3xl mx-auto">
-                Explore our beautiful island destinations
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-              {locations.map((location, index) => (
-                <div
-                  key={index}
-                  className="bg-white p-6 rounded-xl shadow-md text-center border border-[#7b9997]/20 hover:shadow-lg transition-all"
-                >
-                  <div className="text-2xl font-bold text-[#1c5461] mb-2">
-                    {location.name}
-                  </div>
-                  <div className="text-sm text-[#7b9997]">
-                    {location.region}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Map Section */}
-        <section className="py-20 bg-white">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
-                Explore Our Island
-              </h2>
-              <div className="w-24 h-1 bg-[#3e979f] mx-auto mb-6"></div>
-              <p className="text-lg text-[#51702c] max-w-3xl mx-auto">
-                Find your perfect spot with our interactive island map
-              </p>
-            </div>
-
-            <div className=" rounded-2xl  overflow-hidden ">
-              <div className="h-[500px] w-full relative">
-                <MapPage />
-                <div className="absolute bottom-4 left-4 bg-white px-4 py-2 rounded-full shadow-md flex items-center border border-[#7b9997]/20">
-                  <MapPin className="w-4 h-4 text-[#3e979f] mr-2" />
-                  <span className="text-[#1c5461] font-medium">
-                    Island Locations
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials */}
-        <section className="py-20 bg-[#1c5461] text-white">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Traveler Stories
-              </h2>
-              <div className="w-24 h-1 bg-[#3e979f] mx-auto mb-6"></div>
-              <p className="text-lg text-[#ddddd1] max-w-3xl mx-auto">
-                Hear from visitors who&apos;ve experienced our island adventures
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {testimonials.map((testimonial, index) => (
-                <div
-                  key={index}
-                  className="bg-white/10 p-8 rounded-xl backdrop-blur-sm border border-[#3e979f]/30"
-                >
-                  <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 rounded-full overflow-hidden mr-4 border-2 border-[#3e979f]">
-                      <Image
-                        src={testimonial.avatar}
-                        alt={testimonial.name}
-                        width={48}
-                        height={48}
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="flex items-center">
-                      <div className="font-bold mr-2">{testimonial.name}</div>
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-4 h-4 ${
-                              i < testimonial.rating
-                                ? "fill-[#3e979f] text-[#3e979f]"
-                                : "fill-white/20 text-white/20"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-[#ddddd1] italic">
-                    &quot;{testimonial.comment}&quot;
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Call to Action */}
-        <section className="py-20 bg-gradient-to-r from-[#1c5461] to-[#019375]">
-          <div className="max-w-4xl mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Ready for Your Island Adventure?
+        {/* Introduction Section */}
+        <section className="py-24 text-center bg-gradient-to-b from-[#e6f7fa] via-[#fffff1] to-[#fffff1]">
+          <div className="max-w-5xl mx-auto px-4">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-[#1c5461] mb-4 drop-shadow">
+              Your Island Escape Awaits
             </h2>
-            <p className="text-xl text-[#ddddd1] mb-8">
-              Book your eco-friendly tour today and create unforgettable
-              memories
+            <div className="w-24 h-1 bg-gradient-to-r from-[#3e979f] to-[#1c5461] mx-auto mb-8 rounded-full" />
+            <p className="text-xl text-[#51702c] mb-10 leading-relaxed">
+              Immerse yourself in the breathtaking beauty of Bantayan
+              Island—where crystal-clear waters, lush jungles, and vibrant local
+              culture create the perfect getaway. Whether you seek adventure,
+              relaxation, or a taste of authentic island life, Bantayan offers
+              something for every traveler.
             </p>
-            <button
-              onClick={() => router.push("/tour-packages")}
-              className="px-10 py-5 rounded-full bg-white hover:bg-[#fffff1] text-[#1c5461] font-bold text-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
-            >
-              Book Now
-            </button>
+            <div className="flex flex-col md:flex-row justify-center gap-8 mt-10">
+              <div className="flex-1 bg-white/80 backdrop-blur rounded-2xl shadow-lg p-8 border border-[#e6f7fa] hover:scale-105 hover:shadow-2xl transition-all duration-300">
+                <div className="flex items-center justify-center mb-4">
+                  <Leaf className="w-8 h-8 text-[#019375]" />
+                </div>
+                <h3 className="text-2xl font-semibold text-[#1c5461] mb-2">
+                  Eco-Friendly Adventures
+                </h3>
+                <p className="text-[#51702c] text-base">
+                  Explore pristine beaches, hidden lagoons, and scenic trails
+                  while supporting sustainable tourism and local communities.
+                </p>
+              </div>
+              <div className="flex-1 bg-white/80 backdrop-blur rounded-2xl shadow-lg p-8 border border-[#e6f7fa] hover:scale-105 hover:shadow-2xl transition-all duration-300">
+                <div className="flex items-center justify-center mb-4">
+                  <MapPin className="w-8 h-8 text-[#3e979f]" />
+                </div>
+                <h3 className="text-2xl font-semibold text-[#1c5461] mb-2">
+                  Rich Culture & Heritage
+                </h3>
+                <p className="text-[#51702c] text-base">
+                  Experience the warmth of Bantayan’s people, savor local
+                  delicacies, and discover the island’s unique traditions and
+                  history.
+                </p>
+              </div>
+              <div className="flex-1 bg-white/80 backdrop-blur rounded-2xl shadow-lg p-8 border border-[#e6f7fa] hover:scale-105 hover:shadow-2xl transition-all duration-300">
+                <div className="flex items-center justify-center mb-4">
+                  <Umbrella className="w-8 h-8 text-[#f8d56b]" />
+                </div>
+                <h3 className="text-2xl font-semibold text-[#1c5461] mb-2">
+                  Unwind & Reconnect
+                </h3>
+                <p className="text-[#51702c] text-base">
+                  Find your sanctuary in tranquil resorts, enjoy breathtaking
+                  sunsets, and reconnect with nature and yourself.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
-      </div>
+
+        {/* Tourist Spots Showcase */}
+        <section className="py-20 bg-white">
+          <div className="max-w-6xl mx-auto px-4 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
+              Must-See Tourist Spots
+            </h2>
+            <div className="w-24 h-1 bg-[#3e979f] mx-auto mb-8 rounded-full" />
+            <p className="text-lg text-[#51702c] mb-12">
+              Discover the natural wonders and iconic destinations of Bantayan
+              Island.
+            </p>
+            <Carousel
+              opts={{
+                align: "center",
+                loop: true,
+              }}
+              className="w-full mx-auto"
+            >
+              <CarouselContent>
+                {touristSpots.map((spot, idx) => (
+                  <CarouselItem
+                    key={idx}
+                    className="basis-full flex-shrink-0 w-full"
+                  >
+                    <div className="relative rounded-2xl overflow-hidden shadow-lg border border-[#e6f7fa] hover:shadow-2xl transition-all h-[500px] flex items-end group bg-[#e6f7fa]">
+                      <Image
+                        src={spot.image}
+                        alt={`Tourist Spot ${idx + 1}`}
+                        fill
+                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                        style={{ zIndex: 0 }}
+                        priority={idx === 0}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
+                      {/* Optionally add spot name/description here if available */}
+                      {/* <div className="absolute bottom-6 left-6 z-20 text-left">
+                <h3 className="text-2xl font-bold text-white drop-shadow">
+                  {spot.name}
+                </h3>
+                <p className="text-white/80">{spot.description}</p>
+              </div> */}
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-0 -translate-y-1/2 top-1/2" />
+              <CarouselNext className="right-0 -translate-y-1/2 top-1/2" />
+            </Carousel>
+          </div>
+        </section>
+
+        {/* Featured Articles */}
+        <section className=" bg-[#fffff1] py-20">
+          <div className="max-w-6xl mx-auto px-4 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
+              Island Heritage
+            </h2>
+            <div className="w-24 h-1 bg-[#3e979f] mx-auto mb-6" />
+            <p className="text-lg text-[#51702c] mb-12">
+              Read the history, culture, and stories that shape Bantayan Island
+            </p>
+            {loadingArticles ? (
+              <div className="text-[#3e979f]">Loading articles...</div>
+            ) : (
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-full  mx-auto"
+              >
+                <CarouselContent>
+                  {articles.slice(0, 6).map((article) => (
+                    <CarouselItem
+                      key={article.id}
+                      className="md:basis-1/3 basis-full flex-shrink-0 w-full"
+                    >
+                      <div className="group relative rounded-2xl overflow-hidden shadow-lg border border-[#7b9997]/20 hover:shadow-2xl transition-all flex flex-col h-[26rem] bg-white">
+                        {article.thumbnail_url ? (
+                          <Image
+                            src={article.thumbnail_url}
+                            alt={article.title}
+                            fill
+                            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                            style={{ zIndex: 0 }}
+                          />
+                        ) : (
+                          <div className="absolute inset-0 h-full w-full bg-[#e6f7fa] flex items-center justify-center text-[#3e979f] z-0">
+                            No Image
+                          </div>
+                        )}
+                        {/* Overlay for dimming */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10 transition group-hover:from-black/80" />
+                        {/* Details on top of image */}
+                        <div className="absolute inset-0 z-20 flex flex-col justify-end p-8">
+                          <h3 className="text-2xl font-extrabold text-white line-clamp-2 group-hover:text-[#f8d56b] transition drop-shadow mb-2">
+                            {article.title}
+                          </h3>
+                          <p className="text-base text-[#e6f7fa] drop-shadow mb-4 line-clamp-2">
+                            {article.body.slice(0, 30) + "..."}
+                          </p>
+                          <button
+                            onClick={() =>
+                              router.push(`/articles/${article.id}`)
+                            }
+                            className="mt-2 w-fit rounded-lg bg-[#3e979f] hover:bg-[#1c5461] cursor-pointer text-base text-[#e6f7fa] hover:text-[#f8d56b] px-5 py-2 font-semibold transition-all"
+                          >
+                            Read more{" "}
+                            <ArrowRight className="inline w-4 h-4 ml-1" />
+                          </button>
+                        </div>
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="w-12 h-12 bg-[#3e979f] text-white rounded-full shadow-lg hover:bg-[#1c5461] hover:text-white transition" />
+                <CarouselNext className="w-12 h-12 bg-[#3e979f] text-white rounded-full shadow-lg hover:bg-[#1c5461] hover:text-white transition" />
+              </Carousel>
+            )}
+          </div>
+        </section>
+
+        {/* Interactive Map */}
+        <section className="py-20 bg-white">
+          <div className="max-w-6xl mx-auto px-4 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
+              Explore Our Island
+            </h2>
+            <div className="w-24 h-1 bg-[#3e979f] mx-auto mb-6" />
+            <p className="text-lg text-[#51702c] mb-12">
+              Find your perfect spot with our interactive island map
+            </p>
+            <div className="relative h-[500px] w-full rounded-b-2xl overflow-hidden">
+              <MapPage />
+              <div className="absolute bottom-4 left-4 bg-white px-4 py-2 rounded-full shadow-md flex items-center border border-[#7b9997]/20">
+                <MapPin className="w-4 h-4 text-[#3e979f] mr-2" />
+                <span className="text-[#1c5461] font-medium">
+                  Island Locations
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <Footer />
     </>
   );
 }

@@ -190,119 +190,95 @@ export default function IslandEntryPage() {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] flex flex-col items-center justify-start px-4 pt-24 pb-20">
-        <main className="w-full max-w-2xl pt-10">
+      <div className="min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] flex flex-col items-center justify-start px-4 pt-18 pb-20">
+        <main className="w-full max-w-2xl pt-16">
           <div className="p-8 shadow-lg border border-[#e6f7fa] bg-white rounded-2xl space-y-8">
-            <h1 className="text-3xl font-extrabold text-[#1c5461] text-center mb-2">
-              Island Entry Registration
-            </h1>
+            <div>
+              <h1 className="text-3xl font-extrabold text-[#1c5461] text-center mb-2">
+                Island Entry Registration
+              </h1>
+              <p className="text-center text-[#51702c] mb-6">
+                Register your group for island entry. Add companions if needed.
+              </p>
+            </div>
             <form onSubmit={formik.handleSubmit} className="space-y-8">
-              {/* Main Visitor Fields */}
               <div>
                 <h2 className="font-semibold text-lg mb-3 text-[#1c5461]">
                   Main Visitor
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-semibold mb-2 text-[#1c5461]">
-                      Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formik.values.name}
-                      onChange={formik.handleChange}
-                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd] focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
-                      placeholder="Enter name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold mb-2 text-[#1c5461]">
-                      Age
-                    </label>
-                    <input
-                      type="number"
-                      name="age"
-                      value={formik.values.age}
-                      onChange={formik.handleChange}
-                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd] focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
-                      placeholder="Enter age"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <label className="block font-semibold mb-2 text-[#1c5461]">
-                      Sex
-                    </label>
-                    <select
-                      name="sex"
-                      value={formik.values.sex}
-                      onChange={formik.handleChange}
-                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd] focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
-                    >
-                      <option value="">Select...</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                    </select>
-                  </div>
-                  <div className="flex items-center gap-2 md:mt-0 mt-6">
-                    <input
-                      type="checkbox"
-                      name="is_foreign"
-                      checked={formik.values.is_foreign}
-                      onChange={formik.handleChange}
-                      className="accent-[#3e979f] scale-125"
-                    />
-                    <label className="font-semibold text-[#1c5461]">
-                      Are you a foreign visitor?
-                    </label>
-                  </div>
-                </div>
-                {!formik.values.is_foreign && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <div>
-                      <label className="block font-semibold mb-2 text-[#1c5461]">
-                        Municipality
-                      </label>
-                      <input
-                        type="text"
-                        name="municipality"
-                        value={formik.values.municipality}
-                        onChange={formik.handleChange}
-                        className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd] focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
-                        placeholder="Enter municipality"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-semibold mb-2 text-[#1c5461]">
-                        Province
-                      </label>
-                      <input
-                        type="text"
-                        name="province"
-                        value={formik.values.province}
-                        onChange={formik.handleChange}
-                        className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd] focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
-                        placeholder="Enter province"
-                      />
-                    </div>
-                  </div>
-                )}
-                <div className="mt-4">
-                  <label className="block font-semibold mb-2 text-[#1c5461]">
-                    Country
-                  </label>
-                  <select
-                    name="country"
-                    value={formik.values.country}
-                    onChange={formik.handleChange}
-                    className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd] focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
-                  >
-                    <option value="">Select...</option>
-                    <option value="Philippines">Philippines</option>
-                    <option value="Other">Other</option>
-                  </select>
+                  {islandEntryFields.map((field) => {
+                    if (field.showIf && !field.showIf(formik.values))
+                      return null;
+                    if (field.type === "select") {
+                      return (
+                        <div key={field.name}>
+                          <label className="block font-semibold mb-2 text-[#1c5461]">
+                            {field.label}
+                          </label>
+                          <select
+                            name={field.name}
+                            value={formik.values[field.name]}
+                            onChange={formik.handleChange}
+                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                          >
+                            <option value="">Select...</option>
+                            {field.options.map((opt: string) => (
+                              <option key={opt} value={opt}>
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
+                          {formik.touched[field.name] &&
+                            formik.errors[field.name] && (
+                              <div className="text-red-500 text-xs mt-1">
+                                {formik.errors[field.name]}
+                              </div>
+                            )}
+                        </div>
+                      );
+                    }
+                    if (field.type === "checkbox") {
+                      return (
+                        <div
+                          key={field.name}
+                          className="flex items-center mt-2"
+                        >
+                          <input
+                            type="checkbox"
+                            name={field.name}
+                            checked={formik.values[field.name]}
+                            onChange={formik.handleChange}
+                            className="accent-[#3e979f] scale-125"
+                          />
+                          <label className="font-medium text-[#1c5461] ml-2">
+                            {field.label}
+                          </label>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div key={field.name}>
+                        <label className="block font-semibold mb-2 text-[#1c5461]">
+                          {field.label}
+                        </label>
+                        <input
+                          type={field.type}
+                          name={field.name}
+                          value={formik.values[field.name]}
+                          onChange={formik.handleChange}
+                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                          placeholder={`Enter ${field.label.toLowerCase()}`}
+                        />
+                        {formik.touched[field.name] &&
+                          formik.errors[field.name] && (
+                            <div className="text-red-500 text-xs mt-1">
+                              {formik.errors[field.name]}
+                            </div>
+                          )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
               {/* Companions */}
@@ -313,7 +289,7 @@ export default function IslandEntryPage() {
                 {companions.map((comp, idx) => (
                   <div
                     key={idx}
-                    className="relative mb-8 rounded-xl bg-[#f8fcfd] border border-[#e6f7fa] shadow-sm p-6"
+                    className="relative mb-8 rounded-xl bg-white border border-[#e6f7fa] shadow-sm p-6"
                   >
                     <button
                       type="button"
@@ -328,139 +304,92 @@ export default function IslandEntryPage() {
                       &times;
                     </button>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block font-semibold mb-2 text-[#1c5461]">
-                          Name
-                        </label>
-                        <input
-                          type="text"
-                          value={comp.name}
-                          onChange={(e) =>
-                            handleCompanionChange(idx, "name", e.target.value)
-                          }
-                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
-                          placeholder="Enter name"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-semibold mb-2 text-[#1c5461]">
-                          Age
-                        </label>
-                        <input
-                          type="number"
-                          value={comp.age}
-                          onChange={(e) =>
-                            handleCompanionChange(idx, "age", e.target.value)
-                          }
-                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
-                          placeholder="Enter age"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-semibold mb-2 text-[#1c5461]">
-                          Sex
-                        </label>
-                        <select
-                          value={comp.sex}
-                          onChange={(e) =>
-                            handleCompanionChange(idx, "sex", e.target.value)
-                          }
-                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
-                        >
-                          <option value="">Select...</option>
-                          <option value="Male">Male</option>
-                          <option value="Female">Female</option>
-                        </select>
-                      </div>
-                      <div className="flex items-center gap-2 mt-8 md:mt-0">
-                        <input
-                          type="checkbox"
-                          checked={!!comp.is_foreign}
-                          onChange={(e) =>
-                            handleCompanionChange(
-                              idx,
-                              "is_foreign",
-                              e.target.checked
-                            )
-                          }
-                          className="accent-[#3e979f] scale-125"
-                        />
-                        <label className="font-semibold text-[#1c5461]">
-                          Are you a foreign visitor?
-                        </label>
-                      </div>
-                      {!comp.is_foreign && (
-                        <>
-                          <div>
+                      {islandEntryFields.map((field) => {
+                        if (field.showIf && !field.showIf(comp)) return null;
+                        if (field.type === "select") {
+                          return (
+                            <div key={field.name}>
+                              <label className="block font-semibold mb-2 text-[#1c5461]">
+                                {field.label}
+                              </label>
+                              <select
+                                value={comp[field.name]}
+                                onChange={(e) =>
+                                  handleCompanionChange(
+                                    idx,
+                                    field.name,
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                              >
+                                <option value="">Select...</option>
+                                {field.options.map((opt: string) => (
+                                  <option key={opt} value={opt}>
+                                    {opt}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          );
+                        }
+                        if (field.type === "checkbox") {
+                          return (
+                            <div
+                              key={field.name}
+                              className="flex items-center mt-2"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={comp[field.name]}
+                                onChange={(e) =>
+                                  handleCompanionChange(
+                                    idx,
+                                    field.name,
+                                    e.target.checked
+                                  )
+                                }
+                                className="accent-[#3e979f] scale-125"
+                              />
+                              <label className="font-medium text-[#1c5461] ml-2">
+                                {field.label}
+                              </label>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div key={field.name}>
                             <label className="block font-semibold mb-2 text-[#1c5461]">
-                              Municipality
+                              {field.label}
                             </label>
                             <input
-                              type="text"
-                              value={comp.municipality}
+                              type={field.type}
+                              value={comp[field.name]}
                               onChange={(e) =>
                                 handleCompanionChange(
                                   idx,
-                                  "municipality",
+                                  field.name,
                                   e.target.value
                                 )
                               }
-                              className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
-                              placeholder="Enter municipality"
+                              className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                              placeholder={`Enter ${field.label.toLowerCase()}`}
                             />
                           </div>
-                          <div>
-                            <label className="block font-semibold mb-2 text-[#1c5461]">
-                              Province
-                            </label>
-                            <input
-                              type="text"
-                              value={comp.province}
-                              onChange={(e) =>
-                                handleCompanionChange(
-                                  idx,
-                                  "province",
-                                  e.target.value
-                                )
-                              }
-                              className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
-                              placeholder="Enter province"
-                            />
-                          </div>
-                        </>
-                      )}
-                      <div>
-                        <label className="block font-semibold mb-2 text-[#1c5461]">
-                          Country
-                        </label>
-                        <select
-                          value={comp.country}
-                          onChange={(e) =>
-                            handleCompanionChange(
-                              idx,
-                              "country",
-                              e.target.value
-                            )
-                          }
-                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
-                        >
-                          <option value="">Select...</option>
-                          <option value="Philippines">Philippines</option>
-                          <option value="Other">Other</option>
-                        </select>
-                      </div>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
                 <button
                   type="button"
                   onClick={addCompanion}
-                  className="mt-2 rounded-lg border border-[#3e979f] text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] px-4 py-2 transition"
+                  className="mt-2 rounded-lg border-[#3e979f] text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] transition px-4 py-2 border"
                 >
                   Add Companion
                 </button>
               </div>
-              {/* Payment and Submit */}
+              {/* Fee and Payment */}
               {fee?.is_enabled && (
                 <div>
                   <label className="block font-semibold text-[#1c5461]">
@@ -502,6 +431,7 @@ export default function IslandEntryPage() {
                   </div>
                 </div>
               )}
+              {/* Payment Link */}
               {showPaymentLink && latestEntry?.payment_link && (
                 <div className="mt-5 text-center space-y-3">
                   <p className="text-sm text-gray-600">
@@ -537,6 +467,7 @@ export default function IslandEntryPage() {
                   </button>
                 </div>
               )}
+              {/* Submit */}
               {!(
                 formik.values.payment_method === "Online" &&
                 hasSubmitted &&
@@ -545,7 +476,7 @@ export default function IslandEntryPage() {
                 <button
                   type="submit"
                   disabled={loading || !fee}
-                  className="bg-[#3e979f] hover:bg-[#1c5461] text-white px-6 py-2 rounded-lg w-full font-bold text-lg shadow transition"
+                  className="w-full rounded-lg bg-[#3e979f] text-white hover:bg-[#1c5461] transition px-6 py-2 font-bold text-lg shadow"
                 >
                   {loading ? "Registering..." : "Submit"}
                 </button>

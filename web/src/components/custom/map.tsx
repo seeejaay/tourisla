@@ -267,15 +267,15 @@ export default function MapPage() {
         </div>
       </div>
       {/* Map */}
-      <div className="relative rounded-xl overflow-hidden shadow-lg border border-gray-200 w-full">
+      <div className="relative  overflow-hidden shadow-lg border border-gray-200 w-full">
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/70 rounded-xl">
+          <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/70 ">
             <Loader2 className="animate-spin w-8 h-8 text-primary" />
             <span className="ml-2 text-lg font-medium">Loading...</span>
           </div>
         )}
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center z-10 bg-red-50 rounded-xl">
+          <div className="absolute inset-0 flex items-center justify-center z-10 bg-red-50 ">
             <span className="text-red-600 font-semibold">{error}</span>
           </div>
         )}
