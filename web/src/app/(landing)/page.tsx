@@ -5,15 +5,7 @@ import Footer from "@/components/custom/footer";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import MapPage from "@/components/custom/map";
-import {
-  Umbrella,
-  Fish,
-  MapPin,
-  Leaf,
-  Phone,
-  Users,
-  ArrowRight,
-} from "lucide-react";
+import { Umbrella, MapPin, Leaf, Phone, Users, ArrowRight } from "lucide-react";
 
 import { useArticleManager } from "@/hooks/useArticleManager";
 import {
