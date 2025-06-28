@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { navigation } from "@/app/static/navigation";
-import { Menu, X, Megaphone, ChevronDown } from "lucide-react";
+import { Menu, X, Megaphone } from "lucide-react";
 import Pill from "@/components/custom/pill";
 import WeatherWidget from "@/components/custom/weather";
 
@@ -65,7 +65,7 @@ export default function Header() {
                     className="relative flex items-center group"
                   >
                     {/* Parent Link */}
-                    <Link
+                    {/* <Link
                       href={item.href || "#"}
                       className={`font-semibold px-3 py-2 rounded-lg transition-colors flex items-center gap-1
               ${
@@ -76,17 +76,21 @@ export default function Header() {
             `}
                     >
                       {item.title}
-                    </Link>
+                    </Link> */}
                     {/* Dropdown Trigger */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button
-                          className="ml-1 px-1 py-2 rounded-lg hover:bg-[#e6f7fa] focus:bg-[#e6f7fa] transition-colors"
+                          className={`font-semibold px-3 py-2 rounded-lg transition-colors ${
+                            pathName === item.href
+                              ? "bg-[#3e979f]/10 text-[#3e979f]"
+                              : "text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] focus:bg-[#e6f7fa] focus:text-[#3e979f]"
+                          }`}
                           tabIndex={0}
                           aria-label={`Show ${item.title} menu`}
                           type="button"
                         >
-                          <ChevronDown className="w-4 h-4 text-[#1c5461] group-hover:text-[#3e979f]" />
+                          <span className="font-semibold"> {item.title}</span>
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent

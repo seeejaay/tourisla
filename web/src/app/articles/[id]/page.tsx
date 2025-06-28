@@ -74,10 +74,7 @@ export default function ArticleDetailPage() {
 
           {/* Author and tags */}
           <div className="mb-6">
-            <h5 className="text-lg font-semibold text-[#1c5461] mb-2">
-              {article.title}
-            </h5>
-            <p className="text-sm text-[#1c5461] mb-2">
+            <p className="text-md text-[#1c5461] mb-2">
               BY:{" "}
               <span className="font-bold">{toTitleCase(article.author)}</span>
             </p>
@@ -86,7 +83,7 @@ export default function ArticleDetailPage() {
                 {article.tags.split(",").map((tag, idx) => (
                   <span
                     key={idx}
-                    className="bg-[#e6f7fa] text-[#3e979f] text-xs font-medium px-3 py-1 rounded-full capitalize"
+                    className="text-[#e6f7fa] bg-[#1c5461] text-xs font-medium px-3 py-1 rounded-full capitalize"
                   >
                     {tag.trim()}
                   </span>

@@ -3,18 +3,6 @@ export const navigation = [
     tag: "Home",
     href: "/",
     title: "Home",
-    dropdown: [
-      {
-        tag: "About",
-        href: "/about",
-        title: "About",
-      },
-      {
-        tag: "Contact",
-        href: "/contact",
-        title: "Contact",
-      },
-    ],
   },
   {
     tag: "Culture",
