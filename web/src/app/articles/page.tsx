@@ -5,9 +5,9 @@ import { useArticleManager } from "@/hooks/useArticleManager";
 import { Article } from "@/app/static/article/useArticleSchema";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-
+import Header from "@/components/custom/header";
+import {} from "lucide-react";
 const ARTICLES_PER_PAGE = 6;
 
 export default function PublicArticlesPage() {
@@ -38,74 +38,110 @@ export default function PublicArticlesPage() {
   }, [articles, fetchArticles]);
 
   return (
-    <main className="px-4 py-8 max-w-7xl mx-auto space-y-12">
-      <Button variant="outline" onClick={() => router.back()}>
-        ← Back
-      </Button>
+    <>
+      <Header />
+      <div className="min-h-screen bg-gradient-to-b to-[#b6e0e4] via-[#f0f0f0] from-[#e6f7fa]">
+        <main className="px-4 pt-28 py-10 max-w-7xl mx-auto space-y-14">
+          {/* Featured Articles */}
+          {featured.length > 0 && (
+            <section>
+              <h2 className="text-3xl font-extrabold text-[#1c5461] mb-6 flex items-center gap-2">
+                Featured Articles
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {featured.map((article) => (
+                  <Card
+                    key={article.id}
+                    className="group p-0 overflow-hidden rounded-2xl shadow border border-[#e6f7fa] hover:shadow-md transition bg-white flex flex-col"
+                  >
+                    {article.thumbnail_url && (
+                      <img
+                        src={article.thumbnail_url}
+                        alt={article.title}
+                        className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    )}
+                    <div className="p-5 flex flex-col gap-2 flex-1">
+                      <h3 className="text-xl font-bold text-[#1c5461] line-clamp-2 group-hover:text-[#3e979f] transition">
+                        {article.title}
+                      </h3>
+                      <p className="text-sm text-[#51702c]">
+                        By {article.author}
+                      </p>
+                      <Button
+                        variant="outline"
+                        className="mt-2 w-fit rounded-lg border-[#3e979f] cursor-pointer text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] transition"
+                        onClick={() => router.push(`/articles/${article.id}`)}
+                      >
+                        See More
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </section>
+          )}
 
-      {/* Featured Articles */}
-      {featured.length > 0 && (
-        <section>
-          <h2 className="text-2xl font-bold text-blue-700 mb-4">
-            🌟 Featured Articles
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featured.map((article) => (
-              <Link href={`/articles/${article.id}`} key={article.id}>
-                <Card className="p-4 hover:shadow-lg transition cursor-pointer">
+          {/* Regular Articles */}
+          <section>
+            <h2 className="text-2xl font-bold text-[#1c5461] mb-6">
+              More Articles
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {paginatedRegular.map((article) => (
+                <Card
+                  key={article.id}
+                  className="group p-0 overflow-hidden rounded-2xl shadow border border-[#e6f7fa] hover:shadow-md transition bg-white flex flex-col"
+                >
                   {article.thumbnail_url && (
                     <img
                       src={article.thumbnail_url}
                       alt={article.title}
-                      className="w-full h-48 object-cover rounded mb-3"
+                      className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   )}
-                  <h3 className="text-xl font-semibold line-clamp-2">
-                    {article.title}
-                  </h3>
-                  <p className="text-sm text-gray-600">By {article.author}</p>
+                  <div className="p-4 flex flex-col gap-2 flex-1">
+                    <h4 className="font-semibold text-lg text-[#1c5461] line-clamp-2 group-hover:text-[#3e979f] transition">
+                      {article.title}
+                    </h4>
+                    <p className="text-sm text-[#51702c]">
+                      By {article.author}
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="mt-2 w-fit rounded-full border-[#3e979f] text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] transition"
+                      onClick={() => router.push(`/articles/${article.id}`)}
+                    >
+                      View
+                    </Button>
+                  </div>
                 </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+              ))}
+            </div>
 
-      {/* Regular Articles */}
-      <section>
-        <h2 className="text-xl font-bold text-gray-800 mb-4">More Articles</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {paginatedRegular.map((article) => (
-            <Link href={`/articles/${article.id}`} key={article.id}>
-              <Card className="p-4 hover:shadow-lg transition cursor-pointer">
-                {article.thumbnail_url && (
-                  <img
-                    src={article.thumbnail_url}
-                    alt={article.title}
-                    className="w-full h-40 object-cover rounded mb-3"
-                  />
-                )}
-                <h4 className="font-medium text-lg line-clamp-2">
-                  {article.title}
-                </h4>
-                <p className="text-sm text-gray-500">By {article.author}</p>
-              </Card>
-            </Link>
-          ))}
-        </div>
-
-        {/* Pagination Controls */}
-        <div className="flex justify-center mt-8 gap-4">
-          {page > 1 && (
-            <Button variant="outline" onClick={() => setPage((p) => p - 1)}>
-              Previous
-            </Button>
-          )}
-          {hasMore && (
-            <Button onClick={() => setPage((p) => p + 1)}>Load More</Button>
-          )}
-        </div>
-      </section>
-    </main>
+            {/* Pagination Controls */}
+            <div className="flex justify-center mt-10 gap-4">
+              {page > 1 && (
+                <Button
+                  variant="outline"
+                  onClick={() => setPage((p) => p - 1)}
+                  className="rounded-full border-[#3e979f] text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] transition"
+                >
+                  Previous
+                </Button>
+              )}
+              {hasMore && (
+                <Button
+                  onClick={() => setPage((p) => p + 1)}
+                  className="rounded-full bg-[#3e979f] text-white hover:bg-[#1c5461] transition"
+                >
+                  Load More
+                </Button>
+              )}
+            </div>
+          </section>
+        </main>
+      </div>
+    </>
   );
 }
