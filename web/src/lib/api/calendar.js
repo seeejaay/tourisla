@@ -7,6 +7,7 @@ export const authorizeGoogleCalendar = async () => {
     const response = await axios.get(`${API_URL}calendar/authorize`, {
       withCredentials: true,
     });
+    console.log("Google Calendar authorization response:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error authorizing Google Calendar:", error);
