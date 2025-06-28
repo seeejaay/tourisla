@@ -198,6 +198,9 @@ export default function BookingHistoryScreen({headerHeight,
         bookingId={operatorFeedbackOpen.bookingId}
         operatorId={operatorFeedbackOpen.operatorId}
         operatorName={operatorFeedbackOpen.operatorName}
+        onSubmitted={() => {
+          if (userId) fetchByTourist(userId); // refresh data after submission
+        }}
     />
     )}
 
@@ -208,6 +211,9 @@ export default function BookingHistoryScreen({headerHeight,
         bookingId={guideFeedbackOpen.bookingId}
         guideId={guideFeedbackOpen.guideId}
         guideName={guideFeedbackOpen.guideName}
+        onSubmitted={() => {
+          if (userId) fetchByTourist(userId); // refresh data after submission
+        }}
     />
     )}
     </ScrollView>
@@ -306,12 +312,14 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   approved: {
-    backgroundColor: '#d1fae5',
-    color: '#065f46',
+    backgroundColor: '#6ad068',
+    color: '#fff',
+    fontWeight: '900',
   },
   pending: {
-    backgroundColor: '#fef9c3',
-    color: '#92400e',
+    backgroundColor: '#ffd43b',
+    color: '#4d5596',
+    fontWeight: '900',
   },
   finished: {
     backgroundColor: '#e5e7eb',

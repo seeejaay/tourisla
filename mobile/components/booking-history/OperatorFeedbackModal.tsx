@@ -1,32 +1,31 @@
 import React, { useEffect, useState } from "react";
 import {
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  ScrollView,
+} from "react-native";
+import {
   fetchOperatorFeedbackQuestions,
   submitOperatorFeedback,
   fetchMyOperatorFeedbacks,
 } from "@/lib/api/feedback";
 
-interface OperatorFeedbackModalProps {
-  open: boolean;
-  onClose: () => void;
-  bookingId: number | null;
-  operatorName?: string;
-  operatorId?: number;
-  onSubmitted?: () => void;
-}
-
 const likertIcons = ["😡", "😕", "😐", "🙂", "😍"];
 
-export const OperatorFeedbackModal: React.FC<OperatorFeedbackModalProps> = ({
+export const OperatorFeedbackModal = ({
   open,
   onClose,
+  bookingId,
   operatorName = "Tour Operator",
   operatorId,
   onSubmitted,
 }) => {
-  const [questions, setQuestions] = useState<
-    { id: number; question_text: string }[]
-  >([]);
-  const [answers, setAnswers] = useState<{ [id: number]: number }>({});
+  const [questions, setQuestions] = useState([]);
+  const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(false);
   const [feedbackGiven, setFeedbackGiven] = useState(false);
 
@@ -34,19 +33,16 @@ export const OperatorFeedbackModal: React.FC<OperatorFeedbackModalProps> = ({
     if (open && operatorId) {
       fetchOperatorFeedbackQuestions().then(setQuestions);
       setAnswers({});
-      // Check if feedback already given
-      fetchMyOperatorFeedbacks().then(
-        (groups: { feedback_for_user_id: number }[]) => {
-          const found = groups.some(
-            (g) => g.feedback_for_user_id === operatorId
-          );
-          setFeedbackGiven(found);
-        }
-      );
+      fetchMyOperatorFeedbacks().then((groups) => {
+        const found = groups.some(
+          (g) => g.feedback_for_user_id === operatorId
+        );
+        setFeedbackGiven(found);
+      });
     }
   }, [open, operatorId]);
 
-  const handleSelect = (questionId: number, score: number) => {
+  const handleSelect = (questionId, score) => {
     setAnswers((prev) => ({ ...prev, [questionId]: score }));
   };
 
@@ -60,99 +56,139 @@ export const OperatorFeedbackModal: React.FC<OperatorFeedbackModalProps> = ({
           score: answers[q.id],
         })),
       });
-      if (onSubmitted) {
-        onSubmitted();
-      }
-      onClose();
-    } catch {
+      setFeedbackGiven(true);
+      if (onSubmitted) onSubmitted(); // already there in your modal
+    } catch (e) {
+      console.error(e);
       alert("Failed to submit feedback.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  if (!open) return null;
-
-  if (feedbackGiven) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div
-          className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-          onClick={onClose}
-        />
-        <div className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md z-10">
-          <button
-            className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center rounded-full bg-red-500 text-white text-2xl font-bold shadow hover:bg-red-600 transition"
-            onClick={onClose}
-            aria-label="Close"
-          >
-            ×
-          </button>
-          <h2 className="text-xl font-bold mb-4">Feedback Already Submitted</h2>
-          <div className="text-center text-lg text-green-600 font-semibold">
-            Thank you for your feedback!
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md z-10">
-        <button
-          className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center rounded-full bg-red-500 text-white text-2xl font-bold shadow hover:bg-red-600 transition"
-          onClick={onClose}
-          aria-label="Close"
-        >
-          ×
-        </button>
-        <h2 className="text-xl font-bold mb-4">
-          Leave Feedback for {operatorName}
-        </h2>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmit();
-          }}
-        >
-          {questions.map((q) => (
-            <div key={q.id} className="mb-4">
-              <div className="mb-2 font-medium">{q.question_text}</div>
-              <div className="flex gap-2">
-                {likertIcons.map((icon, idx) => (
-                  <button
-                    type="button"
-                    key={idx}
-                    className={`text-2xl p-2 rounded-full border-2 ${
-                      answers[q.id] === idx + 1
-                        ? "border-blue-600 bg-blue-100"
-                        : "border-gray-300"
-                    }`}
-                    onClick={() => handleSelect(q.id, idx + 1)}
-                  >
-                    {icon}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-          <button
-            type="submit"
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            disabled={
-              loading ||
-              questions.length === 0 ||
-              questions.some((q) => !answers[q.id])
-            }
-          >
-            {loading ? "Submitting..." : "Submit Feedback"}
-          </button>
-        </form>
-      </div>
-    </div>
+    <Modal visible={open} transparent animationType="slide">
+      <View style={styles.overlay}>
+        <View style={styles.container}>
+          {feedbackGiven ? (
+            <View>
+              <Text style={styles.title}>Feedback Already Submitted</Text>
+              <Text style={styles.thankYou}>Thank you for your feedback!</Text>
+              <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
+                <Text style={styles.closeText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <ScrollView>
+              <Text style={styles.title}>Leave Feedback for {operatorName}</Text>
+              {questions.map((q) => (
+                <View key={q.id} style={styles.questionBlock}>
+                  <Text style={styles.question}>{q.question_text}</Text>
+                  <View style={styles.likertRow}>
+                    {likertIcons.map((icon, idx) => (
+                      <TouchableOpacity
+                        key={idx}
+                        style={[
+                          styles.iconButton,
+                          answers[q.id] === idx + 1 && styles.iconSelected,
+                        ]}
+                        onPress={() => handleSelect(q.id, idx + 1)}
+                      >
+                        <Text style={styles.icon}>{icon}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              ))}
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={handleSubmit}
+                disabled={loading || questions.some((q) => !answers[q.id])}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.submitText}>Submit Feedback</Text>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
+                <Text style={styles.closeText}>Cancel</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          )}
+        </View>
+      </View>
+    </Modal>
   );
 };
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+  container: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    maxHeight: "90%",
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 12,
+  },
+  questionBlock: {
+    marginBottom: 16,
+  },
+  question: {
+    fontSize: 16,
+    marginBottom: 6,
+  },
+  likertRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  iconButton: {
+    padding: 10,
+    borderRadius: 50,
+    borderWidth: 2,
+    borderColor: "#ccc",
+    alignItems: "center",
+  },
+  iconSelected: {
+    borderColor: "#2563eb",
+    backgroundColor: "#dbeafe",
+  },
+  icon: {
+    fontSize: 24,
+  },
+  submitButton: {
+    marginTop: 20,
+    backgroundColor: "#2563eb",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  submitText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  closeBtn: {
+    marginTop: 12,
+    alignItems: "center",
+  },
+  closeText: {
+    color: "#64748b",
+    fontSize: 14,
+  },
+  thankYou: {
+    fontSize: 16,
+    color: "#16a34a",
+    fontWeight: "600",
+    textAlign: "center",
+    marginTop: 8,
+  },
+});

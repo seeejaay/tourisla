@@ -159,12 +159,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
-    marginVertical: 50,
   },
   scrollContent: {
     padding: 16,
-    paddingTop: 80,
-    paddingBottom: 80,
+    paddingTop: 120,
+    paddingBottom: 120,
   },
   center: {
     flex: 1,
@@ -273,7 +272,7 @@ const styles = StyleSheet.create({
   },
   historyButton: {
     marginTop: 12,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#24b4ab',
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 20,
