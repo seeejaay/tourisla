@@ -802,12 +802,12 @@ app.get(
 // Routes for Google Calendar integration
 app.get(
   "/api/v1/calendar/authorize",
-  allowedRoles(["Tour Guide", "Tourist"]),
+
   authorizeGoogleCalendarController
 );
 app.get(
   "/api/v1/calendar/auth/callback",
-  allowedRoles(["Tour Guide", "Tourist"]),
+
   googleCalendarCallbackController
 );
 
