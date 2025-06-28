@@ -1,18 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Article } from "@/app/static/article/useArticleSchema";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import Header from "@/components/custom/header";
 
 export default function ArticleDetailPage() {
   const { id } = useParams();
-  const router = useRouter();
+
   const [article, setArticle] = useState<Article | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  function toTitleCase(str: string) {
+    return str.replace(
+      /\w\S*/g,
+      (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase()
+    );
+  }
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -42,84 +48,78 @@ export default function ArticleDetailPage() {
     );
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8">
-      <Button variant="outline" onClick={() => router.back()} className="mb-6">
-        ← Back
-      </Button>
-
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-3xl font-bold text-gray-800">
-            {article.title}
-          </CardTitle>
-          <p className="text-sm text-gray-600">By {article.author}</p>
-        </CardHeader>
-
-        <CardContent className="space-y-6 pb-6">
-          {article.thumbnail_url && (
-            <div>
-              <img
+    <>
+      <Header />
+      <div className="min-h-screen bg-gradient-to-b to-[#b6e0e4] via-[#f0f0f0] from-[#e6f7fa]">
+        <main className="max-w-5xl mx-auto px-4 pt-32 pb-16">
+          {/* Title over image if present */}
+          {article.thumbnail_url ? (
+            <div className="relative w-full h-64 flex items-center justify-center mb-8">
+              <Image
+                width={800}
+                height={400}
                 src={article.thumbnail_url}
                 alt={article.title}
-                className="w-full max-h-[400px] object-contain rounded shadow"
+                className="w-full h-64 object-cover rounded-lg"
               />
+              <h1 className="absolute inset-0 flex items-center justify-center text-4xl font-extrabold text-white text-center bg-black/40 rounded-lg px-4">
+                {article.title}
+              </h1>
             </div>
+          ) : (
+            <h1 className="text-4xl font-extrabold text-[#1c5461] text-center mb-8">
+              {article.title}
+            </h1>
           )}
 
-          {article.video_url && (
-            <div>
-              <Label className="text-muted-foreground">Video</Label>
-              <div className="mt-2">
-                {article.video_url.includes("youtube.com") ||
-                article.video_url.includes("youtu.be") ? (
-                  <iframe
-                    src={`https://www.youtube.com/embed/${extractYouTubeId(
-                      article.video_url
-                    )}`}
-                    title="YouTube video player"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="w-full max-w-[560px] h-[315px] rounded shadow"
-                  />
-                ) : (
-                  <a
-                    href={article.video_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 underline"
-                  >
-                    Watch Video
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
-
-          {article.tags && (
-            <div>
-              <Label className="text-muted-foreground">Tags</Label>
-              <div className="flex flex-wrap gap-2 mt-1">
+          {/* Author and tags */}
+          <div className="mb-6">
+            <h5 className="text-lg font-semibold text-[#1c5461] mb-2">
+              {article.title}
+            </h5>
+            <p className="text-sm text-[#1c5461] mb-2">
+              BY:{" "}
+              <span className="font-bold">{toTitleCase(article.author)}</span>
+            </p>
+            {article.tags && (
+              <div className="flex flex-wrap gap-2">
                 {article.tags.split(",").map((tag, idx) => (
                   <span
                     key={idx}
-                    className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded"
+                    className="bg-[#e6f7fa] text-[#3e979f] text-xs font-medium px-3 py-1 rounded-full capitalize"
                   >
                     {tag.trim()}
                   </span>
                 ))}
               </div>
+            )}
+          </div>
+
+          {/* Video */}
+          {article.video_url && (
+            <div className="mb-8">
+              <div className="w-full">
+                <iframe
+                  src={`https://www.youtube.com/embed/${extractYouTubeId(
+                    article.video_url
+                  )}`}
+                  title={article.title}
+                  allowFullScreen
+                  className="w-full aspect-video rounded-lg shadow"
+                ></iframe>
+              </div>
             </div>
           )}
 
-          <div>
-            <Label className="text-muted-foreground">Content</Label>
-            <div className="whitespace-pre-line text-gray-800 text-base leading-relaxed">
+          {/* Content */}
+          <section>
+            <div className="whitespace-pre-line text-gray-800 text-lg leading-relaxed bg-[#f1f1f1] rounded-xl p-6 shadow-inner">
               {article.body}
             </div>
-          </div>
-        </CardContent>
-      </Card>
-    </main>
+          </section>
+        </main>
+      </div>
+    </>
   );
 }
 
