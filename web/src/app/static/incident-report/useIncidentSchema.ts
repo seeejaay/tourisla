@@ -1,6 +1,7 @@
 import * as yup from "yup";
 
 export interface IncidentReport {
+  status: string;
   id: number;
   submitted_by?: number;
   submitted_by_name?: string;

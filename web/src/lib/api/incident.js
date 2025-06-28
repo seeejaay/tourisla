@@ -23,3 +23,12 @@ export const fetchIncidentReportsByUser = async (userId) => {
   });
   return res.data;
 };
+
+export const updateIncidentStatus = async (id, status) => {
+  const res = await axios.patch(
+    `${API_URL}incident-report/${id}/status`,
+    { status },
+    { withCredentials: true }
+  );
+  return res.data;
+};

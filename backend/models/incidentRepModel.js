@@ -1,6 +1,5 @@
 const db = require("../db/index.js");
 
-
 const createIncidentReport = async ({
   submitted_by,
   incident_type,
@@ -8,16 +7,16 @@ const createIncidentReport = async ({
   incident_date,
   incident_time,
   description,
-  photo_url
+  photo_url,
 }) => {
   // Fetch role inside the model
   const userResult = await db.query(
-    'SELECT role FROM users WHERE user_id = $1',
+    "SELECT role FROM users WHERE user_id = $1",
     [submitted_by]
   );
 
   if (userResult.rowCount === 0) {
-    throw new Error('User not found');
+    throw new Error("User not found");
   }
 
   const role = userResult.rows[0].role;
@@ -35,11 +34,20 @@ const createIncidentReport = async ({
       status
     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     RETURNING *`,
-    [submitted_by, role, incident_type, location, incident_date, incident_time, description, photo_url, 'RECEIVED']
+    [
+      submitted_by,
+      role,
+      incident_type,
+      location,
+      incident_date,
+      incident_time,
+      description,
+      photo_url,
+      "RECEIVED",
+    ]
   );
   return result.rows[0];
 };
-
 
 const getAllIncidentReports = async () => {
   const result = await db.query(`
@@ -54,17 +62,18 @@ const getAllIncidentReports = async () => {
   return result.rows;
 };
 
-
 const getIncidentReportsByUser = async (userId) => {
-  const result = await db.query(`
+  const result = await db.query(
+    `
     SELECT *
     FROM incident_report
     WHERE submitted_by = $1
     ORDER BY submitted_at DESC
-  `, [userId]);
+  `,
+    [userId]
+  );
   return result.rows;
 };
-
 
 const updateIncidentStatus = async (id, status) => {
   const result = await db.query(
@@ -81,5 +90,5 @@ module.exports = {
   createIncidentReport,
   getAllIncidentReports,
   getIncidentReportsByUser,
-  updateIncidentStatus
+  updateIncidentStatus,
 };
