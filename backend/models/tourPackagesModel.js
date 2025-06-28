@@ -18,19 +18,10 @@ const createTourPackage = async ({
   cancellation_days,
   cancellation_note,
 }) => {
-  // Ensure assigned_guides is always an array
-  if (assigned_guides && !Array.isArray(assigned_guides)) {
-    assigned_guides = [assigned_guides];
-  }
-
-  // Convert all guide IDs to numbers (if they are strings)
-  assigned_guides = (assigned_guides || []).map((id) => Number(id));
-
-  console.log("Normalized assigned_guides:", assigned_guides);
-
+  console.log(assigned_guides);
   const result = await db.query(
     `INSERT INTO tour_packages 
-      (touroperator_id, package_name, location, description, price, duration_days, inclusions, exclusions, available_slots, date_start, date_end, start_time, end_time, cancellation_days, cancellation_note)
+      (touroperator_id, package_name, location, description, price, duration_days, inclusions, exclusions, available_slots, date_start, date_end, start_time, end_time,cancellation_days, cancellation_note)
      VALUES 
       ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
      RETURNING *`,
@@ -56,7 +47,6 @@ const createTourPackage = async ({
 
   // Insert assigned tour guides only if they have google_tokens
   for (const guideId of assigned_guides) {
-    if (!guideId) continue; // skip empty/invalid IDs
     const tokenRes = await db.query(
       `SELECT 1 FROM google_tokens WHERE tourguide_id = $1`,
       [guideId]
@@ -184,27 +174,8 @@ const getTourPackagesByTourGuide = async (tourguide_id) => {
 };
 
 const getAllTourPackages = async () => {
-  // Get all tour packages
   const result = await db.query(`SELECT * FROM tour_packages`);
-  const packages = result.rows;
-
-  // For each package, get assigned guides (with names)
-  for (const pkg of packages) {
-    const guidesRes = await db.query(
-      `SELECT 
-        tga.tourguide_id,
-        ta.first_name,
-        ta.last_name,
-        ta.email
-      FROM tourguide_assignments tga
-      JOIN tourguide_applicants ta ON tga.tourguide_id = ta.id
-      WHERE tga.tour_package_id = $1`,
-      [pkg.id]
-    );
-    pkg.tour_guides = guidesRes.rows;
-  }
-
-  return packages;
+  return result.rows;
 };
 
 module.exports = {
