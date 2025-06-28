@@ -6,25 +6,19 @@ export const useCalendar = () => {
   const [error, setError] = useState<string>("");
 
   // Authorize calendar
-  const authorizeCalendar = useCallback(async (): Promise<void> => {
+  // useCalendar.ts
+  const authorizeCalendar = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      // Call your API to get the Google OAuth URL
-      const { data } = await authorizeCalendarApi();
-      if (data && data.authUrl) {
-        // Redirect to the Google OAuth URL
-        window.location.href = data.authUrl;
-      } else {
-        setError("Failed to get authorization URL.");
-        setLoading(false);
-      }
+      const data = await authorizeCalendarApi();
+      setLoading(false);
+      return data; // { authUrl }
     } catch (err) {
       setError("Failed to authorize calendar.");
-      console.error(err);
       setLoading(false);
+      throw err;
     }
   }, []);
-
   return { authorizeCalendar, loading, error };
 };

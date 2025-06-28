@@ -69,7 +69,25 @@ export default function ProfilePage() {
       }
     }
     fetchUser();
-  }, [loggedInUser, router]);
+
+    async function authorizeGoogleCalendar() {
+      try {
+        const response = await authorizeCalendar();
+        if (response && response.authUrl) {
+          window.location.href = response.authUrl;
+        } else {
+          console.error(
+            "Invalid response from calendar authorization:",
+            response
+          );
+        }
+      } catch (error) {
+        console.error("Error authorizing Google Calendar:", error);
+      }
+    }
+
+    authorizeGoogleCalendar();
+  }, [loggedInUser, router, authorizeCalendar]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -287,7 +305,18 @@ export default function ProfilePage() {
                 {user.role && user.role.toLowerCase() === "tour guide" && (
                   <button
                     className="px-6 py-2 rounded-full bg-green-500 text-white font-semibold shadow hover:bg-green-600 transition"
-                    onClick={authorizeCalendar}
+                    onClick={async () => {
+                      try {
+                        const response = await authorizeCalendar();
+                        if (response && response.authUrl) {
+                          window.location.href = response.authUrl;
+                        } else {
+                          alert("Failed to get Google authorization URL.");
+                        }
+                      } catch (err) {
+                        alert("Failed to authorize Google Calendar.");
+                      }
+                    }}
                     type="button"
                   >
                     Authorize Google Calendar
