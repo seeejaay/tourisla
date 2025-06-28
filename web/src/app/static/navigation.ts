@@ -57,22 +57,7 @@ export const footerNavigation = [
 export const socialLinks = [
   {
     tag: "Facebook",
-    href: "https://www.facebook.com",
+    href: "https://www.facebook.com/lgubantayantourismoffice/about",
     title: "Facebook",
-  },
-  {
-    tag: "Twitter",
-    href: "https://www.twitter.com",
-    title: "Twitter",
-  },
-  {
-    tag: "Instagram",
-    href: "https://www.instagram.com",
-    title: "Instagram",
-  },
-  {
-    tag: "LinkedIn",
-    href: "https://www.linkedin.com",
-    title: "LinkedIn",
   },
 ];
