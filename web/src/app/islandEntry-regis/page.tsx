@@ -99,7 +99,9 @@ export default function IslandEntryPage() {
 
       const payload = {
         groupMembers,
-        payment_method: fee?.is_enabled ? values.payment_method.toUpperCase() : "NOT_REQUIRED",
+        payment_method: fee?.is_enabled
+          ? values.payment_method.toUpperCase()
+          : "NOT_REQUIRED",
         total_fee: fee ? fee.amount * groupMembers.length : 0,
       };
 
@@ -160,7 +162,8 @@ export default function IslandEntryPage() {
         {latestEntry && (
           <>
             <p>
-              Your Unique Code: <span className="font-mono">{latestEntry.unique_code}</span>
+              Your Unique Code:{" "}
+              <span className="font-mono">{latestEntry.unique_code}</span>
             </p>
             <img
               src={latestEntry.qr_code_url}
@@ -173,7 +176,9 @@ export default function IslandEntryPage() {
           Show this QR code at the entry point.
         </p>
         <button
-          onClick={() => window.location.href = process.env.NEXT_PUBLIC_FRONTEND_URL || "/"}
+          onClick={() =>
+            (window.location.href = process.env.NEXT_PUBLIC_FRONTEND_URL || "/")
+          }
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
         >
           Back to Home
@@ -185,263 +190,369 @@ export default function IslandEntryPage() {
   return (
     <>
       <Header />
-      <div className="max-w-lg mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg border border-gray-100">
-        <h1 className="text-3xl font-extrabold mb-6 text-blue-700 text-center">
-          Island Entry Registration
-        </h1>
-        <form onSubmit={formik.handleSubmit} className="space-y-5">
-          {islandEntryFields.map((field) => {
-            if (field.showIf && !field.showIf(formik.values)) return null;
-            if (field.type === "select") {
-              return (
-                <div key={field.name}>
-                  <label className="block mb-1 font-semibold text-gray-700">
-                    {field.label}
-                  </label>
-                  <select
-                    name={field.name}
-                    value={formik.values[field.name]}
-                    onChange={formik.handleChange}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    <option value="">Select</option>
-                    {field.options.map((opt: string) => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
-                    ))}
-                  </select>
-                  {formik.touched[field.name] && formik.errors[field.name] && (
-                    <div className="text-red-500 text-xs mt-1">
-                      {formik.errors[field.name]}
+      <div className="min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] flex flex-col items-center justify-start px-4 pt-24 pb-20">
+        <main className="w-full max-w-2xl pt-10">
+          <div className="p-8 shadow-lg border border-[#e6f7fa] bg-white rounded-2xl space-y-8">
+            <h1 className="text-3xl font-extrabold text-[#1c5461] text-center mb-2">
+              Island Entry Registration
+            </h1>
+            <form onSubmit={formik.handleSubmit} className="space-y-8">
+              {/* Main Visitor Fields */}
+              <div>
+                <h2 className="font-semibold text-lg mb-3 text-[#1c5461]">
+                  Main Visitor
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-semibold mb-2 text-[#1c5461]">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formik.values.name}
+                      onChange={formik.handleChange}
+                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd] focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
+                      placeholder="Enter name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-2 text-[#1c5461]">
+                      Age
+                    </label>
+                    <input
+                      type="number"
+                      name="age"
+                      value={formik.values.age}
+                      onChange={formik.handleChange}
+                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd] focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
+                      placeholder="Enter age"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="block font-semibold mb-2 text-[#1c5461]">
+                      Sex
+                    </label>
+                    <select
+                      name="sex"
+                      value={formik.values.sex}
+                      onChange={formik.handleChange}
+                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd] focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
+                    >
+                      <option value="">Select...</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2 md:mt-0 mt-6">
+                    <input
+                      type="checkbox"
+                      name="is_foreign"
+                      checked={formik.values.is_foreign}
+                      onChange={formik.handleChange}
+                      className="accent-[#3e979f] scale-125"
+                    />
+                    <label className="font-semibold text-[#1c5461]">
+                      Are you a foreign visitor?
+                    </label>
+                  </div>
+                </div>
+                {!formik.values.is_foreign && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label className="block font-semibold mb-2 text-[#1c5461]">
+                        Municipality
+                      </label>
+                      <input
+                        type="text"
+                        name="municipality"
+                        value={formik.values.municipality}
+                        onChange={formik.handleChange}
+                        className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd] focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
+                        placeholder="Enter municipality"
+                      />
                     </div>
-                  )}
-                </div>
-              );
-            }
-            if (field.type === "checkbox") {
-              return (
-                <div key={field.name} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name={field.name}
-                    checked={formik.values[field.name]}
-                    onChange={formik.handleChange}
-                    className="mr-2 accent-blue-600"
-                  />
-                  <label className="font-semibold text-gray-700">
-                    {field.label}
-                  </label>
-                </div>
-              );
-            }
-            return (
-              <div key={field.name}>
-                <label className="block mb-1 font-semibold text-gray-700">
-                  {field.label}
-                </label>
-                <input
-                  type={field.type}
-                  name={field.name}
-                  value={formik.values[field.name]}
-                  onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-                {formik.touched[field.name] && formik.errors[field.name] && (
-                  <div className="text-red-500 text-xs mt-1">
-                    {formik.errors[field.name]}
+                    <div>
+                      <label className="block font-semibold mb-2 text-[#1c5461]">
+                        Province
+                      </label>
+                      <input
+                        type="text"
+                        name="province"
+                        value={formik.values.province}
+                        onChange={formik.handleChange}
+                        className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd] focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
+                        placeholder="Enter province"
+                      />
+                    </div>
                   </div>
                 )}
-              </div>
-            );
-          })}
-
-          <div>
-            <h3 className="font-bold mb-2 text-gray-800">Companions</h3>
-            {companions.map((comp, idx) => (
-              <div
-                key={idx}
-                className="border border-gray-200 p-3 mb-3 rounded-lg bg-gray-50"
-              >
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-semibold text-blue-600">
-                    Companion {idx + 1}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const updated = companions.filter((_, i) => i !== idx);
-                      setCompanions(updated);
-                      formik.setFieldValue("companions", updated);
-                    }}
-                    className="text-red-500 hover:text-red-700 text-xs"
+                <div className="mt-4">
+                  <label className="block font-semibold mb-2 text-[#1c5461]">
+                    Country
+                  </label>
+                  <select
+                    name="country"
+                    value={formik.values.country}
+                    onChange={formik.handleChange}
+                    className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd] focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
                   >
-                    Remove
-                  </button>
+                    <option value="">Select...</option>
+                    <option value="Philippines">Philippines</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
-                {islandEntryFields.map((field) => {
-                  if (field.showIf && !field.showIf(comp)) return null;
-                  if (field.type === "select") {
-                    return (
-                      <div key={field.name} className="mb-1">
-                        <label className="block text-gray-600">
-                          {field.label}
+              </div>
+              {/* Companions */}
+              <div>
+                <h2 className="font-semibold text-lg mb-3 text-[#1c5461]">
+                  Companions
+                </h2>
+                {companions.map((comp, idx) => (
+                  <div
+                    key={idx}
+                    className="relative mb-8 rounded-xl bg-[#f8fcfd] border border-[#e6f7fa] shadow-sm p-6"
+                  >
+                    <button
+                      type="button"
+                      className="absolute top-4 right-4 text-red-500 text-2xl font-bold"
+                      onClick={() => {
+                        const updated = companions.filter((_, i) => i !== idx);
+                        setCompanions(updated);
+                        formik.setFieldValue("companions", updated);
+                      }}
+                      aria-label="Remove companion"
+                    >
+                      &times;
+                    </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block font-semibold mb-2 text-[#1c5461]">
+                          Name
+                        </label>
+                        <input
+                          type="text"
+                          value={comp.name}
+                          onChange={(e) =>
+                            handleCompanionChange(idx, "name", e.target.value)
+                          }
+                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
+                          placeholder="Enter name"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold mb-2 text-[#1c5461]">
+                          Age
+                        </label>
+                        <input
+                          type="number"
+                          value={comp.age}
+                          onChange={(e) =>
+                            handleCompanionChange(idx, "age", e.target.value)
+                          }
+                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
+                          placeholder="Enter age"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold mb-2 text-[#1c5461]">
+                          Sex
                         </label>
                         <select
-                          value={comp[field.name]}
+                          value={comp.sex}
                           onChange={(e) =>
-                            handleCompanionChange(
-                              idx,
-                              field.name,
-                              e.target.value
-                            )
+                            handleCompanionChange(idx, "sex", e.target.value)
                           }
-                          className="w-full border border-gray-300 rounded-lg px-2 py-1"
+                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
                         >
-                          <option value="">Select</option>
-                          {field.options.map((opt: string) => (
-                            <option key={opt} value={opt}>
-                              {opt}
-                            </option>
-                          ))}
+                          <option value="">Select...</option>
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
                         </select>
                       </div>
-                    );
-                  }
-                  if (field.type === "checkbox") {
-                    return (
-                      <div key={field.name} className="mb-1 flex items-center">
+                      <div className="flex items-center gap-2 mt-8 md:mt-0">
                         <input
                           type="checkbox"
-                          checked={comp[field.name]}
+                          checked={!!comp.is_foreign}
                           onChange={(e) =>
                             handleCompanionChange(
                               idx,
-                              field.name,
+                              "is_foreign",
                               e.target.checked
                             )
                           }
-                          className="mr-2 accent-blue-600"
+                          className="accent-[#3e979f] scale-125"
                         />
-                        <label className="text-gray-600">{field.label}</label>
+                        <label className="font-semibold text-[#1c5461]">
+                          Are you a foreign visitor?
+                        </label>
                       </div>
-                    );
-                  }
-                  return (
-                    <div key={field.name} className="mb-1">
-                      <label className="block text-gray-600">
-                        {field.label}
-                      </label>
-                      <input
-                        type={field.type}
-                        value={comp[field.name]}
-                        onChange={(e) =>
-                          handleCompanionChange(idx, field.name, e.target.value)
-                        }
-                        className="w-full border border-gray-300 rounded-lg px-2 py-1"
-                      />
+                      {!comp.is_foreign && (
+                        <>
+                          <div>
+                            <label className="block font-semibold mb-2 text-[#1c5461]">
+                              Municipality
+                            </label>
+                            <input
+                              type="text"
+                              value={comp.municipality}
+                              onChange={(e) =>
+                                handleCompanionChange(
+                                  idx,
+                                  "municipality",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
+                              placeholder="Enter municipality"
+                            />
+                          </div>
+                          <div>
+                            <label className="block font-semibold mb-2 text-[#1c5461]">
+                              Province
+                            </label>
+                            <input
+                              type="text"
+                              value={comp.province}
+                              onChange={(e) =>
+                                handleCompanionChange(
+                                  idx,
+                                  "province",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
+                              placeholder="Enter province"
+                            />
+                          </div>
+                        </>
+                      )}
+                      <div>
+                        <label className="block font-semibold mb-2 text-[#1c5461]">
+                          Country
+                        </label>
+                        <select
+                          value={comp.country}
+                          onChange={(e) =>
+                            handleCompanionChange(
+                              idx,
+                              "country",
+                              e.target.value
+                            )
+                          }
+                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-[#3e979f] focus:outline-none"
+                        >
+                          <option value="">Select...</option>
+                          <option value="Philippines">Philippines</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
                     </div>
-                  );
-                })}
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={addCompanion}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded-lg mt-2"
-            >
-              Add Companion
-            </button>
-          </div>
-
-          {fee?.is_enabled && (
-            <div>
-              <label className="block font-semibold text-gray-700">
-                Total to Pay:
-              </label>
-              <div className="text-xl font-bold text-green-700">
-                ₱{totalFee}
-              </div>
-            </div>
-          )}
-
-          {fee?.is_enabled && (
-            <div>
-              <label className="block font-semibold mb-1 text-gray-700">
-                Payment Method
-              </label>
-              <div className="flex gap-6">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="payment_method"
-                    value="Cash"
-                    checked={formik.values.payment_method === "Cash"}
-                    onChange={formik.handleChange}
-                    className="mr-2 accent-blue-600"
-                  />
-                  Cash
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="payment_method"
-                    value="Online"
-                    checked={formik.values.payment_method === "Online"}
-                    onChange={formik.handleChange}
-                    className="mr-2 accent-blue-600"
-                  />
-                  Online
-                </label>
-              </div>
-            </div>
-            )}
-
-            {showPaymentLink && latestEntry?.payment_link && (
-              <div className="mt-5 text-center space-y-3">
-                <p className="text-sm text-gray-600">Proceed to online payment:</p>
-                <a
-                  href={latestEntry.payment_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold"
-                >
-                  Pay via PayMongo
-                </a> 
-                <p className="text-sm text-gray-500">
-                  After paying, click the button below to confirm.
-                </p>
+                  </div>
+                ))}
                 <button
                   type="button"
-                  onClick={async () => {
-                  try {
-                    const updated = await getLatestIslandEntry();
-                    setLatestEntry(updated);
-                    setShowResult(true);
-                    setShowPaymentLink(false);
-                  } catch (err) {
-                    console.error("Failed to confirm payment:", err);
-                    alert("Something went wrong while confirming payment.");
-                  }
-                }}
-
-                  className="mt-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
+                  onClick={addCompanion}
+                  className="mt-2 rounded-lg border border-[#3e979f] text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] px-4 py-2 transition"
                 >
-                  Confirm Payment
+                  Add Companion
                 </button>
               </div>
-          )}
-
-          {!(formik.values.payment_method === "Online" && hasSubmitted && latestEntry?.payment_link) && (
-          <button
-            type="submit"
-            disabled={loading || !fee}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg w-full font-bold text-lg shadow transition"
-          >
-            {loading ? "Registering..." : "Submit"}
-          </button>
-        )}
-        </form>
+              {/* Payment and Submit */}
+              {fee?.is_enabled && (
+                <div>
+                  <label className="block font-semibold text-[#1c5461]">
+                    Total to Pay:
+                  </label>
+                  <div className="text-xl font-bold text-green-700">
+                    ₱{totalFee}
+                  </div>
+                </div>
+              )}
+              {fee?.is_enabled && (
+                <div>
+                  <label className="block font-semibold mb-1 text-[#1c5461]">
+                    Payment Method
+                  </label>
+                  <div className="flex gap-6">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="payment_method"
+                        value="Cash"
+                        checked={formik.values.payment_method === "Cash"}
+                        onChange={formik.handleChange}
+                        className="mr-2 accent-[#3e979f]"
+                      />
+                      Cash
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="payment_method"
+                        value="Online"
+                        checked={formik.values.payment_method === "Online"}
+                        onChange={formik.handleChange}
+                        className="mr-2 accent-[#3e979f]"
+                      />
+                      Online
+                    </label>
+                  </div>
+                </div>
+              )}
+              {showPaymentLink && latestEntry?.payment_link && (
+                <div className="mt-5 text-center space-y-3">
+                  <p className="text-sm text-gray-600">
+                    Proceed to online payment:
+                  </p>
+                  <a
+                    href={latestEntry.payment_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block bg-[#3e979f] hover:bg-[#1c5461] text-white px-4 py-2 rounded-lg font-semibold"
+                  >
+                    Pay via PayMongo
+                  </a>
+                  <p className="text-sm text-gray-500">
+                    After paying, click the button below to confirm.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const updated = await getLatestIslandEntry();
+                        setLatestEntry(updated);
+                        setShowResult(true);
+                        setShowPaymentLink(false);
+                      } catch (err) {
+                        console.error("Failed to confirm payment:", err);
+                        alert("Something went wrong while confirming payment.");
+                      }
+                    }}
+                    className="mt-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
+                  >
+                    Confirm Payment
+                  </button>
+                </div>
+              )}
+              {!(
+                formik.values.payment_method === "Online" &&
+                hasSubmitted &&
+                latestEntry?.payment_link
+              ) && (
+                <button
+                  type="submit"
+                  disabled={loading || !fee}
+                  className="bg-[#3e979f] hover:bg-[#1c5461] text-white px-6 py-2 rounded-lg w-full font-bold text-lg shadow transition"
+                >
+                  {loading ? "Registering..." : "Submit"}
+                </button>
+              )}
+            </form>
+          </div>
+        </main>
       </div>
     </>
   );
