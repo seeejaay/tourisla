@@ -10,6 +10,7 @@ const { getGuideRegisById } = require("../models/guideRegisModel.js");
 // FOR TOUR GUIDES ONLY
 // Redirects user to Google's consent page for Calendar access
 const authorizeGoogleCalendarController = async (req, res) => {
+  console.log("Authorizing Google Calendar for user:", req.session.user);
   const userId = req.session.user.id;
   if (!userId) {
     return res.status(401).json({ error: "Unauthorized access." });
