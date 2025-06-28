@@ -50,24 +50,28 @@ export default function PublicArticlesPage() {
       <div className="min-h-screen bg-[#f1f1f1]">
         <div className="relative pt-24 w-full h-[400px] overflow-hidden ">
           <Image
-            src="/images/camp_sawi.webp"
+            src="/images/article_image.webp"
             alt="Featured Icon"
             fill
-            className="object-cover"
+            className="object-cover object-center"
           />
           {/* Dimming overlay */}
           <div className="absolute inset-0 bg-black/50 z-10" />
           {/* Centered text */}
-          <div className="absolute top-20 inset-0 flex items-center justify-center z-20">
+          <div className="absolute top-20 inset-0 flex items-center justify-center z-20 flex-col space-y-4">
             <h2 className="text-5xl font-extrabold text-white text-center drop-shadow-lg">
-              Articles
+              Kakyop, Sara Kag Bwas
             </h2>
+
+            <p className="text-xl text-white text-center font-semibold drop-shadow-lg">
+              Yesterday, Today, and Tomorrow
+            </p>
           </div>
         </div>
         <main className="  px-4 py-10 max-w-[1500px] mx-auto space-y-5">
           {/* Featured Articles Carousel */}
           <h2 className="text-4xl font-extrabold text-[#1c5461] text-start ">
-            Featured Articles
+            Featured
           </h2>
           {featured.length > 0 && (
             <section>
@@ -124,7 +128,7 @@ export default function PublicArticlesPage() {
           {/* Regular Articles */}
           <section>
             <h2 className="text-2xl font-bold text-[#1c5461] mb-6">
-              More Articles
+              Local Culture and History
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {paginatedRegular.map((article) => (
