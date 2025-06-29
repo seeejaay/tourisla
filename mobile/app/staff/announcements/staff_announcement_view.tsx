@@ -20,12 +20,9 @@ import { LinearGradient } from "expo-linear-gradient";
 const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 0;
 const { width, height } = Dimensions.get('window');
 
-// Helper function to convert text to sentence case (capitalize only first letter)
 const toSentenceCase = (text: string) => {
   if (!text) return '';
-  // Convert to lowercase first
   const lowercase = text.toLowerCase();
-  // Capitalize only the first letter
   return lowercase.charAt(0).toUpperCase() + lowercase.slice(1);
 };
 
@@ -46,19 +43,13 @@ export default function StaffAnnouncementViewScreen() {
   const [announcement, setAnnouncement] = useState<Announcement | null>(null);
 
   useEffect(() => {
-    if (id) {
-      loadAnnouncement(id);
-    }
+    if (id) loadAnnouncement(id);
   }, [id]);
 
   const loadAnnouncement = async (announcementId: string) => {
     try {
       const data = await viewAnnouncement(announcementId);
-      if (data) {
-        setAnnouncement(data as Announcement);
-      } else {
-        setAnnouncement(null);
-      }
+      setAnnouncement(data || null);
     } catch (error) {
       console.error("Failed to load announcement:", error);
     }
@@ -66,25 +57,44 @@ export default function StaffAnnouncementViewScreen() {
 
   const handleShare = async () => {
     if (!announcement) return;
-    
+  
+    const formattedDate = new Date(announcement.date_posted).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  
+    const imageLink = announcement.image_url || "";
+  
+    const shareMessage = `${imageLink}
+  
+  📢 ${announcement.title}
+  
+  🗓️ Date: ${formattedDate}
+  📍 Location: ${toSentenceCase(announcement.location)}
+  
+  📝 ${toSentenceCase(announcement.description)}
+  
+  — Powered by TourisLa`;
+  
     try {
+      // prevent duplicate call by disabling double-tap
       await Share.share({
-        message: `${announcement.title}\n\n${announcement.description}\n\nLocation: ${announcement.location}`,
+        message: shareMessage,
         title: announcement.title,
       });
-    } catch (error) {
-      console.error("Error sharing announcement:", error);
+    } catch (error: any) {
+      console.error("Error sharing announcement:", error.message);
     }
   };
+  
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-        <View style={styles.loadingContent}>
-          <ActivityIndicator size="large" color="#38bdf8" />
-          <Text style={styles.loadingText}>Loading announcement...</Text>
-        </View>
+        <ActivityIndicator size="large" color="#38bdf8" />
+        <Text style={styles.loadingText}>Loading announcement...</Text>
       </View>
     );
   }
@@ -95,28 +105,16 @@ export default function StaffAnnouncementViewScreen() {
         <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
         <FontAwesome5 name="exclamation-triangle" size={50} color="#fbbf24" />
         <Text style={styles.errorTitle}>Announcement Not Found</Text>
-        <Text style={styles.errorText}>
-          {error || "We couldn't find the announcement you're looking for."}
-        </Text>
-        <TouchableOpacity
-          style={styles.backToListButton}
-          onPress={() => router.back()}
-        >
+        <Text style={styles.errorText}>{error || "We couldn't find the announcement you're looking for."}</Text>
+        <TouchableOpacity style={styles.backToListButton} onPress={() => router.back()}>
           <Text style={styles.backToListButtonText}>Return to List</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  // Format the category by replacing underscores with spaces and capitalizing each word
-  const formattedCategory = announcement.category
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .split(" ")
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+  const formattedCategory = announcement.category.replace(/_/g, " ").toLowerCase().split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
 
-  // Get a color based on the category
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
       EVENTS: "#4f46e5",
@@ -141,101 +139,61 @@ export default function StaffAnnouncementViewScreen() {
       DENGUE_WATERBORNE: "#84cc16",
       POWER_INTERRUPTION: "#64748b",
     };
-    
     return colors[category] || "#6b7280";
   };
 
   const categoryColor = getCategoryColor(announcement.category);
-  const formattedDate = new Date(announcement.date_posted).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-  });
+  const formattedDate = new Date(announcement.date_posted).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#fff', '#0c5e58']}
+      style={styles.container}
+    >
       <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      
-      {/* Top Navigation Bar */}
       <View style={styles.navbar}>
-        <TouchableOpacity 
-          style={styles.navButton}
-          onPress={() => router.back()}
-        >
-          <FontAwesome5 name="arrow-left" size={18} color="#fff" />
+        <TouchableOpacity style={styles.navButton} onPress={() => router.back()}>
+          <FontAwesome5 name="arrow-left" size={18} color="#000" />
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.navButton}
-          onPress={handleShare}
-        >
-          <FontAwesome5 name="share-alt" size={18} color="#fff" />
+        <TouchableOpacity style={styles.navButton} onPress={handleShare}>
+          <FontAwesome5 name="share-alt" size={18} color="#000" />
         </TouchableOpacity>
       </View>
-      
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Hero Image Section */}
+
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
         {announcement.image_url ? (
-          <View style={styles.imageContainer}>
-            <Image 
-              source={{ uri: announcement.image_url }} 
-              style={styles.fullImage}
-              resizeMode="cover"
-            />
-          </View>
+          <Image source={{ uri: announcement.image_url }} style={styles.fullImage} resizeMode="cover" />
         ) : (
-          <View style={styles.noImageContainer}>
-            <LinearGradient
-              colors={[categoryColor, '#0f172a']}
-              style={styles.noImageGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <FontAwesome5 name="image" size={40} color="#fff" />
-              <Text style={styles.noImageText}>No image available</Text>
-            </LinearGradient>
-          </View>
+          <LinearGradient colors={[categoryColor, '#0f172a']} style={styles.noImageGradient}>
+            <FontAwesome5 name="image" size={40} color="#fff" />
+            <Text style={styles.noImageText}>No image available</Text>
+          </LinearGradient>
         )}
-        
-        {/* Content Section */}
-        <View style={styles.contentContainer}>
-          {/* Category and Date */}
+
+        <View style={styles.card}>
           <View style={styles.metaContainer}>
-            <View style={[styles.categoryTag, { backgroundColor: categoryColor }]}>
+            <View style={[styles.categoryTag, { backgroundColor: categoryColor }]}> 
               <Text style={styles.categoryTagText}>{formattedCategory}</Text>
             </View>
-            
-            <View style={styles.dateContainer}>
-              <FontAwesome5 name="calendar-alt" solid size={14} color="#94a3b8" />
-              <Text style={styles.dateText}>{formattedDate}</Text>
-            </View>
+            <Text style={styles.dateText}>{formattedDate}</Text>
           </View>
-          
-          {/* Title */}
-          <Text style={styles.title}>{announcement.title}</Text>
-          
-          {/* Location */}
+
+          <Text style={styles.title}>{toSentenceCase(announcement.title)}
+          </Text>
           <View style={styles.locationContainer}>
-            <FontAwesome5 name="map-marker-alt" solid size={14} color={categoryColor} />
+            <FontAwesome5 name="map-marker-alt" size={16} color={categoryColor} />
             <Text style={styles.locationText}>{toSentenceCase(announcement.location)}</Text>
           </View>
-          
-          {/* Description */}
-          <View style={styles.descriptionContainer}>
-            <Text style={styles.descriptionLabel}>Description</Text>
-            <Text style={styles.descriptionText}>{toSentenceCase(announcement.description)}</Text>
-          </View>
+
+          <Text style={styles.descriptionText}>{toSentenceCase(announcement.description)}</Text>
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#00365e',
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
   navbar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -243,157 +201,71 @@ const styles = StyleSheet.create({
     paddingTop: STATUS_BAR_HEIGHT + 10,
     paddingBottom: 10,
     paddingHorizontal: 16,
-    backgroundColor: 'transparent',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
+    backgroundColor: '#fff',
   },
   navButton: {
     width: 40,
     height: 40,
-    borderRadius: 8,
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  scrollView: {
-    flex: 1,
-  },
-  imageContainer: {
-    width: '100%',
-    height: height * 0.45,
-  },
-  fullImage: {
-    width: '100%',
-    height: '100%',
-  },
-  noImageContainer: {
-    width: '100%',
-    height: height * 0.3,
-  },
+  scrollView: { flex: 1 },
+  fullImage: { width: '100%', height: height * 0.3 },
   noImageGradient: {
     width: '100%',
-    height: '100%',
+    height: height * 0.3,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  noImageText: {
-    color: '#fff',
-    marginTop: 12,
-    fontSize: 16,
-    opacity: 0.8,
-  },
-  contentContainer: {
-    backgroundColor: '#0f172a',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    marginTop: -24,
-    paddingHorizontal: 16,
-    paddingTop: 24,
-    paddingBottom: 40,
+  noImageText: { color: '#fff', fontSize: 16, marginTop: 12, opacity: 0.8 },
+  card: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 16,
+    marginTop: -20,
+    padding: 20,
+    marginHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
   },
   metaContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   categoryTag: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 6,
   },
   categoryTagText: {
     color: '#fff',
-    fontWeight: '700',
+    fontWeight: 'bold',
     fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
   },
-  dateContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#94a3b8',
-    marginLeft: 8,
-  },
+  dateText: { fontSize: 13, color: '#000' },
   title: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#fff',
-    marginBottom: 6,
-    lineHeight: 25,
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#1e293b',
+    marginBottom: 4,
+    lineHeight: 23,
   },
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
-  },
-  locationText: {
-    fontSize: 14,
-    color: '#cbd5e1',
-    marginLeft: 8,
-  },
-  descriptionContainer: {
     marginBottom: 16,
   },
-  descriptionLabel: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
-    marginBottom: 6,
-  },
-  descriptionText: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#cbd5e1',
-  },
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: '#0f172a',
-  },
-  loadingContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: '#cbd5e1',
-    marginTop: 16,
-    fontSize: 16,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0f172a',
-    padding: 24,
-  },
-  errorTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#fff',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#94a3b8',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  backToListButton: {
-    backgroundColor: '#3b82f6',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  backToListButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
+  locationText: { marginLeft: 8, fontSize: 14, color: '#334155' },
+  descriptionText: { fontSize: 14, lineHeight: 20, color: '#475569' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a' },
+  loadingText: { color: '#cbd5e1', marginTop: 16, fontSize: 16 },
+  errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a', padding: 24 },
+  errorTitle: { fontSize: 22, fontWeight: '700', color: '#fff', marginTop: 16, marginBottom: 8 },
+  errorText: { fontSize: 16, color: '#94a3b8', textAlign: 'center', marginBottom: 24 },
+  backToListButton: { backgroundColor: '#3b82f6', paddingVertical: 12, paddingHorizontal: 24, borderRadius: 8 },
+  backToListButtonText: { color: '#fff', fontWeight: '600' },
 });

@@ -241,10 +241,10 @@ export default function AdminProfile() {
             </View>
           </View>
           <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.headerIconButton}>
+            {/* <TouchableOpacity style={styles.headerIconButton}>
               <Feather name="bell" size={22} color="#fff" />
               <View style={styles.notificationDot} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             <TouchableOpacity onPress={handleSettings} style={styles.menuButton}>
               <Feather name="menu" size={24} color="#fff" />
             </TouchableOpacity>
