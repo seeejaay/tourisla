@@ -68,23 +68,11 @@ export default function SignUp() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] px-4 py-8 relative">
       {/* Logo and intro */}
-      <div className="absolute top-80 left-24 z-10 flex flex-col items-center ">
-        <Image
-          src="/images/TourISLA_Logo.png"
-          alt="Tourisla Logo"
-          width={512}
-          height={512}
-          className="mb-4"
-        />
-        <p className="text-3xl absolute left-32 top-52 text-center text-[#3e979f] font-bold ">
-          Kakyop, Sara Kag Bwas
-        </p>
-      </div>
       <Image
         src="/images/bg.svg"
         alt="Tourisla Logo"
         fill
-        className="absolute top-4 left-4"
+        className="absolute top-4 left-4 object-cover object-center"
       />
       <div className="w-full max-w-2xl">
         <div className="relative overflow-hidden rounded-2xl shadow-2xl border border-[#e6f7fa] bg-white/80 backdrop-blur-lg">
