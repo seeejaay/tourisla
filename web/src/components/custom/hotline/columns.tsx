@@ -25,21 +25,21 @@ export function columns(
       header: ({ column }) => (
         <Button
           variant="ghost"
-          className="w-32 p-0 font-bold text-left flex justify-start"
+          className="w-40 font-bold text-left flex items-center gap-1 px-0 py-1"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Municipality
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className="ml-1 h-4 w-4 text-[#3e979f]" />
         </Button>
       ),
       cell: ({ row }) => {
         const value = row.original.municipality;
         return (
-          <span>
+          <span className="truncate font-medium text-[#1c5461]">
             {value ? (
-              value.replace("_", " ")
+              value.replace(/_/g, " ")
             ) : (
-              <span className="italic text-muted-foreground">N/A</span>
+              <span className="italic text-gray-400">N/A</span>
             )}
           </span>
         );
@@ -51,21 +51,21 @@ export function columns(
       header: ({ column }) => (
         <Button
           variant="ghost"
-          className="w-32 font-bold text-left flex justify-start"
+          className="w-40 font-bold text-left flex items-center gap-1 px-0 py-1"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Type
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className="ml-1 h-4 w-4 text-[#3e979f]" />
         </Button>
       ),
       cell: ({ row }) => {
         const value = row.original.type;
         return (
-          <span>
+          <span className="truncate uppercase text-xs tracking-wide text-[#1c5461]">
             {value ? (
-              value.replace("_", " ")
+              value.replace(/_/g, " ")
             ) : (
-              <span className="italic text-muted-foreground">N/A</span>
+              <span className="italic text-gray-400">N/A</span>
             )}
           </span>
         );
@@ -77,61 +77,59 @@ export function columns(
       header: ({ column }) => (
         <Button
           variant="ghost"
-          className="w-32 font-bold text-left flex justify-start"
+          className="w-40 font-bold text-left flex items-center gap-1 px-0 py-1"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Contact Number
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => <span>{row.original.contact_number}</span>,
-      enableSorting: true,
-    },
-    {
-      accessorKey: "address",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="w-32 font-bold text-left flex justify-start"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Address
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className="ml-1 h-4 w-4 text-[#3e979f]" />
         </Button>
       ),
       cell: ({ row }) => (
-        <span>
-          {row.original.address || (
-            <span className="italic text-muted-foreground">N/A</span>
-          )}
+        <span className="truncate text-[#3e979f]">
+          {row.original.contact_number}
         </span>
       ),
       enableSorting: true,
     },
+
     {
       accessorKey: "actions",
-      header: () => <span className="font-bold">Actions</span>,
+      header: () => (
+        <span className="font-bold text-center block">Actions</span>
+      ),
       cell: ({ row }) => {
         const hotline = row.original;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="p-0 w-8 h-8">
-                <MoreHorizontal className="h-4 w-4" />
+              <Button
+                variant="ghost"
+                className="p-0 w-8 h-8 flex items-center justify-center hover:bg-[#e6f7fa]"
+                aria-label="Open actions"
+              >
+                <MoreHorizontal className="h-5 w-5 text-[#1c5461]" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="min-w-[140px]">
+              <DropdownMenuLabel className="text-[#1c5461]">
+                Actions
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setDialogHotline(hotline)}>
+              <DropdownMenuItem
+                onClick={() => setDialogHotline(hotline)}
+                className="hover:bg-[#e6f7fa] cursor-pointer"
+              >
                 View
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setEditDialogHotline(hotline)}>
+              <DropdownMenuItem
+                onClick={() => setEditDialogHotline(hotline)}
+                className="hover:bg-[#e6f7fa] cursor-pointer"
+              >
                 Edit
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setDeleteDialogHotline(hotline)}
-                className="text-red-500"
+                className="text-red-500 hover:bg-red-50 cursor-pointer"
               >
                 Delete
               </DropdownMenuItem>

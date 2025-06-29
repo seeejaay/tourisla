@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent } from "@/components/ui/card";
 import { articleSchema } from "@/app/static/article/useArticleSchema";
 
 export default function AddArticle({
@@ -98,87 +99,113 @@ export default function AddArticle({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto pr-2"
-    >
-      {error && <div className="text-red-500 text-sm">{error}</div>}
+    <Card className="w-full max-w-2xl mx-auto border-none shadow-none">
+      <CardContent>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          {error && <div className="text-red-500 text-sm">{error}</div>}
 
-      <div className="flex flex-col gap-1">
-        <Label>Thumbnail Image</Label>
-        <Input type="file" accept="image/*" onChange={handleFileChange} />
-        {preview && (
-          <img
-            src={preview}
-            alt="Thumbnail preview"
-            className="mt-2 w-40 rounded"
-          />
-        )}
-      </div>
+          <div className="flex flex-col gap-1">
+            <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
+              Thumbnail Image
+            </Label>
+            <Input type="file" accept="image/*" onChange={handleFileChange} />
+            {preview && (
+              <img
+                src={preview}
+                alt="Thumbnail preview"
+                className="mt-2 w-40 rounded border"
+              />
+            )}
+          </div>
 
-      {[
-        { name: "title", label: "Title" },
-        { name: "body", label: "Content", type: "textarea" },
-        { name: "video_url", label: "Video URL" },
-        { name: "tags", label: "Tags (comma-separated)" },
-      ].map((field) => (
-        <div key={field.name} className="flex flex-col gap-1">
-          <Label htmlFor={field.name}>{field.label}</Label>
-          {field.type === "textarea" ? (
-            <Textarea
-              id={field.name}
-              name={field.name}
-              value={form[field.name as keyof typeof form]}
+          {[
+            { name: "title", label: "Title" },
+            { name: "body", label: "Content", type: "textarea" },
+            { name: "video_url", label: "Video URL" },
+            { name: "tags", label: "Tags (comma-separated)" },
+          ].map((field) => (
+            <div key={field.name} className="flex flex-col gap-1">
+              <Label
+                htmlFor={field.name}
+                className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]"
+              >
+                {field.label}
+              </Label>
+              {field.type === "textarea" ? (
+                <Textarea
+                  id={field.name}
+                  name={field.name}
+                  value={form[field.name as keyof typeof form]}
+                  onChange={handleChange}
+                  required={field.name !== "video_url" && field.name !== "tags"}
+                  className="bg-white border-[#e6f7fa] focus:border-[#3e979f] focus:ring-[#3e979f]"
+                />
+              ) : (
+                <Input
+                  id={field.name}
+                  name={field.name}
+                  value={form[field.name as keyof typeof form]}
+                  onChange={handleChange}
+                  type={field.type || "text"}
+                  required={field.name !== "video_url" && field.name !== "tags"}
+                  className="bg-white border-[#e6f7fa] focus:border-[#3e979f] focus:ring-[#3e979f]"
+                />
+              )}
+            </div>
+          ))}
+
+          <div className="flex flex-col gap-1">
+            <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
+              Status
+            </Label>
+            <select
+              name="status"
+              value={form.status}
               onChange={handleChange}
-              required={field.name !== "video_url" && field.name !== "tags"}
+              className="border border-[#e6f7fa] rounded px-2 py-2 text-sm bg-white focus:border-[#3e979f] focus:ring-[#3e979f]"
+            >
+              <option value="DRAFT">Draft</option>
+              <option value="PUBLISHED">Published</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="is_featured"
+              checked={form.is_featured}
+              onCheckedChange={(checked) =>
+                setForm((prev) => ({ ...prev, is_featured: checked }))
+              }
             />
-          ) : (
-            <Input
-              id={field.name}
-              name={field.name}
-              value={form[field.name as keyof typeof form]}
-              onChange={handleChange}
-              type={field.type || "text"}
-              required={field.name !== "video_url" && field.name !== "tags"}
-            />
-          )}
-        </div>
-      ))}
+            <Label
+              htmlFor="is_featured"
+              className="text-[#1c5461] font-semibold"
+            >
+              Featured Article
+            </Label>
+          </div>
 
-      <div className="flex flex-col gap-1">
-        <Label>Status</Label>
-        <select
-          name="status"
-          value={form.status}
-          onChange={handleChange}
-          className="border rounded px-2 py-1"
-        >
-          <option value="DRAFT">Draft</option>
-          <option value="PUBLISHED">Published</option>
-        </select>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Checkbox
-          id="is_featured"
-          checked={form.is_featured}
-          onCheckedChange={(checked) =>
-            setForm((prev) => ({ ...prev, is_featured: checked }))
-          }
-        />
-        <Label htmlFor="is_featured">Featured Article</Label>
-      </div>
-
-      <div className="flex gap-2 justify-end pt-2 sticky bottom-0 bg-white pb-4">
-        <Button type="submit" disabled={loading}>
-          {loading ? "Saving..." : "Add Article"}
-        </Button>
-        {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-        )}
-      </div>
-    </form>
+          <div className="flex gap-2 justify-end pt-2">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="bg-[#3e979f] hover:bg-[#1c5461] text-white font-semibold px-6 py-2 rounded-lg shadow"
+            >
+              {loading ? "Saving..." : "Add Article"}
+            </Button>
+            {onCancel && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                className="border-[#e6f7fa] text-[#1c5461] font-semibold px-6 py-2 rounded-lg"
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
