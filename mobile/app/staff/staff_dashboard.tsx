@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import StaffHomeScreen from './home/staff_home';
 import StaffMapScreen from './map/staff_map';
 import StaffAnnouncementsScreen from './announcements/staff_announcements';
+import IncidentReportScreen from '../guide/profile/about/incident-report';
 import MoreScreen from './more/MoreScreen';
 import StaffQRScan from './visitor/staff_qr_scan';
 import StaffProfile from './profile/staff_profile';
@@ -174,6 +175,8 @@ function CustomTabBar({ state, descriptors, navigation }) {
             IconComponent = FontAwesome5; // Use FontAwesome5 for QR code
           } else if (route.name === 'More') {
             iconName = isFocused ? "ellipsis-horizontal" : "ellipsis-horizontal-outline";
+          } else if (route.name === 'Incident Report') {
+            iconName = isFocused ? "flag" : "flag-outline";
           }
           
           const onPress = () => {
@@ -255,6 +258,12 @@ export default function StaffDashboard() {
           options={{ tabBarLabel: 'Home' }}
         >
           {() => <StaffHomeScreen headerHeight={headerHeight} />}
+        </Tab.Screen>
+        <Tab.Screen 
+          name="Incident Report"
+          options={{ tabBarLabel: 'QR Incident Report' }}
+        >
+          {() => <IncidentReportScreen headerHeight={headerHeight} />}
         </Tab.Screen>
         <Tab.Screen 
           name="QRScan"
