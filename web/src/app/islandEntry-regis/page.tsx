@@ -27,9 +27,6 @@ export interface RegistrationPayload {
 export interface LatestEntry {
   unique_code: string;
   qr_code_url: string;
-  // payment_method: string;
-  // status: string;
-  // total_fee: number;
   payment_link?: string;
   paymongo_status?: string;
 }
@@ -223,9 +220,18 @@ export default function IslandEntryPage() {
                             className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                           >
                             <option value="">Select...</option>
-                            {field.options.map((opt: string) => (
-                              <option key={opt} value={opt}>
-                                {opt}
+                            {field.options.map((opt) => (
+                              <option
+                                key={
+                                  typeof opt === "object"
+                                    ? opt.value || opt.label
+                                    : opt
+                                }
+                                value={
+                                  typeof opt === "object" ? opt.value : opt
+                                }
+                              >
+                                {typeof opt === "object" ? opt.label : opt}
                               </option>
                             ))}
                           </select>
@@ -324,9 +330,18 @@ export default function IslandEntryPage() {
                                 className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                               >
                                 <option value="">Select...</option>
-                                {field.options.map((opt: string) => (
-                                  <option key={opt} value={opt}>
-                                    {opt}
+                                {field.options.map((opt) => (
+                                  <option
+                                    key={
+                                      typeof opt === "object"
+                                        ? opt.value || opt.label
+                                        : opt
+                                    }
+                                    value={
+                                      typeof opt === "object" ? opt.value : opt
+                                    }
+                                  >
+                                    {typeof opt === "object" ? opt.label : opt}
                                   </option>
                                 ))}
                               </select>

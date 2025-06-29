@@ -49,7 +49,6 @@ export default function EditAccommodation({
 
     const result = AccommodationZodSchema.safeParse(form);
     if (!result.success) {
-      // Show all errors, or show which field is missing
       setError(
         result.error.errors
           .map((err) => `${err.path[0]}: ${err.message}`)
@@ -62,9 +61,9 @@ export default function EditAccommodation({
   };
 
   return (
-    <Card className="max-w-lg mx-auto">
+    <Card className="max-w-lg mx-auto shadow-none border-none">
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6 py-6">
+        <form onSubmit={handleSubmit} className="space-y-5 ">
           {accommodationFields
             .filter(
               (field) =>
@@ -74,7 +73,12 @@ export default function EditAccommodation({
             )
             .map((field) => (
               <div className="flex flex-col gap-1" key={field.name}>
-                <Label htmlFor={field.name}>{field.label}</Label>
+                <Label
+                  htmlFor={field.name}
+                  className="text-[#3e979f] font-semibold"
+                >
+                  {field.label}
+                </Label>
                 <Input
                   id={field.name}
                   name={field.name}
@@ -82,40 +86,71 @@ export default function EditAccommodation({
                   value={form[field.name]}
                   onChange={handleChange}
                   placeholder={field.placeholder}
+                  className="bg-white border-[#e6f7fa] focus:border-[#3e979f] focus:ring-[#3e979f]"
                 />
               </div>
             ))}
           {/* Show constants as readonly fields */}
           <div className="flex flex-col gap-1">
-            <Label htmlFor="Region">Region</Label>
-            <Input id="Region" name="Region" value={REGION} readOnly disabled />
+            <Label htmlFor="Region" className="text-[#3e979f] font-semibold">
+              Region
+            </Label>
+            <Input
+              id="Region"
+              name="Region"
+              value={REGION}
+              readOnly
+              disabled
+              className="bg-gray-100 border-[#e6f7fa] text-gray-500"
+            />
           </div>
           <div className="flex flex-col gap-1">
-            <Label htmlFor="Province">Province</Label>
+            <Label htmlFor="Province" className="text-[#3e979f] font-semibold">
+              Province
+            </Label>
             <Input
               id="Province"
               name="Province"
               value={PROVINCE}
               readOnly
               disabled
+              className="bg-gray-100 border-[#e6f7fa] text-gray-500"
             />
           </div>
           <div className="flex flex-col gap-1">
-            <Label htmlFor="municipality">Municipality</Label>
+            <Label
+              htmlFor="municipality"
+              className="text-[#3e979f] font-semibold"
+            >
+              Municipality
+            </Label>
             <Input
               id="municipality"
               name="municipality"
               value={MUNICIPALITY}
               readOnly
               disabled
+              className="bg-gray-100 border-[#e6f7fa] text-gray-500"
             />
           </div>
-          {error && <div className="text-red-500 text-sm">{error}</div>}
-          <div className="flex gap-4 pt-6 justify-end">
-            <Button type="submit" variant="default">
+          {error && (
+            <div className="text-red-500 text-sm bg-red-50 border border-red-200 rounded px-3 py-2">
+              {error}
+            </div>
+          )}
+          <div className="flex gap-3 pt-6 justify-end">
+            <Button
+              type="submit"
+              className="bg-[#3e979f] hover:bg-[#1c5461] text-white font-semibold px-6 py-2 rounded-lg shadow"
+            >
               Save
             </Button>
-            <Button type="button" variant="destructive" onClick={onCancel}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="border-[#e6f7fa] text-[#1c5461] font-semibold px-6 py-2 rounded-lg"
+            >
               Cancel
             </Button>
           </div>

@@ -1,5 +1,4 @@
 import {
-  BookOpen,
   BookUser,
   Home,
   Hotel,
@@ -45,12 +44,6 @@ const adminNavigation = [
     href: "/admin/hotline",
     title: "Hotline",
     icon: BookUser,
-  },
-  {
-    name: "Article",
-    href: "/admin/article",
-    title: "Article",
-    icon: BookOpen,
   },
   {
     name: "Incident Reports",
