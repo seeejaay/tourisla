@@ -5,6 +5,7 @@ import type { Visitor } from "@/app/static/visitor-registration/visitorSchema";
 import { useVisitorRegistration } from "@/hooks/useVisitorRegistration";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+
 const emptyVisitor = () =>
   Object.fromEntries(
     visitorRegistrationFields.map((f) => [
@@ -67,137 +68,55 @@ export default function WalkInStaffRegister() {
   };
 
   return (
-    <>
-      <div className="max-w-xl mx-auto py-8">
-        <h1 className="text-3xl font-bold mb-4">
-          Walk-In Visitor Registration (Staff)
-        </h1>
-        {result ? (
-          <div className="flex flex-col items-center gap-4 mt-8">
-            <h2 className="text-xl font-semibold">Registration Complete!</h2>
-            <p>
-              Unique code:{" "}
-              <span className="font-mono">{result.unique_code}</span>
+    <div className="min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] flex flex-col items-center justify-start px-4 pt-24 pb-20">
+      <main className="w-full max-w-2xl pt-16">
+        <div className="p-8 shadow-lg border border-[#e6f7fa] bg-white rounded-2xl space-y-8">
+          <div>
+            <h1 className="text-3xl font-extrabold text-[#1c5461] text-center mb-2">
+              Walk-In Visitor Registration (Staff)
+            </h1>
+            <p className="text-center text-[#51702c] mb-6">
+              Register a walk-in visitor and add companions if needed.
             </p>
-            <p>Show this QR code to the tourist so they can take a picture:</p>
-            <img src={result.qr_code_url} alt="QR Code" className="w-44 h-44" />
-            <Button
-              onClick={() => {
-                setResult(null);
-                setMainVisitor(emptyVisitor());
-                setCompanions([]);
-              }}
-            >
-              Register Another Visitor
-            </Button>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <h2 className="font-semibold mb-2">Main Visitor</h2>
-              <div className="grid grid-cols-1 gap-3">
-                {visitorRegistrationFields
-                  .filter((field) => {
-                    if (
-                      (field.name === "municipality" ||
-                        field.name === "province") &&
-                      !!mainVisitor["is_foreign"]
-                    ) {
-                      return false;
-                    }
-                    return true;
-                  })
-                  .map((field) => (
-                    <div key={field.name}>
-                      <label className="block font-medium mb-1">
-                        {field.label}
-                      </label>
-                      {field.type === "select" ? (
-                        <select
-                          value={
-                            typeof mainVisitor[field.name as keyof Visitor] ===
-                            "boolean"
-                              ? ""
-                              : (mainVisitor[field.name as keyof Visitor] as
-                                  | string
-                                  | number
-                                  | undefined) ?? ""
-                          }
-                          onChange={(e) =>
-                            handleInputChange(
-                              null,
-                              field.name as keyof Visitor,
-                              e.target.value
-                            )
-                          }
-                          className="w-full border rounded px-2 py-1"
-                        >
-                          <option value="">Select...</option>
-                          {field.options?.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                      ) : field.type === "checkbox" ? (
-                        <input
-                          type="checkbox"
-                          checked={!!mainVisitor[field.name as keyof Visitor]}
-                          onChange={(e) =>
-                            handleInputChange(
-                              null,
-                              field.name as keyof Visitor,
-                              e.target.checked
-                            )
-                          }
-                        />
-                      ) : (
-                        <input
-                          type={field.type}
-                          value={
-                            typeof mainVisitor[field.name as keyof Visitor] ===
-                            "boolean"
-                              ? ""
-                              : (mainVisitor[field.name as keyof Visitor] as
-                                  | string
-                                  | number
-                                  | undefined) ?? ""
-                          }
-                          onChange={(e) =>
-                            handleInputChange(
-                              null,
-                              field.name as keyof Visitor,
-                              e.target.value
-                            )
-                          }
-                          className="w-full border rounded px-2 py-1"
-                        />
-                      )}
-                    </div>
-                  ))}
-              </div>
+          {result ? (
+            <div className="flex flex-col items-center gap-4 mt-8">
+              <h2 className="text-xl font-semibold">Registration Complete!</h2>
+              <p>
+                Unique code:{" "}
+                <span className="font-mono">{result.unique_code}</span>
+              </p>
+              <p>
+                Show this QR code to the tourist so they can take a picture:
+              </p>
+              <img
+                src={result.qr_code_url}
+                alt="QR Code"
+                className="w-44 h-44"
+              />
+              <Button
+                onClick={() => {
+                  setResult(null);
+                  setMainVisitor(emptyVisitor());
+                  setCompanions([]);
+                }}
+              >
+                Register Another Visitor
+              </Button>
             </div>
-            <div>
-              <h2 className="font-semibold mb-2">Companions</h2>
-              {companions.map((comp, idx) => (
-                <div
-                  key={idx}
-                  className="border rounded p-3 mb-2 bg-gray-50 relative"
-                >
-                  <button
-                    type="button"
-                    className="absolute top-2 right-2 text-red-500"
-                    onClick={() => handleRemoveCompanion(idx)}
-                    aria-label="Remove companion"
-                  >
-                    &times;
-                  </button>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div>
+                <h2 className="font-semibold text-lg mb-3 text-[#1c5461]">
+                  Main Visitor
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {visitorRegistrationFields
                     .filter((field) => {
                       if (
                         (field.name === "municipality" ||
                           field.name === "province") &&
-                        !!comp["is_foreign"]
+                        !!mainVisitor["is_foreign"]
                       ) {
                         return false;
                       }
@@ -205,28 +124,29 @@ export default function WalkInStaffRegister() {
                     })
                     .map((field) => (
                       <div key={field.name}>
-                        <label className="block font-medium mb-1">
+                        <label className="block font-semibold mb-2 text-[#1c5461]">
                           {field.label}
                         </label>
                         {field.type === "select" ? (
                           <select
                             value={
-                              typeof comp[field.name as keyof Visitor] ===
-                              "boolean"
+                              typeof mainVisitor[
+                                field.name as keyof Visitor
+                              ] === "boolean"
                                 ? ""
-                                : (comp[field.name as keyof Visitor] as
+                                : (mainVisitor[field.name as keyof Visitor] as
                                     | string
                                     | number
                                     | undefined) ?? ""
                             }
                             onChange={(e) =>
                               handleInputChange(
-                                idx,
+                                null,
                                 field.name as keyof Visitor,
                                 e.target.value
                               )
                             }
-                            className="w-full border rounded px-2 py-1"
+                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                           >
                             <option value="">Select...</option>
                             {field.options?.map((opt) => (
@@ -236,54 +156,179 @@ export default function WalkInStaffRegister() {
                             ))}
                           </select>
                         ) : field.type === "checkbox" ? (
-                          <input
-                            type="checkbox"
-                            checked={!!comp[field.name as keyof Visitor]}
-                            onChange={(e) =>
-                              handleInputChange(
-                                idx,
-                                field.name as keyof Visitor,
-                                e.target.checked
-                              )
-                            }
-                          />
+                          <div className="flex items-center gap-2 mt-2">
+                            <input
+                              type="checkbox"
+                              checked={
+                                !!mainVisitor[field.name as keyof Visitor]
+                              }
+                              onChange={(e) =>
+                                handleInputChange(
+                                  null,
+                                  field.name as keyof Visitor,
+                                  e.target.checked
+                                )
+                              }
+                              className="accent-[#3e979f] scale-125"
+                            />
+                            <label className="font-medium text-[#1c5461]">
+                              {field.label}
+                            </label>
+                          </div>
                         ) : (
                           <input
                             type={field.type}
                             value={
-                              typeof comp[field.name as keyof Visitor] ===
-                              "boolean"
+                              typeof mainVisitor[
+                                field.name as keyof Visitor
+                              ] === "boolean"
                                 ? ""
-                                : (comp[field.name as keyof Visitor] as
+                                : (mainVisitor[field.name as keyof Visitor] as
                                     | string
                                     | number
                                     | undefined) ?? ""
                             }
                             onChange={(e) =>
                               handleInputChange(
-                                idx,
+                                null,
                                 field.name as keyof Visitor,
                                 e.target.value
                               )
                             }
-                            className="w-full border rounded px-2 py-1"
+                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                           />
                         )}
                       </div>
                     ))}
                 </div>
-              ))}
-              <Button type="button" onClick={handleAddCompanion}>
-                Add Companion
+              </div>
+              <div>
+                <h2 className="font-semibold text-lg mb-3 text-[#1c5461]">
+                  Companions
+                </h2>
+                {companions.map((comp, idx) => (
+                  <div
+                    key={idx}
+                    className="relative mb-8 rounded-xl bg-white border border-[#e6f7fa] shadow-sm p-6"
+                  >
+                    <button
+                      type="button"
+                      className="absolute top-4 right-4 text-red-500 text-2xl font-bold"
+                      onClick={() => handleRemoveCompanion(idx)}
+                      aria-label="Remove companion"
+                    >
+                      &times;
+                    </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {visitorRegistrationFields
+                        .filter((field) => {
+                          if (
+                            (field.name === "municipality" ||
+                              field.name === "province") &&
+                            !!comp["is_foreign"]
+                          ) {
+                            return false;
+                          }
+                          return true;
+                        })
+                        .map((field) => (
+                          <div key={field.name}>
+                            <label className="block font-semibold mb-2 text-[#1c5461]">
+                              {field.label}
+                            </label>
+                            {field.type === "select" ? (
+                              <select
+                                value={
+                                  typeof comp[field.name as keyof Visitor] ===
+                                  "boolean"
+                                    ? ""
+                                    : (comp[field.name as keyof Visitor] as
+                                        | string
+                                        | number
+                                        | undefined) ?? ""
+                                }
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    idx,
+                                    field.name as keyof Visitor,
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                              >
+                                <option value="">Select...</option>
+                                {field.options?.map((opt) => (
+                                  <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : field.type === "checkbox" ? (
+                              <div className="flex items-center gap-2 mt-2">
+                                <input
+                                  type="checkbox"
+                                  checked={!!comp[field.name as keyof Visitor]}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      idx,
+                                      field.name as keyof Visitor,
+                                      e.target.checked
+                                    )
+                                  }
+                                  className="accent-[#3e979f] scale-125"
+                                />
+                                <label className="font-medium text-[#1c5461]">
+                                  {field.label}
+                                </label>
+                              </div>
+                            ) : (
+                              <input
+                                type={field.type}
+                                value={
+                                  typeof comp[field.name as keyof Visitor] ===
+                                  "boolean"
+                                    ? ""
+                                    : (comp[field.name as keyof Visitor] as
+                                        | string
+                                        | number
+                                        | undefined) ?? ""
+                                }
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    idx,
+                                    field.name as keyof Visitor,
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                              />
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  onClick={handleAddCompanion}
+                  className="mt-2 rounded-lg border-[#3e979f] text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] transition"
+                  variant="outline"
+                >
+                  Add Companion
+                </Button>
+              </div>
+              {error && <div className="text-red-500">{error}</div>}
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-lg bg-[#3e979f] text-white hover:bg-[#1c5461] transition"
+              >
+                {loading ? "Registering..." : "Register"}
               </Button>
-            </div>
-            {error && <div className="text-red-500">{error}</div>}
-            <Button type="submit" disabled={loading}>
-              {loading ? "Registering..." : "Register"}
-            </Button>
-          </form>
-        )}
-      </div>
-    </>
+            </form>
+          )}
+        </div>
+      </main>
+    </div>
   );
 }
