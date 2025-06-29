@@ -263,7 +263,9 @@ export default function SignUp() {
                       >
                         I agree to the{" "}
                         <a
-                          href="#"
+                          href="https://tourisla.space/terms-and-conditions"
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="underline text-[#3e979f] hover:text-[#1c5461]"
                         >
                           terms and conditions
