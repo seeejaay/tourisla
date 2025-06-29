@@ -59,49 +59,66 @@ export default function AddHotline({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <div className="text-red-500 text-sm">{error}</div>}
-      {hotlineFields.map((field) => (
-        <div key={field.name}>
-          <Label htmlFor={field.name}>{field.label}</Label>
-          {field.type === "select" ? (
-            <select
-              id={field.name}
-              name={field.name}
-              value={form[field.name as keyof typeof form]}
-              onChange={handleChange}
-              required
-              className="w-full border rounded px-2 py-1"
+    <div className="w-full flex flex-col items-center justify-center">
+      <form onSubmit={handleSubmit} className="w-full max-w-xl  p-6 space-y-5">
+        {hotlineFields.map((field) => (
+          <div key={field.name}>
+            <Label
+              htmlFor={field.name}
+              className="block text-sm font-semibold mb-1 text-[#1c5461]"
             >
-              <option value="">Select {field.label}</option>
-              {field.options?.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <Input
-              id={field.name}
-              name={field.name}
-              value={form[field.name as keyof typeof form]}
-              onChange={handleChange}
-              placeholder={field.placeholder}
-              required={field.name !== "address"}
-            />
+              {field.label}
+            </Label>
+            {field.type === "select" ? (
+              <select
+                id={field.name}
+                name={field.name}
+                value={form[field.name as keyof typeof form]}
+                onChange={handleChange}
+                required
+                className="border border-[#e6f7fa] rounded px-2 py-2 text-sm w-full bg-white focus:border-[#3e979f] focus:ring-[#3e979f]"
+              >
+                <option value="">Select {field.label}</option>
+                {field.options?.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <Input
+                id={field.name}
+                name={field.name}
+                value={form[field.name as keyof typeof form]}
+                onChange={handleChange}
+                placeholder={field.placeholder}
+                required={field.name !== "address"}
+                className="bg-white border-[#e6f7fa] focus:border-[#3e979f] focus:ring-[#3e979f]"
+              />
+            )}
+          </div>
+        ))}
+        {error && <div className="text-red-500 text-sm">{error}</div>}
+        <div className="flex gap-2 justify-end pt-2">
+          <Button
+            type="submit"
+            disabled={loading}
+            className="bg-[#3e979f] hover:bg-[#1c5461] text-white font-semibold px-6 py-2 rounded-lg shadow"
+          >
+            {loading ? "Adding..." : "Add Hotline"}
+          </Button>
+          {onCancel && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="border-[#e6f7fa] text-[#1c5461] font-semibold px-6 py-2 rounded-lg"
+            >
+              Cancel
+            </Button>
           )}
         </div>
-      ))}
-      <div className="flex gap-2 justify-end">
-        <Button type="submit" disabled={loading}>
-          {loading ? "Adding..." : "Add Hotline"}
-        </Button>
-        {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-        )}
-      </div>
-    </form>
+      </form>
+    </div>
   );
 }
