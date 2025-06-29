@@ -315,7 +315,7 @@ export default function Home() {
               collapsible
               className="space-y-4 text-left"
             >
-              {faqs.map((faq, idx) => (
+              {faqs.map((faq) => (
                 <AccordionItem
                   key={faq.question}
                   value={faq.question}
