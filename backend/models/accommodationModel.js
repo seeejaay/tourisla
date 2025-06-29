@@ -46,14 +46,14 @@ const editAccommodation = async (id, data) => {
 
   const result = await db.query(
     `UPDATE accommodations SET
-    name_of_establishment = $1,
+     name_of_establishment = $1,
      Type = $2,
      no_of_rooms = $3,
      number_of_employees = $4,
      Year = $5,
-     Region" = $6,
+     Region = $6,
      Province = $7,
-     municipality" = $8
+     municipality = $8
      WHERE id = $9 RETURNING *`,
     [
       name_of_establishment,
