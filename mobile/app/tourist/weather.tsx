@@ -112,71 +112,30 @@ export default function WeatherScreen() {
   const loadWeatherData = async () => {
     try {
       setLoading(true);
-      
-      // Set default location to Bantayan Island, Cebu
-      const defaultLocation = {
-        latitude: 11.1667,  // Bantayan Island latitude
-        longitude: 123.7333 // Bantayan Island longitude
+  
+      // Always use Bantayan Island coordinates
+      const location = {
+        latitude: 11.1667,
+        longitude: 123.7333,
       };
-      
-      let location;
-      
-      try {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        
-        if (status !== 'granted') {
-          console.log('Location permission denied, using default location');
-          location = defaultLocation;
-        } else {
-          // Try to get current location, but use default if it fails or takes too long
-          const locationPromise = Location.getCurrentPositionAsync({ 
-            accuracy: Location.Accuracy.Balanced 
-          });
-          
-          // Set a timeout for getting location (5 seconds)
-          const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Location timeout')), 5000);
-          });
-          
-          // Race between getting location and timeout
-          const userLocation = await Promise.race([locationPromise, timeoutPromise])
-            .catch(err => {
-              console.log('Error or timeout getting location:', err);
-              return null;
-            });
-            
-          if (userLocation) {
-            location = userLocation.coords;
-          } else {
-            console.log('Using default location (Bantayan Island)');
-            location = defaultLocation;
-          }
-        }
-      } catch (error) {
-        console.log('Error getting location:', error);
-        location = defaultLocation;
-      }
-      
-      // Store the location for future use
-      await AsyncStorage.setItem('lastLocation', JSON.stringify({
-        latitude: location.latitude,
-        longitude: location.longitude,
-        timestamp: Date.now()
-      }));
-      
+  
       const weatherData = await getCurrentWeather(location.latitude, location.longitude);
       setCurrentWeather(weatherData);
-      
+  
       const forecastData = await getWeatherForecast(location.latitude, location.longitude);
       setForecast(forecastData);
+  
+      // Cache the results
+      await AsyncStorage.setItem('cachedWeather', JSON.stringify(weatherData));
+      await AsyncStorage.setItem('cachedForecast', JSON.stringify(forecastData));
     } catch (error) {
       console.error('Error loading weather data:', error);
-      
-      // Try to use cached weather data if available
+  
+      // Try to use cached data
       try {
         const cachedWeather = await AsyncStorage.getItem('cachedWeather');
         const cachedForecast = await AsyncStorage.getItem('cachedForecast');
-        
+  
         if (cachedWeather) {
           setCurrentWeather(JSON.parse(cachedWeather));
           if (cachedForecast) {
@@ -254,7 +213,7 @@ export default function WeatherScreen() {
               <View style={styles.locationHeader}>
                 <Ionicons name="location-sharp" size={22} color="#ffffff" />
                 <Text style={styles.locationText}>
-                  {currentWeather.name}, {currentWeather.sys.country}
+                  Bantayan Island, Cebu
                 </Text>
               </View>
               <Text style={styles.dateText}>{formatDate(currentWeather.dt)}</Text>
