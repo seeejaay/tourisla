@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import MapPage from "@/components/custom/map";
 import { Umbrella, MapPin, Leaf, Users, ArrowRight } from "lucide-react";
-import { useState } from "react";
 import { useArticleManager } from "@/hooks/useArticleManager";
 import {
   Carousel,
