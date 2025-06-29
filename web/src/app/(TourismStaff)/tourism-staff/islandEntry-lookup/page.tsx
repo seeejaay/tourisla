@@ -5,7 +5,6 @@ import {
   manualIslandEntryCheckIn,
   markIslandEntryPaid,
 } from "@/lib/api/islandEntry";
-import Header from "@/components/custom/header";
 import type { AxiosError } from "axios";
 
 interface Registration {
@@ -114,6 +113,7 @@ export default function IslandEntryLookupPage() {
                       setResult(null);
                       setCode("");
                     } catch (err) {
+                      console.error(err);
                       setError("Check-in failed.");
                     } finally {
                       setLoading(false);
@@ -137,6 +137,7 @@ export default function IslandEntryLookupPage() {
                         setResult(res.data);
                         setSuccess("Payment marked as received!");
                       } catch (err) {
+                        console.error(err);
                         setError("Failed to mark as paid.");
                       } finally {
                         setLoading(false);
