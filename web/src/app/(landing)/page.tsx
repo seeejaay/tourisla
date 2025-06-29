@@ -265,8 +265,8 @@ export default function Home() {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="w-12 h-12 bg-[#3e979f] text-white rounded-full shadow-lg hover:bg-[#1c5461] hover:text-white transition" />
-                <CarouselNext className="w-12 h-12 bg-[#3e979f] text-white rounded-full shadow-lg hover:bg-[#1c5461] hover:text-white transition" />
+                <CarouselPrevious className="left-0 -translate-y-1/2 top-1/2" />
+                <CarouselNext className="right-0 -translate-y-1/2 top-1/2" />
               </Carousel>
             )}
           </div>

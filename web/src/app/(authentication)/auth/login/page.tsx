@@ -32,7 +32,7 @@ export default function Login() {
         src="/images/bg.svg"
         alt="Tourisla Logo"
         fill
-        className="absolute top-4 left-4"
+        className="absolute top-4 left-4 object-cover object-center"
       />
       <div className="w-full max-w-md">
         <div className="relative overflow-hidden rounded-2xl shadow-2xl border border-[#e6f7fa] bg-white/80 backdrop-blur-lg">
