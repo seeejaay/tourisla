@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserManager } from "@/hooks/useUserManager";
-import countries from "@/app/static/countries.json"; // Adjust path as needed
+import countries from "@/app/static/countries.json";
 import { useCalendar } from "@/hooks/useCalendar";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface UserProfile {
   user_id: number;
@@ -40,6 +41,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [form, setForm] = useState<UserForm | null>(null);
   const [editMode, setEditMode] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
 
   // Fetch current user on mount
   useEffect(() => {
@@ -47,7 +49,6 @@ export default function ProfilePage() {
       const res = await loggedInUser(router);
       if (res && res.data && res.data.user) {
         const u = res.data.user;
-        // Always set id, fallback to user_id
         const normalizedUser = {
           ...u,
           user_id: u.user_id ?? u.id,
@@ -99,7 +100,7 @@ export default function ProfilePage() {
   const handleSave = async () => {
     if (!form) return;
     if (!form.user_id) {
-      alert("User ID is missing. Cannot update profile.");
+      setShowAlert(true);
       return;
     }
     try {
@@ -108,7 +109,6 @@ export default function ProfilePage() {
       const res = await loggedInUser(router);
       if (res && res.data && res.data.user) {
         const u = res.data.user;
-        // ...inside fetchUser or after update...
         const normalizedUser = {
           ...u,
           user_id: u.user_id ?? u.id,
@@ -129,8 +129,11 @@ export default function ProfilePage() {
         });
       }
       setEditMode(false);
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 3000);
     } catch (err) {
       console.error("Error updating user:", err);
+      setShowAlert(true);
     }
   };
 
@@ -272,6 +275,7 @@ export default function ProfilePage() {
                   className="px-6 py-2 rounded-full bg-indigo-500 text-white font-semibold shadow hover:bg-indigo-600 transition"
                   onClick={handleSave}
                   disabled={updateLoading}
+                  type="button"
                 >
                   {updateLoading ? "Saving..." : "Save"}
                 </button>
@@ -290,6 +294,7 @@ export default function ProfilePage() {
                     });
                   }}
                   disabled={updateLoading}
+                  type="button"
                 >
                   Cancel
                 </button>
@@ -299,6 +304,7 @@ export default function ProfilePage() {
                 <button
                   className="px-6 py-2 rounded-full bg-indigo-500 text-white font-semibold shadow hover:bg-indigo-600 transition"
                   onClick={() => setEditMode(true)}
+                  type="button"
                 >
                   Edit Profile
                 </button>
@@ -314,7 +320,7 @@ export default function ProfilePage() {
                           alert("Failed to get Google authorization URL.");
                         }
                       } catch (err) {
-                        alert("Failed to authorize Google Calendar.");
+                        alert("Failed to authorize Google Calendar." + err);
                       }
                     }}
                     type="button"
@@ -326,8 +332,23 @@ export default function ProfilePage() {
             )}
           </div>
 
-          {updateError && (
-            <div className="mt-6 text-center text-red-500">{updateError}</div>
+          {/* shadcn alert for errors and success */}
+          {showAlert && (
+            <Alert
+              variant={updateError ? "destructive" : "default"}
+              className="mt-6"
+            >
+              <AlertTitle>
+                {updateError
+                  ? "Profile Update Failed"
+                  : "Profile Updated Successfully"}
+              </AlertTitle>
+              <AlertDescription>
+                {updateError
+                  ? updateError
+                  : "Your profile information has been updated."}
+              </AlertDescription>
+            </Alert>
           )}
         </div>
       </div>
