@@ -26,15 +26,15 @@ const cardWidth = width * 0.9;
 
 export default function TouristTouristSpotsScreen({ headerHeight }) {
   const router = useRouter();
-  const { touristSpots, loading, error, getAllTouristSpots, deleteTouristSpot } = useTouristSpotManager();
+  const { touristSpots, loading, error, fetchTouristSpots, deleteTouristSpot } = useTouristSpotManager();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState(null);
 
   // Fetch tourist spots when screen is focused
   useFocusEffect(
     useCallback(() => {
-      getAllTouristSpots();
-    }, [getAllTouristSpots])
+      fetchTouristSpots();
+    }, [fetchTouristSpots])
   );
 
   // Filter tourist spots based on search query and selected type
@@ -61,7 +61,7 @@ export default function TouristTouristSpotsScreen({ headerHeight }) {
           onPress: async () => {
             try {
               await deleteTouristSpot(id);
-              getAllTouristSpots(); // Refresh the list
+              fetchTouristSpots(); // Refresh the list
             } catch (error) {
               Alert.alert("Error", "Failed to delete tourist spot. Please try again.");
             }
@@ -87,20 +87,49 @@ export default function TouristTouristSpotsScreen({ headerHeight }) {
     return colors[type] || '#64748b';
   };
 
+  // Helper function to get image URL from different possible formats
+  const getImageUrl = (images) => {
+    if (!images || !Array.isArray(images) || images.length === 0) {
+      return null;
+    }
+    
+    const firstImage = images[0];
+    
+    // If it's a string, use it directly
+    if (typeof firstImage === 'string') {
+      return firstImage;
+    }
+    
+    // If it's an object with image_url property
+    if (typeof firstImage === 'object' && firstImage !== null) {
+      return firstImage.image_url || firstImage.url || firstImage.uri || null;
+    }
+    
+    return null;
+  };
+
   // Render tourist spot card
   const renderTouristSpotCard = ({ item }) => {
     const typeColor = getTypeColor(item.type);
+    const imageUrl = getImageUrl(item.images);
     
     return (
-      <View style={styles.card}>
+      <TouchableOpacity
+        onPress={() => router.push(`/guide/tourist_spots/guide_tourist_spot_view?id=${item.id}`)}
+        activeOpacity={0.9}
+        style={styles.card}
+      >
         {/* Image Section with Gradient Overlay */}
         <View style={styles.cardImageContainer}>
-          {item.images && item.images.length > 0 ? (
+          {imageUrl ? (
             <>
               <Image
-                source={{ uri: item.images[0] }}
+                source={{ uri: imageUrl }}
                 style={styles.cardImage}
                 resizeMode="cover"
+                onError={(e) => {
+                  console.error('Error loading image:', e.nativeEvent.error);
+                }}
               />
               <LinearGradient
                 colors={['transparent', 'rgba(0,0,0,0.7)']}
@@ -112,13 +141,13 @@ export default function TouristTouristSpotsScreen({ headerHeight }) {
               <Icon name="image" size={40} color={typeColor} />
             </View>
           )}
-          
+  
           {/* Type Badge */}
           <View style={[styles.typeBadge, { backgroundColor: typeColor }]}>
             <Text style={styles.typeText}>{item.type}</Text>
           </View>
-          
-          {/* Title overlay on image */}
+  
+          {/* Title Overlay */}
           <View style={styles.titleOverlay}>
             <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
             <View style={styles.locationRow}>
@@ -129,34 +158,7 @@ export default function TouristTouristSpotsScreen({ headerHeight }) {
             </View>
           </View>
         </View>
-        
-        {/* Action Buttons */}
-        <View style={styles.actionButtonsRow}>
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.viewButton]}
-            onPress={() => router.push(`/tourist/tourist_spots/tourist_tourist_spot_view?id=${item.id}`)}
-          >
-            <Icon name="eye" size={18} color="#ffffff" />
-            <Text style={styles.actionButtonText}>View</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.editButton]}
-            onPress={() => router.push(`/tourist/tourist_spots/tourist_tourist_spot_edit?id=${item.id}`)}
-          >
-            <Icon name="edit-2" size={18} color="#ffffff" />
-            <Text style={styles.actionButtonText}>Edit</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.deleteButton]}
-            onPress={() => handleDelete(item.id, item.name)}
-          >
-            <Icon name="trash-2" size={18} color="#ffffff" />
-            <Text style={styles.actionButtonText}>Delete</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -234,7 +236,7 @@ export default function TouristTouristSpotsScreen({ headerHeight }) {
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity
               style={styles.retryButton}
-              onPress={() => getAllTouristSpots()}
+              onPress={() => fetchTouristSpots()}
             >
               <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
@@ -436,12 +438,6 @@ const styles = StyleSheet.create({
   viewButton: {
     backgroundColor: '#0ea5e9',
   },
-  editButton: {
-    backgroundColor: '#10b981',
-  },
-  deleteButton: {
-    backgroundColor: '#ef4444',
-  },
   actionButtonText: {
     color: '#ffffff',
     fontWeight: '600',
@@ -505,6 +501,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
 
 
 

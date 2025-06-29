@@ -37,7 +37,7 @@ interface TourPackageDetailsScreenProps {
     headerHeight: number;
 }
 
-export default function TouristAnnouncementsScreen({ headerHeight }: TourPackageDetailsScreenProps) {
+export default function GuideAnnouncementsScreen({ headerHeight }: TourPackageDetailsScreenProps) {
     const router = useRouter();
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
@@ -158,7 +158,7 @@ export default function TouristAnnouncementsScreen({ headerHeight }: TourPackage
         </View>
 
             <ScrollView
-            style={[styles.scrollView, { marginTop: headerHeight }]}
+            style={[styles.scrollView,]}
             contentContainerStyle={{ paddingBottom: 120 }}
             showsVerticalScrollIndicator={false}
             >
