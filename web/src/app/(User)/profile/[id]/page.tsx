@@ -139,10 +139,12 @@ export default function ProfilePage() {
 
   if (authLoading || !user || !form) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
-          <h1 className="text-2xl font-bold mb-4 text-center">Profile</h1>
-          <p className="text-gray-700 text-center">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4]">
+        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full border border-[#e6f7fa]">
+          <h1 className="text-2xl font-bold mb-4 text-center text-[#1c5461]">
+            Profile
+          </h1>
+          <p className="text-[#51702c] text-center">
             Loading user information...
           </p>
         </div>
@@ -152,26 +154,26 @@ export default function ProfilePage() {
 
   return (
     <>
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full border border-indigo-100">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full border border-[#e6f7fa]">
           <div className="flex flex-col items-center mb-8">
-            <div className="w-24 h-24 rounded-full bg-indigo-100 flex items-center justify-center mb-4 shadow-lg">
-              <span className="text-4xl font-bold text-indigo-600 select-none">
+            <div className="w-24 h-24 rounded-full bg-[#e6f7fa] flex items-center justify-center mb-4 shadow-lg border-2 border-[#3e979f]">
+              <span className="text-4xl font-bold text-[#3e979f] select-none">
                 {user.first_name[0]}
                 {user.last_name[0]}
               </span>
             </div>
-            <div className="text-2xl font-semibold text-gray-800 mb-1">
+            <div className="text-2xl font-semibold text-[#1c5461] mb-1">
               {user.first_name} {user.last_name}
             </div>
-            <div className="text-sm text-indigo-500 capitalize mb-2">
+            <div className="text-sm text-[#51702c] capitalize mb-2">
               {user.role}
             </div>
           </div>
           <div className="space-y-6">
             <div className="flex gap-4">
               <div className="w-1/2">
-                <label className="block text-xs font-semibold text-gray-500 mb-1">
+                <label className="block text-xs font-semibold text-[#51702c] mb-1">
                   First Name
                 </label>
                 {editMode ? (
@@ -180,16 +182,16 @@ export default function ProfilePage() {
                     name="first_name"
                     value={form.first_name}
                     onChange={handleChange}
-                    className="border border-indigo-200 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-300 transition"
+                    className="border border-[#3e979f] rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] bg-[#f8fcfd] transition"
                   />
                 ) : (
-                  <div className="text-gray-700 bg-gray-50 rounded px-3 py-2">
+                  <div className="text-[#1c5461] bg-[#f8fcfd] rounded px-3 py-2">
                     {user.first_name}
                   </div>
                 )}
               </div>
               <div className="w-1/2">
-                <label className="block text-xs font-semibold text-gray-500 mb-1">
+                <label className="block text-xs font-semibold text-[#51702c] mb-1">
                   Last Name
                 </label>
                 {editMode ? (
@@ -198,17 +200,17 @@ export default function ProfilePage() {
                     name="last_name"
                     value={form.last_name}
                     onChange={handleChange}
-                    className="border border-indigo-200 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-300 transition"
+                    className="border border-[#3e979f] rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] bg-[#f8fcfd] transition"
                   />
                 ) : (
-                  <div className="text-gray-700 bg-gray-50 rounded px-3 py-2">
+                  <div className="text-[#1c5461] bg-[#f8fcfd] rounded px-3 py-2">
                     {user.last_name}
                   </div>
                 )}
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1">
+              <label className="block text-xs font-semibold text-[#51702c] mb-1">
                 Email
               </label>
               {editMode ? (
@@ -217,16 +219,16 @@ export default function ProfilePage() {
                   name="email"
                   value={form.email}
                   onChange={handleChange}
-                  className="border border-indigo-200 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-300 transition"
+                  className="border border-[#3e979f] rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] bg-[#f8fcfd] transition"
                 />
               ) : (
-                <div className="text-gray-700 lowercase bg-gray-50 rounded px-3 py-2">
+                <div className="text-[#1c5461] lowercase bg-[#f8fcfd] rounded px-3 py-2">
                   {user.email}
                 </div>
               )}
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1">
+              <label className="block text-xs font-semibold text-[#51702c] mb-1">
                 Phone Number
               </label>
               {editMode ? (
@@ -235,16 +237,16 @@ export default function ProfilePage() {
                   name="phone_number"
                   value={form.phone_number}
                   onChange={handleChange}
-                  className="border border-indigo-200 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-300 transition"
+                  className="border border-[#3e979f] rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] bg-[#f8fcfd] transition"
                 />
               ) : (
-                <div className="text-gray-700 bg-gray-50 rounded px-3 py-2">
+                <div className="text-[#1c5461] bg-[#f8fcfd] rounded px-3 py-2">
                   {user.phone_number}
                 </div>
               )}
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1">
+              <label className="block text-xs font-semibold text-[#51702c] mb-1">
                 Nationality
               </label>
               {editMode ? (
@@ -252,7 +254,7 @@ export default function ProfilePage() {
                   name="nationality"
                   value={form.nationality}
                   onChange={handleChange}
-                  className="border border-indigo-200 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-indigo-300 transition"
+                  className="border border-[#3e979f] rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] bg-[#f8fcfd] transition"
                 >
                   <option value="">Select nationality</option>
                   {countries.map((country) => (
@@ -262,7 +264,7 @@ export default function ProfilePage() {
                   ))}
                 </select>
               ) : (
-                <div className="text-gray-700 bg-gray-50 rounded px-3 py-2">
+                <div className="text-[#1c5461] bg-[#f8fcfd] rounded px-3 py-2">
                   {user.nationality}
                 </div>
               )}
@@ -272,7 +274,7 @@ export default function ProfilePage() {
             {editMode ? (
               <>
                 <button
-                  className="px-6 py-2 rounded-full bg-indigo-500 text-white font-semibold shadow hover:bg-indigo-600 transition"
+                  className="px-6 py-2 rounded-lg bg-[#3e979f] text-white font-semibold shadow hover:bg-[#1c5461] transition"
                   onClick={handleSave}
                   disabled={updateLoading}
                   type="button"
@@ -280,7 +282,7 @@ export default function ProfilePage() {
                   {updateLoading ? "Saving..." : "Save"}
                 </button>
                 <button
-                  className="px-6 py-2 rounded-full bg-gray-200 text-gray-700 font-semibold shadow hover:bg-gray-300 transition"
+                  className="px-6 py-2 rounded-lg bg-[#e6f7fa] text-[#1c5461] font-semibold shadow hover:bg-[#f0f0f0] transition"
                   onClick={() => {
                     setEditMode(false);
                     setForm({
@@ -302,7 +304,7 @@ export default function ProfilePage() {
             ) : (
               <>
                 <button
-                  className="px-6 py-2 rounded-full bg-indigo-500 text-white font-semibold shadow hover:bg-indigo-600 transition"
+                  className="px-6 py-2 rounded-lg bg-[#3e979f] text-white font-semibold shadow hover:bg-[#1c5461] transition"
                   onClick={() => setEditMode(true)}
                   type="button"
                 >
@@ -310,7 +312,7 @@ export default function ProfilePage() {
                 </button>
                 {user.role && user.role.toLowerCase() === "tour guide" && (
                   <button
-                    className="px-6 py-2 rounded-full bg-green-500 text-white font-semibold shadow hover:bg-green-600 transition"
+                    className="px-6 py-2 rounded-lg bg-[#51702c] text-white font-semibold shadow hover:bg-[#3e979f] transition"
                     onClick={async () => {
                       try {
                         const response = await authorizeCalendar();

@@ -140,8 +140,16 @@ export default function Header() {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="flex lg:hidden items-center space-x-4">
-            <Pill className="mr-2" />
+          <div className="flex lg:hidden items-center space-x-2.5">
+            <Pill />
+            <Button
+              variant="ghost"
+              className="rounded-full h-10 w-10 p-0 relative hover:bg-[#3e979f]/10 transition-colors group"
+              onClick={() => router.push("/announcements")}
+              aria-label="Announcements"
+            >
+              <Megaphone className="w-4 h-4 text-[#1c5461] group-hover:text-[#3e979f] transition" />
+            </Button>
             <WeatherWidget />
             <Button
               className="lg:hidden hover:bg-[#e6f7fa] rounded-full w-10 h-10 p-2 cursor-pointer transition-all duration-200 flex items-center justify-center"
@@ -161,7 +169,7 @@ export default function Header() {
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div
-            className="lg:hidden fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 opacity-100 pointer-events-auto"
+            className="lg:hidden fixed inset-0 z-40 bg-black/50 min-h-screen transition-opacity duration-300 opacity-100 pointer-events-auto"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             <div
