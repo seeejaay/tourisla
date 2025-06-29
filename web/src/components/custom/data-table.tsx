@@ -87,7 +87,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <>
-      <div className="space-y-6 w-full pl-16 lg:pl-20">
+      <div className="space-y-6 w-full">
         {/* Filter and Column Management */}
         <div className="flex flex-col w-full items-center justify-between gap-4 sm:flex-row">
           <div className="flex items-center gap-2 w-full justify-between">
@@ -289,9 +289,9 @@ export function DataTable<TData, TValue>({
       {/* Add Dialog */}
       {AddDialogComponent && (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-2xl lg:max-w-5xl w-full h-[52rem] overflow-y-auto border-4 border-red-700">
-            <DialogHeader className="px-6 border-b pb-1">
-              <DialogTitle className="text-lg font-semibold">
+          <DialogContent className=" bg-[#f8fcfd] w-full min-h-[35rem] overflow-y-auto">
+            <DialogHeader className="p-0 m-0  h-16 flex items-start justify-center">
+              <DialogTitle className="text-lg font-semibold text-[#1c5461]">
                 {addDialogTitle ?? "Add"}
               </DialogTitle>
               <DialogDescription className="text-sm text-gray-500">

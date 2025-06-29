@@ -1,5 +1,5 @@
 import { Announcement } from "./columns";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
 export default function ViewAnnouncement({
@@ -9,66 +9,71 @@ export default function ViewAnnouncement({
 }) {
   if (!announcement) return null;
   return (
-    <Card className="max-w-lg mx-auto">
-      <CardHeader>
-        <CardTitle>Announcement Details</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="flex flex-col gap-1">
-          <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-            Title
-          </Label>
-          <span className="text-2xl font-bold">{announcement.title}</span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-            Description
-          </Label>
-          <span className="text-base break-words">
-            {announcement.description}
-          </span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-            Date Posted
-          </Label>
-          <span>{announcement.date_posted}</span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-            Location
-          </Label>
-          <span>
-            {announcement.location || (
-              <span className="italic text-muted-foreground">N/A</span>
-            )}
-          </span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-            Category
-          </Label>
-          <span>
-            {announcement.category || (
-              <span className="italic text-muted-foreground">N/A</span>
-            )}
-          </span>
-        </div>
-        {announcement.image_url && (
-          <div className="flex flex-col gap-1">
-            <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-              Image
+    <div className="w-full flex flex-col items-center justify-center">
+      <Card className="w-full max-w-xl border-none shadow-none">
+        <CardContent className="space-y-5 py-2">
+          <div>
+            <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
+              Title
             </Label>
-            <img
-              src={announcement.image_url}
-              width={500}
-              height={300}
-              alt="Announcement"
-              className="rounded-lg max-h-64 object-contain border"
-            />
+            <div className="text-xl font-bold text-[#1c5461]">
+              {announcement.title}
+            </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+          <div>
+            <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
+              Description
+            </Label>
+            <div className="text-base text-[#1c5461] break-words">
+              {announcement.description}
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
+                Date Posted
+              </Label>
+              <div className="text-[#1c5461]">{announcement.date_posted}</div>
+            </div>
+            <div className="flex-1">
+              <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
+                Location
+              </Label>
+              <div className="text-[#1c5461]">
+                {announcement.location || (
+                  <span className="italic text-gray-400">N/A</span>
+                )}
+              </div>
+            </div>
+          </div>
+          <div>
+            <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
+              Category
+            </Label>
+            <div className="text-[#1c5461]">
+              {announcement.category ? (
+                announcement.category.replace(/_/g, " ")
+              ) : (
+                <span className="italic text-gray-400">N/A</span>
+              )}
+            </div>
+          </div>
+          {announcement.image_url && (
+            <div>
+              <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
+                Image
+              </Label>
+              <img
+                src={announcement.image_url}
+                width={500}
+                height={300}
+                alt="Announcement"
+                className="rounded-lg max-h-64 object-contain border mt-2"
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
