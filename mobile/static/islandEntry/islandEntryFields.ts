@@ -7,5 +7,4 @@ export const islandEntryFields = [
   { name: "is_foreign", label: "Foreign?", type: "checkbox" },
   { name: "municipality", label: "Municipality", type: "text", showIf: (v: GroupMember) => !v.is_foreign },
   { name: "province", label: "Province", type: "text", showIf: (v: GroupMember) => !v.is_foreign },
-  { name: "country", label: "Country", type: "text", showIf: (v: GroupMember) => v.is_foreign },
 ];

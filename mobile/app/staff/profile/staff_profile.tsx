@@ -241,10 +241,10 @@ export default function TouristProfile() {
             </View>
           </View>
           <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.headerIconButton}>
+            {/* <TouchableOpacity style={styles.headerIconButton}>
               <Feather name="bell" size={22} color="#fff" />
               <View style={styles.notificationDot} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             <TouchableOpacity onPress={handleSettings} style={styles.menuButton}>
               <Feather name="menu" size={24} color="#fff" />
             </TouchableOpacity>
@@ -338,7 +338,7 @@ export default function TouristProfile() {
               {/* Email card */}
               <View style={styles.infoCard}>
                 <View style={styles.infoIconContainer}>
-                  <Feather name="mail" size={20} color="#38bdf8" />
+                  <Feather name="mail" size={20} color="#64c5a5" />
                 </View>
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>Email</Text>
@@ -352,7 +352,7 @@ export default function TouristProfile() {
               {/* Phone card */}
               <View style={styles.infoCard}>
                 <View style={styles.infoIconContainer}>
-                  <Feather name="phone" size={20} color="#38bdf8" />
+                  <Feather name="phone" size={20} color="#64c5a5" />
                 </View>
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>Phone</Text>
@@ -366,7 +366,7 @@ export default function TouristProfile() {
               {/* Nationality card */}
               <View style={styles.infoCard}>
                 <View style={styles.infoIconContainer}>
-                  <Feather name="flag" size={20} color="#38bdf8" />
+                  <Feather name="flag" size={20} color="#64c5a5" />
                 </View>
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>Nationality</Text>
@@ -377,7 +377,7 @@ export default function TouristProfile() {
               {/* Account type card */}
               <View style={styles.infoCard}>
                 <View style={styles.infoIconContainer}>
-                  <Feather name="user" size={20} color="#38bdf8" />
+                  <Feather name="user" size={20} color="#64c5a5" />
                 </View>
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>Account Type</Text>
