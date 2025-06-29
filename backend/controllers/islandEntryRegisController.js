@@ -13,7 +13,7 @@ const {
   getLatestIslandEntryByUserId,
   logIslandEntryByRegistration,
 } = require("../models/islandEntryRegisModel");
-
+const { sendIslandEntryEmail } = require("../utils/email");
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
@@ -25,22 +25,23 @@ const s3Client = new S3Client({
 const generateCustomCode = () => {
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const numbers = "0123456789";
-//   let result = "";
-//   for (let i = 0; i < 3; i++) result += letters[Math.floor(Math.random() * letters.length)];
-//   for (let i = 0; i < 3; i++) result += numbers[Math.floor(Math.random() * numbers.length)];
-//   return result;
-     let code = '';
+  //   let result = "";
+  //   for (let i = 0; i < 3; i++) result += letters[Math.floor(Math.random() * letters.length)];
+  //   for (let i = 0; i < 3; i++) result += numbers[Math.floor(Math.random() * numbers.length)];
+  //   return result;
+  let code = "";
 
-    for (let i = 0; i < 3; i++) {
-        code += letters[Math.floor(Math.random() * letters.length)];
-        code += numbers[Math.floor(Math.random() * numbers.length)];
-    }
+  for (let i = 0; i < 3; i++) {
+    code += letters[Math.floor(Math.random() * letters.length)];
+    code += numbers[Math.floor(Math.random() * numbers.length)];
+  }
 
-    return code;
+  return code;
 };
 
 const generateUniqueCode = async () => {
-  let code, taken = true;
+  let code,
+    taken = true;
   while (taken) {
     code = generateCustomCode();
     taken = await isIslandCodeTaken(code);
@@ -50,15 +51,23 @@ const generateUniqueCode = async () => {
 
 const registerIslandEntryController = async (req, res) => {
   try {
-    const { groupMembers, payment_method: userSelectedPaymentMethod } = req.body;
+    const { groupMembers, payment_method: userSelectedPaymentMethod } =
+      req.body;
 
-    if (!groupMembers || !Array.isArray(groupMembers) || groupMembers.length === 0) {
+    if (
+      !groupMembers ||
+      !Array.isArray(groupMembers) ||
+      groupMembers.length === 0
+    ) {
       return res.status(400).json({ error: "Group members are required" });
     }
 
     const userId = req.session.user?.user_id ?? req.session.user?.id;
+    const userEmail = req.session.user?.email; // <-- Get user email from session
     if (!userId) {
-      return res.status(403).json({ error: "Invalid session: missing user ID." });
+      return res
+        .status(403)
+        .json({ error: "Invalid session: missing user ID." });
     }
 
     // Step 1: Generate unique code
@@ -67,11 +76,15 @@ const registerIslandEntryController = async (req, res) => {
     // Step 2: Fetch active price and compute total fee
     const activePrice = await getActivePrice();
     const isPaymentEnabled = activePrice?.is_enabled;
-    const pricePerPerson = isPaymentEnabled ? parseFloat(activePrice.amount) : 0;
+    const pricePerPerson = isPaymentEnabled
+      ? parseFloat(activePrice.amount)
+      : 0;
     const totalFee = pricePerPerson * groupMembers.length;
 
     // Step 3: Determine final payment method and status
-    const finalPaymentMethod = isPaymentEnabled ? userSelectedPaymentMethod : "NOT_REQUIRED";
+    const finalPaymentMethod = isPaymentEnabled
+      ? userSelectedPaymentMethod
+      : "NOT_REQUIRED";
     const finalStatus = isPaymentEnabled
       ? finalPaymentMethod === "CASH"
         ? "UNPAID"
@@ -106,14 +119,18 @@ const registerIslandEntryController = async (req, res) => {
     });
 
     // Step 6: Save group members
-    const members = await createIslandEntryMembers(registration.id, groupMembers);
+    const members = await createIslandEntryMembers(
+      registration.id,
+      groupMembers
+    );
 
     // Step 7: Handle online payment if enabled
     let paymentLink = null;
     if (finalPaymentMethod === "ONLINE") {
       if (totalFee < 100) {
         return res.status(400).json({
-          error: "Online payment is only allowed for total amounts of ₱100 and above. Please pay on-site.",
+          error:
+            "Online payment is only allowed for total amounts of ₱100 and above. Please pay on-site.",
         });
       }
 
@@ -135,6 +152,11 @@ const registerIslandEntryController = async (req, res) => {
       });
     }
 
+    // Send email to the user with QR code and details
+    if (userEmail) {
+      await sendIslandEntryEmail(userEmail, uniqueCode, qrCodeUrl);
+    }
+
     return res.status(201).json({
       message: "Island entry group registered successfully",
       registration,
@@ -143,7 +165,10 @@ const registerIslandEntryController = async (req, res) => {
       payment_link: paymentLink,
     });
   } catch (error) {
-    console.error("Island entry registration error:", error?.response?.data || error);
+    console.error(
+      "Island entry registration error:",
+      error?.response?.data || error
+    );
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -154,14 +179,18 @@ const manualIslandEntryCheckInController = async (req, res) => {
     const userId = req.session.user?.user_id ?? req.session.user?.id;
 
     if (!userId) {
-      return res.status(403).json({ error: "Invalid session: missing user ID." });
+      return res
+        .status(403)
+        .json({ error: "Invalid session: missing user ID." });
     }
 
     if (!unique_code) {
       return res.status(400).json({ error: "Unique code is required." });
     }
 
-    const registration = await getIslandEntryByCode(unique_code.trim().toUpperCase());
+    const registration = await getIslandEntryByCode(
+      unique_code.trim().toUpperCase()
+    );
 
     if (!registration) {
       return res.status(404).json({ error: "Entry not found with that code." });
@@ -177,7 +206,9 @@ const manualIslandEntryCheckInController = async (req, res) => {
     );
 
     if (existingLogCheck.rows.length > 0) {
-      return res.status(409).json({ error: "This group has already entered today." });
+      return res
+        .status(409)
+        .json({ error: "This group has already entered today." });
     }
 
     const log = await logIslandEntryByRegistration({
@@ -242,14 +273,23 @@ const checkPayMongoPaymentStatusController = async (req, res) => {
     }
 
     // Fetch PayMongo link data
-    const response = await axios.get(`https://api.paymongo.com/v1/links?reference_number=${code}`, {
-      headers: {
-        accept: "application/json",
-        authorization: "Basic " + Buffer.from(process.env.PAYMONGO_SECRET_KEY + ":").toString("base64"),
-      },
-    });
+    const response = await axios.get(
+      `https://api.paymongo.com/v1/links?reference_number=${code}`,
+      {
+        headers: {
+          accept: "application/json",
+          authorization:
+            "Basic " +
+            Buffer.from(process.env.PAYMONGO_SECRET_KEY + ":").toString(
+              "base64"
+            ),
+        },
+      }
+    );
 
-    const paymentData = response.data.data.find(link => link.attributes.status === "paid") || response.data.data[0];
+    const paymentData =
+      response.data.data.find((link) => link.attributes.status === "paid") ||
+      response.data.data[0];
 
     if (!paymentData) {
       return res.status(404).json({ error: "Payment link not found" });
@@ -266,7 +306,10 @@ const checkPayMongoPaymentStatusController = async (req, res) => {
       paymongo_status: paymentData.attributes.status.toUpperCase(),
     });
   } catch (error) {
-    console.error("Manual PayMongo status check error:", error?.response?.data || error);
+    console.error(
+      "Manual PayMongo status check error:",
+      error?.response?.data || error
+    );
     res.status(500).json({ error: "Failed to check PayMongo payment status" });
   }
 };
@@ -277,14 +320,20 @@ const registerIslandWalkInController = async (req, res) => {
     const userId = req.session.user?.user_id ?? req.session.user?.id;
 
     if (!userId) {
-      return res.status(403).json({ error: "Invalid session: missing user ID." });
+      return res
+        .status(403)
+        .json({ error: "Invalid session: missing user ID." });
     }
 
-    if (!groupMembers || !Array.isArray(groupMembers) || groupMembers.length === 0) {
+    if (
+      !groupMembers ||
+      !Array.isArray(groupMembers) ||
+      groupMembers.length === 0
+    ) {
       return res.status(400).json({ error: "Group members are required" });
     }
 
-     // --- Fetch active price and compute total fee ---
+    // --- Fetch active price and compute total fee ---
     const activePrice = await getActivePrice();
     const isPaymentEnabled = activePrice.is_enabled;
     let pricePerPerson = 0;
@@ -294,7 +343,6 @@ const registerIslandWalkInController = async (req, res) => {
     }
 
     const totalFee = pricePerPerson * groupMembers.length;
-
 
     const uniqueCode = await generateCustomCode(); // custom generator
     const qrData = `${uniqueCode}`;
@@ -321,7 +369,10 @@ const registerIslandWalkInController = async (req, res) => {
       user_id: userId,
     });
 
-    const members = await createIslandEntryMembers(registration.id, groupMembers);
+    const members = await createIslandEntryMembers(
+      registration.id,
+      groupMembers
+    );
 
     // ✅ Auto-log all members
     const logs = await logIslandEntryByRegistration({
@@ -339,7 +390,9 @@ const registerIslandWalkInController = async (req, res) => {
     });
   } catch (error) {
     console.error("Island walk-in registration error:", error);
-    res.status(500).json({ error: "Internal server error during walk-in registration." });
+    res
+      .status(500)
+      .json({ error: "Internal server error during walk-in registration." });
   }
 };
 
@@ -363,10 +416,14 @@ const getLatestIslandEntryController = async (req, res) => {
 const markIslandEntryPaidController = async (req, res) => {
   try {
     const { unique_code } = req.body;
-    if (!unique_code) return res.status(400).json({ error: "Unique code is required." });
+    if (!unique_code)
+      return res.status(400).json({ error: "Unique code is required." });
 
-    const registration = await getIslandEntryByCode(unique_code.trim().toUpperCase());
-    if (!registration) return res.status(404).json({ error: "Registration not found." });
+    const registration = await getIslandEntryByCode(
+      unique_code.trim().toUpperCase()
+    );
+    if (!registration)
+      return res.status(404).json({ error: "Registration not found." });
 
     await db.query(
       `UPDATE island_entry_registration SET status = 'PAID' WHERE id = $1`,
