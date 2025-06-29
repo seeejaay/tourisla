@@ -19,11 +19,7 @@ export default function Bookings() {
   } = useBookingsByOperator();
   const { updateStatus, loading: updating } = useUpdateBookingStatus();
   const { complete, loading: completing } = useCompleteBooking();
-  const {
-    data: bookingDetails,
-    fetchById,
-    loading: detailsLoading,
-  } = useBookingById();
+  const { data: bookingDetails, loading: detailsLoading } = useBookingById();
 
   const [detailsOpen, setDetailsOpen] = useState(false);
 
