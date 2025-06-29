@@ -1,11 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { islandEntryFields } from "@/app/static/islandEntry/islandEntryFields";
-import Header from "@/components/custom/header";
-import { registerIslandWalkIn } from "@/lib/api/islandEntry";
+import { registerIslandWalkIn, getTourismFee } from "@/lib/api/islandEntry";
 import type { AxiosError } from "axios";
-import { getTourismFee } from "@/lib/api/islandEntry";
-import { useEffect } from "react";
 
 export interface GroupMember {
   name: string;
@@ -51,20 +48,27 @@ export default function WalkInIslandEntryPage() {
   const [error, setError] = useState<string | null>(null);
   const [fee, setFee] = useState<number>(0);
 
-    useEffect(() => {
-        getTourismFee().then((data) => {
-        setFee(Number(data.amount));
+  useEffect(() => {
+    getTourismFee().then((data) => {
+      setFee(Number(data.amount));
     });
-    }, []);
+  }, []);
 
-    const totalMembers = 1 + companions.length;
-    const totalFee = fee * totalMembers;
+  const totalMembers = 1 + companions.length;
+  const totalFee = fee * totalMembers;
 
-  const handleMainChange = (field: keyof GroupMember, value: string | boolean | number) => {
+  const handleMainChange = (
+    field: keyof GroupMember,
+    value: string | boolean | number
+  ) => {
     setMain((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleCompanionChange = (idx: number, field: keyof GroupMember, value: string | boolean | number) => {
+  const handleCompanionChange = (
+    idx: number,
+    field: keyof GroupMember,
+    value: string | boolean | number
+  ) => {
     setCompanions((prev) =>
       prev.map((c, i) => (i === idx ? { ...c, [field]: value } : c))
     );
@@ -73,7 +77,15 @@ export default function WalkInIslandEntryPage() {
   const addCompanion = () => {
     setCompanions((prev) => [
       ...prev,
-      { name: "", sex: "", age: 0, is_foreign: false, municipality: "", province: "", country: "" },
+      {
+        name: "",
+        sex: "",
+        age: 0,
+        is_foreign: false,
+        municipality: "",
+        province: "",
+        country: "",
+      },
     ]);
   };
 
@@ -81,114 +93,81 @@ export default function WalkInIslandEntryPage() {
     setCompanions((prev) => prev.filter((_, i) => i !== idx));
   };
 
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  setLoading(true);
-  setError(null);
-  try {
-    const groupMembers = [main, ...companions];
-    const res = await registerIslandWalkIn({ groupMembers });
-    setResult(res.data);
-  } catch (err) {
-    const axiosErr = err as AxiosError<{ error: string }>;
-    setError(axiosErr.response?.data?.error || "Registration failed.");
-  } finally {
-    setLoading(false);
-  }
-};
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const groupMembers = [main, ...companions];
+      const res = await registerIslandWalkIn({ groupMembers });
+      setResult(res.data);
+    } catch (err) {
+      const axiosErr = err as AxiosError<{ error: string }>;
+      setError(axiosErr.response?.data?.error || "Registration failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (result) {
     return (
-      <div className="max-w-lg mx-auto mt-10 p-6 bg-white rounded shadow">
-        <h2 className="text-xl font-bold mb-2">Walk-in Registration Successful!</h2>
-        <p>Your Unique Code: <span className="font-mono">{result.registration.unique_code}</span></p>
-        <img src={result.registration.qr_code_url} alt="QR Code" className="my-4 w-40 h-40" />
-        <p className="text-green-700 font-semibold">Show this QR code at the entry point.</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#e6f7fa] to-white px-2">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-[#e6f7fa] p-8 mt-16 flex flex-col items-center">
+          <h2 className="text-2xl font-bold text-[#1c5461] mb-2 text-center">
+            Walk-in Registration Successful!
+          </h2>
+          <p className="mb-2 text-gray-700 text-center">
+            Your Unique Code:
+            <span className="font-mono text-blue-700 ml-2">
+              {result.registration.unique_code}
+            </span>
+          </p>
+          <img
+            src={result.registration.qr_code_url}
+            alt="QR Code"
+            className="my-4 w-44 h-44 border-4 border-blue-100 rounded-lg shadow"
+          />
+          <p className="text-green-700 font-semibold text-center">
+            Show this QR code at the entry point.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <>
-      <Header />
-      <div className="max-w-lg mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg border border-gray-100">
-        <h1 className="text-3xl font-extrabold mb-6 text-blue-700 text-center">
-          Walk-In Island Entry Registration
-        </h1>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {islandEntryFields.map((field) => {
-            if (field.showIf && !field.showIf(main)) return null;
-            if (field.type === "select") {
-              return (
-                <div key={field.name}>
-                  <label className="block mb-1 font-semibold text-gray-700">{field.label}</label>
-                  <select
-                    value={main[field.name]}
-                    onChange={e => handleMainChange(field.name, e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    <option value="">Select</option>
-                    {field.options.map((opt: string) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                </div>
-              );
-            }
-            if (field.type === "checkbox") {
-              return (
-                <div key={field.name} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={main[field.name]}
-                    onChange={e => handleMainChange(field.name, e.target.checked)}
-                    className="mr-2 accent-blue-600"
-                  />
-                  <label className="font-semibold text-gray-700">{field.label}</label>
-                </div>
-              );
-            }
-            return (
-              <div key={field.name}>
-                <label className="block mb-1 font-semibold text-gray-700">{field.label}</label>
-                <input
-                  type={field.type}
-                  value={main[field.name]}
-                  onChange={e => handleMainChange(field.name, e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-              </div>
-            );
-          })}
-
-          <div>
-            <h3 className="font-bold mb-2 text-gray-800">Companions</h3>
-            {companions.map((comp, idx) => (
-              <div key={idx} className="border border-gray-200 p-3 mb-3 rounded-lg bg-gray-50">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-semibold text-blue-600">Companion {idx + 1}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeCompanion(idx)}
-                    className="text-red-500 hover:text-red-700 text-xs"
-                  >
-                    Remove
-                  </button>
-                </div>
+      <main className="min-h-screen flex flex-col items-center bg-gradient-to-b from-[#e6f7fa] to-white px-2">
+        <div className="max-w-2xl w-full bg-white rounded-2xl shadow-lg border border-[#e6f7fa] p-8 mt-16">
+          <h1 className="text-3xl font-extrabold mb-6 text-[#1c5461] text-center">
+            Walk-In Island Entry Registration
+          </h1>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <h2 className="font-semibold text-lg mb-3 text-[#1c5461]">
+                Main Visitor
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {islandEntryFields.map((field) => {
-                  if (field.showIf && !field.showIf(comp)) return null;
+                  if (field.showIf && !field.showIf(main)) return null;
                   if (field.type === "select") {
                     return (
-                      <div key={field.name} className="mb-1">
-                        <label className="block text-gray-600">{field.label}</label>
+                      <div key={field.name}>
+                        <label className="block font-semibold mb-2 text-[#1c5461]">
+                          {field.label}
+                        </label>
                         <select
-                          value={comp[field.name]}
-                          onChange={e => handleCompanionChange(idx, field.name, e.target.value)}
-                          className="w-full border border-gray-300 rounded-lg px-2 py-1"
+                          value={main[field.name]}
+                          onChange={(e) =>
+                            handleMainChange(field.name, e.target.value)
+                          }
+                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                         >
-                          <option value="">Select</option>
+                          <option value="">Select...</option>
                           {field.options.map((opt: string) => (
-                            <option key={opt} value={opt}>{opt}</option>
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
                           ))}
                         </select>
                       </div>
@@ -196,55 +175,158 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                   }
                   if (field.type === "checkbox") {
                     return (
-                      <div key={field.name} className="mb-1 flex items-center">
+                      <div key={field.name} className="flex items-center mt-2">
                         <input
                           type="checkbox"
-                          checked={comp[field.name]}
-                          onChange={e => handleCompanionChange(idx, field.name, e.target.checked)}
-                          className="mr-2 accent-blue-600"
+                          checked={main[field.name]}
+                          onChange={(e) =>
+                            handleMainChange(field.name, e.target.checked)
+                          }
+                          className="accent-[#3e979f] scale-125"
                         />
-                        <label className="text-gray-600">{field.label}</label>
+                        <label className="font-medium text-[#1c5461] ml-2">
+                          {field.label}
+                        </label>
                       </div>
                     );
                   }
                   return (
-                    <div key={field.name} className="mb-1">
-                      <label className="block text-gray-600">{field.label}</label>
+                    <div key={field.name}>
+                      <label className="block font-semibold mb-2 text-[#1c5461]">
+                        {field.label}
+                      </label>
                       <input
                         type={field.type}
-                        value={comp[field.name]}
-                        onChange={e => handleCompanionChange(idx, field.name, e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-2 py-1"
+                        value={main[field.name]}
+                        onChange={(e) =>
+                          handleMainChange(field.name, e.target.value)
+                        }
+                        className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                       />
                     </div>
                   );
                 })}
               </div>
-            ))}
-            <button
-              type="button"
-              onClick={addCompanion}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded-lg mt-2"
-            >
-              Add Companion
-            </button>
-          </div>
-
-          {error && <div className="text-red-600">{error}</div>}
-
-            <div className="text-lg font-bold text-blue-700 text-center mb-2">
-                Amount to be paid: <span className="text-green-700">₱{totalFee.toLocaleString()}</span>
             </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg w-full font-bold text-lg shadow transition"
-          >
-            {loading ? "Registering..." : "Submit"}
-          </button>
-        </form>
-      </div>
+            <div>
+              <h2 className="font-semibold text-lg mb-3 text-[#1c5461]">
+                Companions
+              </h2>
+              {companions.map((comp, idx) => (
+                <div
+                  key={idx}
+                  className="relative mb-8 rounded-xl bg-white border border-[#e6f7fa] shadow-sm p-6"
+                >
+                  <button
+                    type="button"
+                    className="absolute top-4 right-4 text-red-500 text-2xl font-bold"
+                    onClick={() => removeCompanion(idx)}
+                    aria-label="Remove companion"
+                  >
+                    &times;
+                  </button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {islandEntryFields.map((field) => {
+                      if (field.showIf && !field.showIf(comp)) return null;
+                      if (field.type === "select") {
+                        return (
+                          <div key={field.name}>
+                            <label className="block font-semibold mb-2 text-[#1c5461]">
+                              {field.label}
+                            </label>
+                            <select
+                              value={comp[field.name]}
+                              onChange={(e) =>
+                                handleCompanionChange(
+                                  idx,
+                                  field.name,
+                                  e.target.value
+                                )
+                              }
+                              className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                            >
+                              <option value="">Select...</option>
+                              {field.options.map((opt: string) => (
+                                <option key={opt} value={opt}>
+                                  {opt}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        );
+                      }
+                      if (field.type === "checkbox") {
+                        return (
+                          <div
+                            key={field.name}
+                            className="flex items-center mt-2"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={comp[field.name]}
+                              onChange={(e) =>
+                                handleCompanionChange(
+                                  idx,
+                                  field.name,
+                                  e.target.checked
+                                )
+                              }
+                              className="accent-[#3e979f] scale-125"
+                            />
+                            <label className="font-medium text-[#1c5461] ml-2">
+                              {field.label}
+                            </label>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div key={field.name}>
+                          <label className="block font-semibold mb-2 text-[#1c5461]">
+                            {field.label}
+                          </label>
+                          <input
+                            type={field.type}
+                            value={comp[field.name]}
+                            onChange={(e) =>
+                              handleCompanionChange(
+                                idx,
+                                field.name,
+                                e.target.value
+                              )
+                            }
+                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addCompanion}
+                className="mt-2 rounded-lg border-[#3e979f] text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] transition px-4 py-2 border bg-white font-semibold"
+              >
+                Add Companion
+              </button>
+            </div>
+            {error && <div className="text-red-600 text-center">{error}</div>}
+            <div className="text-lg font-bold text-blue-700 text-center mb-2">
+              Amount to be paid:{" "}
+              <span className="text-green-700">
+                ₱{totalFee.toLocaleString()}
+              </span>
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg bg-[#3e979f] text-white hover:bg-[#1c5461] transition px-6 py-3 font-bold text-lg shadow"
+            >
+              {loading ? "Registering..." : "Submit"}
+            </button>
+          </form>
+        </div>
+      </main>
     </>
   );
 }
