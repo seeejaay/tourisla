@@ -68,20 +68,41 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100 p-4">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl p-8 md:p-12 border border-blue-100 flex flex-col gap-4">
-        <div className="mb-4 flex flex-col items-center gap-2">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-blue-700 mb-1 tracking-tight">
-            Create your account
-          </h2>
-          <p className="text-center text-gray-500 text-base md:text-lg">
-            Sign up to explore and experience the best of Tourisla.
-          </p>
-        </div>
-        {error && (
-          <div className="mb-4 text-center min-h-[1rem] w-full flex items-center justify-center">
-            <div className="w-40 border border-red-600 bg-red-200 rounded-md p-1">
-              <span className="text-red-600">{error}</span>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] px-4 py-8 relative">
+      {/* Logo and intro */}
+      <Image
+        src="/images/bg.svg"
+        alt="Tourisla Logo"
+        fill
+        className="absolute top-4 left-4 object-cover object-center"
+      />
+      <div className="w-full max-w-2xl">
+        <div className="relative overflow-hidden rounded-2xl shadow-2xl border border-[#e6f7fa] bg-white/80 backdrop-blur-lg">
+          {/* Decorative elements */}
+          <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#3e979f]/20 rounded-full filter blur-3xl"></div>
+          <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-[#1c5461]/20 rounded-full filter blur-3xl"></div>
+
+          <div className="relative z-10 p-10 md:p-12">
+            <div className="mb-8 text-center">
+              <div className="mx-auto flex justify-center mb-4">
+                <svg
+                  className="w-10 h-10 text-[#3e979f]"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <h1 className="text-3xl font-extrabold text-[#1c5461] mb-1">
+                Create your account
+              </h1>
+              <p className="text-[#51702c] text-sm">
+                Sign up to explore and experience the best of TourISLA.
+              </p>
             </div>
           </div>
         )}

@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     borderColor: "#fca5a5", // Light red
     borderWidth: 1,
     borderRadius: 8,
-    marginBottom: 24,
+    marginBottom: 24,w
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",

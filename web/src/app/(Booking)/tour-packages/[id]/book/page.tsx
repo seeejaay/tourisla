@@ -8,7 +8,8 @@ import { useTourPackageManager } from "@/hooks/useTourPackageManager";
 import Header from "@/components/custom/header";
 import BookingSchema from "@/app/static/booking/bookingSchema";
 import { bookingFields } from "@/app/static/booking/booking";
-
+import { useAuth } from "@/hooks/useAuth";
+import Footer from "@/components/custom/footer";
 // Types matching your API response
 type TourPackage = {
   id: number;
@@ -54,7 +55,7 @@ export default function BookingPage() {
   const params = useParams();
   const router = useRouter();
   const packageId = params.id as string;
-
+  const { loggedInUser } = useAuth();
   // Hooks
   const { fetchOne: fetchTourPackage } = useTourPackageManager();
   const {
@@ -83,6 +84,14 @@ export default function BookingPage() {
 
   // Fetch tour package and QR code on mount
   useEffect(() => {
+    async function checkUser() {
+      const user = await loggedInUser(router);
+      if (!user) {
+        router.push("/auth/login");
+        return;
+      }
+    }
+
     async function fetchPackageAndQr() {
       const pkg = await fetchTourPackage(packageId);
       if (pkg) {
@@ -106,8 +115,18 @@ export default function BookingPage() {
         }
       }
     }
+    checkUser();
     fetchPackageAndQr();
-  }, [packageId, fetchTourPackage, fetchQr]);
+  }, [packageId, fetchTourPackage, fetchQr, loggedInUser, router]);
+
+  useEffect(() => {
+    if (tourPackage) {
+      setForm((prev) => ({
+        ...prev,
+        total_price: Number(tourPackage.price) * (prev.number_of_guests || 1),
+      }));
+    }
+  }, [form.number_of_guests, tourPackage]);
 
   // Handle form input
   const handleChange = (
@@ -183,109 +202,152 @@ export default function BookingPage() {
   return (
     <>
       <Header />
-      <main className="w-full min-h-screen flex flex-col items-center justify-start bg-gradient-to-b from-blue-50 to-white">
-        <div className="max-w-lg w-full bg-white rounded-2xl shadow-xl p-8 mt-12 border border-blue-100">
-          <h2 className="text-2xl font-bold text-blue-800 mb-4">
-            Book: {tourPackage?.package_name || "Loading..."}
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {bookingFields.map((field) => (
-              <div key={field.name}>
-                <label className="block font-medium mb-1">{field.label}</label>
-                {field.name === "scheduled_date" ? (
-                  <input
-                    type="date"
-                    name="scheduled_date"
-                    value={
-                      tourPackage?.date_start
-                        ? new Date(tourPackage.date_start)
-                            .toISOString()
-                            .split("T")[0]
-                        : ""
-                    }
-                    readOnly
-                    className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
-                  />
-                ) : field.name === "total_price" ? (
-                  <input
-                    type="number"
-                    name="total_price"
-                    value={form.total_price}
-                    readOnly
-                    className="w-full border rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
-                  />
-                ) : field.type === "textarea" ? (
-                  <textarea
-                    name={field.name}
-                    value={(form[field.name] as string) || ""}
-                    onChange={handleChange}
-                    className="w-full border rounded px-3 py-2"
-                  />
-                ) : field.type === "file" ? (
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    ref={fileInputRef}
-                    className="w-full"
-                  />
-                ) : (
-                  <input
-                    type={field.type}
-                    name={field.name}
-                    value={
-                      form[field.name] !== undefined &&
-                      form[field.name] !== null &&
-                      typeof form[field.name] !== "object"
-                        ? form[field.name]
-                        : field.type === "number"
-                        ? 1
-                        : ""
-                    }
-                    onChange={handleChange}
-                    className="w-full border rounded px-3 py-2"
-                    min={field.type === "number" ? 1 : undefined}
-                    required={field.name !== "notes"}
-                  />
-                )}
-              </div>
-            ))}
-            {/* Payment Section */}
-            <div>
-              <label className="block font-medium mb-1">Pay via QR Code</label>
-              {qrLoading ? (
-                <p className="text-gray-500">Loading QR code...</p>
-              ) : qrError ? (
-                <p className="text-red-500">Failed to load QR code.</p>
-              ) : qrData ? (
-                <div className="flex flex-col items-center">
-                  <img
-                    src={qrData.qr_image_url}
-                    alt="Operator QR Code"
-                    className="w-40 h-40 object-contain border-2 border-blue-200 rounded mb-2"
-                  />
-                  <span className="text-sm text-gray-600 mb-2">
-                    Scan this QR code to pay the package fee.
-                  </span>
+      <main className="w-full pt-20 min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] flex flex-col items-center pb-20">
+        {/* Hero Section */}
+        <section className="relative h-56 w-full flex items-center justify-center overflow-hidden mb-10">
+          <div className="absolute inset-0">
+            <img
+              src="/images/bg_hero.webp"
+              alt="Book Tour Package"
+              className="w-full h-full object-cover object-center brightness-[40%]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1c5461]/80 via-[#1c5461]/40 to-transparent" />
+          </div>
+          <div className="relative z-10 text-center px-4">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-white drop-shadow-xl mb-2">
+              Book Your Adventure
+            </h1>
+            <p className="text-md md:text-lg text-[#51702c] drop-shadow-md max-w-xl mx-auto">
+              Secure your spot and pay easily via QR code.
+            </p>
+          </div>
+        </section>
+
+        <section className="w-full flex justify-center">
+          <div className="max-w-lg w-full bg-white/90 rounded-2xl shadow-2xl border border-[#e6f7fa] p-8">
+            <h2 className="text-2xl font-bold text-[#1c5461] mb-6 flex items-center gap-2">
+              <svg
+                className="w-7 h-7 text-[#3e979f]"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 8c-1.657 0-3 1.343-3 3 0 1.657 1.343 3 3 3s3-1.343 3-3c0-1.657-1.343-3-3-3zm0 0V4m0 8v8m8-8a8 8 0 11-16 0 8 8 0 0116 0z"
+                />
+              </svg>
+              Book: {tourPackage?.package_name || "Loading..."}
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {bookingFields.map((field) => (
+                <div key={field.name}>
+                  <label className="block font-semibold mb-2 text-[#1c5461]">
+                    {field.label}
+                  </label>
+                  {field.name === "scheduled_date" ? (
+                    <input
+                      type="date"
+                      name="scheduled_date"
+                      value={
+                        tourPackage?.date_start
+                          ? new Date(tourPackage.date_start)
+                              .toISOString()
+                              .split("T")[0]
+                          : ""
+                      }
+                      readOnly
+                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed"
+                    />
+                  ) : field.name === "total_price" ? (
+                    <input
+                      type="number"
+                      name="total_price"
+                      value={form.total_price}
+                      readOnly
+                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed"
+                    />
+                  ) : field.type === "textarea" ? (
+                    <textarea
+                      name={field.name}
+                      value={(form[field.name] as string) || ""}
+                      onChange={handleChange}
+                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2"
+                      rows={3}
+                    />
+                  ) : field.type === "file" ? (
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      ref={fileInputRef}
+                      className="w-full"
+                    />
+                  ) : (
+                    <input
+                      type={field.type}
+                      name={field.name}
+                      value={
+                        form[field.name] !== undefined &&
+                        form[field.name] !== null &&
+                        typeof form[field.name] !== "object"
+                          ? form[field.name]
+                          : field.type === "number"
+                          ? 1
+                          : ""
+                      }
+                      onChange={handleChange}
+                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2"
+                      min={field.type === "number" ? 1 : undefined}
+                      required={field.name !== "notes"}
+                    />
+                  )}
                 </div>
-              ) : (
-                <p className="text-gray-500">No QR code available.</p>
+              ))}
+              {/* Payment Section */}
+              <div>
+                <label className="block font-semibold mb-2 text-[#1c5461]">
+                  Pay via QR Code
+                </label>
+                <div className="flex flex-col items-center">
+                  {qrLoading ? (
+                    <p className="text-gray-500">Loading QR code...</p>
+                  ) : qrError ? (
+                    <p className="text-red-500">Failed to load QR code.</p>
+                  ) : qrData ? (
+                    <>
+                      <img
+                        src={qrData.qr_image_url}
+                        alt="Operator QR Code"
+                        className="w-40 h-40 object-contain border-2 border-[#3e979f] rounded mb-2"
+                      />
+                      <span className="text-sm text-gray-600 mb-2">
+                        Scan this QR code to pay the package fee.
+                      </span>
+                    </>
+                  ) : (
+                    <p className="text-gray-500">No QR code available.</p>
+                  )}
+                </div>
+              </div>
+              {formError && <p className="text-red-600 text-sm">{formError}</p>}
+              {bookingError && (
+                <p className="text-red-600 text-sm">{bookingError}</p>
               )}
-            </div>
-            {formError && <p className="text-red-600 text-sm">{formError}</p>}
-            {bookingError && (
-              <p className="text-red-600 text-sm">{bookingError}</p>
-            )}
-            <button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition"
-              disabled={bookingLoading}
-            >
-              {bookingLoading ? "Booking..." : "Book Now"}
-            </button>
-          </form>
-        </div>
+              <button
+                type="submit"
+                className="w-full rounded-lg bg-[#3e979f] text-white hover:bg-[#1c5461] transition font-bold text-lg py-3 shadow"
+                disabled={bookingLoading}
+              >
+                {bookingLoading ? "Booking..." : "Book Now"}
+              </button>
+            </form>
+          </div>
+        </section>
       </main>
+      <Footer />
     </>
   );
 }

@@ -219,54 +219,59 @@ export default function Home() {
                   align: "start",
                   loop: true,
                 }}
-                className="w-full  mx-auto"
+                className="w-full mx-auto"
               >
                 <CarouselContent>
-                  {articles.slice(0, 6).map((article) => (
-                    <CarouselItem
-                      key={article.id}
-                      className="md:basis-1/3 basis-full flex-shrink-0 w-full"
-                    >
-                      <div className="group relative rounded-2xl overflow-hidden shadow-lg border border-[#7b9997]/20 hover:shadow-2xl transition-all flex flex-col h-[26rem] bg-white">
-                        {article.thumbnail_url ? (
-                          <Image
-                            src={article.thumbnail_url}
-                            alt={article.title}
-                            fill
-                            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-                            style={{ zIndex: 0 }}
-                          />
-                        ) : (
-                          <div className="absolute inset-0 h-full w-full bg-[#e6f7fa] flex items-center justify-center text-[#3e979f] z-0">
-                            No Image
+                  {articles
+                    .filter(
+                      (article) => article.status?.toLowerCase() === "published"
+                    )
+                    .slice(0, 6)
+                    .map((article) => (
+                      <CarouselItem
+                        key={article.id}
+                        className="md:basis-1/3 basis-full flex-shrink-0 w-full"
+                      >
+                        <div className="group relative rounded-2xl overflow-hidden shadow-lg border border-[#7b9997]/20 hover:shadow-2xl transition-all flex flex-col h-[26rem] bg-white">
+                          {article.thumbnail_url ? (
+                            <Image
+                              src={article.thumbnail_url}
+                              alt={article.title}
+                              fill
+                              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                              style={{ zIndex: 0 }}
+                            />
+                          ) : (
+                            <div className="absolute inset-0 h-full w-full bg-[#e6f7fa] flex items-center justify-center text-[#3e979f] z-0">
+                              No Image
+                            </div>
+                          )}
+                          {/* Overlay for dimming */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10 transition group-hover:from-black/80" />
+                          {/* Details on top of image */}
+                          <div className="absolute inset-0 z-20 flex flex-col justify-end p-8">
+                            <h3 className="text-2xl font-extrabold text-white line-clamp-2 group-hover:text-[#f8d56b] transition drop-shadow mb-2">
+                              {article.title}
+                            </h3>
+                            <p className="text-base text-[#e6f7fa] drop-shadow mb-4 line-clamp-2">
+                              {article.body.slice(0, 30) + "..."}
+                            </p>
+                            <button
+                              onClick={() =>
+                                router.push(`/articles/${article.id}`)
+                              }
+                              className="mt-2 w-fit rounded-lg bg-[#3e979f] hover:bg-[#1c5461] cursor-pointer text-base text-[#e6f7fa] hover:text-[#f8d56b] px-5 py-2 font-semibold transition-all"
+                            >
+                              Read more{" "}
+                              <ArrowRight className="inline w-4 h-4 ml-1" />
+                            </button>
                           </div>
-                        )}
-                        {/* Overlay for dimming */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10 transition group-hover:from-black/80" />
-                        {/* Details on top of image */}
-                        <div className="absolute inset-0 z-20 flex flex-col justify-end p-8">
-                          <h3 className="text-2xl font-extrabold text-white line-clamp-2 group-hover:text-[#f8d56b] transition drop-shadow mb-2">
-                            {article.title}
-                          </h3>
-                          <p className="text-base text-[#e6f7fa] drop-shadow mb-4 line-clamp-2">
-                            {article.body.slice(0, 30) + "..."}
-                          </p>
-                          <button
-                            onClick={() =>
-                              router.push(`/articles/${article.id}`)
-                            }
-                            className="mt-2 w-fit rounded-lg bg-[#3e979f] hover:bg-[#1c5461] cursor-pointer text-base text-[#e6f7fa] hover:text-[#f8d56b] px-5 py-2 font-semibold transition-all"
-                          >
-                            Read more{" "}
-                            <ArrowRight className="inline w-4 h-4 ml-1" />
-                          </button>
                         </div>
-                      </div>
-                    </CarouselItem>
-                  ))}
+                      </CarouselItem>
+                    ))}
                 </CarouselContent>
-                <CarouselPrevious className="w-12 h-12 bg-[#3e979f] text-white rounded-full shadow-lg hover:bg-[#1c5461] hover:text-white transition" />
-                <CarouselNext className="w-12 h-12 bg-[#3e979f] text-white rounded-full shadow-lg hover:bg-[#1c5461] hover:text-white transition" />
+                <CarouselPrevious className="left-0 -translate-y-1/2 top-1/2" />
+                <CarouselNext className="right-0 -translate-y-1/2 top-1/2" />
               </Carousel>
             )}
           </div>

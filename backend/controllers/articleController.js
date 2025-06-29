@@ -62,13 +62,15 @@ const createArticleController = async (req, res) => {
 
 const editArticleController = async (req, res) => {
   try {
+    console.log("req.body:", req.body);
+    console.log("req.file:", req.file);
     const { articleId } = req.params;
     let {
       title,
       author,
       body,
       video_url,
-      thumbnail_url, // optional fallback if no new image
+      thumbnail_url, // fallback if no new image
       tags,
       status,
       is_featured,
@@ -95,15 +97,17 @@ const editArticleController = async (req, res) => {
         thumbnail_url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
       } catch (s3Err) {
         console.error("S3 upload failed:", s3Err.message);
+        // Optionally: return res.status(500).json({ error: "S3 upload failed" });
       }
     }
+    // else: thumbnail_url remains as sent in the form
 
     const article = await editArticle(articleId, {
       title,
       author,
       body,
       video_url,
-      thumbnail_url,
+      thumbnail_url, // always use the latest value
       tags,
       status,
       is_featured,
