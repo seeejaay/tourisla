@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Linking,
   StyleSheet,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFormik } from 'formik';
@@ -24,6 +25,7 @@ export default function IslandRegistrationScreen() {
   const [latestEntry, setLatestEntry] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [showPaymentLink, setShowPaymentLink] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const { loading, result, fee, fetchFee, register } = useIslandEntryManager();
 
@@ -85,6 +87,7 @@ export default function IslandRegistrationScreen() {
         const res = await register(payload);
         if (res?.payment_link && values.payment_method === 'Online') {
           setLatestEntry(res);
+          setHasSubmitted(true);
           setShowPaymentLink(true);
         } else if (res) {
           const latest = await getLatestIslandEntry();
@@ -113,7 +116,6 @@ export default function IslandRegistrationScreen() {
       is_foreign: false,
       municipality: '',
       province: '',
-      country: '',
     };
     const updated = [...companions, newMember];
     setCompanions(updated);
@@ -124,15 +126,31 @@ export default function IslandRegistrationScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.successBox}>
-          <Text style={styles.successTitle}>Registration Successful</Text>
+          <Text style={styles.successTitle}>Registration Successful!</Text>
           {latestEntry && (
             <>
-              <Text style={styles.successCode}>
-                Code: <Text style={styles.mono}>{latestEntry.unique_code}</Text>
+              <Text style={styles.successText}>
+                Your Unique Code:{" "}
+                <Text style={styles.code}>{latestEntry.unique_code}</Text>
               </Text>
-              <Text style={styles.link}>{latestEntry.qr_code_url}</Text>
+              <Image
+                source={{ uri: latestEntry.qr_code_url }}
+                style={styles.qrImage}
+                resizeMode="contain"
+              />
             </>
           )}
+          <Text style={styles.instruction}>
+            Show this QR code at the entry point.
+          </Text>
+          <TouchableOpacity
+            onPress={() =>
+              Linking.openURL(process.env.EXPO_PUBLIC_FRONTEND_URL || '/')
+            }
+            style={styles.backButton}
+          >
+            <Text style={styles.backButtonText}>Back to Home</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -262,24 +280,60 @@ export default function IslandRegistrationScreen() {
           </View>
         )}
 
+        {!(
+        formik.values.payment_method === "Online" &&
+        hasSubmitted &&
+        latestEntry?.payment_link
+        ) && !showResult && (
         <TouchableOpacity
-          onPress={formik.handleSubmit}
-          disabled={loading}
-          style={[styles.submitButton, loading && styles.disabledButton]}
+            onPress={formik.handleSubmit}
+            style={styles.submitButton}
+            disabled={loading}
         >
-          <Text style={styles.submitButtonText}>
-            {loading ? 'Registering...' : 'Submit Registration'}
-          </Text>
+            <Text style={styles.submitButtonText}>
+            {loading ? "Registering..." : "Submit"}
+            </Text>
         </TouchableOpacity>
+        )}
 
         {showPaymentLink && latestEntry?.payment_link && (
-          <View style={{ marginTop: 24 }}>
-            <Text style={styles.label}>Online Payment Link:</Text>
-            <TouchableOpacity onPress={() => Linking.openURL(latestEntry.payment_link)}>
-              <Text style={styles.link}>Proceed to Payment</Text>
+        <View style={{ marginTop: 24 }}>
+            <Text style={styles.label}>Proceed to online payment:</Text>
+
+            <TouchableOpacity
+            onPress={() => Linking.openURL(latestEntry.payment_link)}
+            style={[styles.submitButton, { marginBottom: 12 }]}
+            >
+            <Text style={styles.submitButtonText}>Pay via PayMongo</Text>
             </TouchableOpacity>
-          </View>
+
+            <Text style={{ textAlign: 'center', fontSize: 13, color: '#475569' }}>
+            After paying, click below to confirm:
+            </Text>
+
+            <TouchableOpacity
+            onPress={async () => {
+                try {
+                const refreshed = await getLatestIslandEntry();
+                setLatestEntry(refreshed);
+                if (refreshed?.qr_code_url) {
+                    setShowResult(true);
+                    setShowPaymentLink(false);
+                } else {
+                    Alert.alert("Still Pending", "Payment not yet confirmed. Try again shortly.");
+                }
+                } catch (err) {
+                console.error("Confirm payment failed:", err);
+                Alert.alert("Error", "Failed to confirm payment.");
+                }
+            }}
+            style={[styles.submitButton, { marginTop: 12, backgroundColor: '#16a34a' }]}
+            >
+            <Text style={styles.submitButtonText}>Confirm Payment</Text>
+            </TouchableOpacity>
+        </View>
         )}
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -487,5 +541,40 @@ const styles = StyleSheet.create({
   picker: {
     height: 50,
     width: '100%',
+  },
+  successText: {
+    fontSize: 16,
+    marginBottom: 12,
+    color: '#1e293b',
+  },
+  code: {
+    fontFamily: 'monospace',
+    fontWeight: 'bold',
+    color: '#1e40af',
+  },
+  qrImage: {
+    width: 160,
+    height: 160,
+    alignSelf: 'center',
+    marginVertical: 16,
+  },
+  instruction: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#15803d',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  backButton: {
+    backgroundColor: '#2563eb',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  backButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

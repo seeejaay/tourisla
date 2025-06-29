@@ -2,8 +2,10 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import StaffHomeScreen from './home/staff_home';
 import StaffMapScreen from './map/staff_map';
 import StaffAnnouncementsScreen from './announcements/staff_announcements';
+import MoreScreen from './more/MoreScreen';
 import StaffQRScan from './visitor/staff_qr_scan';
 import StaffProfile from './profile/staff_profile';
+
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { StyleSheet, View, Platform, TouchableOpacity, Image, Text, StatusBar, Dimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -144,7 +146,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
     <View style={[styles.customTabBar]}>
       <View style={styles.tabBarBackground}>
         <LinearGradient
-          colors={['#0f172a', '#1e293b']}
+          colors={['#014b55', '#014e65']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.tabBarGradient}
@@ -170,6 +172,8 @@ function CustomTabBar({ state, descriptors, navigation }) {
           } else if (route.name === 'QRScan') {
             iconName = isFocused ? "qrcode" : "qrcode";
             IconComponent = FontAwesome5; // Use FontAwesome5 for QR code
+          } else if (route.name === 'More') {
+            iconName = isFocused ? "ellipsis-horizontal" : "ellipsis-horizontal-outline";
           }
           
           const onPress = () => {
@@ -253,19 +257,16 @@ export default function StaffDashboard() {
           {() => <StaffHomeScreen headerHeight={headerHeight} />}
         </Tab.Screen>
         <Tab.Screen 
-          name="Map"
-          options={{ tabBarLabel: 'Map' }}
-        >
-          {() => <StaffMapScreen headerHeight={headerHeight} />}
-        </Tab.Screen>
-        <Tab.Screen name="Announcements">
-          {() => <StaffAnnouncementsScreen headerHeight={headerHeight} />}
-        </Tab.Screen>
-        <Tab.Screen 
           name="QRScan"
           options={{ tabBarLabel: 'QR Scan' }}
         >
           {() => <StaffQRScan headerHeight={headerHeight} />}
+        </Tab.Screen>
+        <Tab.Screen
+          name="More"
+          options={{ tabBarLabel: 'More' }}
+        >
+          {() => <MoreScreen headerHeight={headerHeight} />}
         </Tab.Screen>
       </Tab.Navigator>
       </View>

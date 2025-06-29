@@ -142,7 +142,10 @@ export default function TouristAnnouncementsScreen({ headerHeight }: TourPackage
 
     return (
         <SafeAreaView style={styles.safeContainer}>
-        <View style={styles.container}>
+        <LinearGradient
+        colors={['#f1f1f1', '#e6f7fa']}
+        style={styles.container}
+        >
 
         <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
         <View style={styles.navbar}>
@@ -356,7 +359,7 @@ export default function TouristAnnouncementsScreen({ headerHeight }: TourPackage
                     </View>
                 </View>
             </Modal>
-        </View>
+        </LinearGradient>
         </SafeAreaView>
     );
 }
@@ -368,17 +371,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingTop: STATUS_BAR_HEIGHT + 10,
         paddingBottom: 10,
-        backgroundColor: 'transparent',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 10,
+        paddingHorizontal: 16,
+        backgroundColor: '#fff',
       },
       navButton: {
         width: 40,
         height: 40,
-        borderRadius: 8,
         justifyContent: 'center',
         alignItems: 'center',
       },
@@ -393,7 +391,6 @@ const styles = StyleSheet.create({
 
     scrollView: {
         flex: 1,
-        marginTop: 50 + STATUS_BAR_HEIGHT,
     },
     contentContainer: {
         paddingHorizontal: 16,
@@ -403,8 +400,12 @@ const styles = StyleSheet.create({
         marginBottom: 6,
         borderColor: '#ececee',
         borderWidth: 1,
-        overflow: 'hidden',
         position: 'relative',
+        shadowColor: '#000',
+        shadowOffset: { width: 2, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
     },
     cardGradient: {
         position: 'absolute',
@@ -412,6 +413,7 @@ const styles = StyleSheet.create({
         right: 0,
         top: 0,
         bottom: 0,
+        borderRadius: 12,
     },
     cardContent: {
         flexDirection: 'row',
@@ -524,7 +526,6 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
     searchContainer: {
-        marginTop: STATUS_BAR_HEIGHT + 50,
         backgroundColor: '#f8fafc',
         zIndex: 10,
       },
@@ -535,16 +536,16 @@ const styles = StyleSheet.create({
         marginBottom: 12, // Add spacing below the row
       },
       searchInputContainer: {
-        flex: 1, // Allow the search input to take up available space
-        flexDirection: 'row', // Align the search icon and input horizontally
-        alignItems: 'center', // Vertically center the icon and input
+        flex: 1, 
+        flexDirection: 'row', 
+        alignItems: 'center', 
         backgroundColor: '#ffffff',
         borderRadius: 12,
         borderWidth: 1,
         borderColor: '#ececee',
         paddingHorizontal: 12,
         paddingVertical: 8,
-        marginRight: 8, // Add spacing between the search input and SortButton
+        marginRight: 8, 
       },
       searchIcon: {
         marginRight: 8, // Add spacing between the icon and the input text

@@ -17,6 +17,7 @@ interface TourPackage {
   duration?: string;
   created_at?: string;
   updated_at?: string;
+  available_slots?: number; 
   // add any other columns you have in tour_packages table
 }
 
@@ -61,8 +62,15 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
           .map(word => word.charAt(0).toUpperCase() + word.slice(1))
           .join(' ')
         }
-      </Text>
+        </Text>
       ) : null}
+      {item.available_slots !== undefined && (
+        <View style={styles.slotsContainer}>
+          <Text style={styles.slots}>
+            {item.available_slots} {item.available_slots === 1 ? 'Slot' : 'Slots'} Available
+          </Text>
+        </View>
+      )}
       {item.price ? (
         <View style={styles.cardFooter}>
           <View style={styles.packagePriceContainer}>
@@ -203,6 +211,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#64748b',
     marginBottom: 8,
+  },
+  slotsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  slots: {
+    fontSize: 12,
+    color: '#5ea5aa',
+    fontWeight: '900',
   },
   cardFooter: {
     flexDirection: 'row',
