@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, 
   Linking, SafeAreaView, Platform, StatusBar, ActivityIndicator, Alert
 } from 'react-native';
-import { Feather, FontAwesome } from '@expo/vector-icons';
+import { Feather, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
@@ -16,6 +16,12 @@ export default function Settings() {
   const [rules, setRules] = useState([]);
   const [loadingRules, setLoadingRules] = useState(false);
   const [rulesError, setRulesError] = useState(null);
+  const [showTitleInHeader, setShowTitleInHeader] = useState(false);
+
+  const handleScroll = (event: any) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    setShowTitleInHeader(offsetY > 100); // adjust 100 depending on where the sectionTitle is
+  };
 
   useEffect(() => {
     fetchRules();
@@ -79,21 +85,30 @@ export default function Settings() {
 
   const faqs = [
     {
-      question: 'What is Tourisla?',
-      answer: 'Tourisla is a comprehensive tourism platform for Isla Verde, providing information about tourist spots, accommodations, and local services.'
+      question: "What is Tourisla?",
+      answer:
+        "Tourisla is a tourism platform for Bantayan Island, Cebu. It provides information about tourist spots, accommodations, local services, and helps you plan your perfect island getaway.",
     },
     {
-      question: 'How do I book accommodations?',
-      answer: 'You can browse available accommodations in the app and contact them directly through the provided contact information.'
+      question: "How do I book accommodations on Bantayan Island?",
+      answer:
+        "You can browse available accommodations on Tourisla and contact them directly through the provided contact details. Some listings may also offer online booking links.",
     },
     {
-      question: 'Is there an internet connection in Isla Verde?',
-      answer: 'Internet connectivity varies across the island. Major accommodations typically offer WiFi, but connection may be limited in remote areas.'
+      question: "Is there internet connection on Bantayan Island?",
+      answer:
+        "Internet connectivity is available in most towns and major resorts on Bantayan Island. However, connection may be limited or slower in remote areas and some beaches.",
     },
     {
-      question: 'How do I report issues with the app?',
-      answer: 'You can report any issues through the Contact section or by emailing support@tourisla.com.'
-    }
+      question: "How do I report issues or give feedback about Tourisla?",
+      answer:
+        "You can report issues or send feedback through the Contact section of the app or by emailing support@tourisla.com. We value your input to improve your experience.",
+    },
+    {
+      question: "What activities can I do on Bantayan Island?",
+      answer:
+        "Bantayan Island offers a variety of activities including island hopping, swimming, snorkeling, biking, exploring historical sites, and enjoying local cuisine.",
+    },
   ];
 
   return (
@@ -102,85 +117,59 @@ export default function Settings() {
       
       {/* Header */}
       <LinearGradient
-        colors={['#0f172a', '#1e293b']}
+        colors={['#248b7d', '#93d2ca']}
         style={styles.header}
       >
         <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
           <Feather name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={styles.headerTitle}>
+          {showTitleInHeader ? 'Settings' : ''}
+        </Text>
         <View style={styles.placeholder} />
       </LinearGradient>
 
-      <ScrollView style={styles.content}>
+      <ScrollView 
+        style={styles.content}
+        onScroll={handleScroll}
+        scrollEventThrottle={16} // smoother scroll updates
+      >
       <View style={styles.section}>
         {/* Rules and Regulations - Direct navigation */}
-        <TouchableOpacity 
-          style={styles.subsectionHeader}
-          onPress={navigateToRules}
-          activeOpacity={0.7}
-        >
-            <Text style={styles.subsectionTitle}>Rules & Regulations</Text>
-            <Feather name="chevron-right" size={20} color="#64748b" />
-        </TouchableOpacity>
       </View>
 
         {/* About Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>About</Text>
+            <Text style={styles.sectionTitle}>Settings</Text>
           </View>
-          
-          {/* About Tourisla */}
-          <TouchableOpacity 
-            style={styles.subsectionHeader} 
-            onPress={() => toggleSection('about')}
-          >
-            <Text style={styles.subsectionTitle}>About Tourisla</Text>
-            <Feather 
-              name={expandedSection === 'about' ? 'chevron-up' : 'chevron-down'} 
-              size={20} 
-              color="#64748b" 
-            />
-          </TouchableOpacity>
-          
-          {expandedSection === 'about' && (
-            <View style={styles.subsectionContent}>
-              <Text style={styles.paragraph}>
-                Content will be loaded from the database.
-              </Text>
-              <TouchableOpacity 
-                style={styles.linkButton}
-                onPress={() => {/* CRUD functionality will be added later */}}
-              >
-                <Text style={styles.linkText}>Read more</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          
-          {/* Contacts and Hotline */}
-          <TouchableOpacity 
-            style={styles.subsectionHeader}
-            onPress={navigateToHotlines}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.subsectionTitle}>Contacts & Hotlines</Text>
-            <Feather name="chevron-right" size={20} color="#64748b" />
-          </TouchableOpacity>
-          
           {/* FAQs */}
+          <Text style={styles.label}>About</Text>   
+          <View style={styles.section}> 
+          <TouchableOpacity 
+          style={styles.subsectionHeader}
+          onPress={navigateToRules}
+          >
+          <View style={styles.subsectionTitleWrapper}>
+            <Feather name="file-text" size={16} color="#64748b" style={styles.subsectionIcon} />
+            <Text style={styles.subsectionTitle}>Rules & Regulations</Text>
+          </View>
+          <Feather name="chevron-right" size={20} color="#64748b" />
+        </TouchableOpacity>
           <TouchableOpacity 
             style={styles.subsectionHeader} 
             onPress={() => toggleSection('faqs')}
           >
+          <View style={styles.subsectionTitleWrapper}>
+            <FontAwesome5 name="question-circle" size={16} color="#64748b" style={styles.subsectionIcon} />
             <Text style={styles.subsectionTitle}>FAQs</Text>
+          </View>
             <Feather 
               name={expandedSection === 'faqs' ? 'chevron-up' : 'chevron-down'} 
               size={20} 
               color="#64748b" 
             />
           </TouchableOpacity>
-          
           {expandedSection === 'faqs' && (
             <View style={styles.subsectionContent}>
               {faqs.map((faq, index) => (
@@ -191,108 +180,84 @@ export default function Settings() {
               ))}
             </View>
           )}
-          
-          {/* Socials */}
-          <TouchableOpacity 
-            style={styles.subsectionHeader} 
-            onPress={() => toggleSection('socials')}
-          >
-            <Text style={styles.subsectionTitle}>Social Media</Text>
-            <Feather 
-              name={expandedSection === 'socials' ? 'chevron-up' : 'chevron-down'} 
-              size={20} 
-              color="#64748b" 
-            />
-          </TouchableOpacity>
-          
-          {expandedSection === 'socials' && (
-            <View style={[styles.subsectionContent, styles.socialsContainer]}>
-              <TouchableOpacity 
-                style={styles.socialButton}
-                onPress={() => openLink('https://www.facebook.com/tourisla')}
-              >
-                <FontAwesome name="facebook-square" size={28} color="#1877f2" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.socialButton}
-                onPress={() => openLink('https://www.instagram.com/tourisla')}
-              >
-                <FontAwesome name="instagram" size={28} color="#c13584" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.socialButton}
-                onPress={() => openLink('https://www.twitter.com/tourisla')}
-              >
-                <FontAwesome name="twitter-square" size={28} color="#1da1f2" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.socialButton}
-                onPress={() => openLink('https://www.youtube.com/tourisla')}
-              >
-                <FontAwesome name="youtube-play" size={28} color="#ff0000" />
-              </TouchableOpacity>
-            </View>
-          )}
-          
-          {/* Terms and Conditions */}
+
+
           <TouchableOpacity 
             style={styles.subsectionHeader}
-            onPress={navigateToTerms}
+            onPress={navigateToHotlines}
             activeOpacity={0.7}
           >
-            <Text style={styles.subsectionTitle}>Terms & Conditions</Text>
+          <View style={styles.subsectionTitleWrapper}>
+            <Feather name="phone-call" size={16} color="#64748b" style={styles.subsectionIcon} />
+            <Text style={styles.subsectionTitle}>Contacts & Hotlines</Text>
+          </View>
             <Feather name="chevron-right" size={20} color="#64748b" />
-          </TouchableOpacity>
-          
-          {expandedSection === 'terms' && (
-            <View style={styles.subsectionContent}>
-              <Text style={styles.paragraph}>
-                Content will be loaded from the database.
-              </Text>
-              <TouchableOpacity 
-                style={styles.linkButton}
-                onPress={() => {/* CRUD functionality will be added later */}}
-              >
-                <Text style={styles.linkText}>Read full Terms & Conditions</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          
-          {/* Data Privacy */}
+          </TouchableOpacity> 
+          </View>
+
+        {/* Socials */}    
+        <Text style={styles.label}>Socials</Text>      
+        <View style={styles.section}>
           <TouchableOpacity 
             style={styles.subsectionHeader} 
-            onPress={() => toggleSection('privacy')}
+            onPress={() => openLink('https://www.facebook.com/tourisla')}
           >
-            <Text style={styles.subsectionTitle}>Data Privacy</Text>
-            <Feather 
-              name={expandedSection === 'privacy' ? 'chevron-up' : 'chevron-down'} 
-              size={20} 
-              color="#64748b" 
-            />
-          </TouchableOpacity>
-          
-          {expandedSection === 'privacy' && (
-            <View style={styles.subsectionContent}>
-              <Text style={styles.paragraph}>
-                Content will be loaded from the database.
-              </Text>
-              <TouchableOpacity 
-                style={styles.linkButton}
-                onPress={() => {/* CRUD functionality will be added later */}}
-              >
-                <Text style={styles.linkText}>Read full Privacy Policy</Text>
-              </TouchableOpacity>
+            <View style={styles.subsectionTitleWrapper}>
+            <FontAwesome name="facebook-square" size={28} color="#1877f2" />
+            <Text style={styles.subsectionTitle}>Facebook</Text>
             </View>
-          )}
-        </View>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.subsectionHeader} 
+            onPress={() => openLink('https://www.instagram.com/tourisla')}
+          >
+            <View style={styles.subsectionTitleWrapper}>
+            <FontAwesome name="instagram" size={28} color="#c13584" />
+            <Text style={styles.subsectionTitle}>Instagram</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.subsectionHeader} 
+            onPress={() => openLink('https://www.twitter.com/tourisla')}
+          >
+            <View style={styles.subsectionTitleWrapper}>
+            <FontAwesome name="twitter-square" size={28} color="#199df0" />
+            <Text style={styles.subsectionTitle}>X</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.subsectionHeader} 
+            onPress={() => openLink('https://www.youtube.com/tourisla')}
+          >
+            <View style={styles.subsectionTitleWrapper}>
+            <FontAwesome name="youtube-play" size={28} color="#ff0000" />
+            <Text style={styles.subsectionTitle}>Youtube</Text>
+            </View>
+          </TouchableOpacity>
+        </View>  
 
-        {/* App Version */}
-        <View style={styles.versionContainer}>
-          <Text style={styles.versionText}>Tourisla v1.0.0</Text>
-          <Text style={styles.copyrightText}>© 2023 Tourisla. All rights reserved.</Text>
+        {/* Rules Section */}
+        <Text style={styles.label}>Legal Policies</Text>
+        <View style={styles.section}>
+          {/* Terms and Policies */}
+          <TouchableOpacity style={styles.subsectionHeader}
+            onPress={navigateToTerms}
+          >
+          <View style={styles.subsectionTitleWrapper}>
+            <FontAwesome5 name="info-circle" size={16} color="#64748b" style={styles.subsectionIcon} />
+            <Text style={styles.subsectionTitle}>Terms & Policies</Text>
+          </View>
+          <Feather name="chevron-right" size={20} color="#64748b" />
+        </TouchableOpacity>
+
+          {/* Incident Report */}
+          <TouchableOpacity style={styles.subsectionHeader}>
+          <View style={styles.subsectionTitleWrapper}>
+            <FontAwesome5 name="flag" size={16} color="#64748b" style={styles.subsectionIcon} />
+            <Text style={styles.subsectionTitle}>Report a Problem</Text>
+          </View>
+          <Feather name="chevron-right" size={20} color="#64748b" />
+        </TouchableOpacity>
         </View>
         
         {/* Logout Button */}
@@ -300,9 +265,16 @@ export default function Settings() {
           style={styles.logoutButton}
           onPress={handleLogout}
         >
-          <Feather name="log-out" size={20} color="#fff" />
+          <Feather name="log-out" size={20} color="#ef4444" />
           <Text style={styles.logoutButtonText}>Log Out</Text>
         </TouchableOpacity>
+
+        {/* App Version */}
+        <View style={styles.versionContainer}>
+          <Text style={styles.versionText}>Tourisla v1.0.0</Text>
+          <Text style={styles.copyrightText}>© 2023 Tourisla. All rights reserved.</Text>
+        </View>
+      </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -321,31 +293,34 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     paddingHorizontal: 16,
   },
-  backButton: {
-    padding: 8,
-  },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '900',
     color: '#fff',
+    flex: 1,
+    textAlign: 'center',
+  },
+  backButton: {
+    padding: 8,
   },
   placeholder: {
     width: 40,
   },
   content: {
     flex: 1,
-    padding: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#8f8b87',
+    marginLeft: 16,
+    marginBottom: 2,
   },
   section: {
     backgroundColor: '#fff',
     borderRadius: 12,
     marginBottom: 16,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -356,9 +331,15 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f1f5f9',
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    marginHorizontal: 16,
+    fontSize: 26,
+    fontWeight: '900',
     color: '#0f172a',
+  },
+  subsectionTitleWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   subsectionHeader: {
     flexDirection: 'row',
@@ -366,12 +347,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     paddingLeft: 24,
-    borderBottomWidth: 1,
+    borderBottomWidth: 2,
     borderBottomColor: '#f1f5f9',
   },
   subsectionTitle: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '900',
     color: '#334155',
   },
   sectionContent: {
@@ -381,8 +362,10 @@ const styles = StyleSheet.create({
     borderTopColor: '#f1f5f9',
   },
   subsectionContent: {
-    padding: 16,
+    paddingHorizontal: 16,
     paddingLeft: 24,
+    paddingVertical: 12,
+    marginBottom: 16,
     backgroundColor: '#f8fafc',
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
@@ -435,7 +418,7 @@ const styles = StyleSheet.create({
   },
   versionContainer: {
     alignItems: 'center',
-    marginTop: 8,
+    marginVertical: 8,
     marginBottom: 24,
   },
   versionText: {
@@ -450,20 +433,18 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   logoutButton: {
-    backgroundColor: '#ef4444',
+    backgroundColor: '#c7fbe2',
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     paddingVertical: 14,
+    marginHorizontal: 16,
     paddingHorizontal: 16,
     borderRadius: 10,
-    marginTop: 24,
-    marginBottom: 40,
+    marginBottom: 20,
   },
   logoutButtonText: {
-    color: '#fff',
+    color: '#ef4444',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '900',
     marginLeft: 8,
   },
 });
