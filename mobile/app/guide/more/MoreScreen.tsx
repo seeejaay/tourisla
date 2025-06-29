@@ -1,13 +1,14 @@
-// mobile/staff/more/MoreScreen.tsx
+// mobile/guide/more/MoreScreen.tsx
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import { router } from "expo-router";
 import { FontAwesome5 } from "@expo/vector-icons";
 
 const links = [
-  { label: "Announcements", path: "/staff/announcements/staff_announcements", icon: "bullhorn" },
-  { label: "Culture", path: "/staff/culture/staff_culture", icon: "landmark" },
-  { label: "Tourist Spots", path: "/staff/tourist_spots/staff_tourist_spots", icon: "map-marker" },
-  { label: "Map", path: "/staff/map/staff_map", icon: "map" },
+  // { label: "Announcements", path: "/guide/announcements/guide_announcements", icon: "bullhorn" },
+  { label: "Culture", path: "/guide/culture/guide_culture", icon: "landmark" },
+  { label: "Tourist Spots", path: "/guide/tourist_spots/guide_tourist_spots", icon: "map-marker" },
+  { label: "Map", path: "/guide/map/guide_map", icon: "map" },
+  // { label: "Incident-Report", path: "/tourist/profile/about/incident-report", icon: "flag" },
 ];
 
 export default function MoreScreen({ headerHeight }: { headerHeight?: number }) {

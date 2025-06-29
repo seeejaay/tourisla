@@ -1,9 +1,9 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import TouristHomeScreen from './home/guide_home';
-import TouristMapScreen from './map/guide_map';
-import TouristAnnouncementsScreen from './announcements/guide_announcements';
+import GuideHomeScreen from './home/guide_home';
+import GuideAnnouncementsScreen from './announcements/guide_announcements';
+import IncidentReportScreen from './profile/about/incident-report';
 import MoreScreen from './more/MoreScreen';
-import TouristProfileScreen from './profile/guide_profile';
+import GuideProfile from './profile/guide_profile';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { StyleSheet, View, Platform, TouchableOpacity, Image, Text, StatusBar, Dimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -12,7 +12,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
 import * as auth from '@/lib/api/auth';
-import TouristTouristSpotsScreen from './tourist_spots/guide_tourist_spots';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Tab = createBottomTabNavigator();
@@ -145,9 +144,9 @@ function CustomTabBar({ state, descriptors, navigation }) {
     <View style={[styles.customTabBar]}>
       <View style={styles.tabBarBackground}>
         <LinearGradient
-          colors={['#0f172a', '#1e293b']}
+          colors={['#014b55', '#014e65']}
           start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 3 }}
           style={styles.tabBarGradient}
         />
         <View style={styles.tabBarInnerShadow} />
@@ -160,20 +159,26 @@ function CustomTabBar({ state, descriptors, navigation }) {
           const isFocused = state.index === index;
           
           let iconName;
-          let IconComponent = Ionicons;
+          let IconComponent = Ionicons; // default
           
-          if (route.name === 'Home') {
-            iconName = isFocused ? "home" : "home-outline";
-          } else if (route.name === 'Map') {
-            iconName = isFocused ? "map" : "map-outline";
-          } else if (route.name === 'Announcements') {
-            iconName = isFocused ? "megaphone" : "megaphone-outline";
-          } else if (route.name === 'Tourist Spots') {
-            iconName = isFocused ? "location" : "location-outline";
-          } else if (route.name === 'More') {
-            iconName = isFocused ? "ellipsis-horizontal" : "ellipsis-horizontal-outline";
+          switch (route.name) {
+            case 'Home':
+              iconName = isFocused ? "home" : "home-outline";
+              break;
+            case 'Announcement':
+              IconComponent = FontAwesome5; // switch to FontAwesome5 just for this
+              iconName = "bullhorn";
+              break;
+            case 'Incident Report':
+              iconName = isFocused ? "flag" : "flag-outline";
+              break;
+            case 'Packages':
+              iconName = isFocused ? "calendar-clear" : "calendar-clear-outline";
+              break;
+            case 'More':
+              iconName = isFocused ? "ellipsis-horizontal" : "ellipsis-horizontal-outline";
+              break;
           }
-          // Removed Hotlines case
           
           const onPress = () => {
             const event = navigation.emit({
@@ -203,7 +208,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
                   <LinearGradient
                     colors={['#f9fbf2', '#afeed5']}
                     start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
+                    end={{ x: 2, y: 0 }}
                     style={styles.activeTabGradient}
                   />
                 </View>
@@ -221,16 +226,6 @@ function CustomTabBar({ state, descriptors, navigation }) {
                   color={isFocused ? '#ffffff' : 'rgba(148, 163, 184, 0.8)'} 
                 />
               </Animated.View>
-              
-              <Text 
-                style={[
-                  styles.tabLabel, 
-                  isFocused ? styles.activeTabLabel : styles.inactiveTabLabel
-                ]}
-                numberOfLines={1}
-              >
-                {label}
-              </Text>
             </TouchableOpacity>
           );
         })}
@@ -239,7 +234,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
   );
 }
 
-export default function TouristDashboard() {
+export default function GuideDashboard() {
   const { tab } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   
@@ -251,6 +246,7 @@ export default function TouristDashboard() {
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       <ProfileHeader />
       
+      <View style={styles.tabNavigatorContainer}>
       <Tab.Navigator
         initialRouteName={tab as string || 'Home'}
         tabBar={props => <CustomTabBar {...props} />}
@@ -262,21 +258,33 @@ export default function TouristDashboard() {
           name="Home"
           options={{ tabBarLabel: 'Home' }}
         >
-          {() => <TouristHomeScreen headerHeight={headerHeight} />}
+          {() => <GuideHomeScreen headerHeight={headerHeight} />}
         </Tab.Screen>
-        <Tab.Screen 
-          name="Map"
-          options={{ tabBarLabel: 'Map' }}
+        <Tab.Screen
+          name="Announcement"
+          options={{ tabBarLabel: 'Announcement' }}
         >
-          {() => <TouristMapScreen headerHeight={headerHeight} />}
+          {() => <GuideAnnouncementsScreen headerHeight={headerHeight} />}
         </Tab.Screen>
-        <Tab.Screen name="Announcements">
-          {() => <TouristAnnouncementsScreen headerHeight={headerHeight} />}
+        <Tab.Screen
+          name="Incident Report"
+          options={{ tabBarLabel: 'Incident Report' }}
+        >
+          {() => <IncidentReportScreen headerHeight={headerHeight} />}
         </Tab.Screen>
-        <Tab.Screen name="Tourist Spots">
-          {() => <TouristTouristSpotsScreen headerHeight={headerHeight} />}
+        <Tab.Screen
+          name="More"
+          options={{ tabBarLabel: 'More' }}
+        >
+          {() => <MoreScreen headerHeight={headerHeight} />}
         </Tab.Screen>
       </Tab.Navigator>
+      </View>
+      <LinearGradient
+          colors={['transparent', '#fff']} // Fade into dark background
+          style={styles.bottomFade}
+          pointerEvents="none"
+        />
     </View>
   );
 }
@@ -299,7 +307,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 44,
-    height: 70 + (Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 44),
+    height: 60 + (Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 44),
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
@@ -366,10 +374,10 @@ const styles = StyleSheet.create({
   },
   customTabBar: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 40 : 30,
+    bottom: Platform.OS === 'ios' ? 40 : 40,
     left: 8,
     right: 8,
-    height: 80,
+    height: 60,
     zIndex: 100,
   },
   tabBarBackground: {
@@ -437,16 +445,22 @@ const styles = StyleSheet.create({
   activeTabIconContainer: {
     backgroundColor: 'rgba(27, 229, 188, 0.15)',
   },
-  tabLabel: {
-    fontSize: 11,
-    marginTop: 4,
-    textAlign: 'center',
-  },
   activeTabLabel: {
     color: '#ffffff',
     fontWeight: '600',
   },
   inactiveTabLabel: {
-    color: 'rgba(148, 163, 184, 0.8)',
+    color: 'rgba(148, 163, 184, 0.9)',
+  },
+  tabNavigatorContainer: {
+    flex: 1,
+  },
+  bottomFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: Platform.OS === 'ios' ? 0 : 0,
+    height: 80,
+    zIndex: 10,
   },
 });
