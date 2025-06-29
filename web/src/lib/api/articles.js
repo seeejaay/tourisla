@@ -24,15 +24,19 @@ export const updateArticle = async (articleId, data) => {
   let config = {
     withCredentials: true,
   };
-  console.log("Updating article with data:", data);
 
-  // If data is FormData (for file upload), let browser set headers
   if (typeof FormData !== "undefined" && data instanceof FormData) {
+    // Log FormData contents
+    for (const pair of data.entries()) {
+      console.log(`[FormData] ${pair[0]}:`, pair[1]);
+    }
     // Do not set Content-Type, axios will handle it
   } else {
     // For JSON, set Content-Type
+    console.log("Updating article with data (JSON):", data);
     config.headers = { "Content-Type": "application/json" };
   }
+
   const res = await axios.put(`${API_URL}articles/${articleId}`, data, config);
   return res.data;
 };

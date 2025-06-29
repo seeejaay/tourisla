@@ -42,10 +42,6 @@ export default function EditArticle({
     const file = e.target.files?.[0] || null;
     setThumbnail(file);
     if (file) {
-      setForm((prev) => ({
-        ...prev,
-        thumbnail: file, // <-- This is required for your hook to detect the file!
-      }));
       const reader = new FileReader();
       reader.onload = () => setPreview(reader.result as string);
       reader.readAsDataURL(file);
@@ -70,18 +66,11 @@ export default function EditArticle({
     try {
       const formData = new FormData();
       Object.entries(form).forEach(([key, val]) => {
-        // Only append if not undefined or null
-        if (val !== undefined && val !== null) {
-          formData.append(key, val as string);
-        }
+        formData.append(key, val?.toString());
       });
 
-      // Only append thumbnail if a new file is selected
       if (thumbnail) {
         formData.append("thumbnail", thumbnail);
-      } else if (form.thumbnail_url) {
-        // If no new file, send the existing URL (backend should handle this)
-        formData.append("thumbnail_url", form.thumbnail_url);
       }
 
       const res = await fetch(
@@ -94,10 +83,6 @@ export default function EditArticle({
       );
 
       if (!res.ok) throw new Error("Failed to update article");
-
-      // Optionally, you may want to get the updated article from the response
-      // const updated = await res.json();
-      // onSave(updated);
 
       onSave(form);
     } catch (err) {
