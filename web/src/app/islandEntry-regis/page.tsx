@@ -7,7 +7,7 @@ import { useFormik } from "formik";
 import { getLatestIslandEntry } from "@/lib/api/islandEntry";
 import * as yup from "yup";
 import Header from "@/components/custom/header";
-
+import Image from "next/image";
 export interface GroupMember {
   name: string;
   sex: string;
@@ -154,7 +154,7 @@ export default function IslandEntryPage() {
 
   if (showResult && result) {
     return (
-      <div className="max-w-lg mx-auto mt-10 p-6 bg-white rounded shadow">
+      <div className="max-w-lg mx-auto mt-10 p-6 bg-white rounded shadow flex flex-col items-center">
         <h2 className="text-xl font-bold mb-2">Registration Successful!</h2>
         {latestEntry && (
           <>
@@ -162,14 +162,23 @@ export default function IslandEntryPage() {
               Your Unique Code:{" "}
               <span className="font-mono">{latestEntry.unique_code}</span>
             </p>
-            <img
+            <Image
+              width={160}
+              height={160}
               src={latestEntry.qr_code_url}
               alt="QR Code"
               className="my-4 w-40 h-40"
             />
+            <a
+              href={latestEntry.qr_code_url}
+              download={`island-entry-qr-${latestEntry.unique_code}.png`}
+              className="mb-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition"
+            >
+              Download QR Code
+            </a>
           </>
         )}
-        <p className="text-green-700 font-semibold">
+        <p className="text-green-700 font-semibold mb-4">
           Show this QR code at the entry point.
         </p>
         <button

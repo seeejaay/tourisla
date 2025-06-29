@@ -48,6 +48,11 @@ export const footerNavigation = [
     href: "/terms-and-conditions",
     title: "Terms and Conditions",
   },
+  {
+    tag: "Rules and Regulations",
+    href: "/rules-and-regulations",
+    title: "Rules and Regulations",
+  },
 ];
 export const socialLinks = [
   {
