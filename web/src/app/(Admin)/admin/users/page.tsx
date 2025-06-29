@@ -7,7 +7,7 @@ import {
 import DataTable from "@/components/custom/data-table";
 import SignUp from "@/components/custom/signup";
 import { useEffect, useState } from "react";
-import { fetchUsers, editUser, deleteUser } from "@/lib/api/users";
+import { fetchUsers, editUser } from "@/lib/api/users";
 import { currentUser } from "@/lib/api/auth";
 import { useRouter } from "next/navigation";
 import {
@@ -20,7 +20,6 @@ import {
 
 import ViewUser from "@/components/custom/users/viewUser";
 import EditUser from "@/components/custom/users/editUser";
-import DeleteUser from "@/components/custom/users/deleteUser";
 
 export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
