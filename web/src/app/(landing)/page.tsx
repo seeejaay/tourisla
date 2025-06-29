@@ -199,51 +199,53 @@ export default function Home() {
               >
                 <CarouselContent>
                   {touristSpots.length > 0 ? (
-                    touristSpots.map((spot, idx) => (
-                      <CarouselItem
-                        key={spot.id || idx}
-                        className="basis-full flex-shrink-0 w-full"
-                      >
-                        <div className="relative rounded-2xl overflow-hidden shadow-lg border border-[#e6f7fa] hover:shadow-2xl transition-all h-[500px] flex items-end group bg-[#e6f7fa]">
-                          {spot.images.image_url ? (
-                            <Image
-                              src={spot.images.image_url}
-                              alt={spot.name || `Tourist Spot ${idx + 1}`}
-                              fill
-                              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-                              style={{ zIndex: 0 }}
-                              priority={idx === 0}
-                            />
-                          ) : (
-                            <div className="absolute inset-0 h-full w-full bg-[#e6f7fa] flex items-center justify-center text-[#3e979f] z-0">
-                              No Image
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
-                          <div className="absolute bottom-6 left-6 z-20 text-left">
-                            <h3 className="text-2xl font-bold text-white drop-shadow">
-                              {spot.name}
-                            </h3>
-                            {spot.description && (
-                              <p className="text-white/80 line-clamp-2 max-w-md">
-                                {spot.description}
-                              </p>
+                    touristSpots.flatMap((spot, idx) =>
+                      (spot.images && spot.images.length > 0
+                        ? spot.images
+                        : [null]
+                      ).map((img, imgIdx) => (
+                        <CarouselItem
+                          key={`${spot.id}-${img?.id ?? imgIdx}`}
+                          className="basis-full flex-shrink-0 w-full"
+                        >
+                          <div className="relative rounded-2xl overflow-hidden shadow-lg border border-[#e6f7fa] hover:shadow-2xl transition-all h-[500px] flex items-end group bg-[#e6f7fa]">
+                            {img && img.image_url ? (
+                              <Image
+                                src={img.image_url}
+                                alt={spot.name || `Tourist Spot`}
+                                fill
+                                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                                style={{ zIndex: 0 }}
+                                priority={idx === 0 && imgIdx === 0}
+                              />
+                            ) : (
+                              <div className="absolute inset-0 h-full w-full bg-[#e6f7fa] flex items-center justify-center text-[#3e979f] z-0">
+                                No Image
+                              </div>
                             )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
+                            <div className="absolute bottom-6 left-6 z-20 text-left">
+                              <h3 className="text-2xl font-bold text-white drop-shadow">
+                                {spot.name}
+                              </h3>
+                              {spot.description && (
+                                <p className="text-white/80 line-clamp-2 max-w-md">
+                                  {spot.description}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </CarouselItem>
-                    ))
+                        </CarouselItem>
+                      ))
+                    )
                   ) : (
-                    // fallback if no tourist spots
-                    <>
-                      <CarouselItem className="basis-full flex-shrink-0 w-full">
-                        <div className="relative rounded-2xl overflow-hidden shadow-lg border border-[#e6f7fa] h-[500px] flex items-center justify-center bg-[#e6f7fa]">
-                          <span className="text-[#3e979f] text-xl font-semibold">
-                            No tourist spots available.
-                          </span>
-                        </div>
-                      </CarouselItem>
-                    </>
+                    <CarouselItem className="basis-full flex-shrink-0 w-full">
+                      <div className="relative rounded-2xl overflow-hidden shadow-lg border border-[#e6f7fa] h-[500px] flex items-center justify-center bg-[#e6f7fa]">
+                        <span className="text-[#3e979f] text-xl font-semibold">
+                          No tourist spots available.
+                        </span>
+                      </div>
+                    </CarouselItem>
                   )}
                 </CarouselContent>
                 <CarouselPrevious className="left-0 -translate-y-1/2 top-1/2" />
