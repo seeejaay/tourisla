@@ -75,19 +75,19 @@ const authenticateTourOperator = (req, res, next) => {
 
 const allowedRoles = (roles) => {
   return (req, res, next) => {
-    // Check if user is logged in
+    console.log("Session in allowedRoles:", req.session);
     if (!req.session || !req.session.user) {
+      console.log("401: No session or user");
       return res.status(401).json({ error: "Unauthorized: Please log in" });
     }
-
-    // Check if user's role is in the allowed roles
+    console.log("User role in allowedRoles:", req.session.user.role);
     if (!roles.includes(req.session.user.role)) {
+      console.log("403: Role not allowed", req.session.user.role, roles);
       return res
         .status(403)
         .json({ error: "Forbidden: Insufficient permissions" });
     }
-
-    req.user = req.session.user; // Attach user info to the request object
+    req.user = req.session.user;
     next();
   };
 };

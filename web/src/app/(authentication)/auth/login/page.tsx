@@ -1,23 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-
-import { Eye, EyeOff, Mail, LogIn } from "lucide-react"; // Import icons for showing/hiding password
-
+import { Eye, EyeOff, Mail, LogIn } from "lucide-react";
+import Image from "next/image";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // <-- Add this line
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { loginUser, error, setError, loading } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       if (!(await loginUser(email, password, router))) {
         setError("Invalid email or password");
@@ -30,18 +27,35 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] px-4 py-8 ">
+      <div className="absolute top-80 left-32 z-10 flex flex-col">
+        <Image
+          src="/images/TourISLA_Logo.png"
+          alt="Tourisla Logo"
+          width={512}
+          height={512}
+        />
+        <p className="text-3xl absolute left-32 top-52 text-center text-[#3e979f] font-bold ">
+          Kakyop, Sara Kag Bwas
+        </p>
+      </div>
+      <Image
+        src="/images/bg.svg"
+        alt="Tourisla Logo"
+        fill
+        className="absolute top-4 left-4"
+      />
       <div className="w-full max-w-md">
-        <div className="relative overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-white/50 backdrop-blur-lg">
+        <div className="relative overflow-hidden rounded-2xl shadow-2xl border border-[#e6f7fa] bg-white/80 backdrop-blur-lg">
           {/* Decorative elements */}
-          <div className="absolute -top-20 -right-20 w-64 h-64 bg-indigo-200/30 rounded-full filter blur-3xl"></div>
-          <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-200/30 rounded-full filter blur-3xl"></div>
+          <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#3e979f]/20 rounded-full filter blur-3xl"></div>
+          <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-[#1c5461]/20 rounded-full filter blur-3xl"></div>
 
           <div className="relative z-10 p-8">
             <div className="mb-8 text-center">
               <div className="mx-auto flex justify-center mb-4">
                 <svg
-                  className="w-10 h-10 text-indigo-600"
+                  className="w-10 h-10 text-[#3e979f]"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -52,16 +66,16 @@ export default function Login() {
                   />
                 </svg>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-1">
+              <h1 className="text-3xl font-extrabold text-[#1c5461] mb-1">
                 Welcome back
               </h1>
-              <p className="text-gray-500 text-sm">
+              <p className="text-[#51702c] text-sm">
                 Sign in to access your dashboard
               </p>
             </div>
 
             {error && (
-              <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-600 text-sm animate-fade-in">
+              <div className="mb-6 px-4 py-3 bg-[#e6f7fa] border border-[#3e979f]/30 rounded-lg flex items-center gap-2 text-[#d32f2f] text-sm animate-fade-in">
                 <svg
                   className="w-4 h-4 flex-shrink-0"
                   fill="currentColor"
@@ -81,7 +95,7 @@ export default function Login() {
               <div className="space-y-2">
                 <label
                   htmlFor="email"
-                  className="text-sm font-medium text-gray-700"
+                  className="text-sm font-semibold text-[#1c5461]"
                 >
                   Email Address
                 </label>
@@ -94,9 +108,9 @@ export default function Login() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder="you@email.com"
-                    className="w-full px-4 py-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 transition-all"
+                    className="w-full px-4 py-3 text-sm border border-[#3e979f] rounded-lg focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition-all bg-[#f8fcfd]"
                   />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#3e979f]">
                     <Mail className="w-5 h-5 " />
                   </div>
                 </div>
@@ -105,7 +119,7 @@ export default function Login() {
               <div className="relative">
                 <label
                   htmlFor="password"
-                  className="text-sm font-medium text-gray-700"
+                  className="text-sm font-semibold text-[#1c5461]"
                 >
                   Password
                 </label>
@@ -117,11 +131,11 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 transition-all"
+                  className="w-full px-4 py-3 text-sm border border-[#3e979f] rounded-lg focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition-all bg-[#f8fcfd]"
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 top-6 hover:bg-transparent hover:text-gray-800 flex items-center pr-3 text-gray-400"
+                  className="absolute inset-y-0 right-0 top-6 hover:bg-transparent hover:text-[#1c5461] flex items-center pr-3 text-[#3e979f]"
                   tabIndex={-1}
                   onClick={() => setShowPassword((prev) => !prev)}
                 >
@@ -138,7 +152,7 @@ export default function Login() {
                   type="button"
                   variant={"ghost"}
                   aria-label="Forgot password"
-                  className="text-xs text-indigo-600 hover:underline hover:text-indigo-800 font-medium transition-colors hover:bg-transparent cursor-pointer"
+                  className="text-xs text-[#3e979f] hover:underline hover:text-[#1c5461] font-medium transition-colors hover:bg-transparent cursor-pointer"
                   onClick={() => router.push("/auth/forgot-password")}
                 >
                   Forgot password?
@@ -147,7 +161,7 @@ export default function Login() {
 
               <Button
                 type="submit"
-                className="w-full px-4 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-50 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full rounded-lg bg-[#3e979f] text-white hover:bg-[#1c5461] transition font-semibold py-3"
                 disabled={loading}
                 variant={"default"}
               >
@@ -168,22 +182,17 @@ export default function Login() {
             <div className="mt-8">
               <div className="relative mb-6">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200" />
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="px-2 bg-white text-gray-500">
-                    Or continue with
-                  </span>
+                  <div className="w-full border-t border-[#e6f7fa]" />
                 </div>
               </div>
 
-              <div className="text-center text-sm text-gray-600">
+              <div className="text-center text-sm text-[#51702c]">
                 Don&apos;t have an account?{" "}
                 <Button
                   type="button"
                   variant={"ghost"}
                   onClick={() => router.push("/auth/signup")}
-                  className="text-indigo-600 hover:text-indigo-700 cursor-pointer font-medium transition-colors"
+                  className="text-[#3e979f] hover:text-[#1c5461] cursor-pointer font-semibold transition-colors"
                 >
                   Sign up
                 </Button>

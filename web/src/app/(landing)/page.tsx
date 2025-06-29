@@ -25,6 +25,9 @@ const touristSpots = [
   {
     image: "/images/nature/sand.jpg",
   },
+  {
+    image: "/images/camp_sawi.webp",
+  },
 ];
 
 export default function Home() {
@@ -39,16 +42,16 @@ export default function Home() {
         {/* Hero Section */}
         <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
           <Image
-            src="/images/Bantayan_Map.webp"
+            src="/images/bg_hero.webp"
             alt="Bantayan Island Aerial View"
             fill
-            className="object-cover object-center"
+            className="object-cover object-center brightness-[25%]"
             priority
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1c5461]/90 via-[#1c5461]/50 to-transparent z-10" />
           <div className="relative z-20 text-center px-4">
             <h1 className="text-5xl md:text-6xl font-extrabold text-white drop-shadow-xl mb-6">
-              Discover <span className="text-[#f8d56b]">Bantayan</span> Island
+              Discover <span className="text-[#f0be2a]">Bantayan</span> Island
             </h1>
             <p className="text-xl md:text-2xl text-[#ddddd1] drop-shadow-md max-w-3xl mx-auto mb-10">
               Where emerald jungles meet turquoise waters in perfect harmony
@@ -126,8 +129,29 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Interactive Map */}
+        <section className="py-20 bg-[#f1f1f1]">
+          <div className="max-w-6xl mx-auto px-4 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
+              Explore Our Island
+            </h2>
+            <div className="w-24 h-1 bg-[#3e979f] mx-auto mb-6" />
+            <p className="text-lg text-[#51702c] mb-12">
+              Find your perfect spot with our interactive island map
+            </p>
+            <div className="relative h-[600px] w-full rounded-b-2xl overflow-hidden">
+              <MapPage />
+              <div className="absolute bottom-4 left-4 bg-[#f1f1f1] px-4 py-2 rounded-full shadow-md flex items-center border border-[#7b9997]/20">
+                <MapPin className="w-4 h-4 text-[#3e979f] mr-2" />
+                <span className="text-[#1c5461] font-medium">
+                  Island Locations
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
         {/* Tourist Spots Showcase */}
-        <section className="py-20 bg-white">
+        <section className="py-20  bg-[#f1f1f1]">
           <div className="max-w-6xl mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
               Must-See Tourist Spots
@@ -178,7 +202,7 @@ export default function Home() {
         </section>
 
         {/* Featured Articles */}
-        <section className=" bg-[#fffff1] py-20">
+        <section className=" bg-[#fffff1] py-20 bg-gradient-to-b to-[#e6f7fa] via-[#fffff1] from-[#fffff1]">
           <div className="max-w-6xl mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
               Island Heritage
@@ -245,28 +269,6 @@ export default function Home() {
                 <CarouselNext className="w-12 h-12 bg-[#3e979f] text-white rounded-full shadow-lg hover:bg-[#1c5461] hover:text-white transition" />
               </Carousel>
             )}
-          </div>
-        </section>
-
-        {/* Interactive Map */}
-        <section className="py-20 bg-white">
-          <div className="max-w-6xl mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
-              Explore Our Island
-            </h2>
-            <div className="w-24 h-1 bg-[#3e979f] mx-auto mb-6" />
-            <p className="text-lg text-[#51702c] mb-12">
-              Find your perfect spot with our interactive island map
-            </p>
-            <div className="relative h-[500px] w-full rounded-b-2xl overflow-hidden">
-              <MapPage />
-              <div className="absolute bottom-4 left-4 bg-white px-4 py-2 rounded-full shadow-md flex items-center border border-[#7b9997]/20">
-                <MapPin className="w-4 h-4 text-[#3e979f] mr-2" />
-                <span className="text-[#1c5461] font-medium">
-                  Island Locations
-                </span>
-              </div>
-            </div>
           </div>
         </section>
       </main>
