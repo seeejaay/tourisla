@@ -12,7 +12,7 @@ export const fetchQuestionsByType = async (type) => {
 // Create a new question
 export const createQuestion = async ({ type, question_text }) => {
   const res = await axios.post(
-    `${API_URL}feedback`,
+    `${API_URL}feedback/questions`,
     { type, question_text },
     { withCredentials: true }
   );
