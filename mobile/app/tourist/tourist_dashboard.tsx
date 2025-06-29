@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import TouristHomeScreen from './home/tourist_home';
-import TouristMapScreen from './map/tourist_map';
+import TouristRegistrationScreen from './regis/tourist_regis.tsx';
 import TouristActivityScreen from './activity/tourist_activity';
 import TouristPackagesScreen from './packages/tourist_packages';
 import MoreScreen from './more/MoreScreen';
@@ -83,7 +83,6 @@ function ProfileHeader() {
   return (
     <View style={styles.profileHeader}>
       {/* Status bar placeholder */}
-      <View style={[styles.statusBarPlaceholder, { height: insets.top }]} />
       
       {/* Header with gradient background */}
       <LinearGradient
@@ -165,8 +164,8 @@ function CustomTabBar({ state, descriptors, navigation }) {
           
           if (route.name === 'Home') {
             iconName = isFocused ? "home" : "home-outline";
-          } else if (route.name === 'Map') {
-            iconName = isFocused ? "map" : "map-outline";
+          } else if (route.name === 'Regis') {
+            iconName = isFocused ? "id-card" : "id-card-outline";
           } else if (route.name === 'Activity') {
             iconName = isFocused ? "pulse" : "pulse-outline";
           } else if (route.name === 'Packages') {
@@ -238,7 +237,7 @@ export default function TouristDashboard() {
   
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       <ProfileHeader />
       
       <View style={styles.tabNavigatorContainer}>
@@ -256,10 +255,10 @@ export default function TouristDashboard() {
           {() => <TouristHomeScreen headerHeight={headerHeight} />}
         </Tab.Screen>
         <Tab.Screen 
-          name="Map"
-          options={{ tabBarLabel: 'Map' }}
+          name="Regis"
+          options={{ tabBarLabel: 'Register' }}
         >
-          {() => <TouristMapScreen headerHeight={headerHeight} />}
+          {() => <TouristRegistrationScreen headerHeight={headerHeight} />}
         </Tab.Screen>
         <Tab.Screen 
           name="Activity"
@@ -304,7 +303,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#0f172a',
   },
   headerContainer: {
-    height: 70,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 44,
+    height: 60 + (Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 44),
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',

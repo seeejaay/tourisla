@@ -215,13 +215,13 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fb",
+    backgroundColor: "#fff",
     paddingHorizontal: 20,
     justifyContent: "center",
   },
   errorNotification: {
-    backgroundColor: "#ef4444", // Bootstrap danger background
-    borderColor: "#f5c2c7", // Bootstrap danger border
+    backgroundColor: "#e11d48", // Red-600
+    borderColor: "#fca5a5", // Light red
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 24,
@@ -242,9 +242,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   errorText: {
-    color: "#ffffff", // Bootstrap danger text color
+    color: "#ffffff",
     fontSize: 14,
-    fontWeight: "900",
+    fontWeight: "700",
     marginLeft: 8,
     flex: 1,
   },
@@ -255,28 +255,30 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: "900",
     textAlign: "center",
-    color: "#0f172a",
+    color: "#005582",
     marginBottom: 24,
   },
   input: {
-    borderColor: "#ccc",
+    borderColor: "#97ebdb",
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffff",
+    color: "#005582",
   },
   passwordContainer: {
     position: "relative",
     marginBottom: 16,
   },
   passwordInput: {
-    borderColor: "#ccc",
+    borderColor: "#97ebdb",
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
     paddingRight: 40,
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffff",
+    color: "#005582",
   },
   eyeIcon: {
     position: "absolute",
@@ -285,11 +287,12 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     textAlign: "right",
-    color: "#0f172a",
+    color: "#0086ad",
     fontSize: 12,
+    fontWeight: "500",
   },
   loginButton: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#00c2c7",
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
@@ -301,17 +304,16 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   loginButtonText: {
-    color: "#fff",
-    fontWeight: "600",
+    color: "#ffffff",
+    fontWeight: "700",
     fontSize: 16,
   },
   signupText: {
     textAlign: "center",
-    color: "#0f172a",
+    color: "#005582",
     fontWeight: "500",
   },
   footer: {
-    marginTop: 24,
+    marginTop: 4,
   },
-  // helpButton and helpButtonText styles removed
 });

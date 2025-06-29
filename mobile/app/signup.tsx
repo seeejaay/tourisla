@@ -220,7 +220,7 @@ export default function SignUpScreen() {
             <CheckBox
               value={form.terms}
               onValueChange={(val) => handleChange("terms", val)}
-              color={form.terms ? "#0f172a" : undefined}
+              color={form.terms ? "#47d8d3" : undefined}
             />
             <Text style={styles.checkboxLabel}>
               I agree to the terms and conditions
@@ -247,7 +247,7 @@ export default function SignUpScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fb",
+    backgroundColor: "#fff",
     paddingHorizontal: 20,
     paddingTop: 40,
   },
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: "900",
     textAlign: "center",
-    color: "#0f172a",
+    color: "#005582",
     marginBottom: 24,
   },
   nameRow: {
@@ -271,34 +271,37 @@ const styles = StyleSheet.create({
     width: "48%",
   },
   input: {
-    borderColor: "#ccc",
+    borderColor: "#97ebdb",
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffff",
+    color: "#005582",
   },
   pickerWrapper: {
-    borderColor: "#ccc",
+    borderColor: "#97ebdb",
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 16,
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffff",
   },
   picker: {
     height: 50,
+    color: "#005582",
   },
   passwordContainer: {
     position: "relative",
     marginBottom: 16,
   },
   passwordInput: {
-    borderColor: "#ccc",
+    borderColor: "#97ebdb",
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
     paddingRight: 40,
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffff",
+    color: "#005582",
   },
   eyeIcon: {
     position: "absolute",
@@ -312,10 +315,12 @@ const styles = StyleSheet.create({
   },
   checkboxLabel: {
     marginLeft: 8,
-    color: "#0f172a",
+    color: "#0086ad",
+    fontSize: 14,
+    fontWeight: "500",
   },
   signupButton: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#00c2c7",
     padding: 15,
     borderRadius: 8,
     marginTop: 10,
@@ -323,14 +328,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   signupButtonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontWeight: "bold",
     fontSize: 16,
   },
   loginRedirectText: {
     textAlign: "center",
-    color: "#0f172a",
-    marginBottom: 20,
+    color: "#005582",
+    fontSize: 14,
+    fontWeight: "500",
   },
   button: {
     padding: 15,
@@ -342,7 +348,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ef4444",
   },
   buttonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontWeight: "bold",
     fontSize: 16,
   },

@@ -19,12 +19,6 @@ export default function RoleSelectionScreen() {
       description: 'Create and lead tours for tourists',
       icon: 'map-marked-alt',
     },
-    {
-      id: 'tour_operator',
-      title: 'Tour Operator',
-      description: 'Manage tour packages and guides',
-      icon: 'building',
-    },
   ];
 
   const handleContinue = () => {
@@ -52,7 +46,7 @@ export default function RoleSelectionScreen() {
             onPress={() => setSelectedRole(role.title)}
           >
             <View style={styles.iconContainer}>
-              <FontAwesome5 name={role.icon} size={30} color="#0f172a" />
+              <FontAwesome5 name={role.icon} size={30} color="#005582" />
             </View>
             <View style={styles.roleTextContainer}>
               <Text style={styles.roleTitle}>{role.title}</Text>
@@ -83,7 +77,7 @@ export default function RoleSelectionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fb',
+    backgroundColor: '#fff',
     paddingHorizontal: 20,
     paddingTop: 60,
   },
@@ -91,13 +85,13 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '900',
     textAlign: 'center',
-    color: '#0f172a',
+    color: '#005582',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
-    color: '#64748b',
+    color: '#0086ad',
     marginBottom: 40,
   },
   rolesContainer: {
@@ -109,13 +103,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: '#97ebdb',
     flexDirection: 'row',
     alignItems: 'center',
   },
   selectedCard: {
-    borderColor: '#0f172a',
-    backgroundColor: '#f8fafc',
+    borderColor: '#00c2c7',
+    backgroundColor: '#e6fdfb',
   },
   iconContainer: {
     width: 50,
@@ -123,7 +117,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#97ebdb',
     borderRadius: 25,
   },
   roleTextContainer: {
@@ -132,22 +126,22 @@ const styles = StyleSheet.create({
   roleTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#0f172a',
+    color: '#005582',
     marginBottom: 4,
   },
   roleDescription: {
     fontSize: 14,
-    color: '#64748b',
+    color: '#0086ad',
   },
   continueButton: {
-    backgroundColor: '#0f172a',
+    backgroundColor: '#00c2c7',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: 'center',
     marginBottom: 20,
   },
   disabledButton: {
-    backgroundColor: '#94a3b8',
+    backgroundColor: '#b0e7e8',
   },
   continueButtonText: {
     color: '#fff',
@@ -156,6 +150,8 @@ const styles = StyleSheet.create({
   },
   loginRedirectText: {
     textAlign: 'center',
-    color: '#0f172a',
+    color: '#005582',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

@@ -5,10 +5,9 @@ import { FontAwesome5 } from "@expo/vector-icons";
 
 const links = [
   { label: "Announcements", path: "/tourist/announcements/tourist_announcements", icon: "bullhorn" },
-  { label: "Visitor Registration", path: "/tourist/registration/visitor_registration", icon: "user-plus" },
-  { label: "Island Entry Registration", path: "/tourist/registration/island_entry_registration", icon: "passport" },
   { label: "Culture", path: "/tourist/culture/tourist_culture", icon: "landmark" },
-  { label: "Tourist Spots", path: "/tourist/tourist_spots/tourist_tourist_spots", icon: "map-marked-alt" },
+  { label: "Tourist Spots", path: "/tourist/tourist_spots/tourist_tourist_spots", icon: "map-marker" },
+  { label: "Map", path: "/tourist/map/tourist_map", icon: "map" },
 ];
 
 export default function MoreScreen({ headerHeight }: { headerHeight?: number }) {

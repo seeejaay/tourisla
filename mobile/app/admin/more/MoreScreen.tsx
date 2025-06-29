@@ -6,7 +6,8 @@ import { FontAwesome5 } from "@expo/vector-icons";
 const links = [
   { label: "Announcements", path: "/admin/announcements/admin_announcements", icon: "bullhorn" },
   { label: "Culture", path: "/admin/culture/admin_culture", icon: "landmark" },
-  { label: "Tourist Spots", path: "/admin/tourist_spots/admin_tourist_spots", icon: "map-marked-alt" },
+  { label: "Tourist Spots", path: "/admin/tourist_spots/admin_tourist_spots", icon: "map-marker" },
+  { label: "Map", path: "/admin/map/admin_map", icon: "map" },
 ];
 
 export default function MoreScreen({ headerHeight }: { headerHeight?: number }) {

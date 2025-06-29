@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import { useTermsManager } from '@/lib/hooks/useTermsManager';
+import { useTermsManager } from '@/hooks/useTermsManager';
 import { LinearGradient } from 'expo-linear-gradient';
 
 // Add this constant at the top of your file

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator, FlatList, StatusBar } from 'react-native';
 import { fetchAllTourPackages } from '@/lib/api/tour-packages';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 interface TouristPackagesScreenProps {
@@ -62,11 +63,6 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
         }
       </Text>
       ) : null}
-      {/* {item.description ? (
-        <Text style={styles.packageDescription}>
-          {item.description.charAt(0).toUpperCase() + item.description.slice(1).toLowerCase()}
-        </Text>
-      ) : null} */}
       {item.price ? (
         <View style={styles.cardFooter}>
           <View style={styles.packagePriceContainer}>
@@ -114,13 +110,29 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
         )}
 
         {!loading && !error && packages.length > 0 && (
-          <FlatList
-            data={packages}
-            keyExtractor={pkg => pkg.id.toString()}
-            renderItem={renderPackage}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-          />
+          <View style={{ flex: 1 }}>
+  <FlatList
+    data={packages}
+    keyExtractor={pkg => pkg.id.toString()}
+    renderItem={renderPackage}
+    contentContainerStyle={styles.listContent}
+    showsVerticalScrollIndicator={false}
+  />
+
+  {/* Top fade */}
+  <LinearGradient
+    colors={['#f8fafc', 'transparent']}
+    style={styles.topFade}
+    pointerEvents="none"
+  />
+
+  {/* Bottom fade */}
+  <LinearGradient
+    colors={['transparent', '#f8fafc']}
+    style={styles.bottomFade}
+    pointerEvents="none"
+  />
+</View>
         )}
       </View>
     </SafeAreaView>
@@ -150,7 +162,24 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   listContent: {
-    paddingBottom: 24,
+    paddingTop: 20,
+    paddingBottom: 100,
+  },
+  topFade: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 30,
+    zIndex: 1,
+  },
+  bottomFade: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 30,
+    zIndex: 1,
   },
   packageCard: {
     backgroundColor: '#daf8e4',

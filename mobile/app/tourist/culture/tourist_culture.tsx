@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  StatusBar
+  StatusBar,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useArticleManager } from "@/hooks/useArticleManager";
@@ -158,31 +159,21 @@ export default function CultureScreen({ headerHeight }: TourPackageDetailsScreen
 
 const styles = StyleSheet.create({
   navbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: STATUS_BAR_HEIGHT + 10,
-    paddingBottom: 10,
-    backgroundColor: 'transparent',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
     zIndex: 10,
   },
   navButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 8,
   },
   container: {
     flex: 1,
     backgroundColor: "#f8fafc",
   },
   scrollContainer: {
-    marginTop: 50 + STATUS_BAR_HEIGHT,
     paddingBottom: 40,
   },
   section: {
