@@ -15,7 +15,7 @@ import {
 import { Picker } from '@react-native-picker/picker';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import { useTermsManager } from '../../../../../lib/hooks/useTermsManager';
+import { useTermsManager } from '../../../../../hooks/useTermsManager';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';

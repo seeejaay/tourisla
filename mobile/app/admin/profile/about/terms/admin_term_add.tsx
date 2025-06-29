@@ -15,7 +15,7 @@ import {
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import { useTermsManager } from '../../../../../lib/hooks/useTermsManager';
+import { useTermsManager } from '../../../../../hooks/useTermsManager';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 // Valid policy types based on the backend enum - limited to just TERMS and PRIVACY_POLICY

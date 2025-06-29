@@ -82,7 +82,6 @@ function ProfileHeader() {
   return (
     <View style={styles.profileHeader}>
       {/* Status bar placeholder */}
-      <View style={[styles.statusBarPlaceholder, { height: insets.top }]} />
       
       {/* Header with gradient background */}
       <LinearGradient
@@ -246,7 +245,7 @@ export default function TouristDashboard() {
   
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       <ProfileHeader />
       
       <Tab.Navigator
@@ -296,7 +295,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#0f172a',
   },
   headerContainer: {
-    height: 70,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 44,
+    height: 70 + (Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 44),
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',

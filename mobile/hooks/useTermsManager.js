@@ -5,7 +5,7 @@ import {
   createTerm, 
   updateTerm, 
   deleteTerm 
-} from '../api/terms';
+} from '../lib/api/terms';
 
 export const useTermsManager = () => {
   const [terms, setTerms] = useState([]);
