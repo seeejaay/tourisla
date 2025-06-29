@@ -55,9 +55,30 @@ export const useArticleManager = () => {
       setLoading(true);
       setError("");
       try {
-        console.log("Editing article with ID:", id, "Data:", articleData);
+        let dataToSend: ArticleSchema | FormData = articleData;
 
-        const response = await updateArticle(id, articleData);
+        // Convert to FormData if a new thumbnail file is present
+        if (
+          typeof FormData !== "undefined" &&
+          Object.prototype.hasOwnProperty.call(articleData, "thumbnail") &&
+          articleData.thumbnail instanceof File
+        ) {
+          const formData = new FormData();
+          Object.entries(articleData).forEach(([key, value]) => {
+            if (key === "thumbnail" && value instanceof File) {
+              formData.append("thumbnail", value);
+            } else if (typeof value === "boolean") {
+              formData.append(key, value ? "true" : "false");
+            } else if (typeof value === "number") {
+              formData.append(key, value.toString());
+            } else if (typeof value === "string") {
+              formData.append(key, value);
+            }
+          });
+          dataToSend = formData;
+        }
+
+        const response = await updateArticle(id, dataToSend);
         setArticles((prev) => prev.map((a) => (a.id === id ? response : a)));
         return response;
       } catch (err) {
