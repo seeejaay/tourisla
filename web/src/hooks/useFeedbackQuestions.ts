@@ -33,7 +33,7 @@ export const createQuestion = async ({
   question_text,
 }: CreateQuestionParams): Promise<FeedbackQuestion> => {
   const res = await axios.post(
-    `${API_URL}feedback/`,
+    `${API_URL}feedback/questions/`,
     { type, question_text },
     { withCredentials: true }
   );
@@ -45,7 +45,7 @@ export const editQuestion = async ({
   question_text,
 }: EditQuestionParams): Promise<FeedbackQuestion> => {
   const res = await axios.put(
-    `${API_URL}feedback/${id}`,
+    `${API_URL}feedback/questions/${id}`,
     { question_text },
     { withCredentials: true }
   );
@@ -53,7 +53,7 @@ export const editQuestion = async ({
 };
 
 export const deleteQuestion = async (id: number): Promise<FeedbackQuestion> => {
-  const res = await axios.delete(`${API_URL}feedback${id}`, {
+  const res = await axios.delete(`${API_URL}feedback/questions/${id}`, {
     withCredentials: true,
   });
   return res.data;
