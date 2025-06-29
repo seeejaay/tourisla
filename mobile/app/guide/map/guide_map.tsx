@@ -21,6 +21,7 @@ import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import * as MediaLibrary from "expo-media-library";
 
+const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // Use the exact path you specified
@@ -199,6 +200,21 @@ export default function TouristMapScreen({ headerHeight }) {
 }
 
 const styles = StyleSheet.create({
+  navbar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: STATUS_BAR_HEIGHT + 10,
+    paddingBottom: 10,
+    paddingHorizontal: 16,
+    backgroundColor: '#fff',
+  },
+  navButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   container: {
     flex: 1,
     backgroundColor: "#f8fafc",
