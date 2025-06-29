@@ -5,6 +5,10 @@ import {
   Megaphone,
   Wallet,
   ClipboardList,
+  Phone,
+  Scale,
+  ContactRound,
+  Contact,
 } from "lucide-react";
 import type { NavItem } from "@/components/custom/sidebar";
 
@@ -29,22 +33,28 @@ const tourismOfficerNavigation = (): NavItem[] => {
       icon: BookText,
     },
     {
+      name: "Hotlines",
+      href: `/tourism-officer/hotline`,
+      title: "Hotlines",
+      icon: Phone,
+    },
+    {
       name: "Rules",
       href: `/tourism-officer/rules`,
       title: "Rules",
-      icon: BookText,
+      icon: Scale,
     },
     {
       name: "Tourism Staff",
       href: `/tourism-officer/tourism-staff`,
       title: "Tourism Staff",
-      icon: BookText,
+      icon: ContactRound,
     },
     {
       name: "Tour Guides",
       href: `/tourism-officer/tour-guides`,
       title: "Tour Guides",
-      icon: BookText,
+      icon: Contact,
     },
     {
       name: "Tourist Spot",

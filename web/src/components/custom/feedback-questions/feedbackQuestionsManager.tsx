@@ -1,6 +1,9 @@
 "use client";
 import React, { useState } from "react";
-import { useFeedbackQuestions, FeedbackQuestion } from "@/hooks/useFeedbackQuestions";
+import {
+  useFeedbackQuestions,
+  FeedbackQuestion,
+} from "@/hooks/useFeedbackQuestions";
 
 const FEEDBACK_TYPES = ["SPOT", "GUIDE", "OPERATOR"];
 
@@ -9,7 +12,8 @@ export default function FeedbackQuestionsManager() {
   const [newQuestion, setNewQuestion] = useState("");
   const [editing, setEditing] = useState<number | null>(null);
   const [editText, setEditText] = useState("");
-  const { questions, loading, createQuestion, editQuestion, deleteQuestion } = useFeedbackQuestions(type);
+  const { questions, loading, createQuestion, editQuestion, deleteQuestion } =
+    useFeedbackQuestions(type);
 
   const handleCreate = async () => {
     if (!newQuestion.trim()) return;
@@ -30,53 +34,84 @@ export default function FeedbackQuestionsManager() {
   };
 
   return (
-    <div style={{ maxWidth: 600, margin: "0 auto", padding: 24 }}>
-      <h2 className="text-xl font-bold mb-4">Feedback Questions Management</h2>
-      <div className="mb-4">
-        <label className="mr-2">Type:</label>
-        <select value={type} onChange={e => setType(e.target.value)} className="border rounded px-2 py-1">
-          {FEEDBACK_TYPES.map(t => (
-            <option key={t} value={t}>{t}</option>
+    <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-8 mt-8">
+      <h2 className="text-2xl font-extrabold text-[#1c5461] mb-6 text-center">
+        Feedback Questions Management
+      </h2>
+      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center">
+        <label className="font-semibold text-[#3e979f]">Type:</label>
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          className="border border-[#e6f7fa] rounded-lg px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#3e979f]"
+        >
+          {FEEDBACK_TYPES.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
           ))}
         </select>
       </div>
-      <div className="mb-4 flex gap-2">
+      <div className="mb-6 flex gap-2">
         <input
           value={newQuestion}
-          onChange={e => setNewQuestion(e.target.value)}
+          onChange={(e) => setNewQuestion(e.target.value)}
           placeholder="New question"
-          className="border rounded px-2 py-1 flex-1"
+          className="border border-[#e6f7fa] rounded-lg px-3 py-2 flex-1 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#3e979f]"
         />
-        <button onClick={handleCreate} className="bg-blue-600 text-white px-4 py-1 rounded">Add</button>
+        <button
+          onClick={handleCreate}
+          className="bg-[#3e979f] hover:bg-[#1c5461] text-white px-5 py-2 rounded-lg font-semibold transition-colors"
+        >
+          Add
+        </button>
       </div>
       {loading ? (
-        <div>Loading...</div>
+        <div className="text-center text-[#3e979f] py-8">Loading...</div>
       ) : (
-        <ul>
+        <ul className="space-y-3">
           {questions.map((q: FeedbackQuestion) => (
-            <li key={q.id} className="mb-3 flex items-center gap-2">
+            <li
+              key={q.id}
+              className="flex items-center gap-2 bg-[#f7fbfc] border border-[#e6f7fa] rounded-lg px-4 py-3"
+            >
               {editing === q.id ? (
                 <>
                   <input
                     value={editText}
-                    onChange={e => setEditText(e.target.value)}
-                    className="border rounded px-2 py-1 flex-1"
+                    onChange={(e) => setEditText(e.target.value)}
+                    className="border border-[#e6f7fa] rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-[#3e979f]"
                   />
-                  <button onClick={() => handleEdit(q.id)} className="bg-green-600 text-white px-2 py-1 rounded">Save</button>
-                  <button onClick={() => setEditing(null)} className="bg-gray-400 text-white px-2 py-1 rounded">Cancel</button>
+                  <button
+                    onClick={() => handleEdit(q.id)}
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg font-semibold transition-colors"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setEditing(null)}
+                    className="bg-gray-400 hover:bg-gray-500 text-white px-3 py-1 rounded-lg font-semibold transition-colors"
+                  >
+                    Cancel
+                  </button>
                 </>
               ) : (
                 <>
-                  <span className="flex-1">{q.question_text}</span>
+                  <span className="flex-1 text-[#17414a]">
+                    {q.question_text}
+                  </span>
                   <button
-                    onClick={() => { setEditing(q.id); setEditText(q.question_text); }}
-                    className="bg-yellow-500 text-white px-2 py-1 rounded"
+                    onClick={() => {
+                      setEditing(q.id);
+                      setEditText(q.question_text);
+                    }}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg font-semibold transition-colors"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(q.id)}
-                    className="bg-red-600 text-white px-2 py-1 rounded"
+                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg font-semibold transition-colors"
                   >
                     Delete
                   </button>
