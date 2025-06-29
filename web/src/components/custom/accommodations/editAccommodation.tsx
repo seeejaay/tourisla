@@ -27,19 +27,21 @@ export default function EditAccommodation({
 
   // Initialize form state with all fields, falling back to defaults if missing
   const [form, setForm] = useState<Accommodation>(() => {
-    const initial: any = {
+    const initial: Accommodation = {
       Region: REGION,
       Province: PROVINCE,
       municipality: MUNICIPALITY,
+      // Add all fields from accommodationFields with correct types
+      ...accommodationFields.reduce((acc, field) => {
+        acc[field.name as keyof Accommodation] =
+          accommodation[field.name as keyof Accommodation] !== undefined
+            ? accommodation[field.name as keyof Accommodation]
+            : field.type === "number"
+            ? 1
+            : "";
+        return acc;
+      }, {} as Partial<Accommodation>),
     };
-    accommodationFields.forEach((field) => {
-      initial[field.name] =
-        accommodation[field.name] !== undefined
-          ? accommodation[field.name]
-          : field.type === "number"
-          ? 1
-          : "";
-    });
     return initial;
   });
 
