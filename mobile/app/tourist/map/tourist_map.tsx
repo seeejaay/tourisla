@@ -95,7 +95,7 @@ export default function TouristMapScreen({ headerHeight }) {
         >
           <FontAwesome5 name="arrow-left" size={18} color="#000" />
         </TouchableOpacity>
-        </View>
+      </View>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.headerImageWrapper}>
           <Image source={headerImage} style={styles.headerImage} resizeMode="cover" />

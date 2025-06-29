@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import TouristHomeScreen from './home/guide_home';
 import TouristMapScreen from './map/guide_map';
 import TouristAnnouncementsScreen from './announcements/guide_announcements';
+import MoreScreen from './more/MoreScreen';
 import TouristProfileScreen from './profile/guide_profile';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { StyleSheet, View, Platform, TouchableOpacity, Image, Text, StatusBar, Dimensions } from 'react-native';
@@ -169,6 +170,8 @@ function CustomTabBar({ state, descriptors, navigation }) {
             iconName = isFocused ? "megaphone" : "megaphone-outline";
           } else if (route.name === 'Tourist Spots') {
             iconName = isFocused ? "location" : "location-outline";
+          } else if (route.name === 'More') {
+            iconName = isFocused ? "ellipsis-horizontal" : "ellipsis-horizontal-outline";
           }
           // Removed Hotlines case
           
