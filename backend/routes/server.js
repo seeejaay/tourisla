@@ -370,18 +370,33 @@ app.post(
   "/api/v1/announcements",
   upload.single("image"),
   createAnnouncementController,
-  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"])
+  allowedRoles([
+    "Admin",
+    "Tourism Staff",
+    "Tourism Officer",
+    "Cultural Director",
+  ])
 );
 app.put(
   "/api/v1/announcements/:announcementId",
   upload.single("image"),
   editAnnouncementController,
-  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"])
+  allowedRoles([
+    "Admin",
+    "Tourism Staff",
+    "Tourism Officer",
+    "Cultural Director",
+  ])
 );
 app.delete(
   "/api/v1/announcements/:announcementId",
   deleteAnnouncementController,
-  allowedRoles(["Admin", "Tourism Staff", "Tourism Officer"])
+  allowedRoles([
+    "Admin",
+    "Tourism Staff",
+    "Tourism Officer",
+    "Cultural Director",
+  ])
 );
 app.get(
   "/api/v1/announcements/category/:category([a-zA-Z0-9-_]+)",
@@ -389,15 +404,19 @@ app.get(
 );
 
 // Routes for Hotlines
-app.post("/api/v1/hotlines", authenticateAdmin, createHotlineController);
+app.post(
+  "/api/v1/hotlines",
+  allowedRoles(["Admin", "Tourism Officer", "Cultural Director"]),
+  createHotlineController
+);
 app.put(
   "/api/v1/hotlines/:hotlineId",
-  authenticateAdmin,
+  allowedRoles(["Admin", "Tourism Officer", "Cultural Director"]),
   editHotlineController
 );
 app.delete(
   "/api/v1/hotlines/:hotlineId",
-  authenticateAdmin,
+  allowedRoles(["Admin", "Tourism Officer", "Cultural Director"]),
   deleteHotlineController
 );
 app.get("/api/v1/hotlines", viewHotlinesController);

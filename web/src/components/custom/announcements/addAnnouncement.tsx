@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import categories from "@/app/static/announcement/category.json";
+
 export default function AddAnnouncement({
   onSuccess,
   onCancel,
@@ -89,85 +90,114 @@ export default function AddAnnouncement({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-xs font-semibold mb-1">Title</label>
-        <Input
-          name="title"
-          value={form.title}
-          onChange={handleChange}
-          placeholder="Title"
-          required
-        />
-      </div>
-      <div>
-        <label className="block text-xs font-semibold mb-1">Description</label>
-        <Textarea
-          name="description"
-          value={form.description}
-          onChange={handleChange}
-          placeholder="Description"
-          required
-        />
-      </div>
-      <div>
-        <label className="block text-xs font-semibold mb-1">Date Posted</label>
-        <Input
-          type="date"
-          name="date_posted"
-          value={form.date_posted}
-          onChange={handleChange}
-          required
-          readOnly
-          className="cursor-not-allowed"
-        />
-      </div>
-      <div>
-        <label className="block text-xs font-semibold mb-1">Location</label>
-        <Input
-          name="location"
-          value={form.location}
-          onChange={handleChange}
-          placeholder="Location"
-        />
-      </div>
-      <div>
-        <label className="block text-xs font-semibold mb-1">Category</label>
-        <select
-          name="category"
-          value={form.category}
-          onChange={handleSelectChange}
-          required
-          className="border rounded px-2 py-1 text-sm w-full"
-        >
-          <option value="">Select category</option>
-          {categories.map((cat: string) => (
-            <option key={cat} value={cat}>
-              {cat.replace(/_/g, " ")}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label className="block text-xs font-semibold mb-1">Image</label>
-        <Input
-          type="file"
-          name="image"
-          accept="image/*"
-          onChange={handleImageChange}
-        />
-      </div>
-      {error && <div className="text-red-500 text-sm">{error}</div>}
-      <div className="flex gap-2 justify-end">
-        <Button type="submit" disabled={loading}>
-          {loading ? "Adding..." : "Add Announcement"}
-        </Button>
-        {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
+    <div className="w-full flex flex-col items-center justify-start p-0 ">
+      <form onSubmit={handleSubmit} className="w-full max-w-xl p-6 space-y-8">
+        <div>
+          <label className="block text-sm font-semibold mb-1 text-[#1c5461]">
+            Title
+          </label>
+          <Input
+            name="title"
+            value={form.title}
+            onChange={handleChange}
+            placeholder="Title"
+            required
+            className="bg-white border-[#e6f7fa] focus:border-[#3e979f] focus:ring-[#3e979f]"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold mb-1 text-[#1c5461]">
+            Description
+          </label>
+          <Textarea
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            placeholder="Description"
+            required
+            className="bg-white border-[#e6f7fa] focus:border-[#3e979f] focus:ring-[#3e979f] min-h-[100px]"
+          />
+        </div>
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <label className="block text-sm font-semibold mb-1 text-[#1c5461]">
+              Date Posted
+            </label>
+            <Input
+              type="date"
+              name="date_posted"
+              value={form.date_posted}
+              onChange={handleChange}
+              required
+              readOnly
+              className="cursor-not-allowed bg-gray-100 border-[#e6f7fa]"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block text-sm font-semibold mb-1 text-[#1c5461]">
+              Location
+            </label>
+            <Input
+              name="location"
+              value={form.location}
+              onChange={handleChange}
+              placeholder="Location"
+              className="bg-white border-[#e6f7fa] focus:border-[#3e979f] focus:ring-[#3e979f]"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-semibold mb-1 text-[#1c5461]">
+            Category
+          </label>
+          <select
+            name="category"
+            value={form.category}
+            onChange={handleSelectChange}
+            required
+            className="border border-[#e6f7fa] rounded px-2 py-2 text-sm w-full bg-white focus:border-[#3e979f] focus:ring-[#3e979f]"
+          >
+            <option value="">Select category</option>
+            {categories.map((cat: string) => (
+              <option key={cat} value={cat}>
+                {cat.replace(/_/g, " ")}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-semibold mb-1 text-[#1c5461]">
+            Image
+          </label>
+          <Input
+            type="file"
+            name="image"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="bg-white border-[#e6f7fa] focus:border-[#3e979f] focus:ring-[#3e979f] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-[#e6f7fa] file:text-[#1c5461]"
+          />
+        </div>
+        {error && <div className="text-red-500 text-sm">{error}</div>}
+        <div className="flex gap-2 justify-end pt-2">
+          <Button
+            type="submit"
+            disabled={loading}
+            className="bg-[#3e979f] hover:bg-[#1c5461] text-white font-semibold px-6 py-2 rounded-lg shadow"
+          >
+            {loading ? "Adding..." : "Add Announcement"}
           </Button>
-        )}
-      </div>
-    </form>
+          {onCancel && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="border-[#e6f7fa] text-[#1c5461] font-semibold px-6 py-2 rounded-lg"
+            >
+              Cancel
+            </Button>
+          )}
+        </div>
+      </form>
+    </div>
   );
 }
