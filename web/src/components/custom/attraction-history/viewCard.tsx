@@ -1,5 +1,5 @@
 import type { VisitorLog } from "@/app/(User)/profile/[id]/attraction-history/page";
-
+import Image from "next/image";
 interface ViewCardProps {
   log: VisitorLog;
   spotName: string;
@@ -15,43 +15,50 @@ export const ViewCard: React.FC<ViewCardProps> = ({
   onFeedback,
   feedbackGiven = false,
 }) => (
-  <div className="bg-white shadow rounded-lg mb-4 transition hover:shadow-lg">
-    <div className="p-4 flex items-center justify-between">
-      <div>
-        <div className="font-semibold text-lg">{spotName}</div>
-        <div className="font-semibold">
-          Visit Date: {new Date(log.visit_date).toLocaleDateString()}
-        </div>
-        <div className="text-gray-600 text-sm">
-          Unique Code: <span className="font-mono">{log.unique_code}</span>
-        </div>
-        <div className="text-gray-600 text-sm">
-          Registration Date: {new Date(log.registration_date).toLocaleDateString()}
-        </div>
-        <div className="flex gap-2 mt-3">
-          <button
-            className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
-            onClick={onClick}
-            type="button"
-          >
-            View Details
-          </button>
-          <button
-            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-            onClick={onFeedback}
-            disabled={feedbackGiven}
-          >
-            {feedbackGiven ? "Feedback Submitted" : "Leave Feedback"}
-          </button>
-        </div>
+  <div className="flex items-center justify-between gap-6 p-4">
+    <div>
+      <div className="font-bold text-lg text-[#1c5461]">{spotName}</div>
+      <div className="font-semibold text-[#51702c]">
+        Visit Date: {new Date(log.visit_date).toLocaleDateString()}
       </div>
-      <div>
-        <img
-          src={log.qr_code_url}
-          alt="QR Code"
-          className="w-16 h-16 object-contain border rounded"
-        />
+      <div className="text-[#3e979f] text-sm">
+        Unique Code: <span className="font-mono">{log.unique_code}</span>
       </div>
+      <div className="text-[#3e979f] text-sm">
+        Registration Date:{" "}
+        {new Date(log.registration_date).toLocaleDateString()}
+      </div>
+      <div className="flex gap-2 mt-3 flex-wrap">
+        <button
+          className="px-4 py-2 rounded-lg bg-[#3e979f] text-white font-semibold shadow hover:bg-[#1c5461] transition"
+          onClick={onClick}
+          type="button"
+        >
+          View Details
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg font-semibold shadow transition ${
+            feedbackGiven
+              ? "bg-[#e6f7fa] text-[#51702c] cursor-not-allowed"
+              : "bg-[#51702c] text-white hover:bg-[#3e979f] cursor-pointer"
+          }`}
+          onClick={onFeedback}
+          disabled={feedbackGiven}
+          type="button"
+        >
+          {feedbackGiven ? "Feedback Submitted" : "Leave Feedback"}
+        </button>
+      </div>
+    </div>
+    <div>
+      <Image
+        width={150}
+        height={150}
+        src={log.qr_code_url}
+        alt="QR Code"
+        className=" object-contain border-2 border-[#e6f7fa] rounded-lg bg-white shadow"
+      />
     </div>
   </div>
 );
+export default ViewCard;

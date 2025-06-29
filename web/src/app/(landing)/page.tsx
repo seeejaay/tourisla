@@ -5,7 +5,7 @@ import Footer from "@/components/custom/footer";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import MapPage from "@/components/custom/map";
-import { Umbrella, MapPin, Leaf, Phone, Users, ArrowRight } from "lucide-react";
+import { Umbrella, MapPin, Leaf, Users, ArrowRight } from "lucide-react";
 
 import { useArticleManager } from "@/hooks/useArticleManager";
 import {
@@ -62,12 +62,6 @@ export default function Home() {
                 className="px-8 py-4 rounded-full bg-[#019375] hover:bg-[#017a60] text-white font-semibold shadow-lg hover:shadow-xl transition"
               >
                 <Users className="inline w-5 h-5 mr-2" /> Explore Accommodation
-              </button>
-              <button
-                onClick={() => router.push("#contact")}
-                className="px-8 py-4 rounded-full border-2 border-white text-white font-semibold hover:bg-white/10 transition"
-              >
-                <Phone className="inline w-5 h-5 mr-2" /> Contact Us
               </button>
             </div>
           </div>
@@ -238,7 +232,7 @@ export default function Home() {
                               src={article.thumbnail_url}
                               alt={article.title}
                               fill
-                              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                              className="object-cover w-full h-full group-hover:scale-105 brightness-75 transition-transform duration-500"
                               style={{ zIndex: 0 }}
                             />
                           ) : (
@@ -250,10 +244,10 @@ export default function Home() {
                           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10 transition group-hover:from-black/80" />
                           {/* Details on top of image */}
                           <div className="absolute inset-0 z-20 flex flex-col justify-end p-8">
-                            <h3 className="text-2xl font-extrabold text-white line-clamp-2 group-hover:text-[#f8d56b] transition drop-shadow mb-2">
+                            <h3 className="text-xl font-extrabold text-left text-white line-clamp-2 group-hover:text-[#f8d56b] transition drop-shadow mb-2">
                               {article.title}
                             </h3>
-                            <p className="text-base text-[#e6f7fa] drop-shadow mb-4 line-clamp-2">
+                            <p className="text-left text-[#e6f7fa] drop-shadow mb-4 line-clamp-2">
                               {article.body.slice(0, 30) + "..."}
                             </p>
                             <button
