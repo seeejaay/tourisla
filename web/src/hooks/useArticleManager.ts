@@ -55,6 +55,8 @@ export const useArticleManager = () => {
       setLoading(true);
       setError("");
       try {
+        console.log("Editing article with ID:", id, "Data:", articleData);
+
         const response = await updateArticle(id, articleData);
         setArticles((prev) => prev.map((a) => (a.id === id ? response : a)));
         return response;
