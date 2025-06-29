@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import MapPage from "@/components/custom/map";
 import { Umbrella, MapPin, Leaf, Users, ArrowRight } from "lucide-react";
-
+import { useState } from "react";
 import { useArticleManager } from "@/hooks/useArticleManager";
 import {
   Carousel,
@@ -15,6 +15,12 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 const touristSpots = [
   {
     image: "/images/nature/sea.jpg",
@@ -30,10 +36,38 @@ const touristSpots = [
   },
 ];
 
+const faqs = [
+  {
+    question: "What is Tourisla?",
+    answer:
+      "Tourisla is a tourism platform for Bantayan Island, Cebu. It provides information about tourist spots, accommodations, local services, and helps you plan your perfect island getaway.",
+  },
+  {
+    question: "How do I book accommodations on Bantayan Island?",
+    answer:
+      "You can browse available accommodations on Tourisla and contact them directly through the provided contact details. Some listings may also offer online booking links.",
+  },
+  {
+    question: "Is there internet connection on Bantayan Island?",
+    answer:
+      "Internet connectivity is available in most towns and major resorts on Bantayan Island. However, connection may be limited or slower in remote areas and some beaches.",
+  },
+  {
+    question: "How do I report issues or give feedback about Tourisla?",
+    answer:
+      "You can report issues or send feedback through the Contact section of the app or by emailing support@tourisla.com. We value your input to improve your experience.",
+  },
+  {
+    question: "What activities can I do on Bantayan Island?",
+    answer:
+      "Bantayan Island offers a variety of activities including island hopping, swimming, snorkeling, biking, exploring historical sites, and enjoying local cuisine.",
+  },
+];
+
 export default function Home() {
   const router = useRouter();
-
   const { articles, loading: loadingArticles } = useArticleManager();
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
     <>
@@ -180,11 +214,11 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
                       {/* Optionally add spot name/description here if available */}
                       {/* <div className="absolute bottom-6 left-6 z-20 text-left">
-                <h3 className="text-2xl font-bold text-white drop-shadow">
-                  {spot.name}
-                </h3>
-                <p className="text-white/80">{spot.description}</p>
-              </div> */}
+                        <h3 className="text-2xl font-bold text-white drop-shadow">
+                          {spot.name}
+                        </h3>
+                        <p className="text-white/80">{spot.description}</p>
+                      </div> */}
                     </div>
                   </CarouselItem>
                 ))}
@@ -268,6 +302,36 @@ export default function Home() {
                 <CarouselNext className="right-0 -translate-y-1/2 top-1/2" />
               </Carousel>
             )}
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="py-20 bg-[#e6f7fa]">
+          <div className="max-w-3xl mx-auto px-4 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
+              Frequently Asked Questions
+            </h2>
+            <div className="w-24 h-1 bg-[#3e979f] mx-auto mb-8 rounded-full" />
+            <Accordion
+              type="single"
+              collapsible
+              className="space-y-4 text-left"
+            >
+              {faqs.map((faq, idx) => (
+                <AccordionItem
+                  key={faq.question}
+                  value={faq.question}
+                  className="border border-[#e6f7fa] rounded-lg bg-white shadow-sm"
+                >
+                  <AccordionTrigger className="px-6 py-4 text-lg font-semibold text-[#1c5461]">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pb-4 text-[#51702c] text-base">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         </section>
       </main>
