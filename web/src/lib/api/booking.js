@@ -5,7 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export const completeBooking = async (bookingId) => {
   try {
     console.log("API Completing Booking with ID:", bookingId);
-    const response = await axios.put(
+    const response = await axios.patch(
       `${API_URL}bookings/guide/${bookingId}/finish`,
       {},
       {
