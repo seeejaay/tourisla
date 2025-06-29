@@ -45,10 +45,15 @@ export default function AdminTouristSpotEdit() {
         setFetching(true);
         try {
           const spot = await viewTouristSpot(id as string);
+
+          const imageUrls = Array.isArray(spot.images)
+            ? spot.images.map((img: any) => img.image_url)
+            : [];
+          
           setForm((prev) => ({
             ...prev,
             ...spot,
-            images: spot.images || [],
+            images: imageUrls,
           }));
         } catch (e) {
           Alert.alert("Error", "Failed to fetch tourist spot.");
@@ -74,16 +79,46 @@ export default function AdminTouristSpotEdit() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await updateTouristSpot(id as string, form); // Adjust this to match your manager's API
+      const formData = new FormData();
+  
+      // Append text fields
+      Object.entries(form).forEach(([key, value]) => {
+        if (key !== "images") {
+          formData.append(key, value ?? "");
+        }
+      });
+  
+      // Append images
+      form.images.forEach((uri, index) => {
+        if (uri.startsWith("file://")) {
+          const filename = uri.split("/").pop();
+          const ext = filename?.split(".").pop()?.toLowerCase();
+          const type = ext === "jpg" || ext === "jpeg" ? "image/jpeg" : "image/png";
+  
+          formData.append("images", {
+            uri,
+            name: filename ?? `image_${index}.jpg`,
+            type,
+          } as any); // Cast to avoid TS error
+        } else {
+          // Optional: Append existing image URLs if your backend can handle it
+          formData.append("existingImages[]", uri);
+        }
+      });
+  
+      await updateTouristSpot(id as string, formData);
+  
       Alert.alert("Success", "Tourist spot updated successfully.", [
         { text: "OK", onPress: () => router.back() },
       ]);
     } catch (e) {
+      console.error("Update error:", e);
       Alert.alert("Error", "Failed to update tourist spot.");
     } finally {
       setSaving(false);
     }
   };
+  
 
   if (fetching) {
     return (
@@ -227,9 +262,9 @@ export default function AdminTouristSpotEdit() {
 
       <Text style={styles.label}>Images</Text>
       <ScrollView horizontal style={styles.imageList} showsHorizontalScrollIndicator={false}>
-        {form.images.map((uri, index) => (
-          <Image key={index} source={{ uri }} style={styles.image} />
-        ))}
+      {form.images?.map((uri, index) => (
+        uri ? <Image key={index} source={{ uri }} style={styles.image} /> : null
+      ))}
         <TouchableOpacity style={styles.addImageButton} onPress={handlePickImage}>
           <Icon name="image" size={24} color="#0ea5e9" />
           <Text style={styles.addImageText}>Add</Text>

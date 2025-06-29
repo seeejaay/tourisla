@@ -120,10 +120,7 @@ export default function AdminAnnouncementCreateScreen() {
       const result = await createAnnouncement(formData);
       if (result) {
         Alert.alert('Success', 'Announcement created!');
-        router.replace({
-          pathname: "/admin/admin_dashboard",
-          params: { tab: "Announcements" },
-        });
+        router.replace("/admin/admin_dashboard");
       } else {
         Alert.alert('Error', 'Failed to create announcement.');
       }

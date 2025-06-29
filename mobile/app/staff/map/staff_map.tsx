@@ -24,6 +24,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome5 } from "@expo/vector-icons";
 import { router } from "expo-router";
 
+const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const mapImage = require("../../../assets/maps/cebu_tourist_map.webp");
@@ -166,15 +167,19 @@ export default function TouristMapScreen({ headerHeight }) {
 
 const styles = StyleSheet.create({
   navbar: {
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: STATUS_BAR_HEIGHT + 10,
+    paddingBottom: 10,
     paddingHorizontal: 16,
-    paddingBottom: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    zIndex: 10,
+    backgroundColor: '#fff',
   },
   navButton: {
-    padding: 8,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   container: {
     flex: 1,
