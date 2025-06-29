@@ -174,8 +174,27 @@ const getTourPackagesByTourGuide = async (tourguide_id) => {
 };
 
 const getAllTourPackages = async () => {
+  // Get all tour packages
   const result = await db.query(`SELECT * FROM tour_packages`);
-  return result.rows;
+  const packages = result.rows;
+
+  // For each package, get assigned guides (with names)
+  for (const pkg of packages) {
+    const guidesRes = await db.query(
+      `SELECT 
+        tga.tourguide_id,
+        ta.first_name,
+        ta.last_name,
+        ta.email
+      FROM tourguide_assignments tga
+      JOIN tourguide_applicants ta ON tga.tourguide_id = ta.id
+      WHERE tga.tour_package_id = $1`,
+      [pkg.id]
+    );
+    pkg.tour_guides = guidesRes.rows;
+  }
+
+  return packages;
 };
 
 module.exports = {
