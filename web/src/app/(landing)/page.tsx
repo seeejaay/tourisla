@@ -67,7 +67,6 @@ const faqs = [
 export default function Home() {
   const router = useRouter();
   const { articles, loading: loadingArticles } = useArticleManager();
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
     <>
