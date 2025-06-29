@@ -28,7 +28,6 @@ export default function Users() {
   const router = useRouter();
   const [dialogUser, setDialogUser] = useState<User | null>(null);
   const [editDialogUser, setEditDialogUser] = useState<User | null>(null);
-  const [deleteDialogUser, setDeleteDialogUser] = useState<User | null>(null);
 
   useEffect(() => {
     async function getCurrentUserAndUsers() {
@@ -71,11 +70,7 @@ export default function Users() {
             )}
             <div className="max-w-4xl w-full mx-auto bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-4 md:p-8">
               <DataTable
-                columns={userColumns(
-                  setDialogUser,
-                  setEditDialogUser,
-                  setDeleteDialogUser
-                )}
+                columns={userColumns(setDialogUser, setEditDialogUser)}
                 data={users}
                 addDialogTitle="Add User"
                 AddDialogComponent={<SignUp />}
@@ -127,39 +122,6 @@ export default function Users() {
                     setEditDialogUser(null);
                   }}
                   onCancel={() => setEditDialogUser(null)}
-                />
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Delete Dialog */}
-        <Dialog
-          open={!!deleteDialogUser}
-          onOpenChange={() => setDeleteDialogUser(null)}
-        >
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-[#c0392b]">Delete User</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete this user? This action cannot be
-                undone.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="mt-4">
-              {deleteDialogUser && (
-                <DeleteUser
-                  user={deleteDialogUser}
-                  onDelete={async (userId) => {
-                    await deleteUser(userId);
-                    setUsers((prev) =>
-                      prev.map((u) =>
-                        u.user_id === userId ? { ...u, status: "Inactive" } : u
-                      )
-                    );
-                    setDeleteDialogUser(null);
-                  }}
-                  onCancel={() => setDeleteDialogUser(null)}
                 />
               )}
             </div>

@@ -38,8 +38,7 @@ export type User = z.infer<typeof UserSchema>;
 
 export function columns(
   setDialogUser: (user: User | null) => void,
-  setEditDialogUser: (user: User | null) => void,
-  setDeleteDialogUser: (user: User | null) => void
+  setEditDialogUser: (user: User | null) => void
 ): ColumnDef<User>[] {
   return [
     {
@@ -140,12 +139,6 @@ export function columns(
                 className="hover:bg-[#e6f7fa] cursor-pointer"
               >
                 Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setDeleteDialogUser(user)}
-                className="text-red-500 hover:bg-red-50 cursor-pointer"
-              >
-                Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

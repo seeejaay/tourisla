@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import MapPage from "@/components/custom/map";
 import { Umbrella, MapPin, Leaf, Users, ArrowRight } from "lucide-react";
 import { useArticleManager } from "@/hooks/useArticleManager";
+import { useTouristSpotManager } from "@/hooks/useTouristSpotManager";
 import {
   Carousel,
   CarouselContent,
@@ -20,20 +21,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-const touristSpots = [
-  {
-    image: "/images/nature/sea.jpg",
-  },
-  {
-    image: "/images/nature/sun.jpg",
-  },
-  {
-    image: "/images/nature/sand.jpg",
-  },
-  {
-    image: "/images/camp_sawi.webp",
-  },
-];
+import { useEffect } from "react";
 
 const faqs = [
   {
@@ -66,6 +54,17 @@ const faqs = [
 export default function Home() {
   const router = useRouter();
   const { articles, loading: loadingArticles } = useArticleManager();
+
+  // Tourist Spot Manager
+  const {
+    touristSpots,
+    loading: loadingTouristSpots,
+    fetchTouristSpots,
+  } = useTouristSpotManager();
+
+  useEffect(() => {
+    fetchTouristSpots();
+  }, [fetchTouristSpots]);
 
   return (
     <>
@@ -176,8 +175,9 @@ export default function Home() {
             </div>
           </div>
         </section>
-        {/* Tourist Spots Showcase */}
-        <section className="py-20  bg-[#f1f1f1]">
+
+        {/* Tourist Spots Showcase (Dynamic) */}
+        <section className="py-20 bg-[#f1f1f1]">
           <div className="max-w-6xl mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
               Must-See Tourist Spots
@@ -187,43 +187,69 @@ export default function Home() {
               Discover the natural wonders and iconic destinations of Bantayan
               Island.
             </p>
-            <Carousel
-              opts={{
-                align: "center",
-                loop: true,
-              }}
-              className="w-full mx-auto"
-            >
-              <CarouselContent>
-                {touristSpots.map((spot, idx) => (
-                  <CarouselItem
-                    key={idx}
-                    className="basis-full flex-shrink-0 w-full"
-                  >
-                    <div className="relative rounded-2xl overflow-hidden shadow-lg border border-[#e6f7fa] hover:shadow-2xl transition-all h-[500px] flex items-end group bg-[#e6f7fa]">
-                      <Image
-                        src={spot.image}
-                        alt={`Tourist Spot ${idx + 1}`}
-                        fill
-                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-                        style={{ zIndex: 0 }}
-                        priority={idx === 0}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
-                      {/* Optionally add spot name/description here if available */}
-                      {/* <div className="absolute bottom-6 left-6 z-20 text-left">
-                        <h3 className="text-2xl font-bold text-white drop-shadow">
-                          {spot.name}
-                        </h3>
-                        <p className="text-white/80">{spot.description}</p>
-                      </div> */}
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="left-0 -translate-y-1/2 top-1/2" />
-              <CarouselNext className="right-0 -translate-y-1/2 top-1/2" />
-            </Carousel>
+            {loadingTouristSpots ? (
+              <div className="text-[#3e979f]">Loading tourist spots...</div>
+            ) : (
+              <Carousel
+                opts={{
+                  align: "center",
+                  loop: true,
+                }}
+                className="w-full mx-auto"
+              >
+                <CarouselContent>
+                  {touristSpots.length > 0 ? (
+                    touristSpots.map((spot, idx) => (
+                      <CarouselItem
+                        key={spot.id || idx}
+                        className="basis-full flex-shrink-0 w-full"
+                      >
+                        <div className="relative rounded-2xl overflow-hidden shadow-lg border border-[#e6f7fa] hover:shadow-2xl transition-all h-[500px] flex items-end group bg-[#e6f7fa]">
+                          {spot.image_url ? (
+                            <Image
+                              src={spot.image_url}
+                              alt={spot.name || `Tourist Spot ${idx + 1}`}
+                              fill
+                              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                              style={{ zIndex: 0 }}
+                              priority={idx === 0}
+                            />
+                          ) : (
+                            <div className="absolute inset-0 h-full w-full bg-[#e6f7fa] flex items-center justify-center text-[#3e979f] z-0">
+                              No Image
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
+                          <div className="absolute bottom-6 left-6 z-20 text-left">
+                            <h3 className="text-2xl font-bold text-white drop-shadow">
+                              {spot.name}
+                            </h3>
+                            {spot.description && (
+                              <p className="text-white/80 line-clamp-2 max-w-md">
+                                {spot.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </CarouselItem>
+                    ))
+                  ) : (
+                    // fallback if no tourist spots
+                    <>
+                      <CarouselItem className="basis-full flex-shrink-0 w-full">
+                        <div className="relative rounded-2xl overflow-hidden shadow-lg border border-[#e6f7fa] h-[500px] flex items-center justify-center bg-[#e6f7fa]">
+                          <span className="text-[#3e979f] text-xl font-semibold">
+                            No tourist spots available.
+                          </span>
+                        </div>
+                      </CarouselItem>
+                    </>
+                  )}
+                </CarouselContent>
+                <CarouselPrevious className="left-0 -translate-y-1/2 top-1/2" />
+                <CarouselNext className="right-0 -translate-y-1/2 top-1/2" />
+              </Carousel>
+            )}
           </div>
         </section>
 
