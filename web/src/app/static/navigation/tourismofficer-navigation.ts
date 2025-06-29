@@ -57,6 +57,12 @@ const tourismOfficerNavigation = (): NavItem[] => {
       icon: Contact,
     },
     {
+      name: "Tour Operator",
+      href: `/tourism-officer/tour-operators`,
+      title: "Tour Operator",
+      icon: Contact,
+    },
+    {
       name: "Tourist Spot",
       href: `/tourism-officer/tourist-spot`,
       title: "Tourist Spot",
