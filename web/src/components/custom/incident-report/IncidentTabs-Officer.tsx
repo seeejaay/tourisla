@@ -9,7 +9,7 @@ const tabs = [
   { label: "Archived", href: "/tourism-officer/incident-report/archived" },
 ];
 
-export default function IncidentTabs() {
+export default function IncidentTabsOfficer() {
   const pathname = usePathname();
 
   return (

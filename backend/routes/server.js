@@ -828,12 +828,12 @@ app.get(
 // Routes for booking (Tour Guide's Side)
 app.patch(
   "/api/v1/bookings/guide/:bookingId/finish",
-  allowedRoles(["Tour Guide"]),
+  allowedRoles(["Tour Ooperator"]),
   markBookingAsFinishedController
 );
 app.get(
   "/api/v1/bookings/guide",
-  allowedRoles(["Tour Guide"]),
+  allowedRoles(["Tour Guide", "Tour Operator", "Tourist"]),
   getTourGuideBookingsFilteredController
 );
 
