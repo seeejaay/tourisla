@@ -780,11 +780,7 @@ app.get(
   viewTourPackagesController
 );
 
-app.get(
-  "/api/v1/tour-packages/all",
-  allowedRoles(["Tourist"]),
-  viewAllTourPackages
-);
+app.get("/api/v1/tour-packages/all", viewAllTourPackages);
 
 app.get(
   "/api/v1/tour-packages/pkg/:id",
