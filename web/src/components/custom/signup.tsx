@@ -68,11 +68,11 @@ export default function SignUp() {
   };
 
   return (
-    <div className="flex items-start justify-center ">
-      <div className="w-full  bg-white  md:p-12  flex flex-col gap-4">
+    <div className="flex items-center justify-center border-none shadow-none  px-2">
+      <div className="w-full max-w-xl  p-6 md:p-10 flex flex-col gap-4">
         {error && (
           <div className="mb-4 text-center min-h-[1rem] w-full flex items-center justify-center">
-            <div className="w-40 border border-red-600 bg-red-200 rounded-md p-1">
+            <div className="w-60 border border-red-600 bg-red-50 rounded-md p-2">
               <span className="text-red-600">{error}</span>
             </div>
           </div>
@@ -94,7 +94,7 @@ export default function SignUp() {
                     name={name as keyof z.infer<typeof FormSchema>}
                     render={({ field }) => (
                       <FormItem className="w-full flex flex-col">
-                        <FormLabel className="text-gray-700 text-sm font-semibold">
+                        <FormLabel className="text-[#3e979f] text-sm font-semibold">
                           {label}
                         </FormLabel>
                         <FormControl>
@@ -115,7 +115,7 @@ export default function SignUp() {
                                 }
                                 field.onChange(val);
                               }}
-                              className={`border border-gray-200 rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition bg-gray-50 ${
+                              className={`border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-[#f8fcfd] ${
                                 className || ""
                               }`}
                             />
@@ -129,7 +129,7 @@ export default function SignUp() {
                                   ? ""
                                   : field.value
                               }
-                              className={`border border-gray-200 rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition bg-gray-50 ${
+                              className={`border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-[#f8fcfd] ${
                                 className || ""
                               }`}
                             />
@@ -154,7 +154,7 @@ export default function SignUp() {
                     name={name as keyof z.infer<typeof FormSchema>}
                     render={({ field }) => (
                       <FormItem className="w-full flex flex-col">
-                        <FormLabel className="text-gray-700 text-sm font-semibold">
+                        <FormLabel className="text-[#3e979f] text-sm font-semibold">
                           {label}
                         </FormLabel>
                         <FormControl className="mb-2">
@@ -167,7 +167,7 @@ export default function SignUp() {
                                 ? ""
                                 : field.value
                             }
-                            className="border border-gray-200 rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition bg-gray-50"
+                            className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-[#f8fcfd]"
                           />
                         </FormControl>
                         <FormMessage className="min-h-[1.25rem]" />
@@ -183,13 +183,14 @@ export default function SignUp() {
                 name="nationality"
                 render={({ field }) => (
                   <FormItem className="w-full flex flex-col">
-                    <FormLabel className="text-gray-700 text-sm font-semibold">
+                    <FormLabel className="text-[#3e979f] text-sm font-semibold">
                       Nationality
                     </FormLabel>
                     <FormControl>
                       <select
                         {...field}
-                        className="border border-gray-200 rounded-md px-3 py-3 text-base w-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition bg-white"
+                        className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-[#f8fcfd]"
+                        disabled
                       >
                         <option value="">Select your nationality</option>
                         {selectField[0]?.options.map(
@@ -205,21 +206,18 @@ export default function SignUp() {
                   </FormItem>
                 )}
               />
-            </div>
-            {/* Role Select */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="role"
                 render={({ field }) => (
                   <FormItem className="w-full flex flex-col">
-                    <FormLabel className="text-gray-700 text-sm font-semibold">
+                    <FormLabel className="text-[#3e979f] text-sm font-semibold">
                       Role
                     </FormLabel>
                     <FormControl>
                       <select
                         {...field}
-                        className="border border-gray-200 rounded-md px-3 py-3 text-base w-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition bg-white"
+                        className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-[#f8fcfd]"
                       >
                         <option value="">Select your role</option>
                         <option value="Tourist">Tourist</option>
@@ -238,6 +236,7 @@ export default function SignUp() {
                 )}
               />
             </div>
+
             {/* Terms Checkbox */}
             <FormField
               control={form.control}
@@ -252,12 +251,12 @@ export default function SignUp() {
                   />
                   <FormLabel
                     htmlFor="terms"
-                    className="text-sm text-gray-700 font-medium cursor-pointer"
+                    className="text-sm text-[#3e979f] font-medium cursor-pointer"
                   >
                     I agree to the{" "}
                     <a
                       href="#"
-                      className="underline text-blue-600 hover:text-blue-800"
+                      className="underline text-[#3e979f] hover:text-[#1c5461]"
                     >
                       terms and conditions
                     </a>
@@ -279,7 +278,7 @@ export default function SignUp() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-md shadow-md hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition text-lg"
+              className="w-full bg-gradient-to-r from-[#3e979f] to-[#1c5461] text-white font-semibold rounded-lg shadow-md hover:from-[#1c5461] hover:to-[#3e979f] focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:ring-offset-2 transition text-lg"
               disabled={loading || (!isAdmin && !captchaToken)}
             >
               {loading ? "Signing Up..." : "Sign Up"}

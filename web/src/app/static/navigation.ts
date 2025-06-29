@@ -44,14 +44,9 @@ export const footerNavigation = [
     title: "Privacy Policy",
   },
   {
-    tag: "Terms of Service",
-    href: "/terms-of-service",
-    title: "Terms of Service",
-  },
-  {
-    tag: "Cookie Policy",
-    href: "/cookie-policy",
-    title: "Cookie Policy",
+    tag: "Terms and Conditions",
+    href: "/terms-and-conditions",
+    title: "Terms and Conditions",
   },
 ];
 export const socialLinks = [

@@ -76,6 +76,12 @@ const tourismOfficerNavigation = (): NavItem[] => {
       title: "Feedback Answers",
       icon: ClipboardList,
     },
+    {
+      name: "Incident Report",
+      href: `/tourism-officer/incident-report`,
+      title: "Incident Report",
+      icon: ClipboardList,
+    },
   ];
 };
 

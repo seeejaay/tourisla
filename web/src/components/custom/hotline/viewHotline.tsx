@@ -1,45 +1,39 @@
 import { Hotline } from "@/app/static/hotline/useHotlineManagerSchema";
 import { hotlineFields } from "@/app/static/hotline/hotline";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
 export default function ViewHotline({ hotline }: { hotline: Hotline }) {
   if (!hotline) return null;
 
   return (
-    <Card className="max-w-lg mx-auto">
-      <CardHeader>
-        <CardTitle>Hotline Details</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {hotlineFields.map((field) => (
-          <div className="flex flex-col gap-1" key={field.name}>
-            <Label className="uppercase tracking-widest font-semibold text-xs text-muted-foreground">
-              {field.label}
-            </Label>
-            <span>
-              {(() => {
-                const value = hotline[field.name as keyof Hotline];
-                if (field.type === "select" && typeof value === "string") {
-                  // Find the label for the selected option
-                  const opt = field.options?.find((o) => o.value === value);
-                  return opt ? opt.label : value.replace("_", " ");
-                }
-                if (typeof value === "string" && value.trim() === "") {
+    <div className="w-full flex flex-col items-center justify-center">
+      <Card className="w-full max-w-xl border-none shadow-none">
+        <CardContent className="space-y-5 py-2">
+          {hotlineFields.map((field) => (
+            <div key={field.name}>
+              <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
+                {field.label}
+              </Label>
+              <div className="text-base text-[#1c5461] break-words">
+                {(() => {
+                  const value = hotline[field.name as keyof Hotline];
+                  if (field.type === "select" && typeof value === "string") {
+                    const opt = field.options?.find((o) => o.value === value);
+                    return opt ? opt.label : value.replace(/_/g, " ");
+                  }
+                  if (typeof value === "string" && value.trim() === "") {
+                    return <span className="italic text-gray-400">N/A</span>;
+                  }
                   return (
-                    <span className="italic text-muted-foreground">N/A</span>
+                    value || <span className="italic text-gray-400">N/A</span>
                   );
-                }
-                return (
-                  value || (
-                    <span className="italic text-muted-foreground">N/A</span>
-                  )
-                );
-              })()}
-            </span>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
+                })()}
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

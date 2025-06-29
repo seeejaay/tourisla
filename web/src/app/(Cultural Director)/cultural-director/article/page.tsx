@@ -1,4 +1,3 @@
-// page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -59,42 +58,67 @@ export default function ArticleAdminPage() {
   }, [router, loggedInUser, fetchArticles]);
 
   return (
-    <main className="flex flex-col items-center justify-start min-h-screen gap-8 w-full bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4 pb-20">
-      <div className="flex flex-col w-full max-w-6xl gap-4 pt-8">
-        <h1 className="text-4xl font-bold text-center text-blue-700">
-          Articles
-        </h1>
-        <p className="text-center text-gray-600">
-          Manage informational articles and announcements.
-        </p>
-
-        <div className="flex justify-end">
-          <Button onClick={() => setAddDialogOpen(true)}>Add Article</Button>
+    <main className="flex flex-col items-center min-h-screen w-full bg-gradient-to-br from-[#e6f7fa] via-white to-[#b6e0e4] px-2 py-8">
+      <div className="w-full max-w-6xl flex flex-col items-center gap-6">
+        <div className="w-full flex flex-col items-center gap-2">
+          <h1 className="text-4xl font-extrabold text-center text-[#1c5461] tracking-tight">
+            Articles
+          </h1>
+          <p className="text-lg text-[#51702c] text-center">
+            Manage informational articles and announcements.
+          </p>
         </div>
-
-        {loading && <p className="text-center">Loading...</p>}
-        {error && <p className="text-center text-red-500">{error}</p>}
+        <div className="w-full flex flex-col items-end">
+          <Button
+            className="bg-[#3e979f] hover:bg-[#1c5461] text-white font-semibold px-6 py-2 rounded-lg shadow"
+            onClick={() => setAddDialogOpen(true)}
+          >
+            Add Article
+          </Button>
+        </div>
+        {loading && (
+          <div className="flex items-center gap-2 py-4">
+            <span className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#3e979f]"></span>
+            <span className="text-[#3e979f] font-medium">Loading...</span>
+          </div>
+        )}
+        {error && (
+          <div className="text-[#c0392b] bg-red-50 border border-red-200 rounded-lg p-3 mb-4 text-center w-full max-w-lg">
+            {error}
+          </div>
+        )}
 
         {/* Display as cards */}
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 w-full">
           {articles.map((article) => (
-            <Card key={article.id} className="p-4 space-y-2 shadow-md border">
-              <h2 className="font-semibold text-xl">{article.title}</h2>
-              <p className="text-sm text-gray-600">By {article.author}</p>
+            <Card
+              key={article.id}
+              className="p-6 space-y-2 shadow-xl border border-[#e6f7fa] rounded-2xl bg-white flex flex-col"
+            >
+              <h2 className="font-semibold text-xl text-[#1c5461]">
+                {article.title}
+              </h2>
+              <p className="text-sm text-[#3e979f]">By {article.author}</p>
               <div className="flex gap-2 mt-4 flex-wrap">
                 <Button
                   size="sm"
                   variant="outline"
+                  className="border-[#e6f7fa] text-[#1c5461] font-semibold"
                   onClick={() => setSelectedArticle(article)}
                 >
                   View
                 </Button>
-                <Button size="sm" onClick={() => setEditDialogArticle(article)}>
+                <Button
+                  size="sm"
+                  className="bg-[#3e979f] hover:bg-[#1c5461] text-white font-semibold"
+                  onClick={() => setEditDialogArticle(article)}
+                >
                   Edit
                 </Button>
                 <Button
                   size="sm"
                   variant="destructive"
+                  className="font-semibold"
                   onClick={() => setDeleteDialogArticle(article)}
                 >
                   Delete
@@ -107,9 +131,11 @@ export default function ArticleAdminPage() {
 
       {/* Add Dialog */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl rounded-2xl border-[#e6f7fa]">
           <DialogHeader>
-            <DialogTitle>Add New Article</DialogTitle>
+            <DialogTitle className="text-[#1c5461]">
+              Add New Article
+            </DialogTitle>
             <DialogDescription>
               Fill in the form to publish a new article.
             </DialogDescription>
@@ -130,9 +156,9 @@ export default function ArticleAdminPage() {
         open={!!selectedArticle}
         onOpenChange={() => setSelectedArticle(null)}
       >
-        <DialogContent className="max-h-[90vh] overflow-hidden sm:max-w-3xl flex flex-col">
+        <DialogContent className="max-h-[90vh] overflow-hidden sm:max-w-3xl flex flex-col rounded-2xl border-[#e6f7fa]">
           <DialogHeader>
-            <DialogTitle>View Article</DialogTitle>
+            <DialogTitle className="text-[#1c5461]">View Article</DialogTitle>
             <DialogDescription>Article details</DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto pr-2">
@@ -146,9 +172,9 @@ export default function ArticleAdminPage() {
         open={!!editDialogArticle}
         onOpenChange={() => setEditDialogArticle(null)}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl rounded-2xl border-[#e6f7fa]">
           <DialogHeader>
-            <DialogTitle>Edit Article</DialogTitle>
+            <DialogTitle className="text-[#1c5461]">Edit Article</DialogTitle>
             <DialogDescription>Modify the article content</DialogDescription>
           </DialogHeader>
           {editDialogArticle && (
@@ -170,9 +196,9 @@ export default function ArticleAdminPage() {
         open={!!deleteDialogArticle}
         onOpenChange={() => setDeleteDialogArticle(null)}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-2xl border-[#e6f7fa]">
           <DialogHeader>
-            <DialogTitle>Delete Article</DialogTitle>
+            <DialogTitle className="text-[#c0392b]">Delete Article</DialogTitle>
             <DialogDescription>This action cannot be undone.</DialogDescription>
           </DialogHeader>
           {deleteDialogArticle && (

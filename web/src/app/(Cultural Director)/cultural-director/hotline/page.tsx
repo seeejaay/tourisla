@@ -68,105 +68,123 @@ export default function HotlinesPage() {
 
   return (
     <>
-      <main className="flex flex-col items-center justify-start min-h-screen gap-12 w-full bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4">
-        <div className="flex max-w-[100rem] w-full flex-col items-center justify-start gap-4 px-4 py-2 lg:pl-0">
-          <h1 className="text-4xl font-extrabold text-center text-blue-700 tracking-tight">
-            Hotlines
-          </h1>
-          <p className="mt-2 text-lg text-gray-700">
-            Manage all hotlines in the system.
-          </p>
-          {loading && <div>Loading...</div>}
-          {error && <div className="text-red-500">{error}</div>}
-          <div className="w-full max-w-[90rem]">
-            <DataTable
-              columns={hotlineColumns(
-                setDialogHotline,
-                setEditDialogHotline,
-                setDeleteDialogHotline
-              )}
-              data={hotlines}
-              addDialogTitle="Add Hotline"
-              AddDialogComponent={<AddHotline onSuccess={refreshHotlines} />}
-              searchPlaceholder="Search hotlines..."
-              searchColumn="contact_number"
-            />
-            {/* View Dialog */}
-            <Dialog
-              open={!!dialogHotline}
-              onOpenChange={() => setDialogHotline(null)}
-            >
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Hotline Details</DialogTitle>
-                  <DialogDescription>
-                    Here are the details of the hotline.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="mt-4">
-                  {dialogHotline && <ViewHotline hotline={dialogHotline} />}
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            {/* Edit Dialog */}
-            <Dialog
-              open={!!editDialogHotline}
-              onOpenChange={() => setEditDialogHotline(null)}
-            >
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Edit Hotline</DialogTitle>
-                  <DialogDescription>
-                    Edit the details of the hotline.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="mt-4">
-                  {editDialogHotline && (
-                    <EditHotline
-                      hotline={editDialogHotline}
-                      onSave={async (updatedHotline) => {
-                        await updateHotline(updatedHotline);
-                        await refreshHotlines();
-                        setEditDialogHotline(null);
-                      }}
-                      onCancel={() => setEditDialogHotline(null)}
-                    />
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            {/* Delete Dialog */}
-            <Dialog
-              open={!!deleteDialogHotline}
-              onOpenChange={() => setDeleteDialogHotline(null)}
-            >
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Delete Hotline</DialogTitle>
-                  <DialogDescription>
-                    Are you sure you want to delete this hotline? This action
-                    cannot be undone.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="mt-4">
-                  {deleteDialogHotline && (
-                    <DeleteHotline
-                      hotline={deleteDialogHotline}
-                      onDelete={async (hotlineId) => {
-                        await deleteHotline(Number(hotlineId));
-                        await refreshHotlines();
-                        setDeleteDialogHotline(null);
-                      }}
-                      onCancel={() => setDeleteDialogHotline(null)}
-                    />
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
+      <main className="flex flex-col items-center min-h-screen w-full bg-gradient-to-br from-[#e6f7fa] via-white to-[#b6e0e4] px-2 py-8">
+        <div className="w-full max-w-6xl flex flex-col items-center gap-6">
+          <div className="w-full flex flex-col items-center gap-2">
+            <h1 className="text-4xl font-extrabold text-center text-[#1c5461] tracking-tight">
+              Hotlines
+            </h1>
+            <p className="text-lg text-[#51702c] text-center">
+              Manage all hotlines in the system.
+            </p>
+          </div>
+          <div className="w-full flex flex-col items-center">
+            {loading && (
+              <div className="flex items-center gap-2 py-4">
+                <span className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#3e979f]"></span>
+                <span className="text-[#3e979f] font-medium">Loading...</span>
+              </div>
+            )}
+            {error && (
+              <div className="text-[#c0392b] bg-red-50 border border-red-200 rounded-lg p-3 mb-4 text-center w-full max-w-lg">
+                {error}
+              </div>
+            )}
+            <div className="max-w-4xl w-full mx-auto bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-4 md:p-8">
+              <DataTable
+                columns={hotlineColumns(
+                  setDialogHotline,
+                  setEditDialogHotline,
+                  setDeleteDialogHotline
+                )}
+                data={hotlines}
+                addDialogTitle="Add Hotline"
+                AddDialogComponent={<AddHotline onSuccess={refreshHotlines} />}
+                searchPlaceholder="Search hotlines..."
+                searchColumn="type"
+              />
+            </div>
           </div>
         </div>
+
+        {/* View Dialog */}
+        <Dialog
+          open={!!dialogHotline}
+          onOpenChange={() => setDialogHotline(null)}
+        >
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="text-[#1c5461]">
+                Hotline Details
+              </DialogTitle>
+              <DialogDescription>
+                Here are the details of the hotline.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              {dialogHotline && <ViewHotline hotline={dialogHotline} />}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Dialog */}
+        <Dialog
+          open={!!editDialogHotline}
+          onOpenChange={() => setEditDialogHotline(null)}
+        >
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="text-[#1c5461]">Edit Hotline</DialogTitle>
+              <DialogDescription>
+                Edit the details of the hotline.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              {editDialogHotline && (
+                <EditHotline
+                  hotline={editDialogHotline}
+                  onSave={async (updatedHotline) => {
+                    await updateHotline(updatedHotline);
+                    await refreshHotlines();
+                    setEditDialogHotline(null);
+                  }}
+                  onCancel={() => setEditDialogHotline(null)}
+                />
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Dialog */}
+        <Dialog
+          open={!!deleteDialogHotline}
+          onOpenChange={() => setDeleteDialogHotline(null)}
+        >
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-[#c0392b]">
+                Delete Hotline
+              </DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this hotline? This action cannot
+                be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              {deleteDialogHotline && (
+                <DeleteHotline
+                  hotline={deleteDialogHotline}
+                  onDelete={async (hotlineId) => {
+                    await deleteHotline(Number(hotlineId));
+                    await refreshHotlines();
+                    setDeleteDialogHotline(null);
+                  }}
+                  onCancel={() => setDeleteDialogHotline(null)}
+                />
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     </>
   );
