@@ -52,7 +52,10 @@ export default function ApplyTourOperatorPage() {
           }))
         );
       } catch (error) {
-        setError("Failed to load tour operators." + error);
+        setError(
+          "Failed to load tour operators. " +
+            (error instanceof Error ? error.message : String(error))
+        );
       } finally {
         setLoading(false);
       }
@@ -67,15 +70,15 @@ export default function ApplyTourOperatorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col items-center py-12 px-4 sm:px-6 w-full">
-      <div className="w-full pl-24 space-y-8">
+    <main className="min-h-screen w-full bg-gradient-to-b from-[#e6f7fa] to-white flex flex-col items-center py-12 px-2">
+      <div className="w-full max-w-5xl mx-auto space-y-8">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-extrabold text-[#1c5461] tracking-tight">
               Apply to Tour Operators
             </h1>
-            <p className="text-gray-500 mt-2">
+            <p className="text-[#51702c] mt-2">
               Browse and apply to join approved tour operators.
             </p>
           </div>
@@ -88,7 +91,7 @@ export default function ApplyTourOperatorPage() {
             <p className="text-gray-600">Loading tour operators...</p>
           </div>
         ) : error ? (
-          <div className="rounded-xl bg-red-50 p-6 text-center border border-red-100">
+          <div className="rounded-xl bg-red-50 p-6 text-center border border-red-100 max-w-md mx-auto">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
               <AlertTriangle className="h-6 w-6 text-red-600" />
             </div>
@@ -103,7 +106,7 @@ export default function ApplyTourOperatorPage() {
             </Button>
           </div>
         ) : data.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
+          <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 max-w-md mx-auto">
             <Users className="h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900">
               No tour operators available
@@ -123,7 +126,7 @@ export default function ApplyTourOperatorPage() {
 
         {/* Apply Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[500px] rounded-lg">
             <DialogHeader>
               <DialogTitle>
                 Apply to {selectedOperator?.operator_name}
@@ -139,6 +142,6 @@ export default function ApplyTourOperatorPage() {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </main>
   );
 }

@@ -20,7 +20,7 @@ export default function AccommodationReports() {
         router.push("/login");
         return;
       }
-      await fetchLogs(); // Fetch all logs, no accommodationId filter
+      await fetchLogs();
     }
     fetchAllLogs();
   }, [fetchLogs, loggedInUser, router]);
@@ -31,27 +31,48 @@ export default function AccommodationReports() {
   };
 
   return (
-    <main className="flex flex-col items-center justify-start min-h-screen gap-12 w-full bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4">
-      <div className="flex max-w-[100rem] w-full flex-col items-center justify-start gap-4 px-4 py-2 lg:pl-0">
-        <h1 className="text-4xl font-extrabold text-center text-blue-700 tracking-tight">
-          Accommodation Reports
-        </h1>
-        <p className="mt-2 text-lg text-gray-700">
-          View and Export Accommodation Logs into Excel.
-        </p>
-        {loading && <div>Loading...</div>}
-        {error && <div className="text-red-500">{error}</div>}
-        <div className="w-full max-w-[90rem]">
-          <DataTable
-            columns={logColumns()}
-            data={logs}
-            searchPlaceholder="Search logs..."
-            searchColumn="log_date"
-          />
-          <div className="flex justify-end mt-4">
-            <Button variant="outline" onClick={handleExport}>
-              Export
-            </Button>
+    <main className="flex flex-col items-center min-h-screen w-full bg-gradient-to-br from-[#e6f7fa] via-white to-[#b6e0e4] px-2 py-8">
+      <div className="w-full max-w-6xl flex flex-col items-center gap-6">
+        <div className="w-full flex flex-col items-center gap-2">
+          <h1 className="text-4xl font-extrabold text-center text-[#1c5461] tracking-tight">
+            Accommodation Reports
+          </h1>
+          <p className="text-lg text-[#51702c] text-center">
+            View and export accommodation logs into Excel.
+          </p>
+        </div>
+        <div className="w-full flex flex-col items-center">
+          {loading && (
+            <div className="flex items-center gap-2 py-4">
+              <span className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#3e979f]"></span>
+              <span className="text-[#3e979f] font-medium">Loading...</span>
+            </div>
+          )}
+          {error && (
+            <div className="text-[#c0392b] bg-red-50 border border-red-200 rounded-lg p-3 mb-4 text-center w-full max-w-lg">
+              {error}
+            </div>
+          )}
+          <div className="max-w-4xl w-full mx-auto bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-4 md:p-8">
+            <div className="flex flex-col md:flex-row items-center justify-between mb-4 gap-4">
+              <span className="text-lg font-semibold text-[#3e979f]">
+                Total Logs: {logs.length}
+              </span>
+              <Button
+                variant="outline"
+                className="border-[#e6f7fa] text-[#1c5461] font-semibold"
+                onClick={handleExport}
+                disabled={loading}
+              >
+                {loading ? "Exporting..." : "Export"}
+              </Button>
+            </div>
+            <DataTable
+              columns={logColumns()}
+              data={logs}
+              searchPlaceholder="Search logs..."
+              searchColumn="log_date"
+            />
           </div>
         </div>
       </div>

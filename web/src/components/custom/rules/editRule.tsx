@@ -56,13 +56,13 @@ export default function EditRule({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-xl p-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit} className="w-full px-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {ruleFields.map((field) => (
           <div className="space-y-1" key={field.name}>
             <Label
               htmlFor={field.name}
-              className="text-sm font-medium text-gray-600"
+              className="text-sm font-semibold text-[#1c5461]"
             >
               {field.label}
             </Label>
@@ -74,10 +74,10 @@ export default function EditRule({
                 onChange={handleChange}
                 placeholder={field.placeholder}
                 rows={3}
-                className="w-full text-sm"
+                className="w-full text-sm border-[#e6f7fa] focus:ring-yellow-400 focus:border-yellow-400"
               />
             ) : field.type === "checkbox" ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 pt-2">
                 <Checkbox
                   id={field.name}
                   checked={!!form[field.name as keyof RuleSchema]}
@@ -88,7 +88,7 @@ export default function EditRule({
                     }))
                   }
                 />
-                <Label htmlFor={field.name} className="text-sm">
+                <Label htmlFor={field.name} className="text-sm text-gray-600">
                   {field.placeholder}
                 </Label>
               </div>
@@ -100,7 +100,7 @@ export default function EditRule({
                 value={form[field.name as keyof RuleSchema] as string}
                 onChange={handleChange}
                 placeholder={field.placeholder}
-                className="w-full text-sm"
+                className="w-full text-sm border-[#e6f7fa] focus:ring-yellow-400 focus:border-yellow-400"
               />
             )}
           </div>
@@ -108,7 +108,7 @@ export default function EditRule({
       </div>
 
       {error && (
-        <div className="px-3 py-2 text-sm text-red-600 bg-red-50 rounded-md">
+        <div className="px-3 py-2 text-sm text-red-600 bg-red-50 rounded-md border border-red-200">
           {error}
         </div>
       )}
@@ -122,7 +122,10 @@ export default function EditRule({
         >
           Cancel
         </Button>
-        <Button type="submit" className="text-sm bg-blue-600 hover:bg-blue-700">
+        <Button
+          type="submit"
+          className="text-sm bg-[#1c5461] hover:bg-[#17414a] text-white font-semibold px-6 py-2 rounded-lg"
+        >
           Save Changes
         </Button>
       </div>

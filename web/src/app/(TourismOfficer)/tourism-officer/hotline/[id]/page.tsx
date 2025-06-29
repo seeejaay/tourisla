@@ -3,17 +3,17 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { useTouristSpotManager } from "@/hooks/useTouristSpotManager";
-import ViewTouristSpot from "@/components/custom/tourist-spot/viewTouristSpot";
-import { TouristSpot } from "@/app/static/tourist-spot/useTouristSpotManagerSchema";
+import { useHotlineManager } from "@/hooks/useHotlineManager";
+import ViewHotline from "@/components/custom/hotline/viewHotline";
+import { Hotline } from "@/app/static/hotline/useHotlineManagerSchema";
 
-export default function TouristSpotDetailPage() {
+export default function HotlineDetailPage() {
   const { id } = useParams();
   const router = useRouter();
-  const [touristSpot, setTouristSpot] = useState<TouristSpot | null>(null);
+  const [hotline, setHotline] = useState<Hotline | null>();
 
   const { loggedInUser } = useAuth();
-  const { viewTouristSpot, loading, error } = useTouristSpotManager();
+  const { viewHotline, loading, error } = useHotlineManager();
 
   useEffect(() => {
     async function getCurrentUser() {
@@ -30,17 +30,17 @@ export default function TouristSpotDetailPage() {
       }
 
       if (!id) return;
-      viewTouristSpot(id as string)
-        .then((data) => setTouristSpot(data))
-        .catch(() => setTouristSpot(null));
+      viewHotline(Number(id))
+        .then((data) => setHotline(data))
+        .catch(() => setHotline(null));
     }
 
     getCurrentUser();
-  }, [id, router, loggedInUser, viewTouristSpot]);
+  }, [id, router, loggedInUser, viewHotline]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="text-red-500">{error}</div>;
-  if (!touristSpot) return <div>Tourist spot not found.</div>;
+  if (!hotline) return <div>Hotline not found.</div>;
 
-  return <ViewTouristSpot touristSpot={touristSpot} />;
+  return <ViewHotline hotline={hotline} />;
 }
