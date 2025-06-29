@@ -63,8 +63,24 @@ export default function DashboardPage() {
     fetchArticles();
   }, [fetchAnnouncements, fetchHotlines, fetchArticles]);
 
-  if (!authChecked) {
-    return <p>Loading...</p>;
+  // Use the loading state for the whole dashboard
+  if (
+    loading ||
+    loadingAnnouncements ||
+    loadingHotlines ||
+    loadingArticles ||
+    !authChecked
+  ) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4]">
+        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full border border-[#e6f7fa] flex flex-col items-center">
+          <span className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3e979f] mb-4"></span>
+          <h1 className="text-2xl font-bold mb-2 text-center text-[#1c5461]">
+            Loading dashboard...
+          </h1>
+        </div>
+      </div>
+    );
   }
 
   return (
