@@ -206,7 +206,7 @@ export default function Home() {
                       ).map((img, imgIdx) => (
                         <CarouselItem
                           key={`${spot.id}-${img?.id ?? imgIdx}`}
-                          className="basis-full flex-shrink-0 w-full"
+                          className="basis-full flex-shrink-0 w-full "
                         >
                           <div className="relative rounded-2xl overflow-hidden shadow-lg border border-[#e6f7fa] hover:shadow-2xl transition-all h-[500px] flex items-end group bg-[#e6f7fa]">
                             {img && img.image_url ? (
@@ -214,7 +214,7 @@ export default function Home() {
                                 src={img.image_url}
                                 alt={spot.name || `Tourist Spot`}
                                 fill
-                                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                                className="object-cover w-full h-full group-hover:scale-105 hover:text-[#f8d56b] transition-transform duration-500"
                                 style={{ zIndex: 0 }}
                                 priority={idx === 0 && imgIdx === 0}
                               />
@@ -225,7 +225,7 @@ export default function Home() {
                             )}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
                             <div className="absolute bottom-6 left-6 z-20 text-left">
-                              <h3 className="text-2xl font-bold text-white drop-shadow">
+                              <h3 className="text-2xl font-bold text-white drop-shadow  transition mb-2">
                                 {spot.name}
                               </h3>
                               {spot.description && (
