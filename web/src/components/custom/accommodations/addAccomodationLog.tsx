@@ -99,14 +99,20 @@ export default function AddAccommodationLog({
       await onSubmit(data);
       setForm({});
     } catch (err) {
-      setError("Validation error:" + err);
+      setError(
+        "Validation error: " +
+          (err instanceof Error ? err.message : String(err))
+      );
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 px-2" autoComplete="off">
+    <form onSubmit={handleSubmit} className="px-5" autoComplete="off">
+      <h2 className="text-2xl font-extrabold text-[#1c5461] mb-2">
+        {editingLog ? "Edit Accommodation Log" : "Add Accommodation Log"}
+      </h2>
       {error && (
-        <div className="text-red-500 text-sm mb-2 rounded bg-red-50 px-2 py-1">
+        <div className="text-red-600 text-sm mb-2 rounded bg-red-50 px-2 py-1">
           {error}
         </div>
       )}
@@ -115,7 +121,7 @@ export default function AddAccommodationLog({
           <div key={field.name} className="flex flex-col gap-1">
             <Label
               htmlFor={field.name}
-              className="font-medium text-gray-700 mb-1"
+              className="font-medium text-[#3e979f] mb-1"
             >
               {field.label}
             </Label>
@@ -126,7 +132,7 @@ export default function AddAccommodationLog({
                 value={form[field.name as keyof AccommodationLog] ?? ""}
                 onChange={handleChange}
                 required
-                className="border border-gray-300 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                className="border border-[#e6f7fa] px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3e979f] bg-gray-50 transition"
               >
                 <option value="">Select day</option>
                 {DAYS.map((day) => (
@@ -144,6 +150,7 @@ export default function AddAccommodationLog({
                 value={form[field.name as keyof AccommodationLog] ?? ""}
                 onChange={handleChange}
                 required
+                className="border border-[#e6f7fa] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3e979f] bg-gray-50"
               />
             )}
             {field.helperText && (
@@ -153,7 +160,11 @@ export default function AddAccommodationLog({
         ))}
       </div>
       <div className="flex gap-2 mt-4 justify-end">
-        <Button type="submit" disabled={loading}>
+        <Button
+          type="submit"
+          disabled={loading}
+          className="bg-[#3e979f] hover:bg-[#1c5461] text-white font-semibold px-4 py-2 rounded-lg transition-colors"
+        >
           {editingLog ? "Update" : "Create"}
         </Button>
         <Button
@@ -161,6 +172,7 @@ export default function AddAccommodationLog({
           variant="outline"
           onClick={onClose}
           disabled={loading}
+          className="border-[#3e979f] text-[#1c5461] font-semibold px-4 py-2 rounded-lg"
         >
           Cancel
         </Button>
