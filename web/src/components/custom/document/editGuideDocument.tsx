@@ -8,7 +8,6 @@ type EditGuideDocumentProps = {
   initialData: {
     document_type: string;
     requirements: string[];
-    // You may add more fields as needed
     file_path?: string;
   };
   onSuccess?: () => void;
@@ -76,23 +75,25 @@ const EditGuideDocument: React.FC<EditGuideDocumentProps> = ({
       const result = await editGuideDocument(docuId, formData);
       if (result && onSuccess) onSuccess();
     } catch (error) {
-      setFormError("Failed to update document." + error);
+      setFormError("Failed to update document. " + error);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-lg mx-auto p-6">
       {tourGuideDocuFields.map((field) => {
         if (field.type === "select") {
           return (
             <div key={field.name}>
-              <label className="block mb-1 font-medium">{field.label}</label>
+              <label className="block mb-1 font-semibold text-[#3e979f]">
+                {field.label}
+              </label>
               <select
                 name={field.name}
                 value={form[field.name as keyof typeof form]}
                 onChange={handleChange}
                 required
-                className="w-full border px-2 py-1 rounded"
+                className="w-full border border-[#b6e0e4] px-3 py-2 rounded-lg focus:ring-2 focus:ring-[#3e979f] bg-[#f8fcfd] transition"
               >
                 <option value="">Select...</option>
                 {field.options?.map((opt) => (
@@ -107,12 +108,14 @@ const EditGuideDocument: React.FC<EditGuideDocumentProps> = ({
         if (field.type === "file") {
           return (
             <div key={field.name}>
-              <label className="block mb-1 font-medium">{field.label}</label>
+              <label className="block mb-1 font-semibold text-[#3e979f]">
+                {field.label}
+              </label>
               <input
                 type="file"
                 name={field.name}
                 onChange={handleChange}
-                className="w-full border px-2 py-1 rounded"
+                className="w-full border border-[#b6e0e4] px-3 py-2 rounded-lg bg-[#f8fcfd]"
               />
               {file && (
                 <div className="text-xs text-gray-500 mt-1">
@@ -138,16 +141,22 @@ const EditGuideDocument: React.FC<EditGuideDocumentProps> = ({
         if (field.type === "checkbox") {
           return (
             <div key={field.name}>
-              <label className="block mb-1 font-medium">{field.label}</label>
-              <div className="flex flex-wrap gap-2">
+              <label className="block mb-1 font-semibold text-[#3e979f]">
+                {field.label}
+              </label>
+              <div className="flex flex-wrap gap-3">
                 {field.options?.map((opt) => (
-                  <label key={opt.value} className="flex items-center gap-1">
+                  <label
+                    key={opt.value}
+                    className="flex items-center gap-2 text-[#17414a] bg-[#f8fcfd] px-2 py-1 rounded"
+                  >
                     <input
                       type="checkbox"
                       name={field.name}
                       value={opt.value}
                       checked={form.requirements.includes(opt.value)}
                       onChange={handleChange}
+                      className="accent-[#3e979f]"
                     />
                     {opt.label}
                   </label>
@@ -159,26 +168,28 @@ const EditGuideDocument: React.FC<EditGuideDocumentProps> = ({
         // Default: text/email/textarea
         return (
           <div key={field.name}>
-            <label className="block mb-1 font-medium">{field.label}</label>
+            <label className="block mb-1 font-semibold text-[#3e979f]">
+              {field.label}
+            </label>
             <input
               type={field.type}
               name={field.name}
               value={form[field.name as keyof typeof form] as string}
               onChange={handleChange}
               placeholder={field.placeholder}
-              className="w-full border px-2 py-1 rounded"
+              className="w-full border border-[#b6e0e4] px-3 py-2 rounded-lg bg-[#f8fcfd] transition"
             />
           </div>
         );
       })}
       {(formError || error) && (
-        <div className="text-red-600">{formError || error}</div>
+        <div className="text-red-600 font-medium">{formError || error}</div>
       )}
-      <div className="flex gap-2">
+      <div className="flex gap-3 justify-end pt-2">
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className="bg-[#3e979f] hover:bg-[#1c5461] text-white px-6 py-2 rounded-lg font-semibold shadow transition"
         >
           {loading ? "Saving..." : "Save Changes"}
         </button>
@@ -186,7 +197,7 @@ const EditGuideDocument: React.FC<EditGuideDocumentProps> = ({
           <button
             type="button"
             onClick={onCancel}
-            className="bg-gray-400 text-white px-4 py-2 rounded"
+            className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold shadow transition"
           >
             Cancel
           </button>

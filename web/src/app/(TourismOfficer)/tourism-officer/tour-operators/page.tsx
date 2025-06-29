@@ -40,7 +40,7 @@ export default function TourOperatorListPage() {
           application_status: (
             op.application_status || "pending"
           ).toLowerCase(),
-          user_id: Number(op.user_id ?? op.id ?? 0), // fallback if user_id is missing
+          user_id: Number(op.user_id ?? op.id ?? 0),
         }))
       );
     }
@@ -64,7 +64,7 @@ export default function TourOperatorListPage() {
       application_status: (
         freshOperator.application_status || "pending"
       ).toLowerCase(),
-      user_id: Number(freshOperator.user_id ?? freshOperator.id ?? 0), // fallback if user_id is missing
+      user_id: Number(freshOperator.user_id ?? freshOperator.id ?? 0),
     });
   };
 
@@ -108,37 +108,51 @@ export default function TourOperatorListPage() {
   };
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Tour Operators</h1>
-      <DataTable<TourOperator, unknown>
-        columns={columns(
-          handleViewTourOperator,
-          handleViewDocuments,
-          handleApprove,
-          handleReject,
-          router
-        )}
-        data={data}
-        searchPlaceholder="Search by name..."
-        searchColumn="name"
-      />
-      {/* Render your dialog/modal for viewing a tour operator */}
-      {dialogTourOperator && (
-        <Dialog
-          open={!!dialogTourOperator}
-          onOpenChange={() => setDialogTourOperator(null)}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Tour Operator Details</DialogTitle>
-              <DialogDescription>
-                View and manage tour operator details.
-              </DialogDescription>
-            </DialogHeader>
+    <main className="flex flex-col items-center min-h-screen w-full bg-gradient-to-br from-[#e6f7fa] via-white to-[#b6e0e4] px-2 py-8">
+      <div className="w-full max-w-6xl flex flex-col items-center gap-6">
+        <div className="w-full flex flex-col items-center gap-2">
+          <h1 className="text-4xl font-extrabold text-center text-[#1c5461] tracking-tight">
+            Tour Operators
+          </h1>
+          <p className="text-lg text-[#51702c] text-center">
+            Review, approve, or reject tour operator applications.
+          </p>
+        </div>
+        <div className="w-full flex flex-col items-center">
+          <div className="max-w-4xl w-full mx-auto bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-4 md:p-8">
+            <DataTable<TourOperator, unknown>
+              columns={columns(
+                handleViewTourOperator,
+                handleViewDocuments,
+                handleApprove,
+                handleReject
+              )}
+              data={data}
+              searchPlaceholder="Search by name..."
+              searchColumn="operator_name"
+            />
+          </div>
+        </div>
+      </div>
+      {/* View Dialog */}
+      <Dialog
+        open={!!dialogTourOperator}
+        onOpenChange={() => setDialogTourOperator(null)}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-[#1c5461]">
+              Tour Operator Details
+            </DialogTitle>
+            <DialogDescription>
+              View and manage tour operator details.
+            </DialogDescription>
+          </DialogHeader>
+          {dialogTourOperator && (
             <ViewTourOperator tourOperator={dialogTourOperator} />
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </main>
   );
 }

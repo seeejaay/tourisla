@@ -2,8 +2,16 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
-import { Loader2, AlertTriangle } from "lucide-react";
+import {
+  Loader2,
+  AlertTriangle,
+  MapPin,
+  Calendar,
+  Users,
+  Clock,
+} from "lucide-react";
 import { useParams } from "next/navigation";
+
 type TourPackage = {
   id: number;
   touroperator_id: number;
@@ -26,6 +34,7 @@ type TourPackage = {
   updated_at: string;
   tourguide_id: number | null;
 };
+
 export default function AssignedTourPackagesPage() {
   const { fetchTourPackagesByGuide, loading, error } = useTourPackageManager();
   const [packages, setPackages] = useState<TourPackage[]>([]);
@@ -33,16 +42,13 @@ export default function AssignedTourPackagesPage() {
 
   // Ensure id is always a string
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
-  console.log("AssignedTourPackagesPage id:", id);
 
   // Centralized load function for reuse
   const loadPackages = useCallback(async () => {
     if (!id) return;
     const data = await fetchTourPackagesByGuide(id);
-    // Use the tourPackages property if it exists
     setPackages(Array.isArray(data?.tourPackages) ? data.tourPackages : []);
   }, [fetchTourPackagesByGuide, id]);
-  console.log("AssignedTourPackagesPage packages:", packages);
 
   useEffect(() => {
     loadPackages();
@@ -57,14 +63,14 @@ export default function AssignedTourPackagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col items-center py-12 px-4 sm:px-6 w-full">
-      <div className="w-full pl-0 md:pl-24 space-y-8">
+    <main className="min-h-screen w-full bg-gradient-to-b from-[#e6f7fa] to-white flex flex-col items-center py-12 px-2">
+      <div className="w-full max-w-5xl mx-auto space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-extrabold text-[#1c5461] tracking-tight">
               Assigned Tour Packages
             </h1>
-            <p className="text-gray-500 mt-2">
+            <p className="text-[#51702c] mt-2">
               View all tour packages assigned to you as a tour guide.
             </p>
           </div>
@@ -76,7 +82,7 @@ export default function AssignedTourPackagesPage() {
             <p className="text-gray-600">Loading assigned tour packages...</p>
           </div>
         ) : error ? (
-          <div className="rounded-xl bg-red-50 p-6 text-center border border-red-100">
+          <div className="rounded-xl bg-red-50 p-6 text-center border border-red-100 max-w-md mx-auto">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
               <AlertTriangle className="h-6 w-6 text-red-600" />
             </div>
@@ -84,7 +90,7 @@ export default function AssignedTourPackagesPage() {
             <p className="mt-2 text-red-600">{error}</p>
           </div>
         ) : packages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
+          <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 max-w-md mx-auto">
             <h3 className="text-lg font-medium text-gray-900">
               No assigned tour packages found
             </h3>
@@ -93,38 +99,63 @@ export default function AssignedTourPackagesPage() {
             </p>
           </div>
         ) : (
-          <div className="flex flex-wrap justify-center gap-6 w-full">
+          <div className="flex flex-wrap justify-center gap-8 w-full">
             {packages.map((pkg) => (
               <div
                 key={pkg.id}
-                className="hover:shadow-md transition-shadow duration-200 w-[300px] bg-white border border-gray-200 rounded-lg shadow-sm m-2 flex flex-col"
+                className="transition-shadow duration-200 w-[320px] bg-white border border-[#e6f7fa] rounded-2xl shadow-md hover:shadow-xl m-2 flex flex-col"
               >
-                <div className="p-4 border-b">
-                  <h3 className="font-medium capitalize">{pkg.package_name}</h3>
+                <div className="p-5 border-b border-[#e6f7fa]">
+                  <h3 className="font-bold capitalize text-[#1c5461] text-lg mb-1">
+                    {pkg.package_name}
+                  </h3>
+                  <div className="flex items-center gap-2 text-sm text-[#51702c]">
+                    <MapPin className="h-4 w-4" />
+                    {pkg.location}
+                  </div>
                 </div>
-                <div className="p-4 flex-1">
-                  <div className="text-gray-700 mb-2">{pkg.description}</div>
-                  <div className="text-sm text-gray-500">
-                    Location: {pkg.location}
+                <div className="p-5 flex-1 flex flex-col gap-2">
+                  <div className="text-gray-700 mb-1 line-clamp-3">
+                    {pkg.description}
                   </div>
-                  <div className="text-sm text-gray-500">
-                    Price: ₱{pkg.price}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Duration: {pkg.duration_days} days
-                  </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="flex items-center gap-2 text-sm text-[#3e979f]">
+                    <Users className="h-4 w-4" />
                     Slots: {pkg.available_slots}
                   </div>
+                  <div className="flex items-center gap-2 text-sm text-[#3e979f]">
+                    <Calendar className="h-4 w-4" />
+                    {new Date(pkg.date_start).toLocaleDateString(undefined, {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}{" "}
+                    -{" "}
+                    {new Date(pkg.date_end).toLocaleDateString(undefined, {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[#3e979f]">
+                    <Clock className="h-4 w-4" />
+                    {pkg.start_time} - {pkg.end_time}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[#51702c]">
+                    Duration: {pkg.duration_days} day
+                    {pkg.duration_days > 1 ? "s" : ""}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[#51702c]">
+                    Price: <span className="font-semibold">₱{pkg.price}</span>
+                  </div>
                 </div>
-                <div className="p-4 border-t text-xs text-gray-400">
-                  {pkg.date_start} - {pkg.date_end}
+                <div className="px-5 py-3 border-t border-[#e6f7fa] text-xs text-gray-400 bg-[#f8fcfd] rounded-b-2xl">
+                  Created: {new Date(pkg.created_at).toLocaleDateString()}
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }
