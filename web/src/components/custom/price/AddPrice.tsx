@@ -39,18 +39,20 @@ export default function AddPrice() {
   return (
     <form
       onSubmit={formik.handleSubmit}
-      className="bg-white shadow-md rounded-xl p-6 space-y-4 w-full max-w-md"
+      className=" p-8 space-y-6 w-full max-w-md"
     >
-      <h2 className="text-xl font-bold text-gray-800">Add New Price</h2>
+      <h2 className="text-2xl font-extrabold text-[#1c5461] mb-2">
+        Add New Price
+      </h2>
 
       {priceFields.map((field) => (
-        <div key={field.name}>
-          <label className="block text-sm font-medium mb-1">
+        <div key={field.name} className="mb-2">
+          <label className="block text-sm font-semibold text-[#3e979f] mb-1">
             {field.label}
           </label>
 
           {field.type === "checkbox" ? (
-            <label className="flex items-center gap-2 text-sm text-gray-700">
+            <label className="flex items-center gap-2 text-sm text-[#51702c]">
               <input
                 type="checkbox"
                 name={field.name}
@@ -58,7 +60,7 @@ export default function AddPrice() {
                   formik.values[field.name as keyof PriceFormValues] as boolean
                 }
                 onChange={formik.handleChange}
-                className="accent-blue-600"
+                className="accent-[#3e979f] w-4 h-4"
               />
               {field.label}
             </label>
@@ -73,13 +75,13 @@ export default function AddPrice() {
               }
               onChange={formik.handleChange}
               placeholder={field.placeholder}
-              className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full border border-[#e6f7fa] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3e979f] bg-gray-50"
             />
           )}
 
           {formik.touched[field.name as keyof PriceFormValues] &&
             formik.errors[field.name as keyof PriceFormValues] && (
-              <p className="text-sm text-red-600 mt-1">
+              <p className="text-xs text-red-600 mt-1">
                 {formik.errors[field.name as keyof PriceFormValues]}
               </p>
             )}
@@ -88,12 +90,14 @@ export default function AddPrice() {
 
       <button
         type="submit"
-        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded"
+        className="bg-[#3e979f] hover:bg-[#1c5461] text-white font-semibold px-4 py-2 rounded-lg w-full transition-colors"
       >
         Submit
       </button>
 
-      {successMsg && <p className="text-green-600 mt-2">{successMsg}</p>}
+      {successMsg && (
+        <p className="text-green-600 text-center mt-2">{successMsg}</p>
+      )}
     </form>
   );
 }

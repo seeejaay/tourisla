@@ -19,7 +19,11 @@ export default function TouristSpotDetailPage() {
     async function getCurrentUser() {
       try {
         const user = await loggedInUser(router);
-        if (!user || !user.data.user.role || user.data.user.role !== "Admin") {
+        if (
+          !user ||
+          !user.data.user.role ||
+          user.data.user.role !== "Tourism Officer"
+        ) {
           router.replace("/");
           return;
         }

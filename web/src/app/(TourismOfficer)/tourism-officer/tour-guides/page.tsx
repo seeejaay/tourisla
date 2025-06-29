@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/dialog";
 
 export default function TourGuideListPage() {
-  // Store TourGuide[] (not RawTourGuide[])
   const [data, setData] = useState<TourGuide[]>([]);
   const [dialogTourGuide, setDialogTourGuide] = useState<TourGuide | null>(
     null
@@ -37,7 +36,6 @@ export default function TourGuideListPage() {
         setData([]);
         return;
       }
-      // Map RawTourGuide[] to TourGuide[]
       setData(
         (guides as TourGuide[]).map((guide) => ({
           id: guide.id ? Number(guide.id) : undefined,
@@ -57,7 +55,6 @@ export default function TourGuideListPage() {
     fetchGuides();
   }, [fetchAllTourGuideApplicants]);
 
-  // Handler for viewing a tour guide (fetches latest data)
   const handleViewTourGuide = async (guide: TourGuide | null) => {
     if (!guide || !guide.id || !guide.user_id) return;
     const freshGuide = await fetchTourGuideApplicant(guide.user_id.toString());
@@ -112,36 +109,49 @@ export default function TourGuideListPage() {
   };
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Tour Guides</h1>
-      <DataTable<TourGuide, unknown>
-        columns={columns(
-          handleViewTourGuide,
-          handleViewDocuments,
-          handleApprove,
-          handleReject
-        )}
-        data={data}
-        searchPlaceholder="Search by name..."
-        searchColumn="first_name"
-      />
-      {/* Render your dialog/modal for viewing a tour guide */}
-      {dialogTourGuide && (
-        <Dialog
-          open={!!dialogTourGuide}
-          onOpenChange={() => setDialogTourGuide(null)}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Tour Guide Details</DialogTitle>
-              <DialogDescription>
-                View and manage tour guide details.
-              </DialogDescription>
-            </DialogHeader>
-            <ViewTourGuide tourGuide={dialogTourGuide} />
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
+    <main className="flex flex-col items-center min-h-screen w-full bg-gradient-to-br from-[#e6f7fa] via-white to-[#b6e0e4] px-2 py-8">
+      <div className="w-full max-w-6xl flex flex-col items-center gap-6">
+        <div className="w-full flex flex-col items-center gap-2">
+          <h1 className="text-4xl font-extrabold text-center text-[#1c5461] tracking-tight">
+            Tour Guides
+          </h1>
+          <p className="text-lg text-[#51702c] text-center">
+            Review, approve, or reject tour guide applications.
+          </p>
+        </div>
+        <div className="w-full flex flex-col items-center">
+          <div className="max-w-4xl w-full mx-auto bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-4 md:p-8">
+            <DataTable<TourGuide, unknown>
+              columns={columns(
+                handleViewTourGuide,
+                handleViewDocuments,
+                handleApprove,
+                handleReject
+              )}
+              data={data}
+              searchPlaceholder="Search by name..."
+              searchColumn="first_name"
+            />
+          </div>
+        </div>
+      </div>
+      {/* View Dialog */}
+      <Dialog
+        open={!!dialogTourGuide}
+        onOpenChange={() => setDialogTourGuide(null)}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-[#1c5461]">
+              Tour Guide Details
+            </DialogTitle>
+            <DialogDescription>
+              View and manage tour guide details.
+            </DialogDescription>
+          </DialogHeader>
+          {dialogTourGuide && <ViewTourGuide tourGuide={dialogTourGuide} />}
+        </DialogContent>
+      </Dialog>
+    </main>
   );
 }

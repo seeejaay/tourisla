@@ -55,26 +55,5 @@ export function columns(): ColumnDef<AccommodationLog>[] {
       cell: ({ row }) => row.original.day_of_week,
       enableSorting: true,
     },
-    {
-      accessorKey: "rooms_occupied",
-      header: "Rooms Occupied",
-      cell: ({ row }) =>
-        Array.isArray(row.original.rooms_occupied)
-          ? row.original.rooms_occupied.join(", ")
-          : String(row.original.rooms_occupied ?? ""),
-      enableSorting: true,
-    },
-    {
-      accessorKey: "number_of_guests_check_in",
-      header: "Guests Check-in",
-      cell: ({ row }) => row.original.number_of_guests_check_in,
-      enableSorting: true,
-    },
-    {
-      accessorKey: "number_of_guests_overnight",
-      header: "Guests Overnight",
-      cell: ({ row }) => row.original.number_of_guests_overnight,
-      enableSorting: true,
-    },
   ];
 }
