@@ -646,20 +646,20 @@ app.get("/api/v1/rules/:ruleId", viewRuleByIdController);
 // Routes — Articles
 app.post(
   "/api/v1/articles",
+  allowedRoles(["Cultural Director"]),
   upload.single("thumbnail"),
-  createArticleController,
-  allowedRoles(["Admin", "Tourism Staff"])
+  createArticleController
 );
 app.put(
   "/api/v1/articles/:articleId",
+  allowedRoles(["Cultural Director"]),
   upload.single("thumbnail"),
-  editArticleController,
-  allowedRoles(["Admin", "Tourism Staff"])
+  editArticleController
 );
 
 app.delete(
   "/api/v1/articles/:articleId",
-  authenticateAdmin,
+  allowedRoles(["Cultural Director"]),
   deleteArticleController
 );
 app.get("/api/v1/articles", viewArticlesController);

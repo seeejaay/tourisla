@@ -42,6 +42,10 @@ export default function EditArticle({
     const file = e.target.files?.[0] || null;
     setThumbnail(file);
     if (file) {
+      setForm((prev) => ({
+        ...prev,
+        thumbnail: file, // <-- This is required for your hook to detect the file!
+      }));
       const reader = new FileReader();
       reader.onload = () => setPreview(reader.result as string);
       reader.readAsDataURL(file);
