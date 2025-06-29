@@ -89,10 +89,10 @@ const editArticleController = async (req, res) => {
         Body: file.buffer,
         ContentType: file.mimetype,
       };
-      const newThumbnailUrl = null;
+
       try {
         await s3Client.send(new PutObjectCommand(uploadParams));
-        newThumbnailUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+        thumbnail_url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
       } catch (s3Err) {
         console.error("S3 upload failed:", s3Err.message);
       }
@@ -103,7 +103,7 @@ const editArticleController = async (req, res) => {
       author,
       body,
       video_url,
-      thumbnail_url: newThumbnailUrl,
+      thumbnail_url,
       tags,
       status,
       is_featured,
