@@ -2,8 +2,7 @@
 
 import React from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
-import { MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,7 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
 import { z } from "zod";
 
 // Define the Zod schema for user data
@@ -37,7 +35,7 @@ export const UserSchema = z.object({
 
 // Infer the TypeScript type from the Zod schema
 export type User = z.infer<typeof UserSchema>;
-// Define the columns using the schema
+
 export function columns(
   setDialogUser: (user: User | null) => void,
   setEditDialogUser: (user: User | null) => void,
@@ -47,95 +45,60 @@ export function columns(
     {
       accessorFn: (row) => `${row.first_name} ${row.last_name}`,
       id: "name",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            className="w-32 p-0 font-bold text-left flex justify-start"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Name (A-Z)
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        const fullName = row.original.first_name + " " + row.original.last_name;
-        return <span>{fullName}</span>;
-      },
-      enableSorting: true,
-    },
-    {
-      accessorKey: "email",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            className=" w-32 font-bold text-left flex justify-start"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Email
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => <span>{row.original.email}</span>,
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="w-48 font-bold text-left flex items-center gap-1 px-0 py-1"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Name
+          <ArrowUpDown className="ml-1 h-4 w-4 text-[#3e979f]" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <span className="truncate font-medium text-[#1c5461]">
+          {row.original.first_name} {row.original.last_name}
+        </span>
+      ),
       enableSorting: true,
     },
     {
       accessorKey: "role",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            className=" w-32 font-bold text-left flex justify-start"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Role
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => <span>{row.original.role}</span>,
-      enableSorting: true,
-    },
-    {
-      accessorKey: "last_login_at",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            className=" w-32 font-bold text-left flex justify-start"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Last Login
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="w-40 font-bold text-left flex items-center gap-1 px-0 py-1"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Role
+          <ArrowUpDown className="ml-1 h-4 w-4 text-[#3e979f]" />
+        </Button>
+      ),
       cell: ({ row }) => (
-        <span>{row.original.last_login_at || "Never logged in"}</span>
+        <span className="truncate uppercase text-xs tracking-wide text-[#1c5461]">
+          {row.original.role}
+        </span>
       ),
       enableSorting: true,
     },
     {
       accessorKey: "status",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            className=" w-32 font-bold text-left flex justify-start"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Status
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="w-32 font-bold text-left flex items-center gap-1 px-0 py-1"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Status
+          <ArrowUpDown className="ml-1 h-4 w-4 text-[#3e979f]" />
+        </Button>
+      ),
       cell: ({ row }) => (
         <span
           className={`${
-            row.original.status === "Active" ? "text-green-500" : "text-red-500"
+            row.original.status === "Active"
+              ? "text-green-600 font-semibold"
+              : "text-red-500 font-semibold"
           }`}
         >
           {row.original.status}
@@ -145,35 +108,47 @@ export function columns(
     },
     {
       accessorKey: "actions",
-      header: () => <span className="font-bold">Actions</span>,
+      header: () => (
+        <span className="font-bold text-center block">Actions</span>
+      ),
       cell: ({ row }) => {
         const user = row.original;
         return (
-          <>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="p-0 w-8 h-8">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setDialogUser(user)}>
-                  View
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setEditDialogUser(user)}>
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setDeleteDialogUser(user)}
-                  className="text-red-500"
-                >
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="p-0 w-8 h-8 flex items-center justify-center hover:bg-[#e6f7fa]"
+                aria-label="Open actions"
+              >
+                <MoreHorizontal className="h-5 w-5 text-[#1c5461]" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[140px]">
+              <DropdownMenuLabel className="text-[#1c5461]">
+                Actions
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setDialogUser(user)}
+                className="hover:bg-[#e6f7fa] cursor-pointer"
+              >
+                View
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setEditDialogUser(user)}
+                className="hover:bg-[#e6f7fa] cursor-pointer"
+              >
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setDeleteDialogUser(user)}
+                className="text-red-500 hover:bg-red-50 cursor-pointer"
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         );
       },
     },
