@@ -195,7 +195,7 @@ export default function DashboardPage() {
                 {reports.slice(0, 3).map((r) => (
                   <li key={r.id} className="border-b border-[#e6f7fa] pb-2">
                     <span className="font-semibold text-[#e57373]">
-                      {r.title || r.type || "Incident"}
+                      {r.title || r.incident_type || "Incident"}
                     </span>
                     <span className="block text-xs text-gray-500">
                       {r.created_at
