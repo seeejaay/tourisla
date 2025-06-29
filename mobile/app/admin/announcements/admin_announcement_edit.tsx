@@ -256,10 +256,7 @@ export default function AdminAnnouncementEditScreen() {
     Alert.alert("Success", "Announcement updated successfully!", [
       {
         text: "OK",
-        onPress: () => router.replace({
-          pathname: "/admin/admin_dashboard", 
-          params: { tab: "Announcements" },
-        })
+        onPress: () => router.dismiss()
       }
     ]);
   };
