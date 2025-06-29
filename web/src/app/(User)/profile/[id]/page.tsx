@@ -70,25 +70,7 @@ export default function ProfilePage() {
       }
     }
     fetchUser();
-
-    async function authorizeGoogleCalendar() {
-      try {
-        const response = await authorizeCalendar();
-        if (response && response.authUrl) {
-          window.location.href = response.authUrl;
-        } else {
-          console.error(
-            "Invalid response from calendar authorization:",
-            response
-          );
-        }
-      } catch (error) {
-        console.error("Error authorizing Google Calendar:", error);
-      }
-    }
-
-    authorizeGoogleCalendar();
-  }, [loggedInUser, router, authorizeCalendar]);
+  }, [loggedInUser, router]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
