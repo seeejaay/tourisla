@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
 import Header from "@/components/custom/header";
@@ -39,7 +38,6 @@ export default function TourPackagesPage() {
     tour_guides?: TourGuide[];
   };
 
-  const { loggedInUser } = useAuth();
   const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
   const [filteredGuide, setFilteredGuide] = useState<string>("All");
   const [guides, setGuides] = useState<TourGuide[]>([]);
@@ -47,13 +45,6 @@ export default function TourPackagesPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.prefetch("auth/login");
-    async function checkUserRole() {
-      const checkUserLoggedIn = await loggedInUser(router);
-      if (!checkUserLoggedIn || !checkUserLoggedIn.data.user.role) {
-        router.push("auth/login");
-      }
-    }
     async function fetchTourPackages() {
       try {
         const tourPackages = await fetchAllTourPackages();
@@ -92,9 +83,9 @@ export default function TourPackagesPage() {
         console.error("Error fetching tour packages:", error);
       }
     }
-    checkUserRole();
+
     fetchTourPackages();
-  }, [loggedInUser, router, fetchAllTourPackages]);
+  }, [fetchAllTourPackages]);
 
   // Filtered packages by guide
   const displayedPackages =
@@ -175,7 +166,7 @@ export default function TourPackagesPage() {
             {displayedPackages.map((pkg, index) => (
               <Card
                 key={index}
-                className="hover:shadow-2xl transition-shadow duration-300 flex flex-col justify-between h-full mb-6 w-full sm:w-[48%] lg:w-[31%] min-w-[260px] max-w-xs bg-white/90 border border-[#e6f7fa] rounded-2xl overflow-hidden"
+                className="hover:shadow-2xl transition-shadow duration-300 flex flex-col justify-between h-full mb-6 w-full sm:w-[48%] lg:w-[31%] min-w-[260px] max-w-xs bg-white/90 border border-[#e6f7fa] rounded-2xl overflow-hidden pt-0 pb-4"
               >
                 {/* Package Image */}
                 <div className="relative h-40 w-full">
