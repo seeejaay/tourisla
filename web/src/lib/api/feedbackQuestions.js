@@ -22,7 +22,7 @@ export const createQuestion = async ({ type, question_text }) => {
 // Edit a question
 export const editQuestion = async ({ id, question_text }) => {
   const res = await axios.put(
-    `${API_URL}feedback/edit-question/${id}`,
+    `${API_URL}feedback/questions/${id}`,
     { question_text },
     { withCredentials: true }
   );
@@ -31,7 +31,7 @@ export const editQuestion = async ({ id, question_text }) => {
 
 // Delete a question
 export const deleteQuestion = async (id) => {
-  const res = await axios.delete(`${API_URL}feedback/delete-question/${id}`, {
+  const res = await axios.delete(`${API_URL}feedback/questions/${id}`, {
     withCredentials: true,
   });
   return res.data;
