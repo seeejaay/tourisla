@@ -4,7 +4,7 @@ import { useAnnouncementManager } from "@/hooks/useAnnouncementManager";
 import Image from "next/image";
 import Header from "@/components/custom/header";
 import { Megaphone } from "lucide-react";
-
+import Footer from "@/components/custom/footer";
 export default function AnnouncementsPage() {
   const { announcements, loading, error, fetchAnnouncements } =
     useAnnouncementManager();
@@ -16,7 +16,7 @@ export default function AnnouncementsPage() {
   return (
     <>
       <Header />
-      <div className="max-w-4xl mx-auto pt-24 px-4 ">
+      <div className="max-w-4xl mx-auto pt-24 px-4 pb-12 ">
         <div className="flex flex-col items-center mb-10">
           <div className="bg-[#1c5461] rounded-full p-4 shadow-lg mb-4">
             <Megaphone className="w-10 h-10 text-white" />
@@ -115,6 +115,7 @@ export default function AnnouncementsPage() {
               )}
         </ul>
       </div>
+      <Footer />
     </>
   );
 }
