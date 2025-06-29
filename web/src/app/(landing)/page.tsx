@@ -205,9 +205,9 @@ export default function Home() {
                         className="basis-full flex-shrink-0 w-full"
                       >
                         <div className="relative rounded-2xl overflow-hidden shadow-lg border border-[#e6f7fa] hover:shadow-2xl transition-all h-[500px] flex items-end group bg-[#e6f7fa]">
-                          {spot.image_url ? (
+                          {spot.images.image_url ? (
                             <Image
-                              src={spot.image_url}
+                              src={spot.images.image_url}
                               alt={spot.name || `Tourist Spot ${idx + 1}`}
                               fill
                               className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
