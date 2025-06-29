@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
+import { useRouter } from 'expo-router';
 import {
   View,
   Text,
@@ -21,6 +24,7 @@ import { islandEntryFields } from '@/static/islandEntry/islandEntryFields';
 import { Picker } from '@react-native-picker/picker';
 
 export default function IslandRegistrationScreen() {
+  const router = useRouter();
   const [companions, setCompanions] = useState([]);
   const [latestEntry, setLatestEntry] = useState(null);
   const [showResult, setShowResult] = useState(false);
@@ -51,6 +55,7 @@ export default function IslandRegistrationScreen() {
       is_foreign: false,
       municipality: '',
       province: '',
+      country: '',
       companions: [],
       payment_method: 'Cash',
       total_fee: 0,
@@ -58,6 +63,11 @@ export default function IslandRegistrationScreen() {
     validationSchema: yup.object().shape({
       ...islandEntrySchema.fields,
       companions: yup.array().of(islandEntrySchema),
+    }),
+    country: yup.string().when('is_foreign', {
+      is: true,
+      then: yup.string().required('Country is required'),
+      otherwise: yup.string().notRequired(),
     }),
     onSubmit: async (values) => {
       const groupMembers = [
@@ -116,15 +126,51 @@ export default function IslandRegistrationScreen() {
       is_foreign: false,
       municipality: '',
       province: '',
+      country: '',
     };
     const updated = [...companions, newMember];
     setCompanions(updated);
     formik.setFieldValue('companions', updated);
   };
 
+  const handleDownloadQR = async () => {
+    if (!latestEntry?.qr_code_url || !latestEntry?.unique_code) return;
+  
+    try {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Storage permission is required to save the QR code.');
+        return;
+      }
+  
+      const fileUri = FileSystem.documentDirectory + `${latestEntry.unique_code}.png`;
+  
+      // Download the image
+      const download = await FileSystem.downloadAsync(latestEntry.qr_code_url, fileUri);
+  
+      // Save to media library
+      const asset = await MediaLibrary.createAssetAsync(download.uri);
+      await MediaLibrary.createAlbumAsync('Download', asset, false);
+  
+      Alert.alert('Success', 'QR Code saved to your gallery.');
+    } catch (error) {
+      console.error('QR Download Error:', error);
+      Alert.alert('Error', 'Failed to save QR code.');
+    }
+  };
+  const filteredFields = islandEntryFields.filter(field => {
+    if (field.name === 'country') {
+      return formik.values.is_foreign === true;
+    }
+    if (field.name === 'municipality' || field.name === 'province') {
+      return formik.values.is_foreign === false;
+    }
+    return true;
+  });
+
   if (showResult && result) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container2}>
         <View style={styles.successBox}>
           <Text style={styles.successTitle}>Registration Successful!</Text>
           {latestEntry && (
@@ -144,9 +190,13 @@ export default function IslandRegistrationScreen() {
             Show this QR code at the entry point.
           </Text>
           <TouchableOpacity
-            onPress={() =>
-              Linking.openURL(process.env.EXPO_PUBLIC_FRONTEND_URL || '/')
-            }
+            onPress={handleDownloadQR}
+            style={[styles.backButton, { backgroundColor: '#0f766e', marginTop: 12 }]}
+          >
+            <Text style={styles.backButtonText}>Download QR Code</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.replace('/tourist_dashboard')}
             style={styles.backButton}
           >
             <Text style={styles.backButtonText}>Back to Home</Text>
@@ -162,7 +212,7 @@ export default function IslandRegistrationScreen() {
         <Text style={styles.header}>Island Entry Registration</Text>
 
         <View style={styles.card}>
-          {islandEntryFields.map((field) => (
+          {filteredFields.map((field) => (
             <View key={field.name} style={styles.inputGroup}>
               <Text style={styles.label}>{field.label}</Text>
               {field.type === 'checkbox' ? (
@@ -211,47 +261,69 @@ export default function IslandRegistrationScreen() {
         {companions.length > 0 && (
           <Text style={styles.sectionTitle}>Group Members</Text>
         )}
-        {companions.map((comp, index) => (
-          <View key={index} style={styles.companionCard}>
-            <View style={styles.companionHeader}>
-            <Text style={styles.companionTitle}>Companion {index + 1}</Text>
-            <TouchableOpacity onPress={() => removeCompanion(index)}>
-            <Ionicons name="close-circle" size={22} color="#dc2626" />
-                {/* Alternatively, use Ionicons or MaterialIcons if available */}
-            </TouchableOpacity>
-            </View>
-            {islandEntryFields.map((field) => (
-              <View key={field.name} style={styles.inputGroup}>
-                <Text style={styles.label}>{field.label}</Text>
-                {field.name === 'sex' ? (
-  <View style={styles.pickerWrapper}>
-    <Picker
-      selectedValue={comp.sex}
-      onValueChange={(value) =>
-        handleCompanionChange(index, 'sex', value)
-      }
-      style={styles.picker}
-    >
-      <Picker.Item label="Select Sex" value="" />
-      <Picker.Item label="Male" value="Male" />
-      <Picker.Item label="Female" value="Female" />
-    </Picker>
-  </View>
-) : (
-  <TextInput
-    value={comp[field.name]?.toString()}
-    onChangeText={(text) =>
-      handleCompanionChange(index, field.name, text)
-    }
-    placeholder={field.label}
-    style={styles.input}
-  />
-)}
+        {companions.map((comp, index) => {
+  const filteredCompanionFields = islandEntryFields.filter((field) => {
+    if (field.name === 'country') return comp.is_foreign === true;
+    if (field.name === 'municipality' || field.name === 'province') return comp.is_foreign === false;
+    return true;
+  });
 
-              </View>
-            ))}
-          </View>
-        ))}
+  return (
+    <View key={index} style={styles.companionCard}>
+      <View style={styles.companionHeader}>
+        <Text style={styles.companionTitle}>Companion {index + 1}</Text>
+        <TouchableOpacity onPress={() => removeCompanion(index)}>
+          <Ionicons name="close-circle" size={22} color="#dc2626" />
+        </TouchableOpacity>
+      </View>
+
+      {filteredCompanionFields.map((field) => (
+        <View key={field.name} style={styles.inputGroup}>
+          <Text style={styles.label}>{field.label}</Text>
+          {field.type === 'checkbox' ? (
+            <TouchableOpacity
+              onPress={() =>
+                handleCompanionChange(index, field.name, !comp[field.name])
+              }
+              style={styles.checkboxContainer}
+            >
+              <View
+                style={[
+                  styles.checkbox,
+                  comp[field.name] && styles.checked,
+                ]}
+              />
+              <Text style={styles.checkboxLabel}>{field.label}</Text>
+            </TouchableOpacity>
+          ) : field.name === 'sex' ? (
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={comp.sex}
+                onValueChange={(value) =>
+                  handleCompanionChange(index, 'sex', value)
+                }
+                style={styles.picker}
+              >
+                <Picker.Item label="Select Sex" value="" />
+                <Picker.Item label="Male" value="Male" />
+                <Picker.Item label="Female" value="Female" />
+              </Picker>
+            </View>
+          ) : (
+            <TextInput
+              value={comp[field.name]?.toString()}
+              onChangeText={(text) =>
+                handleCompanionChange(index, field.name, text)
+              }
+              placeholder={`Enter ${field.label}`}
+              style={styles.input}
+            />
+          )}
+        </View>
+      ))}
+    </View>
+  );
+})}
 
         <TouchableOpacity onPress={addCompanion} style={styles.addButton}>
           <Text style={styles.addButtonText}>Add Companion</Text>
@@ -343,6 +415,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
+  },
+  container2: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
+    justifyContent: 'center',
   },
   scrollContent: {
     padding: 16,
@@ -504,7 +581,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   successBox: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#e0f2f2',
     padding: 20,
     borderRadius: 12,
     margin: 24,
@@ -571,6 +648,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
     alignItems: 'center',
+    marginBottom: 12,
   },
   backButtonText: {
     color: '#fff',

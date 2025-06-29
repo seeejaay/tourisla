@@ -66,6 +66,10 @@ export default function Settings() {
     router.push('/tourist/profile/about/terms/tourist_terms');
   };
 
+  const navigateToReports = () => {
+    router.push('/tourist/profile/about/incident-report');
+  };
+
   const navigateToRules = () => {
     router.push('/tourist/profile/settings/rules/tourist_rules');
   };
@@ -251,7 +255,9 @@ export default function Settings() {
         </TouchableOpacity>
 
           {/* Incident Report */}
-          <TouchableOpacity style={styles.subsectionHeader}>
+          <TouchableOpacity style={styles.subsectionHeader}
+            onPress={navigateToReports}
+          >
           <View style={styles.subsectionTitleWrapper}>
             <FontAwesome5 name="flag" size={16} color="#64748b" style={styles.subsectionIcon} />
             <Text style={styles.subsectionTitle}>Report a Problem</Text>
