@@ -69,18 +69,20 @@ const EditOperatorDocument: React.FC<EditOperatorDocumentProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-md mx-auto p-6">
       {tourOperatorDocuFields.map((field) => {
         if (field.type === "select") {
           return (
             <div key={field.name}>
-              <label className="block mb-1 font-medium">{field.label}</label>
+              <label className="block mb-1 font-semibold text-gray-700">
+                {field.label}
+              </label>
               <select
                 name={field.name}
                 value={form[field.name as keyof typeof form]}
                 onChange={handleChange}
                 required
-                className="w-full border px-2 py-1 rounded"
+                className="w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
               >
                 <option value="">Select...</option>
                 {field.options?.map((opt) => (
@@ -95,12 +97,14 @@ const EditOperatorDocument: React.FC<EditOperatorDocumentProps> = ({
         if (field.type === "file") {
           return (
             <div key={field.name}>
-              <label className="block mb-1 font-medium">{field.label}</label>
+              <label className="block mb-1 font-semibold text-gray-700">
+                {field.label}
+              </label>
               <input
                 type="file"
                 name={field.name}
                 onChange={handleChange}
-                className="w-full border px-2 py-1 rounded"
+                className="w-full border border-gray-300 px-3 py-2 rounded file:mr-3 file:py-2 file:px-4 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700"
               />
               {file ? (
                 <div className="text-xs text-gray-500 mt-1">
@@ -125,26 +129,28 @@ const EditOperatorDocument: React.FC<EditOperatorDocumentProps> = ({
         // Default: text/email/textarea
         return (
           <div key={field.name}>
-            <label className="block mb-1 font-medium">{field.label}</label>
+            <label className="block mb-1 font-semibold text-gray-700">
+              {field.label}
+            </label>
             <input
               type={field.type}
               name={field.name}
               value={form[field.name as keyof typeof form] as string}
               onChange={handleChange}
               placeholder={field.placeholder}
-              className="w-full border px-2 py-1 rounded"
+              className="w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
           </div>
         );
       })}
       {(formError || error) && (
-        <div className="text-red-600">{formError || error}</div>
+        <div className="text-red-600 text-sm">{formError || error}</div>
       )}
-      <div className="flex gap-2">
+      <div className="flex gap-2 justify-end">
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded font-semibold transition"
         >
           {loading ? "Saving..." : "Save Changes"}
         </button>
@@ -152,7 +158,7 @@ const EditOperatorDocument: React.FC<EditOperatorDocumentProps> = ({
           <button
             type="button"
             onClick={onCancel}
-            className="bg-gray-400 text-white px-4 py-2 rounded"
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-5 py-2 rounded font-semibold transition"
           >
             Cancel
           </button>

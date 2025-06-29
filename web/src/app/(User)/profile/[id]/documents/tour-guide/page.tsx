@@ -24,6 +24,7 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
+
 type GuideDocument = {
   id: string;
   tourguide_id: string;
@@ -32,6 +33,7 @@ type GuideDocument = {
   requirements: string[];
   uploaded_at: string;
 };
+
 export default function TourGuideDocumentsPage() {
   const router = useRouter();
 
@@ -60,7 +62,10 @@ export default function TourGuideDocumentsPage() {
         const docs = await fetchGuideDocumentsById(userId);
         setDocuments(Array.isArray(docs) ? docs : []);
       } catch (error) {
-        setError(error + " Failed to load documents.");
+        setError(
+          (error instanceof Error ? error.message : String(error)) +
+            " Failed to load documents."
+        );
       } finally {
         setLoading(false);
       }
@@ -80,7 +85,10 @@ export default function TourGuideDocumentsPage() {
       const docs = await fetchGuideDocumentsById(guideId);
       setDocuments(Array.isArray(docs) ? docs : []);
     } catch (error) {
-      setError(error + " Failed to load documents.");
+      setError(
+        (error instanceof Error ? error.message : String(error)) +
+          " Failed to load documents."
+      );
     } finally {
       setLoading(false);
     }
@@ -105,17 +113,22 @@ export default function TourGuideDocumentsPage() {
       : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col items-center py-12 px-4 sm:px-6 w-full">
-      <div className="w-full pl-24 space-y-8">
+    <main className="min-h-screen w-full bg-gradient-to-b from-[#e6f7fa] to-white flex flex-col items-center py-12 px-2">
+      <div className="w-full max-w-5xl mx-auto space-y-8">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Documents</h1>
-            <p className="text-gray-500 mt-2">
+            <h1 className="text-3xl font-extrabold text-[#1c5461] tracking-tight">
+              My Documents
+            </h1>
+            <p className="text-[#51702c] mt-2">
               Manage your tour guide verification documents
             </p>
           </div>
-          <Button className="gap-2" onClick={openAddDialog}>
+          <Button
+            className="gap-2 bg-[#3e979f] hover:bg-[#1c5461] text-white"
+            onClick={openAddDialog}
+          >
             <Plus className="h-4 w-4" />
             Add Document
           </Button>
@@ -181,7 +194,7 @@ export default function TourGuideDocumentsPage() {
             <p className="text-gray-600">Loading your documents...</p>
           </div>
         ) : error ? (
-          <div className="rounded-xl bg-red-50 p-6 text-center border border-red-100">
+          <div className="rounded-xl bg-red-50 p-6 text-center border border-red-100 max-w-md mx-auto">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
               <AlertTriangle className="h-6 w-6 text-red-600" />
             </div>
@@ -196,7 +209,7 @@ export default function TourGuideDocumentsPage() {
             </Button>
           </div>
         ) : documents.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
+          <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 max-w-md mx-auto">
             <FileText className="h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900">
               No documents uploaded
@@ -204,41 +217,49 @@ export default function TourGuideDocumentsPage() {
             <p className="mt-1 text-gray-500 mb-6">
               Get started by uploading your first document
             </p>
-            <Button onClick={openAddDialog}>Upload Document</Button>
+            <Button
+              className="bg-[#3e979f] hover:bg-[#1c5461] text-white"
+              onClick={openAddDialog}
+            >
+              Upload Document
+            </Button>
           </div>
         ) : (
-          <div className="flex flex-wrap justify-center gap-6 w-full ">
+          <div className="flex flex-wrap justify-center gap-8 w-full">
             {documents.map((doc) => (
               <Card
                 key={doc.id}
-                className="hover:shadow-md transition-shadow duration-200 w-[300px] bg-white border border-gray-200 rounded-lg shadow-sm m-2 flex flex-col"
+                className="transition-shadow duration-200 w-[300px] bg-white border border-[#e6f7fa] rounded-2xl shadow-md hover:shadow-xl m-2 flex flex-col"
               >
                 <CardHeader>
-                  <h3 className="font-medium capitalize">
+                  <h3 className="font-bold capitalize text-[#1c5461]">
                     {doc.document_type.replace(/_/g, " ")}
                   </h3>
                 </CardHeader>
-                <CardContent className=" flex-1 flex items-center justify-center">
-                  {doc.file_path && (
-                    <div className="flex   justify-center  w-full">
+                <CardContent className="flex-1 flex items-center justify-center">
+                  {doc.file_path ? (
+                    <div className="flex justify-center w-full">
                       <img
                         src={doc.file_path}
                         alt={doc.document_type}
-                        className="object-contain w-full h-full"
+                        className="object-cover w-full h-48 rounded-lg border border-[#e6f7fa] bg-gray-50"
                       />
-                      <p>{doc.id}</p>
                     </div>
+                  ) : (
+                    <span className="text-gray-400 italic">
+                      No file uploaded
+                    </span>
                   )}
                 </CardContent>
-                <CardFooter className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">
-                    {new Date(
-                      doc.uploaded_at || Date.now()
-                    ).toLocaleDateString()}
+                <CardFooter className="flex justify-between items-center px-4 pb-4">
+                  <span className="text-xs text-gray-500">
+                    {doc.uploaded_at
+                      ? new Date(doc.uploaded_at).toLocaleDateString()
+                      : ""}
                   </span>
                   <div className="flex gap-2">
                     <Button
-                      className="gap-2"
+                      className="gap-2 border-[#3e979f] text-[#1c5461]"
                       variant="outline"
                       onClick={() => openEditDialog(doc.id)}
                     >
@@ -252,6 +273,6 @@ export default function TourGuideDocumentsPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

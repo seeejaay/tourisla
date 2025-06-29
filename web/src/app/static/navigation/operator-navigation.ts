@@ -17,12 +17,6 @@ const operatorNavigation = (userId: string): NavItem[] => {
       icon: FileText,
     },
     {
-      name: "Tour Operator Dashboard",
-      href: `/profile/${userId}/dashboard`,
-      title: "Tour Operator Dashboard",
-      icon: FileText,
-    },
-    {
       name: "Documents",
       href: `/profile/${userId}/documents/tour-operator`,
       title: "Documents",

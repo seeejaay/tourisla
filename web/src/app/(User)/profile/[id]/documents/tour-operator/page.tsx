@@ -40,6 +40,7 @@ type OperatorDocument = {
   requirements: string[];
   uploaded_at: string;
 };
+
 export default function TourOperatorDocumentsPage() {
   const router = useRouter();
 
@@ -113,15 +114,15 @@ export default function TourOperatorDocumentsPage() {
       : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col items-center py-12 px-4 sm:px-6 w-full">
-      <div className="w-full pl-24 space-y-8">
+    <main className="min-h-screen w-full bg-gradient-to-b from-[#e6f7fa] to-white flex flex-col items-center py-12 px-2">
+      <div className="w-full max-w-5xl mx-auto space-y-8">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-extrabold text-[#1c5461] tracking-tight">
               My Operator Documents
             </h1>
-            <p className="text-gray-500 mt-2">
+            <p className="text-[#51702c] mt-2">
               Manage your tour operator verification documents
             </p>
           </div>
@@ -190,7 +191,7 @@ export default function TourOperatorDocumentsPage() {
             <p className="text-gray-600">Loading your documents...</p>
           </div>
         ) : error ? (
-          <div className="rounded-xl bg-red-50 p-6 text-center border border-red-100">
+          <div className="rounded-xl bg-red-50 p-6 text-center border border-red-100 max-w-md mx-auto">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
               <AlertTriangle className="h-6 w-6 text-red-600" />
             </div>
@@ -205,7 +206,7 @@ export default function TourOperatorDocumentsPage() {
             </Button>
           </div>
         ) : documents.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50">
+          <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 max-w-md mx-auto">
             <FileText className="h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900">
               No documents uploaded
@@ -216,7 +217,7 @@ export default function TourOperatorDocumentsPage() {
             <Button onClick={openAddDialog}>Upload Document</Button>
           </div>
         ) : (
-          <div className="flex flex-wrap justify-center gap-6 w-full">
+          <div className="flex flex-wrap justify-center gap-8 w-full">
             {documents.map((doc) => {
               const isImage = doc.file_path?.match(
                 /\.(jpg|jpeg|png|gif|bmp|webp)$/i
@@ -226,22 +227,22 @@ export default function TourOperatorDocumentsPage() {
               return (
                 <Card
                   key={doc.id}
-                  className="hover:shadow-lg transition-shadow duration-200 w-[320px] bg-white border border-gray-200 rounded-xl shadow-sm m-2 flex flex-col"
+                  className="hover:shadow-lg transition-shadow duration-200 w-[320px] bg-white border border-[#e6f7fa] rounded-2xl shadow-md m-2 flex flex-col"
                 >
                   <CardHeader>
-                    <h3 className="font-semibold capitalize text-lg text-gray-800">
+                    <h3 className="font-semibold capitalize text-lg text-[#1c5461]">
                       {doc.document_type.replace(/_/g, " ")}
                     </h3>
                   </CardHeader>
-                  <CardContent className="flex-1 flex flex-col items-center justify-center ">
+                  <CardContent className="flex-1 flex flex-col items-center justify-center">
                     {doc.file_path && (
                       <div className="flex flex-col items-center w-full">
                         {isImage ? (
-                          <div className="w-full rounded-lg overflow-hidden bg-gray-100  flex items-center justify-center">
+                          <div className="w-full rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                             <img
                               src={doc.file_path}
                               alt={doc.document_type}
-                              className="object-contain w-full h-full"
+                              className="object-contain w-full h-48"
                             />
                           </div>
                         ) : (
@@ -288,6 +289,6 @@ export default function TourOperatorDocumentsPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }
