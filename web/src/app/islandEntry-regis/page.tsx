@@ -220,7 +220,7 @@ export default function IslandEntryPage() {
                             className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                           >
                             <option value="">Select...</option>
-                            {field.options.map((opt: any) => (
+                            {field.options.map((opt) => (
                               <option
                                 key={
                                   typeof opt === "object"
@@ -330,7 +330,7 @@ export default function IslandEntryPage() {
                                 className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                               >
                                 <option value="">Select...</option>
-                                {field.options.map((opt: any) => (
+                                {field.options.map((opt) => (
                                   <option
                                     key={
                                       typeof opt === "object"
