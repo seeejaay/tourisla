@@ -24,7 +24,7 @@ app.use(
       "https://tourisla.vercel.app",
       "https://tourisla.space",
       process.env.CLIENT_URL,
-    ].filter(Boolean), // <--- This removes undefined/null/empty values
+    ].filter(Boolean),
     credentials: true,
   })
 );
@@ -35,21 +35,20 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   session({
     store: new pgSession({
-      pool: db.pool, // Use the existing pool from db/index.js
-      tableName: "session", // Optional: specify a custom table name
+      pool: db.pool,
+      tableName: "session",
     }),
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === "production",
-      sameSite: "none", // <-- MUST be "none" for cross-site cookies (Vercel + Railway)
-      httpOnly: true, // <-- MUST be true for security and browser compatibility
+      sameSite: "none",
+      httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24,
     },
   })
 );
-
 // Controllers
 const { loginUser, logoutUser } = require("../controllers/authController.js");
 const {
@@ -802,12 +801,12 @@ app.get(
 // Routes for Google Calendar integration
 app.get(
   "/api/v1/calendar/authorize",
-  allowedRoles(["Tour Guide", "Tourist"]),
+  allowedRoles(["Tour Guide"]),
   authorizeGoogleCalendarController
 );
 app.get(
   "/api/v1/calendar/auth/callback",
-  allowedRoles(["Tour Guide", "Tourist"]),
+
   googleCalendarCallbackController
 );
 
