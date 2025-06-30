@@ -14,6 +14,7 @@ import { useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useVisitorRegistration } from '@/hooks/useVisitorRegistration';
+import { useIslandEntryManager } from '@/hooks/useIslandEntryManager';
 
 export default function StaffQrScan() {
   const [permission, requestPermission] = useCameraPermissions();
