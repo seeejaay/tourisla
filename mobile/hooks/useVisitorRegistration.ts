@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { Visitor } from "@/static/visitor-registration/visitorSchema.js";
+import type { Visitor } from "@/static/visitor-registration/visitorSchema";
 import {
   getVisitorGroupMembers as apiGetVisitorGroupMembers,
   registerVisitor as apiRegisterVisitor,
@@ -65,11 +65,12 @@ export const useVisitorRegistration = () => {
 
   // Manual check-in for a visitor
   const checkInVisitor = useCallback(
-    async (visitorId: number): Promise<boolean> => {
+    async (unique_code: string): Promise<boolean> => {
       setLoading(true);
       setError("");
       try {
-        await apiManualCheckIn(visitorId);
+        console.log("Checking in visitor with unique code:", unique_code);
+        await apiManualCheckIn(unique_code);
         return true;
       } catch (error) {
         setError(
@@ -85,13 +86,20 @@ export const useVisitorRegistration = () => {
   );
 
   // Register a walk-in visitor
-  const registerWalkInVisitor =
-    useCallback(async (): Promise<Visitor | null> => {
+  const registerWalkInVisitor = useCallback(
+    async (
+      groupMembers: Partial<Visitor>[]
+    ): Promise<{ gorupMembers: Visitor } | null> => {
       setLoading(true);
       setError("");
       try {
-        const response = await apiWalkInVisitor();
-        setVisitors((prev) => [...prev, response]);
+        console.log("Registering walk-in visitor with data:", groupMembers);
+        const response = await apiWalkInVisitor(groupMembers);
+        // Optionally update visitors state if your API returns the new visitors
+        if (response.members && Array.isArray(response.members)) {
+          setVisitors((prev) => [...prev, ...response.members]);
+        }
+        console.log("Walk-in visitor registered:", response);
         return response;
       } catch (error) {
         setError(
@@ -102,7 +110,9 @@ export const useVisitorRegistration = () => {
       } finally {
         setLoading(false);
       }
-    }, []);
+    },
+    []
+  );
 
   const getVisitorResultByCode = useCallback(async (uniqueCode: string) => {
     setLoading(true);
