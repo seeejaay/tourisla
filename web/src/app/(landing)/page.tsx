@@ -50,6 +50,44 @@ const faqs = [
     answer:
       "Bantayan Island offers a variety of activities including island hopping, swimming, snorkeling, biking, exploring historical sites, and enjoying local cuisine.",
   },
+  {
+    question: "What are the Rules and Regulations for Tourists?",
+    answer: (
+      <>
+        Tourists are expected to respect local customs and the environment.
+        Please follow guidelines for waste disposal, noise levels, and
+        interactions with wildlife. For detailed rules, refer to our{" "}
+        <a
+          href="/rules-and-regulations"
+          className="text-[#3e979f] underline hover:text-[#1c5461]"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Rules and Regulations
+        </a>
+        .
+      </>
+    ),
+  },
+  {
+    question: "How do you handle user data and privacy?",
+    answer: (
+      <>
+        We take user privacy seriously. Tourisla collects only necessary data to
+        provide services and improve user experience. For more details, please
+        refer to our{" "}
+        <a
+          href="/privacy-policy"
+          className="text-[#3e979f] underline hover:text-[#1c5461]"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Privacy Policy
+        </a>
+        .
+      </>
+    ),
+  },
 ];
 
 export default function Home() {
