@@ -5,7 +5,7 @@ import Footer from "@/components/custom/footer";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import MapPage from "@/components/custom/map";
-import { Umbrella, MapPin, Leaf, Users, ArrowRight } from "lucide-react";
+import { Umbrella, MapPin, Leaf, TreePalm, ArrowRight } from "lucide-react";
 import { useArticleManager } from "@/hooks/useArticleManager";
 import { useTouristSpotManager } from "@/hooks/useTouristSpotManager";
 import { useTripAdvisor } from "@/hooks/useTripAdvisor";
@@ -128,10 +128,28 @@ export default function Home() {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <button
-                onClick={() => router.push("/listings")}
-                className="px-8 py-4 rounded-full bg-[#019375] hover:bg-[#017a60] text-white font-semibold shadow-lg hover:shadow-xl transition"
+                onClick={() => {
+                  const aboutSection =
+                    document.getElementById("about-bantayan");
+                  if (aboutSection) {
+                    aboutSection.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                className="px-8 py-4 rounded-full bg-[#019375] hover:bg-[#017a60] text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer"
               >
-                <Users className="inline w-5 h-5 mr-2" /> Explore Accommodation
+                <MapPin className="inline w-5 h-5 mr-2" /> About Bantayan
+              </button>
+              <button
+                onClick={() => {
+                  const aboutSection = document.getElementById("tourist-spots");
+                  if (aboutSection) {
+                    aboutSection.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                className="px-8 py-4 rounded-full bg-[#019375] hover:bg-[#017a60] text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer"
+              >
+                <TreePalm className="inline w-5 h-5 mr-2" /> Explore Tourist
+                Spots
               </button>
             </div>
           </div>
@@ -194,7 +212,7 @@ export default function Home() {
         </section>
 
         {/* About Bantayan Section */}
-        <section className="py-20 bg-[#f1f1f1]">
+        <section className="py-20 bg-[#f1f1f1]" id="about-bantayan">
           <div className="max-w-5xl mx-auto px-4 text-center">
             <h2 className="text-4xl md:text-5xl font-extrabold text-[#1c5461] mb-4 drop-shadow">
               About Bantayan Island
@@ -249,7 +267,7 @@ export default function Home() {
         </section>
 
         {/* Tourist Spots Showcase (Dynamic) */}
-        <section className="py-20 bg-[#f1f1f1]">
+        <section className="py-20 bg-[#f1f1f1]" id="tourist-spots">
           <div className="max-w-6xl mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
               Must-See Tourist Spots
