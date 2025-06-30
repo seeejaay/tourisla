@@ -155,7 +155,13 @@ export default function TourPackageDetailsScreen({ headerHeight }: TourPackageDe
           {pkg.inclusions !== undefined && (
             <View style={styles.packagegroup1}>
               <Text style={styles.gridLabelBlue}>Inclusions:</Text>
-              <Text style={styles.textcontent}>{pkg.inclusions}</Text>
+                <Text style={styles.textcontent}>
+                {pkg.inclusions
+                  ?.toLowerCase()
+                  .split('. ')
+                  .map(sentence => sentence.charAt(0).toUpperCase() + sentence.slice(1))
+                  .join('. ')}
+                </Text>
             </View>
           )}
         </View>
@@ -172,14 +178,20 @@ export default function TourPackageDetailsScreen({ headerHeight }: TourPackageDe
           {pkg.exclusions !== undefined && (
             <View style={styles.packagegroup1}>
               <Text style={styles.gridLabelBlue}>Exclusions:</Text>
-              <Text style={styles.textcontent}>{pkg.exclusions}</Text>
+                <Text style={styles.textcontent}>
+                {pkg.exclusions
+                  ?.toLowerCase()
+                  .split('. ')
+                  .map(sentence => sentence.charAt(0).toUpperCase() + sentence.slice(1))
+                  .join('. ')}
+                </Text>
             </View>
           )}
         </View>
         <View style={styles.gridItem}>
           {pkg.start_time && pkg.end_time && (
             <View style={styles.scheduleCard}>
-              <Text style={styles.scheduleLabel}>🗓️ Schedule</Text>
+              <Text style={styles.scheduleLabel}>Schedule</Text>
               <View style={styles.scheduleRow}>
                 <Text style={styles.scheduleDate}>
                   {formatDate(pkg.date_start)}
@@ -284,13 +296,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   gridLabelBlue: {
-    color: "#646e50",
-    fontWeight: "500",
+    color: "#00ab84",
+    fontWeight: "900",
     fontSize: 16,
   },
   packagegroup1: {
-    ...sharedPackageGroupStyle,
-    backgroundColor: '#b9dadb',
+    borderColor: '#ececee',
+    borderWidth: 2,
+    padding: 16,
+    borderRadius: 12,
   },
   textcontent: {
     color: "#4c4c4c",
@@ -298,18 +312,18 @@ const styles = StyleSheet.create({
   },
   scheduleCard: {
     ...sharedPackageGroupStyle,
-    backgroundColor: '#fefce8',
+    backgroundColor: '#fff2d5',
     borderLeftWidth: 4,
-    borderLeftColor: '#eab308', // Yellow highlight
+    borderLeftColor: '#61daaf',
     paddingVertical: 14,
     paddingHorizontal: 16,
   },
   
   scheduleLabel: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#92400e',
-    marginBottom: 8,
+    fontWeight: '900',
+    color: '#082140',
+    marginBottom: 2,
   },
   
   scheduleRow: {
@@ -320,8 +334,8 @@ const styles = StyleSheet.create({
   },
   scheduleDate: {
     fontSize: 14,
-    color: '#444',
-    fontWeight: '500',
+    color: '#a19d9b',
+    fontWeight: '700',
   },
   scheduleTime: {
     fontSize: 14,
@@ -335,7 +349,7 @@ const styles = StyleSheet.create({
   },
   packagePrice: {
     fontSize: 30,
-    fontWeight: "700",
+    fontWeight: "900",
     color: "#00a63e",
   },
   packagePriceText: {
@@ -369,6 +383,7 @@ const styles = StyleSheet.create({
   bookButtonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "900",
+    textAlign: "center",
   },
 });

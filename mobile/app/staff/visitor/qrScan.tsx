@@ -43,7 +43,7 @@ export default function QrScan() {
       if (isVisitorCode(trimmedCode)) {
         endpoint = `${API_URL}/register/manual-check-in`; // Visitor check-in
       } else if (isIslandEntryCode(trimmedCode)) {
-        endpoint = `${API_URL}/island/manual-check-in`; // Island Entry check-in
+        endpoint = `${API_URL}/island-entry/manual-check-in`; // Island Entry check-in
       } else {
         Alert.alert("Invalid Code", "Unrecognized QR code format.");
         setIsScanning(true);

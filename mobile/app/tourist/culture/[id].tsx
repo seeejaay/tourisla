@@ -125,7 +125,11 @@ export default function ArticleDetailMobile({
         )}
   
         <View>
-          <Text style={styles.body}>{article.body}</Text>
+            <Text style={styles.body}>
+            {article.body
+              .toLowerCase()
+              .replace(/(^\s*\w|[.!?]\s*\w)/g, (c) => c.toUpperCase())}
+            </Text>
         </View>
 
         {article.video_url && (
@@ -269,11 +273,13 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   body: {
-    fontSize: 12,
+    fontSize: 14,
     color: "#1f2937",
     lineHeight: 15,
     marginTop: 4,
     paddingHorizontal: 16,
+    fontWeight: "600",
+    marginBottom  : 16,
   },
   centered: {
     flex: 1,
