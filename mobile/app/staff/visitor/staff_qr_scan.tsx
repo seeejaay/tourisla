@@ -28,30 +28,50 @@ export default function StaffQrScan() {
   const handleFindVisitor = async () => {
     setSuccess('');
     setVisitorResult(null);
+  
     if (!uniqueCode) return;
-
+  
     try {
       const result = await getVisitorResultByCode(uniqueCode);
+  
       if (result?.registration?.id) {
+        const lastCheckIn = result.registration.checked_in_at;
+  
+        if (lastCheckIn) {
+          const lastDate = new Date(lastCheckIn).toDateString();
+          const today = new Date().toDateString();
+  
+          if (lastDate === today) {
+            Alert.alert("Already Checked In", "This visitor has already checked in today.");
+            return;
+          }
+        }
+  
         setVisitorResult(result.registration);
       } else {
-        Alert.alert('Not Found', 'No visitor found with that code.');
+        Alert.alert("Not Found", "No visitor found with that code.");
       }
+  
     } catch (err) {
-      Alert.alert('Error', 'Failed to find visitor.');
+      Alert.alert("Error", "Failed to find visitor.");
     }
   };
-
+  
   const handleCheckIn = async () => {
     try {
-      const res = await checkInVisitor(uniqueCode);
+      if (!visitorResult?.unique_code) {
+        Alert.alert("Error", "Visitor code not found.");
+        return;
+      }
+  
+      const res = await checkInVisitor(visitorResult.unique_code);
       if (res) {
-        setSuccess('Visitor checked in successfully!');
+        setSuccess("Visitor checked in successfully!");
         setVisitorResult(null);
-        setUniqueCode('');
+        setUniqueCode("");
       }
     } catch (err) {
-      Alert.alert('Error', 'Failed to check in visitor.');
+      Alert.alert("Error", "Failed to check in visitor.");
     }
   };
 
