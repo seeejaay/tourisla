@@ -43,7 +43,7 @@ const faqs = [
   {
     question: "How do I report issues or give feedback about Tourisla?",
     answer:
-      "You can report issues or send feedback through the Contact section of the app or by emailing support@tourisla.com. We value your input to improve your experience.",
+      "You can report issues or send feedback through the Contact section of the app or by emailing tour.isla2025@gmail.com We value your input to improve your experience.",
   },
   {
     question: "What activities can I do on Bantayan Island?",
