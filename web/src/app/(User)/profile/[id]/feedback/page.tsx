@@ -1,9 +1,10 @@
 "use client";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { useFeedbackManager } from "@/hooks/useOperatorFeedbackManager";
 import { OperatorFeedbackList } from "@/components/custom/feedback/OperatorFeedbackList";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+
 export default function OperatorFeedbackPage() {
   const { feedback, loading, error, getOperatorFeedbackByUserId } =
     useFeedbackManager();
@@ -11,66 +12,35 @@ export default function OperatorFeedbackPage() {
 
   const { loggedInUser } = useAuth();
   const router = useRouter();
-  // ...existing code...
+
   useEffect(() => {
     async function fetchUserAndFeedback() {
       const res = await loggedInUser(router);
       const id = res?.data?.user?.id || res?.data?.user?.user_id;
       if (id) {
         setOperatorId(id);
-
-        getOperatorFeedbackByUserId(operatorId);
+        getOperatorFeedbackByUserId(operatorId || id.toString());
       }
     }
     fetchUserAndFeedback();
-  }, [loggedInUser, router, getOperatorFeedbackByUserId, operatorId]);
-  // ...existing code...
-
-  // Fetch feedback for each guide
-  const fetchGuideFeedback = useCallback(async (guideId: number) => {
-    setGuidesFeedback((prev) => ({
-      ...prev,
-      [guideId]: { feedback: [], loading: true, error: null },
-    }));
-    try {
-      const res = await fetch(
-        "/api/feedback/entity?type=GUIDE&ref_id=" + guideId,
-        { credentials: "include" }
-      );
-      const data = await res.json();
-      setGuidesFeedback((prev) => ({
-        ...prev,
-        [guideId]: { feedback: data, loading: false, error: null },
-      }));
-    } catch (err) {
-      setGuidesFeedback((prev) => ({
-        ...prev,
-        [guideId]: {
-          feedback: [],
-          loading: false,
-          error: err?.message || "Failed to fetch guide feedback",
-        },
-      }));
-    }
+    // Only run on mount
+    // eslint-disable-next-line
   }, []);
 
-  useEffect(() => {
-    guides.forEach((g) => {
-      if (!guidesFeedback[g.id]) fetchGuideFeedback(g.id);
-    });
-    // eslint-disable-next-line
-  }, [guides]);
-
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-extrabold text-blue-800 mb-8 text-center">
-        Tour Operator Feedback
-      </h1>
-      <OperatorFeedbackList
-        feedback={feedback}
-        loading={loading}
-        error={error}
-      />
-    </div>
+    <main className="flex flex-col items-center min-h-screen w-full bg-gradient-to-br from-[#e6f7fa] via-white to-[#b6e0e4] px-2 py-8">
+      <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-6">
+        <h1 className="text-4xl font-extrabold text-center text-[#1c5461] tracking-tight mb-6">
+          Tour Operator Feedback
+        </h1>
+        <div className="w-full bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-6 md:p-8">
+          <OperatorFeedbackList
+            feedback={feedback}
+            loading={loading}
+            error={error}
+          />
+        </div>
+      </div>
+    </main>
   );
 }

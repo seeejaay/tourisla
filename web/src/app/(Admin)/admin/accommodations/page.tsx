@@ -147,7 +147,7 @@ export default function AccommodationsPage() {
                   accommodation={editDialogAccommodation}
                   onSave={async (updatedAccommodation) => {
                     await editAccommodation(
-                      Number(updatedAccommodation.id),
+                      Number(editDialogAccommodation?.id),
                       updatedAccommodation
                     );
                     await refreshAccommodations();

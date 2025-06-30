@@ -19,23 +19,33 @@ export interface EditQuestionParams {
 }
 
 // Utility functions
-export const fetchQuestionsByType = async (type: string): Promise<FeedbackQuestion[]> => {
-  const res = await axios.get(`${API_URL}feedback/questions/${type}`, { withCredentials: true });
+export const fetchQuestionsByType = async (
+  type: string
+): Promise<FeedbackQuestion[]> => {
+  const res = await axios.get(`${API_URL}feedback/questions/${type}`, {
+    withCredentials: true,
+  });
   return res.data;
 };
 
-export const createQuestion = async ({ type, question_text }: CreateQuestionParams): Promise<FeedbackQuestion> => {
+export const createQuestion = async ({
+  type,
+  question_text,
+}: CreateQuestionParams): Promise<FeedbackQuestion> => {
   const res = await axios.post(
-    `${API_URL}feedback/create-question`,
+    `${API_URL}feedback/questions/`,
     { type, question_text },
     { withCredentials: true }
   );
   return res.data;
 };
 
-export const editQuestion = async ({ id, question_text }: EditQuestionParams): Promise<FeedbackQuestion> => {
+export const editQuestion = async ({
+  id,
+  question_text,
+}: EditQuestionParams): Promise<FeedbackQuestion> => {
   const res = await axios.put(
-    `${API_URL}feedback/edit-question/${id}`,
+    `${API_URL}feedback/questions/${id}`,
     { question_text },
     { withCredentials: true }
   );
@@ -43,7 +53,9 @@ export const editQuestion = async ({ id, question_text }: EditQuestionParams): P
 };
 
 export const deleteQuestion = async (id: number): Promise<FeedbackQuestion> => {
-  const res = await axios.delete(`${API_URL}feedback/delete-question/${id}`, { withCredentials: true });
+  const res = await axios.delete(`${API_URL}feedback/questions/${id}`, {
+    withCredentials: true,
+  });
   return res.data;
 };
 

@@ -1,7 +1,7 @@
 "use client";
 import { useIncidentManager } from "@/hooks/useIncidentManager";
 import ViewIncident from "@/components/custom/incident-report/ViewIncident";
-import IncidentTabs from "@/components/custom/incident-report/IncidentTabs";
+import IncidentTabsOfficer from "@/components/custom/incident-report/IncidentTabs-Officer";
 import { useEffect, useState } from "react";
 
 export default function ResolvedIncidentPage() {
@@ -41,7 +41,7 @@ export default function ResolvedIncidentPage() {
         </div>
 
         {/* Tab Navigation */}
-        <IncidentTabs />
+        <IncidentTabsOfficer />
 
         {/* Filter and Search */}
         <div className="w-full flex flex-col md:flex-row gap-4 mb-6 items-center justify-between">
