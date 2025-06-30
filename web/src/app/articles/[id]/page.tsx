@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { Article } from "@/app/static/article/useArticleSchema";
 import Image from "next/image";
 import Header from "@/components/custom/header";
-
+import Footer from "@/components/custom/footer";
 export default function ArticleDetailPage() {
   const { id } = useParams();
 
@@ -123,6 +123,7 @@ export default function ArticleDetailPage() {
           )}
         </main>
       </div>
+      <Footer />
     </>
   );
 }
