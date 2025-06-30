@@ -56,7 +56,7 @@ export default function SignUpScreen() {
       role,
       status,
     } = form;
-  
+
     if (
       !first_name ||
       !last_name ||
@@ -69,17 +69,17 @@ export default function SignUpScreen() {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
-  
+
     if (password !== confirm_password) {
       Alert.alert("Error", "Passwords do not match");
       return;
     }
-  
+
     if (!terms) {
       Alert.alert("Notice", "You must agree to the terms and conditions");
       return;
     }
-  
+
     try {
       const userData = {
         first_name,
@@ -94,13 +94,13 @@ export default function SignUpScreen() {
         status,
         captchaToken: "mobile-app-verification-token",
       };
-  
+
       console.log("Sending user data:", {
         ...userData,
         password: "[MASKED]",
         confirm_password: "[MASKED]",
       });
-  
+
       await registerUser(userData);
       Alert.alert("Success", "Registration successful!", [
         { text: "OK", onPress: () => router.push("/login") },
@@ -109,7 +109,6 @@ export default function SignUpScreen() {
       Alert.alert("Error", "Registration failed");
     }
   };
-
 
   return (
     <View style={styles.container}>
@@ -222,7 +221,10 @@ export default function SignUpScreen() {
               onValueChange={(val) => handleChange("terms", val)}
               color={form.terms ? "#47d8d3" : undefined}
             />
-            <Text style={styles.checkboxLabel}>
+            <Text
+              style={styles.checkboxLabel}
+              onPress={() => router.push("/terms_page")}
+            >
               I agree to the terms and conditions
             </Text>
           </View>
