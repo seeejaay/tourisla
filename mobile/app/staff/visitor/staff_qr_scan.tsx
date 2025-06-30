@@ -166,6 +166,12 @@ export default function StaffQrScan() {
             {success}
           </Text>
         )}
+                <Pressable
+          style={[styleSheet.mainBtn2, styleSheet.btnIsland]}
+          onPress={() => router.push('/staff/visitor/staff_island_entry_checkin')}
+        >
+          <Text style={styleSheet.btnText}>Go To Island Entry Check-In</Text>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -316,5 +322,17 @@ const styleSheet = StyleSheet.create({
   },
   visitorDetails: {
     flex: 1,
+  },
+  btnIsland: {
+    backgroundColor: '#f4c430', // yellow-like color for island check-in
+  },
+  mainBtn2: {
+    marginTop: 20,
+    width: '100%',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginVertical: 6,
+    justifyContent: 'center',
   },
 });
