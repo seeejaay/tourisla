@@ -7,11 +7,12 @@ import { LinearGradient } from "expo-linear-gradient";
 
 // Replace with your API URL
 const API_URL = "https://tourisla-production.up.railway.app/api/v1"; 
-fetch(`${API_URL}/manual-check-in`)
 
 export default function QrScan() {
   const [ready, setReady] = useState(false);
   const [isScanning, setIsScanning] = useState(true); // prevent multiple scans
+  const isVisitorCode = (code: string) => /^[A-Z]{3}[0-9]{3}$/.test(code);
+  const isIslandEntryCode = (code: string) => /^([A-Z][0-9]){3}$/.test(code);
 
   const animatedValue = useRef(new Animated.Value(0)).current;
 
@@ -28,38 +29,57 @@ export default function QrScan() {
 
   const handleScanned = async ({ data }: { data: string }) => {
     if (!isScanning) return;
-    setIsScanning(false); // prevent repeat
+    setIsScanning(false);
+  
+    let extracted = data.trim().toUpperCase();
+    console.log("Scanned code raw:", extracted);
+    const match = extracted.match(/\/([A-Z0-9]+)$/);
+    const trimmedCode = match ? match[1] : extracted;
 
+    console.log("Final extracted code:", trimmedCode);
+  
     try {
-      // POST to manualCheckInController
-      const res = await fetch(`${API_URL}/register/manual-check-in`, {
+      let endpoint = "";
+      if (isVisitorCode(trimmedCode)) {
+        endpoint = `${API_URL}/register/manual-check-in`; // Visitor check-in
+      } else if (isIslandEntryCode(trimmedCode)) {
+        endpoint = `${API_URL}/island/manual-check-in`; // Island Entry check-in
+      } else {
+        Alert.alert("Invalid Code", "Unrecognized QR code format.");
+        setIsScanning(true);
+        return;
+      }
+  
+      const res = await fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // pass session cookies
-        body: JSON.stringify({ unique_code: data.trim().toUpperCase() }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ unique_code: trimmedCode }),
+        credentials: "include",
       });
-      console.log("Check-in response:", res.status, res.statusText);
-
+      console.log("Check-in status:", res.status);
+  
       const result = await res.json();
+      console.log("Check-in API result:", result); // 👈 Add this!
+  
       if (res.ok) {
         Alert.alert(
           "Success",
-          `Checked in successfully for registration ${result.registration.id}.`,
+          `Check-in successful for code ${trimmedCode}`,
           [{ text: "OK", onPress: () => router.back() }]
         );
       } else {
-        Alert.alert(
-          "Error",
-          result.error || "Check-in failed. Please try again."
-        );
-        setIsScanning(true); // allow rescanning
+        Alert.alert("Error", result.error || "Check-in failed.");
+        setIsScanning(true);
       }
     } catch (error) {
-      console.error("Error checking in:", error);
+      console.error("Check-in error:", error);
       Alert.alert("Error", "Something went wrong. Please try again.");
-      setIsScanning(true); // allow rescanning
+      setIsScanning(true);
     }
   };
+  
 
   if (!ready) return null;
 
