@@ -63,7 +63,7 @@ export default function Settings() {
   };
 
   const navigateToTerms = () => {
-    router.push('/admin/profile/about/terms/admin_terms');
+    router.push('/staff/profile/about/terms/terms_page');
   };
 
   const navigateToRules = () => {

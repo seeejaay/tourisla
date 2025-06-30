@@ -63,7 +63,7 @@ export default function Settings() {
   };
 
   const navigateToTerms = () => {
-    router.push('/tourist/profile/about/terms/tourist_terms');
+    router.push('/staff/profile/about/terms/terms_page');
   };
 
   const navigateToReports = () => {
