@@ -39,21 +39,6 @@ export default function TouristHome() {
   const [headerHeight, setHeaderHeight] = useState(0);
   const { articles, loading: loadingArticles } = useArticleManager();
 
-  useEffect(() => {
-    const getUserName = async () => {
-      try {
-        const user = await auth.getCurrentUser();
-        if (user && user.name) {
-          setUserName(user.name.split(' ')[0]);
-        }
-      } catch (error) {
-        console.error('Error getting user name:', error);
-      }
-    };
-
-    getUserName();
-  }, []);
-
   return (
     <View style={[styles.container, { paddingTop: headerHeight }]}>
       <ScrollView
@@ -84,13 +69,6 @@ export default function TouristHome() {
               >
                 <FontAwesome5 name="users" size={16} color="#fff" />
                 <Text style={styles.exploreBtnText}> Explore Accommodation</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.contactBtn}
-                onPress={() => router.push('#contact')}
-              >
-                <Feather name="phone" size={16} color="#3d969f" />
-                <Text style={styles.contactBtnText}> Contact Us</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -250,20 +228,6 @@ const styles = StyleSheet.create({
   exploreBtnText: {
     color: '#fff',
     fontWeight: '600',
-    marginLeft: 6,
-    fontSize: 12,
-  },
-  contactBtn: {
-    flexDirection: 'row',
-    borderWidth: 2,
-    borderColor: '#3d969f',
-    padding: 12,
-    borderRadius: 24,
-    alignItems: 'center',
-  },
-  contactBtnText: {
-    color: '#3d969f',
-    fontWeight: '900',
     marginLeft: 6,
     fontSize: 12,
   },
