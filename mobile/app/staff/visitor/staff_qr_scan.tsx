@@ -61,7 +61,7 @@ export default function StaffQrScan() {
       <ScrollView contentContainerStyle={styleSheet.scrollContent}>
         <Text style={styleSheet.mainText}>Scan QR code</Text>
         <Text style={styleSheet.subText}>
-          Scan QR Codes from Tourist upon Entry in Attraction
+          Scan QR Codes from Tourist upon Entry in Island and Attractions
         </Text>
 
         <Image
