@@ -743,11 +743,7 @@ app.post(
   allowedRoles(["Tourist"]),
   registerVisitorController
 );
-app.post(
-  "/api/v1/register/manual-check-in",
-  allowedRoles(["Tourism Staff"]),
-  manualCheckInController
-);
+app.post("/api/v1/register/manual-check-in", manualCheckInController);
 app.post(
   "/api/v1/register/walk-in",
   allowedRoles(["Tourism Staff"]),
