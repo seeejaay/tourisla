@@ -350,7 +350,7 @@ app.post("/api/v1/admin-action", authenticateAdmin, (req, res) => {
 app.post("/api/v1/login", loginUser);
 app.post("/api/v1/logout", logoutUser);
 
-app.get("/api/v1/user", currentUserController);
+app.get("/api/v1/user", authenticateUser, currentUserController);
 app.get(
   "/api/v1/users/:userId",
   authenticateUser,
