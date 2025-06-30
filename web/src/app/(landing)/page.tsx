@@ -155,6 +155,61 @@ export default function Home() {
           </div>
         </section>
 
+        {/* About Bantayan Section */}
+        <section className="py-20 bg-[#f1f1f1]">
+          <div className="max-w-5xl mx-auto px-4 text-center">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-[#1c5461] mb-4 drop-shadow">
+              About Bantayan Island
+            </h2>
+            <div className="w-24 h-1 bg-gradient-to-r from-[#3e979f] to-[#1c5461] mx-auto mb-8 rounded-full" />
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="flex-1">
+                <Image
+                  src="/images/Bantayan_Map.webp"
+                  alt="About Bantayan Island"
+                  width={500}
+                  height={400}
+                  className="rounded-2xl shadow-lg object-cover w-full h-[600px]"
+                />
+              </div>
+              <div className="flex-1 text-left md:text-lg text-[#51702c]">
+                <p className="mb-4">
+                  Bantayan Island is a tropical paradise located off the
+                  northern coast of Cebu, Philippines. Known for its powdery
+                  white sand beaches, crystal-clear waters, and laid-back
+                  atmosphere, Bantayan is a favorite destination for both local
+                  and international travelers.
+                </p>
+                <p className="mb-4">
+                  The island is rich in history and culture, with vibrant
+                  festivals, friendly locals, and a unique blend of Spanish and
+                  Filipino heritage. Whether you’re seeking adventure,
+                  relaxation, or a taste of island life, Bantayan offers
+                  something for everyone.
+                </p>
+                <p className="mb-4">
+                  Explore its charming towns, savor fresh seafood, and
+                  experience unforgettable sunsets—Bantayan Island is truly a
+                  gem waiting to be discovered.
+                </p>
+                <p className="mb-4">
+                  Bantayan is composed of three municipalities: Bantayan,
+                  Madridejos, and Santa Fe. Each offers its own unique
+                  attractions, from historical churches and bustling markets to
+                  serene beaches and vibrant marine sanctuaries.
+                </p>
+                <p>
+                  With its welcoming community, eco-friendly initiatives, and
+                  breathtaking natural beauty, Bantayan Island stands out as one
+                  of the Philippines’ most beloved destinations. Whether you’re
+                  traveling solo, as a couple, or with family and friends,
+                  Bantayan promises memories that will last a lifetime.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Tourist Spots Showcase (Dynamic) */}
         <section className="py-20 bg-[#f1f1f1]">
           <div className="max-w-6xl mx-auto px-4 text-center">
