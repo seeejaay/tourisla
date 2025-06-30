@@ -177,6 +177,7 @@ const manualIslandEntryCheckInController = async (req, res) => {
   try {
     const { unique_code } = req.body;
     const userId = req.session.user?.user_id ?? req.session.user?.id;
+    console.log("Session user:", req.session.user);
 
     if (!userId) {
       return res
