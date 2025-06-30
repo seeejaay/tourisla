@@ -17,7 +17,7 @@ const AccommodationSchema = z.object({
       "Type of Accommodation must contain only letters and spaces"
     ),
   no_of_rooms: z.number().int().min(1, "Number of Rooms must be at least 1"),
-  no_of_employees: z
+  number_of_employees: z
     .number()
     .int()
     .min(1, "Number of Employees must be at least 1"),

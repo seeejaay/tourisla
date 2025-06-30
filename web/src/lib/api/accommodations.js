@@ -18,11 +18,11 @@ export const createAccommodation = async (accommodation) => {
   }
 };
 
-export const editAccommodation = async (accommodationId, accommodation) => {
+export const editAccommodation = async (accommodationId, accommodationData) => {
   try {
     const response = await axios.put(
       `${API_URL}accommodations/${accommodationId}`,
-      accommodation,
+      accommodationData,
       {
         withCredentials: true,
       }

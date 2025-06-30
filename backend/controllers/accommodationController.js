@@ -21,13 +21,26 @@ const createAccommodationController = async (req, res) => {
 
 const editAccommodationController = async (req, res) => {
   try {
-    const { accommodationId } = req.params;
-    const data = req.body;
+    // Ensure accommodationId is a number
+    const accommodationId = Number(req.params.accommodationId);
+    if (isNaN(accommodationId)) {
+      return res.status(400).send("Invalid accommodationId");
+    }
+
+    // Sanitize number fields in data
+    const data = { ...req.body };
+    ["no_of_rooms", "number_of_employees", "Year"].forEach((field) => {
+      if (data[field] !== undefined) {
+        const num = Number(data[field]);
+        data[field] = isNaN(num) ? null : num;
+      }
+    });
+
     const accommodation = await editAccommodation(accommodationId, data);
     res.json(accommodation);
   } catch (err) {
     console.log(err.message);
-    res.send(err.message);
+    res.status(500).send(err.message);
   }
 };
 

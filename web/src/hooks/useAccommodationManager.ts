@@ -120,6 +120,12 @@ export const useAccommodationManager = () => {
       setLoading(true);
       setError("");
       try {
+        console.log(
+          "Editing accommodation ID:",
+          id,
+          "with data:",
+          accommodationData
+        );
         const response: Accommodation & { error?: string } =
           await apiUpdateAccommodation(id, accommodationData);
         if (response.error) {
