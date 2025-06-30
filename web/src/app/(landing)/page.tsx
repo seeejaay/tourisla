@@ -8,6 +8,7 @@ import MapPage from "@/components/custom/map";
 import { Umbrella, MapPin, Leaf, Users, ArrowRight } from "lucide-react";
 import { useArticleManager } from "@/hooks/useArticleManager";
 import { useTouristSpotManager } from "@/hooks/useTouristSpotManager";
+import { useTripAdvisor } from "@/hooks/useTripAdvisor";
 import {
   Carousel,
   CarouselContent,
@@ -54,7 +55,7 @@ const faqs = [
 export default function Home() {
   const router = useRouter();
   const { articles, loading: loadingArticles } = useArticleManager();
-
+  const { hotels, loading: loadingTripAdvisor } = useTripAdvisor();
   // Tourist Spot Manager
   const {
     touristSpots,
@@ -154,28 +155,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Interactive Map */}
-        <section className="py-20 bg-[#f1f1f1]">
-          <div className="max-w-6xl mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
-              Explore Our Island
-            </h2>
-            <div className="w-24 h-1 bg-[#3e979f] mx-auto mb-6" />
-            <p className="text-lg text-[#51702c] mb-12">
-              Find your perfect spot with our interactive island map
-            </p>
-            <div className="relative h-[600px] w-full rounded-b-2xl overflow-hidden">
-              <MapPage />
-              <div className="absolute bottom-4 left-4 bg-[#f1f1f1] px-4 py-2 rounded-full shadow-md flex items-center border border-[#7b9997]/20">
-                <MapPin className="w-4 h-4 text-[#3e979f] mr-2" />
-                <span className="text-[#1c5461] font-medium">
-                  Island Locations
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Tourist Spots Showcase (Dynamic) */}
         <section className="py-20 bg-[#f1f1f1]">
           <div className="max-w-6xl mx-auto px-4 text-center">
@@ -187,6 +166,30 @@ export default function Home() {
               Discover the natural wonders and iconic destinations of Bantayan
               Island.
             </p>
+            <div className="flex flex-row justify-between items-center pb-5 ">
+              <span className=" px-4 py-2 rounded-full bg-[#3e979f]/10 text-[#3e979f] font-bold text-sm  uppercase">
+                Tourist Spots
+              </span>
+              <button
+                onClick={() => (window.location.href = "/tourist-spots")}
+                className="flex flex-row px-4 py-2 rounded-full bg-[#3e979f]/10 text-[#3e979f] font-bold text-sm  uppercase cursor-pointer hover:bg-[#3e979f]/20 transition-all"
+              >
+                See more tourist spots
+                <svg
+                  className="w-4 h-4 ml-1"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </button>
+            </div>
             {loadingTouristSpots ? (
               <div className="text-[#3e979f]">Loading tourist spots...</div>
             ) : (
@@ -243,6 +246,134 @@ export default function Home() {
                       <div className="relative rounded-2xl overflow-hidden shadow-lg border border-[#e6f7fa] h-[500px] flex items-center justify-center bg-[#e6f7fa]">
                         <span className="text-[#3e979f] text-xl font-semibold">
                           No tourist spots available.
+                        </span>
+                      </div>
+                    </CarouselItem>
+                  )}
+                </CarouselContent>
+                <CarouselPrevious className="left-0 -translate-y-1/2 top-1/2" />
+                <CarouselNext className="right-0 -translate-y-1/2 top-1/2" />
+              </Carousel>
+            )}
+          </div>
+        </section>
+
+        {/* Interactive Map */}
+        <section className="py-20 bg-[#f1f1f1]">
+          <div className="max-w-6xl mx-auto px-4 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
+              Explore Our Island
+            </h2>
+            <div className="w-24 h-1 bg-[#3e979f] mx-auto mb-6" />
+            <p className="text-lg text-[#51702c] mb-12">
+              Find your perfect spot with our interactive island map
+            </p>
+            <div className="relative h-[600px] w-full rounded-b-2xl overflow-hidden">
+              <MapPage />
+              <div className="absolute bottom-4 left-4 bg-[#f1f1f1] px-4 py-2 rounded-full shadow-md flex items-center border border-[#7b9997]/20">
+                <MapPin className="w-4 h-4 text-[#3e979f] mr-2" />
+                <span className="text-[#1c5461] font-medium">
+                  Island Locations
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Accommodation Section */}
+        <section className="py-20 bg-[#f1f1f1]">
+          <div className="max-w-6xl mx-auto px-4 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-4">
+              Top-Rated Accommodations
+            </h2>
+            <div className="w-24 h-1 bg-[#3e979f] mx-auto mb-8 rounded-full" />
+            <p className="text-lg text-[#51702c] mb-12">
+              Find the best places to stay on Bantayan Island, as rated by
+              travelers.
+            </p>
+            <div className="flex flex-row justify-between items-center pb-5">
+              <span className="px-4 py-2 rounded-full bg-[#3e979f]/10 text-[#3e979f] font-bold text-sm uppercase">
+                Accommodations
+              </span>
+              <button
+                onClick={() => (window.location.href = "/listings")}
+                className="flex flex-row px-4 py-2 rounded-full bg-[#3e979f]/10 text-[#3e979f] font-bold text-sm uppercase cursor-pointer hover:bg-[#3e979f]/20 transition-all"
+              >
+                See more accommodations
+                <svg
+                  className="w-4 h-4 ml-1"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </button>
+            </div>
+            {loadingTripAdvisor ? (
+              <div className="text-[#3e979f]">Loading accommodations...</div>
+            ) : (
+              <Carousel
+                opts={{
+                  align: "center",
+                  loop: true,
+                }}
+                className="w-full mx-auto"
+              >
+                <CarouselContent>
+                  {hotels.length > 0 ? (
+                    hotels.map((hotel, idx) => (
+                      <CarouselItem
+                        key={hotel.location_id}
+                        className="basis-full flex-shrink-0 w-full"
+                      >
+                        <div className="relative rounded-2xl overflow-hidden shadow-lg border border-[#e6f7fa] hover:shadow-2xl transition-all h-[500px] flex items-end group bg-[#e6f7fa]">
+                          {hotel.photos &&
+                          hotel.photos.length > 0 &&
+                          hotel.photos[0].images.large.url ? (
+                            <Image
+                              src={hotel.photos[0].images.large.url}
+                              alt={hotel.name}
+                              fill
+                              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                              style={{ zIndex: 0 }}
+                              priority={idx === 0}
+                            />
+                          ) : (
+                            <div className="absolute inset-0 h-full w-full bg-[#e6f7fa] flex items-center justify-center text-[#3e979f] z-0">
+                              No Image
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10" />
+                          <div className="absolute bottom-6 left-6 z-20 text-left">
+                            <h3 className="text-2xl font-bold text-white drop-shadow mb-2">
+                              {hotel.name}
+                            </h3>
+                            <p className="text-white/80 text-base mb-1">
+                              {hotel.address_obj?.address_string}
+                            </p>
+                            <a
+                              href={`https://www.tripadvisor.com.ph/Hotel_Review-d${hotel.location_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-block mt-2 px-4 py-2 rounded-full bg-[#3e979f] text-white font-semibold text-sm hover:bg-[#1c5461] transition cursor-pointer"
+                            >
+                              View on TripAdvisor
+                            </a>
+                          </div>
+                        </div>
+                      </CarouselItem>
+                    ))
+                  ) : (
+                    <CarouselItem className="basis-full flex-shrink-0 w-full">
+                      <div className="relative rounded-2xl overflow-hidden shadow-lg border border-[#e6f7fa] h-[500px] flex items-center justify-center bg-[#e6f7fa]">
+                        <span className="text-[#3e979f] text-xl font-semibold">
+                          No accommodations found.
                         </span>
                       </div>
                     </CarouselItem>

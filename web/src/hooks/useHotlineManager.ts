@@ -21,6 +21,7 @@ export const useHotlineManager = () => {
     setError("");
     try {
       const data = await apiFetchHotlines();
+      console.log("Fetched hotlines:", data);
       setHotlines(data);
       return data;
     } catch (err) {
