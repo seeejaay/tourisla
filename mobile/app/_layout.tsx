@@ -4,7 +4,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import "./global.css";
 
-
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     "Poppins-Regular": require("../assets/fonts/Poppins-Regular.ttf"),
@@ -50,8 +49,6 @@ export default function RootLayout() {
             default:
               router.replace("/login");
           }
-        } else {
-          router.replace("/login");
         }
       } catch (e) {
         console.error("Error restoring session:", e);
