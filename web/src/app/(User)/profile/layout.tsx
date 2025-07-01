@@ -1,6 +1,5 @@
 "use client";
 import Sidebar from "@/components/custom/sidebar";
-
 import type { NavItem } from "@/components/custom/sidebar";
 
 import adminNavigation from "@/app/static/navigation/admin-navigation";
@@ -29,7 +28,7 @@ export default function ProfileLayout({
   const { loggedInUser } = useAuth();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-
+  const [isCollapsed, setIsCollapsed] = useState(true);
   useEffect(() => {
     async function fetchUser() {
       const res = await loggedInUser(router);
@@ -59,9 +58,15 @@ export default function ProfileLayout({
   }
 
   return (
-    <div className="flex">
-      <Sidebar navigation={navigation} />
-      <main className="flex-1">{children}</main>
+    <div className="flex min-h-screen">
+      <Sidebar
+        navigation={navigation}
+        isCollapsed={isCollapsed}
+        setIsCollapsed={setIsCollapsed}
+      />
+      <main className="flex-1 min-w-0 transition-all duration-300">
+        {children}
+      </main>
     </div>
   );
 }
