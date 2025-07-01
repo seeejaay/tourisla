@@ -37,7 +37,7 @@ export default function Header() {
       <nav
         className={`fixed w-full z-30 transition-all duration-300 bg-white ${
           scrolled
-            ? "bg-white/95 backdrop-blur-md shadow-md py-2"
+            ? "bg-gradient-to-b from-[#e6f7fa]/80 to-transparent backdrop-blur-md shadow-md py-2"
             : "bg-gradient-to-b from-[#e6f7fa]/80 to-transparent py-4"
         }`}
       >

@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { logout } from "@/lib/api/auth";
 import { LogOut, ChevronsRight, ChevronsLeft } from "lucide-react";
 import Image from "next/image";
+import { Dispatch, SetStateAction } from "react";
 export type NavItem = {
   name: string;
   title: string;
@@ -14,6 +15,8 @@ export type NavItem = {
 
 type SidebarProps = {
   navigation: NavItem[];
+  isCollapsed: boolean;
+  setIsCollapsed: Dispatch<SetStateAction<boolean>>;
 };
 
 const Sidebar = ({ navigation }: SidebarProps) => {
@@ -31,10 +34,11 @@ const Sidebar = ({ navigation }: SidebarProps) => {
   };
 
   return (
-    <nav
-      className={`fixed bg-gradient-to-b from-[#e6f7fa]/80 to-[#fffff1] border-r border-[#e6f7fa] 
-        text-[#1c5461] h-full flex flex-col transition-all duration-300 ease-in-out z-50
-        ${isCollapsed ? "w-20" : "w-64"}`}
+    <aside
+      aria-label="Sidebar"
+      className={`bg-gradient-to-b min-h-screen from-[#e6f7fa]/80 to-[#fffff1] border-r border-[#e6f7fa] 
+    text-[#1c5461] h-full flex flex-col transition-all duration-300 ease-in-out z-50
+    ${isCollapsed ? "w-20" : "w-64"}  md:flex`}
     >
       {/* Sidebar Header */}
       <div className="p-6 flex items-center justify-between border-b border-[#e6f7fa] bg-white/95">
@@ -132,7 +136,7 @@ const Sidebar = ({ navigation }: SidebarProps) => {
           )}
         </div>
       </div>
-    </nav>
+    </aside>
   );
 };
 
