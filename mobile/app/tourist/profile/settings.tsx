@@ -8,6 +8,7 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import axios from 'axios';
 import { logout } from '@/lib/api/auth'; // Import the logout function
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 44;
 
@@ -78,6 +79,7 @@ export default function Settings() {
     try {
       const response = await logout();
       console.log("Logout response:", response);
+      await AsyncStorage.clear();
       Alert.alert("Success", "Logged out successfully", [
         { text: "OK", onPress: () => router.replace('/login') }
       ]);

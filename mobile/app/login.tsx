@@ -85,6 +85,7 @@ export default function LoginScreen() {
 
       // Store the exact role as returned by the API
       await AsyncStorage.setItem("userData", JSON.stringify(res.user));
+      console.log("User data stored in AsyncStorage:", res.user);
       await AsyncStorage.setItem("role", role);
 
       // Use the role directly from the response
