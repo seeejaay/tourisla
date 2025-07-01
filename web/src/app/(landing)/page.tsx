@@ -263,7 +263,7 @@ export default function Home() {
                             {hotel.address_obj?.address_string}
                           </p>
                           <a
-                            href={hotel.link}
+                            href={`https://www.tripadvisor.com.ph/Hotel_Review-d${hotel.location_id}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="mt-4 inline-block bg-[#00aeac] text-white w-44 cursor-pointer rounded-full px-4 py-2 hover:brightness-110"
