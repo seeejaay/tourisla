@@ -1,109 +1,133 @@
-const db = require("../db/index.js");
+const db = require("../db/index");
 
-// CREATE ARTICLE
+// Article CRUD
 const createArticle = async (data) => {
   const {
     title,
     author,
-    body,
+    content,
     video_url,
-    thumbnail_url,
     tags,
-    status,
+    type,
+    is_published,
     is_featured,
-    updated_by,
+    barangay,
+    summary,
   } = data;
 
   const result = await db.query(
-    `INSERT INTO articles (
-      title,
-      author,
-      body,
-      video_url,
-      thumbnail_url,
-      tags,
-      status,
-      is_featured,
-      updated_by,
-      created_at,
-      updated_at
+    `INSERT INTO article (
+      title, author, content, video_url, tags, type,
+      is_published, is_featured, barangay, summary,
+      date_published, last_updated
     ) VALUES (
-      $1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW()
+      $1, $2, $3, $4, $5, $6,
+      $7, $8, $9, $10,
+      NOW(), NOW()
     ) RETURNING *`,
     [
       title,
       author,
-      body,
+      content,
       video_url,
-      thumbnail_url,
       tags,
-      status,
+      type,
+      is_published,
       is_featured,
-      updated_by,
+      barangay,
+      summary,
     ]
   );
-
   return result.rows[0];
 };
 
-// EDIT ARTICLE
 const editArticle = async (id, data) => {
   const {
     title,
     author,
-    body,
+    content,
     video_url,
-    thumbnail_url,
     tags,
-    status,
+    type,
+    is_published,
     is_featured,
-    updated_by,
+    barangay,
+    summary,
   } = data;
 
   const result = await db.query(
-    `UPDATE articles SET
+    `UPDATE article SET
       title = $1,
       author = $2,
-      body = $3,
+      content = $3,
       video_url = $4,
-      thumbnail_url = $5,
-      tags = $6,
-      status = $7,
+      tags = $5,
+      type = $6,
+      is_published = $7,
       is_featured = $8,
-      updated_by = $9,
-      updated_at = NOW()
-    WHERE id = $10
+      barangay = $9,
+      summary = $10,
+      last_updated = NOW()
+    WHERE id = $11
     RETURNING *`,
     [
       title,
       author,
-      body,
+      content,
       video_url,
-      thumbnail_url,
       tags,
-      status,
+      type,
+      is_published,
       is_featured,
-      updated_by,
+      barangay,
+      summary,
       id,
     ]
   );
-
   return result.rows[0];
 };
 
 const deleteArticle = async (id) => {
-  await db.query(`DELETE FROM articles WHERE id = $1`, [id]);
+  await db.query(`DELETE FROM article WHERE id = $1`, [id]);
   return { message: `Article ${id} deleted` };
 };
 
 const getAllArticles = async () => {
-  const result = await db.query(`SELECT * FROM articles`);
+  const result = await db.query(`SELECT * FROM article ORDER BY created_at DESC`);
   return result.rows;
 };
 
 const getArticleById = async (id) => {
-  const result = await db.query(`SELECT * FROM articles WHERE id = $1`, [id]);
+  const result = await db.query(`SELECT * FROM article WHERE id = $1`, [id]);
   return result.rows[0];
+};
+
+// Images
+const addArticleImages = async (articleId, imageUrls) => {
+  const promises = imageUrls.map((url) =>
+    db.query(
+      `INSERT INTO article_images (article_id, image_url) VALUES ($1, $2) RETURNING *`,
+      [articleId, url]
+    )
+  );
+  const results = await Promise.all(promises);
+  return results.map((res) => res.rows[0]);
+};
+
+const getArticleImages = async (articleId) => {
+  const result = await db.query(
+    `SELECT * FROM article_images WHERE article_id = $1`,
+    [articleId]
+  );
+  return result.rows;
+};
+
+const deleteArticleImage = async (imageId) => {
+  const result = await db.query(
+    `DELETE FROM article_images WHERE id = $1 RETURNING *`,
+    [imageId]
+  );
+  return result.rows[0]; // contains the image_url
 };
 
 module.exports = {
@@ -112,4 +136,7 @@ module.exports = {
   deleteArticle,
   getAllArticles,
   getArticleById,
+  addArticleImages,
+  getArticleImages,
+  deleteArticleImage,
 };
