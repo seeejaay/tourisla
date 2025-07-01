@@ -29,44 +29,29 @@ function ProfileHeader() {
     const fetchCurrentUser = async () => {
       try {
         setLoading(true);
-        
-        // First try to get the role from the API
-        const response = await auth.currentUser();
-        console.log("API Response:", JSON.stringify(response));
-        
-        let userData = null;
-        if (response && response.data && response.data.user) {
-          userData = response.data.user;
-        } else if (response && response.user) {
-          userData = response.user;
-        } else if (response && response.data) {
-          userData = response.data;
-        } else if (typeof response === 'object' && response !== null) {
-          userData = response;
+  
+        const storedUser = await AsyncStorage.getItem("userData");
+  
+        if (!storedUser) {
+          throw new Error("No stored user found");
         }
-        
-        // If no role in the API response, try to get it from AsyncStorage
-        if (userData && !userData.role) {
-          try {
-            const storedRole = await AsyncStorage.getItem('role');
-            if (storedRole) {
-              console.log("Using role from AsyncStorage:", storedRole);
-              userData.role = storedRole;
-            }
-          } catch (storageError) {
-            console.error("Failed to get role from storage:", storageError);
-          }
+  
+        const userData = JSON.parse(storedUser);
+  
+        if (!userData || !userData.role) {
+          throw new Error("Invalid user data");
         }
-        
-        console.log("Final user data with role:", JSON.stringify(userData));
+  
         setCurrentUser(userData);
       } catch (error) {
-        console.error("Failed to fetch user data:", error);
+        console.warn("User not found or session invalid:", error.message);
+        await AsyncStorage.clear();
+        router.replace("/login");
       } finally {
         setLoading(false);
       }
     };
-    
+  
     fetchCurrentUser();
   }, []);
   
