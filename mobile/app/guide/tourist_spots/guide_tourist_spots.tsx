@@ -1,513 +1,214 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from "react";
+import { useRouter } from "expo-router";
 import {
   View,
   Text,
   FlatList,
-  StyleSheet,
-  TouchableOpacity,
   Image,
-  TextInput,
-  ActivityIndicator,
-  StatusBar,
-  SafeAreaView,
-  Dimensions,
-  ScrollView,
-  Platform,
-  Alert
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Icon from "react-native-vector-icons/Feather";
-import { useTouristSpotManager } from '../../../hooks/useTouristSpotManager';
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
+import { useTouristSpotManager } from "@/hooks/useTouristSpotManager";
+import { toTitleCase } from "@/lib/utils/textFormat";
+import HeaderWithBack from "@/components/HeaderWithBack";
+import SearchBar from "@/components/SearchBar";
+import FilterDropdown from "@/components/FilterDropdown";
+import Pagination from "@/components/Pagination";
 
-const { width } = Dimensions.get('window');
-const cardWidth = width * 0.9;
-
-export default function TouristTouristSpotsScreen({ headerHeight }) {
+export default function GuideTouristSpots() {
+  const { touristSpots, loading, error, fetchTouristSpots } = useTouristSpotManager();
   const router = useRouter();
-  const { touristSpots, loading, error, fetchTouristSpots, deleteTouristSpot } = useTouristSpotManager();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState(null);
+  const listRef = useRef<FlatList>(null);
 
-  // Fetch tourist spots when screen is focused
-  useFocusEffect(
-    useCallback(() => {
-      fetchTouristSpots();
-    }, [fetchTouristSpots])
-  );
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-  // Filter tourist spots based on search query and selected type
-  const filteredTouristSpots = touristSpots.filter(spot => {
-    const matchesSearch = spot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         spot.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = !selectedType || spot.type === selectedType;
-    return matchesSearch && matchesType;
+  useEffect(() => {
+    fetchTouristSpots();
+  }, [fetchTouristSpots]);
+
+  const filteredSpots = touristSpots.filter((spot) => {
+    const matchesSearch =
+      spot.name.toLowerCase().includes(search.toLowerCase()) ||
+      (spot.municipality && spot.municipality.toLowerCase().includes(search.toLowerCase())) ||
+      (spot.description && spot.description.toLowerCase().includes(search.toLowerCase()));
+  
+    const matchesCategory =
+      !selectedCategory || toTitleCase(spot.type) === selectedCategory;
+  
+    return matchesSearch && matchesCategory;
   });
 
-  // Get unique types from tourist spots
-  const spotTypes = [...new Set(touristSpots.map(spot => spot.type))];
+  const totalPages = Math.ceil(filteredSpots.length / itemsPerPage);
+  const paginatedSpots = filteredSpots.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
-  // Handle delete tourist spot
-  const handleDelete = (id, name) => {
-    Alert.alert(
-      "Delete Tourist Spot",
-      `Are you sure you want to delete "${name}"?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Delete", 
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await deleteTouristSpot(id);
-              fetchTouristSpots(); // Refresh the list
-            } catch (error) {
-              Alert.alert("Error", "Failed to delete tourist spot. Please try again.");
-            }
-          }
-        }
-      ]
-    );
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    listRef.current?.scrollToOffset({ offset: 0, animated: false });
   };
 
-  // Get color based on tourist spot type
-  const getTypeColor = (type) => {
-    const colors = {
-      'ADVENTURE': '#f97316',
-      'BEACH': '#0ea5e9',
-      'CAMPING': '#84cc16',
-      'CULTURAL': '#8b5cf6',
-      'HISTORICAL': '#f59e0b',
-      'NATURAL': '#10b981',
-      'RECREATIONAL': '#ec4899',
-      'RELIGIOUS': '#6366f1',
-      'OTHERS': '#64748b'
-    };
-    return colors[type] || '#64748b';
-  };
-
-  // Helper function to get image URL from different possible formats
-  const getImageUrl = (images) => {
-    if (!images || !Array.isArray(images) || images.length === 0) {
-      return null;
-    }
-    
-    const firstImage = images[0];
-    
-    // If it's a string, use it directly
-    if (typeof firstImage === 'string') {
-      return firstImage;
-    }
-    
-    // If it's an object with image_url property
-    if (typeof firstImage === 'object' && firstImage !== null) {
-      return firstImage.image_url || firstImage.url || firstImage.uri || null;
-    }
-    
-    return null;
-  };
-
-  // Render tourist spot card
-  const renderTouristSpotCard = ({ item }) => {
-    const typeColor = getTypeColor(item.type);
-    const imageUrl = getImageUrl(item.images);
-    
-    return (
-      <TouchableOpacity
-        onPress={() => router.push(`/guide/tourist_spots/guide_tourist_spot_view?id=${item.id}`)}
-        activeOpacity={0.9}
-        style={styles.card}
-      >
-        {/* Image Section with Gradient Overlay */}
-        <View style={styles.cardImageContainer}>
-          {imageUrl ? (
-            <>
-              <Image
-                source={{ uri: imageUrl }}
-                style={styles.cardImage}
-                resizeMode="cover"
-                onError={(e) => {
-                  console.error('Error loading image:', e.nativeEvent.error);
-                }}
-              />
-              <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.7)']}
-                style={styles.imageGradient}
-              />
-            </>
+  const renderSpot = ({ item }) => (
+    <TouchableOpacity
+      onPress={() => router.push(`./guide_tourist_spot_view?id=${item.id}`)}
+      activeOpacity={0.85}
+      style={{ borderRadius: 12, paddingBottom: 6 }}
+    >
+      <View style={styles.card}>
+        <View style={styles.imageWrapper}>
+          {item.images?.[0]?.image_url ? (
+            <Image
+              source={{ uri: item.images[0].image_url }}
+              style={styles.mainImage}
+              resizeMode="cover"
+            />
           ) : (
-            <View style={[styles.noImagePlaceholder, { backgroundColor: `${typeColor}20` }]}>
-              <Icon name="image" size={40} color={typeColor} />
-            </View>
+            <Text style={styles.noImage}>No image available</Text>
           )}
-  
-          {/* Type Badge */}
-          <View style={[styles.typeBadge, { backgroundColor: typeColor }]}>
-            <Text style={styles.typeText}>{item.type}</Text>
-          </View>
-  
-          {/* Title Overlay */}
-          <View style={styles.titleOverlay}>
-            <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
-            <View style={styles.locationRow}>
-              <Icon name="map-pin" size={14} color="#ffffff" />
-              <Text style={styles.locationText} numberOfLines={1}>
-                {item.barangay}, {item.municipality}
-              </Text>
-            </View>
-          </View>
         </View>
-      </TouchableOpacity>
-    );
-  };
+
+        <View style={styles.cardBody}>
+          <Text style={styles.spotName}>{toTitleCase(item.name)}</Text>
+          <Text style={styles.spotType}>
+            {toTitleCase(item.type)}{" "}
+            {toTitleCase(item.category) && `· ${toTitleCase(item.category)}`}
+          </Text>
+          <Text style={styles.spotLocation}>
+            {toTitleCase(item.municipality)}, {toTitleCase(item.province)}
+          </Text>
+          {item.description && (
+            <Text numberOfLines={3} style={styles.description}>
+              {toTitleCase(item.description)}
+            </Text>
+          )}
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const categories = Array.from(
+    new Set(touristSpots.map((spot) => toTitleCase(spot.type)).filter(Boolean))
+  );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-        
-        {/* Search and Filter Section */}
-        <View style={[styles.searchContainer, { marginTop: headerHeight + 10 }]}>
-          <View style={styles.searchInputContainer}>
-            <Icon name="search" size={20} color="#64748b" style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search tourist spots..."
-              placeholderTextColor="#94a3b8"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            {searchQuery ? (
-              <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Icon name="x-circle" size={20} color="#64748b" />
-              </TouchableOpacity>
-            ) : null}
-          </View>
-          
-          {/* Type Filter Chips */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterChipsContainer}
-          >
-            <TouchableOpacity
-              style={[
-                styles.filterChip,
-                !selectedType && styles.activeFilterChip
-              ]}
-              onPress={() => setSelectedType(null)}
-            >
-              <Text style={[
-                styles.filterChipText,
-                !selectedType && styles.activeFilterChipText
-              ]}>All</Text>
-            </TouchableOpacity>
-            
-            {spotTypes.map(type => (
-              <TouchableOpacity
-                key={type}
-                style={[
-                  styles.filterChip,
-                  selectedType === type && styles.activeFilterChip,
-                  selectedType === type && { backgroundColor: `${getTypeColor(type)}20` }
-                ]}
-                onPress={() => setSelectedType(type === selectedType ? null : type)}
-              >
-                <Text style={[
-                  styles.filterChipText,
-                  selectedType === type && styles.activeFilterChipText,
-                  selectedType === type && { color: getTypeColor(type) }
-                ]}>{type}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-        
-        {/* Tourist Spots List */}
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#0ea5e9" />
-            <Text style={styles.loadingText}>Loading tourist spots...</Text>
-          </View>
-        ) : error ? (
-          <View style={styles.errorContainer}>
-            <Icon name="alert-circle" size={48} color="#ef4444" />
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity
-              style={styles.retryButton}
-              onPress={() => fetchTouristSpots()}
-            >
-              <Text style={styles.retryButtonText}>Retry</Text>
-            </TouchableOpacity>
-          </View>
-        ) : filteredTouristSpots.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Icon name="search" size={48} color="#94a3b8" />
-            <Text style={styles.emptyText}>
-              {touristSpots.length === 0
-                ? "No tourist spots found. Using mock data for demonstration."
-                : "No tourist spots match your search criteria."}
-            </Text>
-            {touristSpots.length > 0 && (
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={() => {
-                  setSearchQuery('');
-                  setSelectedType(null);
-                }}
-              >
-                <Text style={styles.clearButtonText}>Clear Filters</Text>
-              </TouchableOpacity>
+    <View style={{ flex: 1, backgroundColor: "#f9fafb" }}>
+      <HeaderWithBack backgroundColor="#287674" textColor="#f9fafb" />
+      <FlatList
+        ref={listRef}
+        data={paginatedSpots}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderSpot}
+        ListHeaderComponent={
+          <View style={styles.container}>
+            <Text style={styles.title}>Tourist Spots</Text>
+            <View style={{ paddingHorizontal: 16, flexDirection: "row", gap: 4 }}>
+              <View style={{ flex: 1, alignItems: "center" }}>
+                <SearchBar
+                  value={search}
+                  onChangeText={setSearch}
+                  placeholder="Search by name or location"
+                />
+              </View>
+              <FilterDropdown
+                options={categories}
+                selected={selectedCategory}
+                onSelect={setSelectedCategory}
+              />
+            </View>
+            {loading && <Text style={styles.statusText}>Loading tourist spots...</Text>}
+            {error && <Text style={styles.errorText}>{error}</Text>}
+            {!loading && filteredSpots.length === 0 && (
+              <Text style={styles.statusText}>No tourist spots found.</Text>
             )}
           </View>
-        ) : (
-          <FlatList
-            data={filteredTouristSpots}
-            renderItem={renderTouristSpotCard}
-            keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={styles.listContainer}
-            showsVerticalScrollIndicator={false}
+        }
+        ListFooterComponent={
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
           />
-        )}
-      </View>
-    </SafeAreaView>
+        }
+        contentContainerStyle={{ paddingBottom: 24, gap: 12 }}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
   container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-    marginTop: 50,
+    paddingTop: 16,
+    paddingBottom: 10,
+    backgroundColor: "#f9fafb",
   },
-  searchContainer: {
+  title: {
     paddingHorizontal: 16,
-    paddingBottom: 12,
-    backgroundColor: '#f8fafc',
-    zIndex: 10,
-  },
-  searchInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#1c5461",
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#0f172a',
-  },
-  filterChipsContainer: {
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-  },
-  filterChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    marginRight: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
-    elevation: 1,
-  },
-  activeFilterChip: {
-    backgroundColor: '#0ea5e920',
-  },
-  filterChipText: {
-    fontSize: 14,
-    color: '#64748b',
-  },
-  activeFilterChipText: {
-    color: '#1c5c0e',
-    fontWeight: '600',
-  },
-  listContainer: {
-    padding: 16,
-    paddingTop: 8,
-    paddingBottom: 120, // Increased padding for FAB and bottom navigation
-  },
-  card: {
-    width: '100%',
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    marginBottom: 16,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  cardImageContainer: {
-    position: 'relative',
-    height: 180,
-  },
-  cardImage: {
-    width: '100%',
-    height: '100%',
-  },
-  imageGradient: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: '50%',
-  },
-  noImagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f1f5f9',
-  },
-  typeBadge: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  typeText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  titleOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-  },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#ffffff',
-    marginBottom: 4,
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  locationText: {
-    fontSize: 14,
-    color: '#ffffff',
-    marginLeft: 4,
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-  },
-  actionButtonsRow: {
-    flexDirection: 'row',
-    padding: 12,
-    justifyContent: 'space-between',
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginHorizontal: 4,
-  },
-  viewButton: {
-    backgroundColor: '#0ea5e9',
-  },
-  actionButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    marginLeft: 6,
-    fontSize: 14,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#64748b',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
+  statusText: {
+    textAlign: "center",
+    color: "#3e979f",
+    marginVertical: 10,
   },
   errorText: {
-    marginTop: 12,
+    textAlign: "center",
+    color: "red",
+    marginVertical: 10,
+  },
+  card: {
+    backgroundColor: "#f8fcfd",
+    marginHorizontal: 16,
+    borderRadius: 12,
+    overflow: "hidden",
+    borderColor: "#e6f7fa",
+    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 1, height: 3 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  imageWrapper: {
+    height: 180,
+    backgroundColor: "#e2e8f0",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  mainImage: {
+    width: "100%",
+    height: "100%",
+  },
+  noImage: {
+    color: "#94a3b8",
+  },
+  cardBody: {
+    padding: 12,
+  },
+  spotName: {
     fontSize: 16,
-    color: '#ef4444',
-    textAlign: 'center',
-    marginBottom: 16,
+    fontWeight: "900",
+    color: "#1c5461",
   },
-  retryButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#0ea5e9',
-    borderRadius: 8,
+  spotType: {
+    fontSize: 12,
+    color: "#3e979f",
+    fontWeight: "600",
+    marginBottom: 2,
   },
-  retryButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
+  spotLocation: {
+    fontSize: 13,
+    color: "#334155",
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-  },
-  emptyText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#64748b',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  clearButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 8,
-  },
-  clearButtonText: {
-    color: '#0ea5e9',
-    fontWeight: '600',
+  description: {
+    fontSize: 12,
+    color: "#475569",
+    marginVertical: 6,
   },
 });
-
-
-
-
-
-
-
-
-
-
