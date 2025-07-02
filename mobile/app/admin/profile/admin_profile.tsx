@@ -293,22 +293,6 @@ export default function AdminProfile() {
                   )}
                 </View>
               </View>
-              
-              {/* Profile stats */}
-              <View style={styles.statsContainer}>
-                <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>0</Text>
-                  <Text style={styles.statLabel}>Trips</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>0</Text>
-                  <Text style={styles.statLabel}>Reviews</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>0</Text>
-                  <Text style={styles.statLabel}>Bookmarks</Text>
-                </View>
-              </View>
             </View>
             
             {/* Profile info */}

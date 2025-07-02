@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import StaffHomeScreen from './home/staff_home';
 import StaffMapScreen from './map/staff_map';
 import StaffAnnouncementsScreen from './announcements/staff_announcements';
-import IncidentReportScreen from '../guide/profile/about/incident-report';
+import IncidentReportScreen from '../staff/profile/about/incident-report';
 import MoreScreen from './more/MoreScreen';
 import StaffQRScan from './visitor/staff_qr_scan';
 import StaffProfile from './profile/staff_profile';
