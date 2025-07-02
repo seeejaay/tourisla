@@ -105,8 +105,6 @@ const createTourPackageController = async (req, res) => {
 
 const updateTourPackageController = async (req, res) => {
   try {
-    const { id } = req.params;
-    const touroperator_id = getOperatorRegisById(req.user.id);
     if (!touroperator_id) {
       return res.status(404).json({ message: "Tour operator not found." });
     }
@@ -121,6 +119,8 @@ const updateTourPackageController = async (req, res) => {
     );
 
     let {
+      id,
+      touroperator_id,
       package_name,
       location,
       description,
@@ -137,7 +137,11 @@ const updateTourPackageController = async (req, res) => {
       cancellation_days,
       cancellation_note,
     } = req.body;
-
+    operatorRegis = await getOperatorRegisById(touroperator_id);
+    if (!operatorRegis) {
+      return res.status(404).json({ message: "Tour operator not found." });
+    }
+    const newOperatorId = operatorRegis.id;
     package_name = package_name.toUpperCase();
     location = location.toUpperCase();
     description = description.toUpperCase();
@@ -169,7 +173,7 @@ const updateTourPackageController = async (req, res) => {
         .json({ error: "Available slots cannot be negative" });
     }
 
-    const updated = await updateTourPackage(id, operatorId, {
+    const updated = await updateTourPackage(id, newOperatorId, {
       package_name,
       location,
       description,
