@@ -117,3 +117,33 @@ export const deleteTouristSpot = async (touristSpotId) => {
     throw error;
   }
 };
+
+export const assignAttractionToStaff = async (staffId, touristSpotId) => {
+  try {
+    console.log(
+      "API" + "Assigning Staff ID: ",
+      staffId,
+      " to Tourist Spot ID: ",
+      touristSpotId
+    );
+    const response = await axios.put(
+      `${API_URL}tourist-spots/${touristSpotId}/assign-staff`,
+      { staffId },
+      {
+        withCredentials: true,
+      }
+    );
+
+    if (response.status !== 200) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Assigning Staff to Tourist Spot: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};

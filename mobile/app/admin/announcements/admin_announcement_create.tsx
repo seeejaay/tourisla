@@ -19,6 +19,7 @@ import { useAnnouncementManager } from "@/hooks/useAnnouncementManager";
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
+import HeaderWithBack from "@/components/HeaderWithBack";
 import { LinearGradient } from 'expo-linear-gradient';
 
 // Announcement categories from backend
@@ -45,8 +46,6 @@ const ANNOUNCEMENT_CATEGORIES = [
   'DENGUE_WATERBORNE',
   'POWER_INTERRUPTION',
 ];
-
-const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
 
 export default function AdminAnnouncementCreateScreen() {
   const router = useRouter();
@@ -135,14 +134,7 @@ export default function AdminAnnouncementCreateScreen() {
   return (
     <SafeAreaView style={styles.safeContainer}>
       <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back-outline" size={24} color="#fff" />
-        </Pressable>
-        <Text style={styles.headerTitle}>Create Announcement</Text>
-      </View>
+      <HeaderWithBack title="Create Announcement" backgroundColor="#0f172a" textColor="#ffffff" />
 
       <ScrollView 
         style={styles.container}
@@ -251,42 +243,6 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 24,
   },
-  header: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 50 + STATUS_BAR_HEIGHT,
-    backgroundColor: "#0f172a",
-    borderBottomColor: "rgba(0, 0, 0, 0.1)",
-    borderBottomWidth: 1,
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    alignItems: "center",
-    paddingTop: STATUS_BAR_HEIGHT,
-    paddingHorizontal: 20,
-    zIndex: 50,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 15,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
-  },
   card: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -296,7 +252,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    marginTop: 50 + STATUS_BAR_HEIGHT,
+    marginTop: 16,
   },
   formGroup: {
     marginBottom: 16,
