@@ -4,123 +4,112 @@ const {
   deleteArticle,
   getAllArticles,
   getArticleById,
+  addArticleImages,
+  getArticleImages,
+  deleteArticleImage,
 } = require("../models/articleModel.js");
 
-const { s3Client, PutObjectCommand } = require("../utils/s3.js");
+const { s3Client, PutObjectCommand, deleteS3Object } = require("../utils/s3.js");
 
 const createArticleController = async (req, res) => {
   try {
     let {
       title,
       author,
-      body,
+      content,
       video_url,
       tags,
-      status,
+      type,
+      is_published,
       is_featured,
-      updated_by,
+      barangay,
+      summary,
     } = req.body;
 
     title = title?.toUpperCase();
     author = author?.toUpperCase();
-    body = body?.toUpperCase();
-
-    let thumbnail_url = null;
-
-    // Upload thumbnail to S3
-    if (req.file) {
-      const file = req.file;
-      const s3Key = `article_thumbnails/${Date.now()}_${file.originalname}`;
-      const uploadParams = {
-        Bucket: process.env.AWS_S3_BUCKET,
-        Key: s3Key,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-      };
-      await s3Client.send(new PutObjectCommand(uploadParams));
-      thumbnail_url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
-    }
+    content = content?.toUpperCase();
+    type = type?.toUpperCase();
+    barangay = barangay?.toUpperCase();
 
     const article = await createArticle({
       title,
       author,
-      body,
+      content,
       video_url,
-      thumbnail_url,
       tags,
-      status,
+      type,
+      is_published,
       is_featured,
-      updated_by,
+      barangay,
+      summary,
     });
 
-    res.status(201).json(article);
+    let imageUrls = [];
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files.slice(0, 5)) {
+        const s3Key = `article_images/${Date.now()}_${file.originalname}`;
+        const uploadParams = {
+          Bucket: process.env.AWS_S3_BUCKET,
+          Key: s3Key,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        };
+        await s3Client.send(new PutObjectCommand(uploadParams));
+        const imageUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+        imageUrls.push(imageUrl);
+      }
+      await addArticleImages(article.id, imageUrls);
+    }
+
+    res.status(201).json({
+      ...article,
+      images: imageUrls,
+    });
   } catch (err) {
-    console.error(err.message);
+    console.error(err);
     res.status(500).send(err.message);
   }
 };
 
 const editArticleController = async (req, res) => {
   try {
-    console.log("req.body:", req.body);
-    console.log("req.file:", req.file);
     const { articleId } = req.params;
     let {
       title,
       author,
-      body,
+      content,
       video_url,
-      thumbnail_url, // fallback if no new image
       tags,
-      status,
+      type,
+      is_published,
       is_featured,
-      updated_by,
+      barangay,
+      summary,
     } = req.body;
 
     title = title?.toUpperCase();
     author = author?.toUpperCase();
-    body = body?.toUpperCase();
+    content = content?.toUpperCase();
+    type = type?.toUpperCase();
+    barangay = barangay?.toUpperCase();
 
-    // If there's a new file, upload it and overwrite thumbnail_url
-    if (req.file) {
-      const file = req.file;
-      const s3Key = `article_thumbnails/${Date.now()}_${file.originalname}`;
-      const uploadParams = {
-        Bucket: process.env.AWS_S3_BUCKET,
-        Key: s3Key,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-      };
-
-      try {
-        await s3Client.send(new PutObjectCommand(uploadParams));
-        thumbnail_url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
-      } catch (s3Err) {
-        console.error("S3 upload failed:", s3Err.message);
-        // Optionally: return res.status(500).json({ error: "S3 upload failed" });
-      }
-    }
-    // else: thumbnail_url remains as sent in the form
-
-    const article = await editArticle(articleId, {
+    const updated = await editArticle(articleId, {
       title,
       author,
-      body,
+      content,
       video_url,
-      thumbnail_url, // always use the latest value
       tags,
-      status,
+      type,
+      is_published,
       is_featured,
-      updated_by,
+      barangay,
+      summary,
     });
 
-    if (!article) {
-      return res.status(404).json({ error: "Article not found" });
-    }
-
-    res.json(article);
+    res.json(updated);
   } catch (err) {
-    console.error(err.message);
+    console.error(err);
     res.status(500).send(err.message);
   }
 };
@@ -128,10 +117,10 @@ const editArticleController = async (req, res) => {
 const deleteArticleController = async (req, res) => {
   try {
     const { articleId } = req.params;
-    const article = await deleteArticle(articleId);
-    res.json(article);
+    const result = await deleteArticle(articleId);
+    res.json(result);
   } catch (err) {
-    console.error(err.message);
+    console.error(err);
     res.status(500).send(err.message);
   }
 };
@@ -139,9 +128,15 @@ const deleteArticleController = async (req, res) => {
 const viewArticlesController = async (req, res) => {
   try {
     const articles = await getAllArticles();
-    res.json(articles);
+    const fullArticles = await Promise.all(
+      articles.map(async (article) => {
+        const images = await getArticleImages(article.id);
+        return { ...article, images };
+      })
+    );
+    res.json(fullArticles);
   } catch (err) {
-    console.error(err.message);
+    console.error(err);
     res.status(500).send(err.message);
   }
 };
@@ -153,10 +148,70 @@ const viewArticleByIdController = async (req, res) => {
     if (!article) {
       return res.status(404).json({ error: "Article not found" });
     }
-    res.json(article);
+    const images = await getArticleImages(articleId);
+    res.json({ ...article, images });
   } catch (err) {
-    console.error(err.message);
+    console.error(err);
     res.status(500).send(err.message);
+  }
+};
+
+const uploadArticleImagesController = async (req, res) => {
+  try {
+    const { articleId } = req.params;
+    let imageUrls = [];
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: "No images provided" });
+    }
+
+    for (const file of req.files.slice(0, 5)) {
+      const s3Key = `article_images/${Date.now()}_${file.originalname}`;
+      const uploadParams = {
+        Bucket: process.env.AWS_S3_BUCKET,
+        Key: s3Key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      };
+      await s3Client.send(new PutObjectCommand(uploadParams));
+      const imageUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+      imageUrls.push(imageUrl);
+    }
+
+    const savedImages = await addArticleImages(articleId, imageUrls);
+    res.status(201).json(savedImages);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
+  }
+};
+
+const deleteArticleImageController = async (req, res) => {
+  try {
+    const { imageId } = req.params;
+    const deletedImage = await deleteArticleImage(imageId);
+
+    if (!deletedImage) {
+      return res.status(404).json({ message: "Image not found." });
+    }
+
+    const imageUrl = deletedImage.image_url;
+    const url = new URL(imageUrl);
+    const s3Key = url.pathname.startsWith("/") ? url.pathname.slice(1) : url.pathname;
+
+    try {
+      await deleteS3Object(s3Key);
+    } catch (s3Error) {
+      console.error("S3 Deletion Error:", s3Error.message);
+    }
+
+    res.status(200).json({
+      message: "Image deleted successfully.",
+      deletedImage,
+    });
+  } catch (err) {
+    console.error("Image deletion failed:", err);
+    res.status(500).json({ error: "Failed to delete image." });
   }
 };
 
@@ -166,4 +221,6 @@ module.exports = {
   deleteArticleController,
   viewArticlesController,
   viewArticleByIdController,
+  uploadArticleImagesController,
+  deleteArticleImageController,
 };

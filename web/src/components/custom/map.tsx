@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
-
+import Image from "next/image";
 // Helper to extract coordinates from a Google Maps URL
 function extractLatLng(url: string): { lat: number; lng: number } | null {
   const match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
@@ -27,126 +27,115 @@ function extractLatLng(url: string): { lat: number; lng: number } | null {
 
 // Map style
 const bantayanMapStyle = [
-  { elementType: "geometry", stylers: [{ color: "#1d2c4d" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#8ec3b9" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#1a3646" }] },
+  // General background
+  { elementType: "geometry", stylers: [{ color: "#e0f7fa" }] }, // light turquoise
+  { elementType: "labels.text.fill", stylers: [{ color: "#008080" }] }, // teal
+  { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
+
+  // Water
   {
-    featureType: "administrative.country",
-    elementType: "geometry.stroke",
-    stylers: [{ color: "#4b6878" }],
+    featureType: "water",
+    elementType: "geometry",
+    stylers: [{ color: "#0077b6" }], // deep cyan blue
   },
   {
-    featureType: "administrative.land_parcel",
+    featureType: "water",
     elementType: "labels.text.fill",
-    stylers: [{ color: "#64779e" }],
+    stylers: [{ color: "#005f6b" }],
+  },
+
+  // Parks and nature
+  {
+    featureType: "poi.park",
+    elementType: "geometry.fill",
+    stylers: [{ color: "#b6f5c9" }], // soft mint green
   },
   {
-    featureType: "administrative.province",
-    elementType: "geometry.stroke",
-    stylers: [{ color: "#4b6878" }],
+    featureType: "poi.park",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#388e3c" }],
+  },
+
+  // Roads
+  {
+    featureType: "road",
+    elementType: "geometry",
+    stylers: [{ color: "#b2ebf2" }], // pale teal
   },
   {
-    featureType: "landscape.man_made",
-    elementType: "geometry.stroke",
-    stylers: [{ color: "#334e87" }],
+    featureType: "road",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#00897b" }],
   },
+  {
+    featureType: "road",
+    elementType: "labels.text.stroke",
+    stylers: [{ color: "#ffffff" }],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry",
+    stylers: [{ color: "#4dd0e1" }], // bright turquoise
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry.stroke",
+    stylers: [{ color: "#00bcd4" }],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#006064" }],
+  },
+
+  // Points of Interest
+  {
+    featureType: "poi",
+    elementType: "geometry",
+    stylers: [{ color: "#b6f5c9" }], // soft mint green
+  },
+  {
+    featureType: "poi",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#00796b" }],
+  },
+
+  // Landscape
   {
     featureType: "landscape.natural",
     elementType: "geometry",
-    stylers: [{ color: "#023e58" }],
+    stylers: [{ color: "#009688" }], // rainforest teal-green
   },
   {
-    featureType: "poi",
+    featureType: "landscape.man_made",
     elementType: "geometry",
-    stylers: [{ color: "#283d6a" }],
+    stylers: [{ color: "#a7ffeb" }], // spring green
   },
+
+  // Administrative
   {
-    featureType: "poi",
+    featureType: "administrative",
     elementType: "labels.text.fill",
-    stylers: [{ color: "#6f9ba5" }],
+    stylers: [{ color: "#00838f" }],
   },
   {
-    featureType: "poi",
-    elementType: "labels.text.stroke",
-    stylers: [{ color: "#1d2c4d" }],
-  },
-  {
-    featureType: "poi.park",
-    elementType: "geometry.fill",
-    stylers: [{ color: "#023e58" }],
-  },
-  {
-    featureType: "poi.park",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#3C7680" }],
-  },
-  {
-    featureType: "road",
-    elementType: "geometry",
-    stylers: [{ color: "#304a7d" }],
-  },
-  {
-    featureType: "road",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#98a5be" }],
-  },
-  {
-    featureType: "road",
-    elementType: "labels.text.stroke",
-    stylers: [{ color: "#1d2c4d" }],
-  },
-  {
-    featureType: "road.highway",
-    elementType: "geometry",
-    stylers: [{ color: "#2c6675" }],
-  },
-  {
-    featureType: "road.highway",
+    featureType: "administrative.country",
     elementType: "geometry.stroke",
-    stylers: [{ color: "#255763" }],
+    stylers: [{ color: "#00bcd4" }],
   },
-  {
-    featureType: "road.highway",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#b0d5ce" }],
-  },
-  {
-    featureType: "road.highway",
-    elementType: "labels.text.stroke",
-    stylers: [{ color: "#023e58" }],
-  },
+
+  // Transit
   {
     featureType: "transit",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#98a5be" }],
-  },
-  {
-    featureType: "transit",
-    elementType: "labels.text.stroke",
-    stylers: [{ color: "#1d2c4d" }],
-  },
-  {
-    featureType: "transit.line",
-    elementType: "geometry.fill",
-    stylers: [{ color: "#283d6a" }],
+    elementType: "geometry",
+    stylers: [{ color: "#b2ebf2" }],
   },
   {
     featureType: "transit.station",
     elementType: "geometry",
-    stylers: [{ color: "#3a4762" }],
-  },
-  {
-    featureType: "water",
-    elementType: "geometry",
-    stylers: [{ color: "#0e1626" }],
-  },
-  {
-    featureType: "water",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#4e6d70" }],
+    stylers: [{ color: "#80deea" }],
   },
 ];
-
 const containerStyle = {
   width: "100%",
   height: "600px",
@@ -285,13 +274,14 @@ export default function MapPage() {
           <GoogleMap
             mapContainerStyle={containerStyle}
             center={center}
-            zoom={12}
+            zoom={13}
             options={{
               styles: bantayanMapStyle,
               streetViewControl: false,
               mapTypeControl: false,
               fullscreenControl: false,
               scrollwheel: false,
+              mapTypeId: "terrain",
             }}
           >
             {/* Bantayan Island Pin */}
@@ -308,34 +298,80 @@ export default function MapPage() {
                 >
                   {selectedSpotId === spot.id && (
                     <InfoWindow onCloseClick={() => setSelectedSpotId(null)}>
-                      <div className="p-2 min-w-[220px]">
-                        <h4 className="font-semibold text-lg mb-1">
+                      <div className="min-w-[240px]">
+                        <Image
+                          src={spot.images[0].image_url}
+                          alt={spot.name}
+                          width={240}
+                          height={120}
+                          className="w-full h-28 object-cover rounded-lg mb-3"
+                        />
+                        <h4 className="font-bold text-lg text-[#1c5461] mb-1">
                           {spot.name}
                         </h4>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {spot.description}
+                        <p className="text-xs text-gray-600 mb-3">
+                          {spot.description.length > 60
+                            ? spot.description.slice(0, 60) + "..."
+                            : spot.description}
                         </p>
-                        <div className="text-xs mb-2">
-                          <span className="block">
-                            <span className="font-medium">Barangay:</span>{" "}
-                            {spot.barangay}
-                          </span>
-                          <span className="block">
-                            <span className="font-medium">Category:</span>{" "}
-                            {spot.category}
-                          </span>
-                          <span className="block">
-                            <span className="font-medium">Type:</span>{" "}
-                            {spot.type}
-                          </span>
+                        <div className="bg-gray-50 rounded-md p-2 mb-3 border text-xs">
+                          <div>
+                            <span className="font-semibold text-gray-700">
+                              Barangay:
+                            </span>{" "}
+                            <span className="text-gray-900">
+                              {spot.barangay}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-gray-700">
+                              Category:
+                            </span>{" "}
+                            <span className="text-[#00aeac] font-semibold">
+                              {spot.category}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-gray-700">
+                              Type:
+                            </span>{" "}
+                            <span className="text-green-700 font-semibold">
+                              {spot.type}
+                            </span>
+                          </div>
                         </div>
                         <a
-                          href={spot.location}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-block mt-1 text-primary underline text-sm"
+                          href="#"
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            if (!navigator.geolocation) {
+                              window.open(spot.location, "_blank");
+                              return;
+                            }
+                            navigator.geolocation.getCurrentPosition(
+                              (pos) => {
+                                const match = spot.location.match(
+                                  /@(-?\d+\.\d+),(-?\d+\.\d+)/
+                                );
+                                if (!match) {
+                                  window.open(spot.location, "_blank");
+                                  return;
+                                }
+                                const destLat = match[1];
+                                const destLng = match[2];
+                                const userLat = pos.coords.latitude;
+                                const userLng = pos.coords.longitude;
+                                const directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${destLat},${destLng}&travelmode=driving`;
+                                window.open(directionsUrl, "_blank");
+                              },
+                              () => {
+                                window.open(spot.location, "_blank");
+                              }
+                            );
+                          }}
+                          className="inline-block w-full text-center mt-1 bg-[#1c5461] text-white rounded-full px-4 py-2 text-sm font-semibold shadow hover:bg-[#174d57] transition"
                         >
-                          View on Google Maps
+                          View Route on Google Maps
                         </a>
                       </div>
                     </InfoWindow>

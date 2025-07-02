@@ -160,6 +160,8 @@ const {
   deleteArticleController,
   viewArticlesController,
   viewArticleByIdController,
+  uploadArticleImagesController,
+  deleteArticleImageController,
 } = require("../controllers/articleController");
 
 const {
@@ -665,24 +667,40 @@ app.get("/api/v1/rules/:ruleId", viewRuleByIdController);
 // Routes — Articles
 app.post(
   "/api/v1/articles",
-  allowedRoles(["Cultural Director"]),
-  upload.single("thumbnail"),
+  allowedRoles(["Admin","Cultural Director"]),
+  upload.array("images", 5),
   createArticleController
 );
+
 app.put(
   "/api/v1/articles/:articleId",
-  allowedRoles(["Cultural Director"]),
-  upload.single("thumbnail"),
+  allowedRoles(["Admin", "Cultural Director"]),
+  upload.none(),
   editArticleController
 );
 
 app.delete(
   "/api/v1/articles/:articleId",
-  allowedRoles(["Cultural Director"]),
+  allowedRoles(["Admin","Cultural Director"]),
   deleteArticleController
 );
+
 app.get("/api/v1/articles", viewArticlesController);
+
 app.get("/api/v1/articles/:articleId", viewArticleByIdController);
+
+app.post(
+  "/api/v1/articles/:articleId/images",
+  allowedRoles(["Admin","Cultural Director"]),
+  upload.array("images", 5),
+  uploadArticleImagesController
+);
+
+app.delete(
+  "/api/v1/articles/images/:imageId",
+  allowedRoles(["Admin","Cultural Director"]),
+  deleteArticleImageController
+);
 
 // Routes for Accommodations
 app.post(
