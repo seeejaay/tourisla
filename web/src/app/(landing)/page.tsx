@@ -4,24 +4,31 @@ import { useEffect } from "react";
 import Header from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
 import Image from "next/image";
-import { MapPin, Waves, Sun, TreePalm } from "lucide-react";
+import { MapPin, Waves, Sun, TreePalm, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import useTripAdvisor from "@/hooks/useTripAdvisor";
+import { useTouristSpotManager } from "@/hooks/useTouristSpotManager";
 import MapPage from "@/components/custom/map";
 import AutoPlay from "embla-carousel-autoplay";
+import { useArticleManager } from "@/hooks/useArticleManager";
 import {
   Carousel,
   CarouselItem,
   CarouselContent,
 } from "@/components/ui/carousel";
+import Link from "next/link";
 
 const images = [
+  "/images/hero-carousel/4.jpg",
   "/images/hero-carousel/1.jpg",
-  "/images/hero-carousel/2.jpg",
+  "/images/hero-carousel/9.jpg",
   "/images/hero-carousel/3.jpg",
-  "/images/hero-carousel/5.jpg",
-  "/images/hero-carousel/11.webp",
   "/images/hero-carousel/13.jpg",
+  "/images/hero-carousel/5.jpg",
+  "/images/hero-carousel/8.jpg",
+  "/images/hero-carousel/7.jpg",
+  "/images/hero-carousel/10.jpg",
+  "/images/hero-carousel/11.webp",
 ];
 
 const cardData = [
@@ -33,8 +40,8 @@ const cardData = [
     icon: <Waves className="w-5 h-5 mr-2" />,
     cta: "Crystal Clear Waters",
     href: "#sea",
-    bg: "bg-[#bbe1d0]",
-    text: "text-[#04807e]",
+    bg: "bg-[#00bdd0]",
+    text: "text-[#1c5461]",
   },
   {
     title: "Sun",
@@ -44,8 +51,8 @@ const cardData = [
     icon: <Sun className="w-5 h-5 mr-2" />,
     cta: "Breathtaking Sunsets",
     href: "#sun",
-    bg: "bg-[#ffece5]",
-    text: "text-[#ae5b7d]",
+    bg: "bg-[#ffd0ca]",
+    text: "text-[#ce5f27]",
   },
   {
     title: "Sand",
@@ -55,13 +62,40 @@ const cardData = [
     icon: <TreePalm className="w-5 h-5 mr-2" />,
     cta: "Powdery Shores",
     href: "#sand",
-    bg: "bg-[#ce5f27]",
-    text: "text-[#ffece5]",
+    bg: "bg-[#fecfa1]",
+    text: "text-[#1c5461]",
   },
 ];
 
 export default function Home() {
   const { hotels, loading, error } = useTripAdvisor();
+  const { articles, loading: articlesLoading } = useArticleManager();
+  const {
+    touristSpots,
+    loading: spotsLoading,
+    error: spotsError,
+    fetchTouristSpots,
+  } = useTouristSpotManager();
+  function shuffleArray<T>(array: T[]): T[] {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+  const shuffledArticles = shuffleArray(articles).slice(0, 7);
+
+  const gridClasses = [
+    "col-span-2 row-span-2 h-[380px]",
+    "col-span-1 row-span-1 h-[180px]",
+    "col-span-1 row-span-2 h-[380px]",
+    "col-span-1 row-span-1 h-[180px]",
+    "col-span-1 row-span-1 h-[180px]",
+    "col-span-2 row-span-1 h-[180px]",
+    "col-span-1 row-span-1 h-[180px]",
+  ];
+
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -77,16 +111,18 @@ export default function Home() {
       }
     };
     document.addEventListener("click", handleClick);
+    fetchTouristSpots();
     return () => document.removeEventListener("click", handleClick);
-  }, []);
+  }, [fetchTouristSpots]);
 
   return (
     <>
       <Header />
-      <main className="w-full min-h-screen bg-[#f1f1f1] text-[#1c5461] ">
+      <main className="w-full min-h-screen bg-[#f1f1f1] text-[#1c5461]">
+        {/* HERO SECTION */}
         <section
           id="hero"
-          className="min-h-screen flex flex-col justify-center items-center px-4 pt-24"
+          className="min-h-screen flex flex-col justify-center items-center px-4 pt-24 "
         >
           <div className="h-[80vh] w-full flex flex-col items-center justify-center mx-auto relative rounded-2xl overflow-hidden shadow-md">
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
@@ -112,7 +148,7 @@ export default function Home() {
                         alt={`Scenery ${index + 1}`}
                         quality={100}
                         fill
-                        className="object-cover"
+                        className="object-cover object-top"
                       />
                     </div>
                   </CarouselItem>
@@ -139,33 +175,33 @@ export default function Home() {
                 </div>
                 <motion.a
                   href="#about-bantayan"
-                  className="hidden md:block items-center bg-[#e6f7fa] text-[#1c5461] font-semibold rounded-full transition-colors duration-300 text-base md:text-lg lg:text-xl  px-4 md:px-6 py-3 md:py-4  inset-shadow-sm w-96 md:w-80 max-w-72 inset-shadow-gray-700"
-                  whileHover={{ scale: 1.03 }}
+                  className="hidden md:block items-center bg-[#1c8773] text-[#f1f1f1] font-semibold rounded-md transition-colors duration-300 text-base md:text-lg lg:text-xl  px-4 md:px-6 py-3 md:py-4   w-96 md:w-72 text-center max-w-72 "
+                  whileHover={{ filter: "brightness(1.1)", scale: 1.02 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <MapPin className="inline w-5 h-5 mr-2" />
-                  Explore Tourist Spots
+                  Explore Bantayan
                 </motion.a>
               </div>
             </div>
           </div>
         </section>
-        <section id="about-bantayan" className="pt-24">
+        {/* ABOUT SECTION */}
+        <section id="about-bantayan" className="pt-28 ">
           <div className="max-w-7xl mx-auto px-4 flex flex-col items-center">
             <h2 className="text-3xl md:text-5xl font-bold text-center mb-4">
-              <span className="text-[#04807e]">Sea</span>, <span> </span>
+              <span className="text-[#00bdd0]">Sea</span>, <span> </span>
               <span className="text-[#ce5f27]">Sun</span>, and{" "}
-              <span className="text-[#eba843]">Sand</span>: The Essence of
+              <span className="text-[#bda156]">Sand</span>: The Essence of
               Bantayan Island
             </h2>
-            <div className="bg-[#1c5461] border-2 border-[#1c5461] w-24 mb-8" />
+            <div className="bg-[#1c8773] border-2 border-[#1c8773] w-24 mb-8" />
             <p className="text-lg text-center max-w-3xl mx-auto">
               Turquoise seas, golden sun, and powdery sands await. Experience
               Bantayan Island’s vibrant culture and warm hospitality.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mt-12 w-full">
-              {/* Shared card style */}
               {cardData.map((card, idx) => (
                 <motion.div
                   key={idx}
@@ -212,12 +248,161 @@ export default function Home() {
             </div>
           </div>
         </section>
-        <section id="hotels" className="pt-24">
+
+        {/* Bento Grid Section */}
+        <section id="bento" className="py-28 ">
           <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-4">
-              Recommended Hotels
-            </h2>
-            <div className="bg-[#1c5461] border-2 border-[#1c5461] w-24 mb-8 mx-auto" />
+            <div className="flex flex-col items-center mb-12">
+              <h2 className="text-3xl md:text-5xl font-bold text-center mb-4">
+                Explore the Rich Heritage of Bantayan Island
+              </h2>
+              <div className="bg-[#1c8773] border-2 border-[#1c8773] w-24 mb-8" />
+              <p className="text-lg text-center max-w-3xl mx-auto">
+                Discover Bantayan Island&apos;s rich heritage through its
+                vibrant culture, stunning landscapes, and warm hospitality. From
+                pristine beaches to historical landmarks, every corner tells a
+                story waiting to be explored.
+              </p>
+            </div>
+            {articlesLoading ? (
+              <div className="text-center text-[#1c5461]">Loading...</div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 grid-rows-3 gap-4">
+                {shuffledArticles.map((article, idx) => {
+                  const imageUrl = article.images[0].image_url;
+                  return (
+                    <a
+                      key={article.id}
+                      href={`/articles/${article.id}`}
+                      className={`relative rounded-2xl overflow-hidden shadow-lg group ${
+                        gridClasses[idx] || "col-span-1 row-span-1 h-[180px]"
+                      }`}
+                    >
+                      <Image
+                        src={imageUrl || "/images/placeholder_hotel.png"}
+                        alt={article.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                      {/* Pill with article title */}
+                      <div className="absolute left-4 bottom-4 z-10">
+                        <span className="bg-[#2a7b8d]  shadow-lg text-[#f1f1f1] font-semibold px-4 py-1 rounded-full  text-base">
+                          {article.title.length > 20
+                            ? article.title.slice(0, 20) + "…"
+                            : article.title}
+                        </span>
+                      </div>
+                      {/* Optional: Overlay on hover */}
+                      <div className="absolute inset-0 bg-[#2a7b8d]/[20%] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                        <span className="bg-[#2a7b8d] shadow-lg text-white font-semibold rounded-full px-6 py-3 shadow-lg">
+                          View Article
+                        </span>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+        {/* Tourist Spot Section */}
+        <section id="touristspot" className="pt-24 ">
+          <div className="max-w-7xl mx-auto px-4 flex flex-col  items-start">
+            <div className="flex flex-row w-full  justify-between items-center mb-8">
+              <h2 className="text-xl md:text-3xl font-bold text-left ">
+                Recommended Tourist Spots
+              </h2>
+              <Link
+                className="bg-[#0da6ae] text-[#f1f1f1] flex items-center justify-center font-semibold rounded-md text-center px-4 py-1 transition-all  duration-300 text-base hover:scale-105 hover:shadow-md"
+                href="/tourist-spots"
+              >
+                View All
+                <ChevronRight className="inline w-5 h-5 ml-2" />
+              </Link>
+            </div>
+
+            <div className="bg-[#1c8773] border-2 border-[#1c8773] w-24 mb-8 " />
+            {spotsLoading ? (
+              <p className="text-center text-lg">Loading tourist spots...</p>
+            ) : spotsError ? (
+              <p className="text-red-500 text-center">{spotsError}</p>
+            ) : touristSpots.length === 0 ? (
+              <p className="text-center text-gray-500">
+                No tourist spots found.
+              </p>
+            ) : (
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                plugins={[
+                  AutoPlay({
+                    delay: 4000,
+                    stopOnInteraction: false,
+                  }),
+                ]}
+                className="w-full"
+              >
+                <CarouselContent>
+                  {touristSpots.map((spot) => (
+                    <CarouselItem
+                      key={spot.id}
+                      className="md:basis-1/2 basis-full"
+                    >
+                      <div className="relative group rounded-lg shadow-lg overflow-hidden h-64 w-full">
+                        <Image
+                          src={
+                            spot.images?.[0]?.image_url ||
+                            "/images/placeholder_hotel.png"
+                          }
+                          alt={spot.name}
+                          fill
+                          className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                        />
+                        {/* Pill box with spot name */}
+                        <div className="absolute left-4 bottom-4 z-10">
+                          <span className="bg-[#e8babc] text-[#1c5461] font-semibold px-4 py-1 rounded-full shadow text-base">
+                            {spot.name}
+                          </span>
+                        </div>
+                        {/* Hover overlay with View button */}
+                        <div className="absolute inset-0 bg-[#a2c8d3]/[20%] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                          <a
+                            href={`/tourist-spots/${spot.id}`}
+                            className="bg-[#2eb1ab] text-white font-semibold rounded-full px-6 py-3 shadow-lg hover:brightness-110 transition"
+                          >
+                            View Details
+                          </a>
+                        </div>
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+              </Carousel>
+            )}
+          </div>
+        </section>
+
+        {/* HOTELS SECTION */}
+        <section id="hotels" className="pt-24 ">
+          <div className="max-w-7xl mx-auto px-4 flex flex-col  items-start">
+            <div className="flex flex-row w-full  justify-between items-center mb-8">
+              <h2 className="text-xl md:text-3xl font-bold text-left ">
+                Recommended Hotels
+              </h2>
+              <Link
+                className="bg-[#0da6ae] text-[#f1f1f1] flex items-center justify-center font-semibold rounded-md text-center px-4 py-1 transition-all  duration-300 text-base hover:scale-105 hover:shadow-md"
+                href="/listings"
+              >
+                View All
+                <ChevronRight className="inline w-5 h-5 ml-2" />
+              </Link>
+            </div>
+
+            <div className="bg-[#1c8773] border-2 border-[#1c8773] w-24 mb-8 " />
             {loading ? (
               <p className="text-center text-lg">Loading hotels...</p>
             ) : error ? (
@@ -244,29 +429,30 @@ export default function Home() {
                       key={hotel.location_id}
                       className="md:basis-1/3 basis-full"
                     >
-                      <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-full">
+                      <div className="relative group rounded-lg shadow-lg overflow-hidden h-64 w-full">
                         <Image
                           src={
                             hotel.photos?.[0]?.images.large.url ||
-                            "/images/placeholder_hotel.jpg"
+                            "/images/placeholder_hotel.png"
                           }
                           alt={hotel.name}
-                          width={400}
-                          height={300}
-                          className="w-full h-48 object-cover"
+                          fill
+                          className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                          sizes="(max-width: 768px) 100vw, 33vw"
                         />
-                        <div className="p-4 flex-1 flex flex-col">
-                          <h3 className="text-xl font-semibold">
+                        {/* Pill box with hotel name */}
+                        <div className="absolute left-4 bottom-4 z-10">
+                          <span className="bg-[#e8babc] text-[#1c5461] font-semibold px-4 py-1 rounded-full shadow text-base">
                             {hotel.name}
-                          </h3>
-                          <p className="text-gray-600 mt-2 flex-1">
-                            {hotel.address_obj?.address_string}
-                          </p>
+                          </span>
+                        </div>
+                        {/* Hover overlay with Tripadvisor button */}
+                        <div className="absolute inset-0 bg-[#a2c8d3]/[20%] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                           <a
                             href={`https://www.tripadvisor.com.ph/Hotel_Review-d${hotel.location_id}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="mt-4 inline-block bg-[#00aeac] text-white w-44 cursor-pointer rounded-full px-4 py-2 hover:brightness-110"
+                            className="bg-[#2eb1ab] text-white font-semibold rounded-full px-6 py-3 shadow-lg hover:brightness-110 transition"
                           >
                             View on Tripadvisor
                           </a>
@@ -280,82 +466,17 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Bento Grid Section */}
-        <section id="bento" className="py-24">
+        {/* MAP SECTION */}
+        <section id="map" className="pt-24 ">
           <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-8">
-              Island Gallery
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 grid-rows-3 gap-4">
-              <div className="col-span-2 row-span-2 relative rounded-2xl overflow-hidden shadow-lg h-[380px]">
-                <Image
-                  src={images[0]}
-                  alt="Bento 1"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
-              </div>
-              <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden shadow-lg h-[180px]">
-                <Image
-                  src={images[1]}
-                  alt="Bento 2"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 25vw"
-                />
-              </div>
-              <div className="col-span-1 row-span-2 relative rounded-2xl overflow-hidden shadow-lg h-[380px]">
-                <Image
-                  src={images[2]}
-                  alt="Bento 3"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 25vw"
-                />
-              </div>
-              <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden shadow-lg h-[180px]">
-                <Image
-                  src={images[3]}
-                  alt="Bento 4"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 25vw"
-                />
-              </div>
-              <div className="col-span-1 row-span-1 relative rounded-2xl overflow-hidden shadow-lg h-[180px]">
-                <Image
-                  src={images[4]}
-                  alt="Bento 5"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 25vw"
-                />
-              </div>
-              <div className="col-span-2 row-span-1 relative rounded-2xl overflow-hidden shadow-lg h-[180px]">
-                <Image
-                  src={images[5]}
-                  alt="Bento 6"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="map" className="pt-24">
-          <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-4">
+            <h2 className="text-3xl font-bold text-center mb-4 text-[#1c5461]">
               Explore Bantayan Island
             </h2>
-            <div className="bg-[#1c5461] border-2 border-[#1c5461] w-24 mb-8 mx-auto" />
+            <div className="bg-[#1c8773] border-2 border-[#1c8773] w-24 mb-8 mx-auto" />
             <MapPage />
           </div>
         </section>
       </main>
-
       <Footer />
     </>
   );

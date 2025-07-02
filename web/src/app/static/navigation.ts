@@ -32,9 +32,9 @@ export const navigation = [
     title: "Tour Packages",
   },
   {
-    tag: "Incident Report",
-    href: "/incident-report",
-    title: "Incident Report",
+    tag: "Hotline",
+    href: "/hotlines",
+    title: "Hotline",
   },
 ];
 export const footerNavigation = [

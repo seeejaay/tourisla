@@ -6,7 +6,7 @@ const hotlineSchema = z.object({
   type: z.enum(["MEDICAL", "POLICE", "BFP", "NDRRMO", "COAST_GUARD"]),
   contact_number: z
     .string()
-    .min(12, { message: "Contact number is required." })
+    .min(7, { message: "Contact number is required." })
     .max(15, { message: "Contact number must be less than 15 characters." })
     .regex(/^\+?[0-9]+$/, {
       message: "Contact number can only contain numbers.",

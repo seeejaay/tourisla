@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import Footer from "@/components/custom/footer";
 import {
   Form,
   FormControl,
@@ -308,526 +309,546 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] px-4 py-8 relative">
-      {/* Logo and intro */}
-      <Image
-        src="/images/bg.svg"
-        alt="Tourisla Logo"
-        fill
-        className="absolute top-0 left-0 w-full h-full object-cover object-center opacity-10 pointer-events-none"
-        priority
-      />
-      <div className="w-full max-w-4xl z-10">
-        <div className="relative overflow-hidden rounded-2xl shadow-2xl border border-[#e6f7fa] bg-white/90 backdrop-blur-lg">
-          {/* Decorative elements */}
-          <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#3e979f]/20 rounded-full filter blur-3xl"></div>
-          <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-[#1c5461]/20 rounded-full filter blur-3xl"></div>
+    <>
+      <div className="z-50 fixed top-0 left-0 w-full cursor-pointer bg-white shadow-md px-4 py-2 flex items-center justify-between">
+        <Button
+          variant="ghost"
+          className="text-[#3e979f] hover:text-[#1c5461] font-semibold"
+          onClick={() => router.push("/")}
+        >
+          ← Home
+        </Button>
+      </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] px-4 py-28 relative">
+        {/* Logo and intro */}
+        <Image
+          src="/images/bg.svg"
+          alt="Tourisla Logo"
+          fill
+          className="absolute top-0 left-0 w-full h-full object-cover object-center opacity-10 pointer-events-none"
+          priority
+        />
+        <div className="w-full max-w-4xl z-10">
+          <div className="relative overflow-hidden rounded-2xl shadow-2xl border border-[#e6f7fa] bg-white/90 backdrop-blur-lg">
+            {/* Decorative elements */}
+            <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#3e979f]/20 rounded-full filter blur-3xl"></div>
+            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-[#1c5461]/20 rounded-full filter blur-3xl"></div>
 
-          <div className="relative z-10 p-10 md:p-12">
-            <div className="mb-8 text-center">
-              <div className="mx-auto flex justify-center mb-4">
-                <svg
-                  className="w-10 h-10 text-[#3e979f]"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+            <div className="relative z-10 p-10 md:p-12">
+              <div className="mb-8 text-center">
+                <div className="mx-auto flex justify-center mb-4">
+                  <svg
+                    className="w-10 h-10 text-[#3e979f]"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <h1 className="text-3xl font-extrabold text-[#1c5461] mb-1">
+                  Create your account
+                </h1>
+                <p className="text-[#51702c] text-sm">
+                  Sign up to explore and experience the best of TourISLA.
+                </p>
               </div>
-              <h1 className="text-3xl font-extrabold text-[#1c5461] mb-1">
-                Create your account
-              </h1>
-              <p className="text-[#51702c] text-sm">
-                Sign up to explore and experience the best of TourISLA.
-              </p>
-            </div>
 
-            {/* Error and Success Messages */}
-            {error && (
-              <div className="mb-4 text-center min-h-[1rem] w-full flex items-center justify-center">
-                <div className="max-w-md border border-red-600 bg-red-200 rounded-md p-3">
-                  <span className="text-red-600 text-sm">{error}</span>
+              {/* Error and Success Messages */}
+              {error && (
+                <div className="mb-4 text-center min-h-[1rem] w-full flex items-center justify-center">
+                  <div className="max-w-md border border-red-600 bg-red-200 rounded-md p-3">
+                    <span className="text-red-600 text-sm">{error}</span>
+                  </div>
                 </div>
-              </div>
-            )}
-            {success && (
-              <div className="mb-4 text-center min-h-[1rem] w-full flex items-center justify-center">
-                <div className="max-w-md border border-green-600 bg-green-200 rounded-md p-3">
-                  <span className="text-green-700 text-sm">{success}</span>
+              )}
+              {success && (
+                <div className="mb-4 text-center min-h-[1rem] w-full flex items-center justify-center">
+                  <div className="max-w-md border border-green-600 bg-green-200 rounded-md p-3">
+                    <span className="text-green-700 text-sm">{success}</span>
+                  </div>
                 </div>
-              </div>
-            )}
-            {/* {Object.keys(form.formState.errors).length > 0 && (
+              )}
+              {/* {Object.keys(form.formState.errors).length > 0 && (
               <pre style={{ color: "red" }}>
                 {JSON.stringify(form.formState.errors, null, 2)}
               </pre>
             )} */}
-            {/* Form Section */}
-            <Form {...form}>
-              <form
-                onSubmit={(e) => {
-                  console.log("Form submit event fired");
-                  form.handleSubmit(onSubmit)(e);
-                }}
-                className="space-y-6"
-              >
-                {/* Role Select */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="role"
-                    render={({}) => (
-                      <FormItem className="w-full flex flex-col">
-                        <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                          Register as
-                        </FormLabel>
-                        <FormControl>
-                          <Select value={role} onValueChange={handleRoleChange}>
-                            <SelectTrigger className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white">
-                              <SelectValue placeholder="Select role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {roleOptions.map((option) => (
-                                <SelectItem
-                                  key={option.value}
-                                  value={option.value}
-                                >
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Personal Info Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="first_name"
-                    render={({ field }) => (
-                      <FormItem className="w-full flex flex-col">
-                        <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                          First Name
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="text"
-                            placeholder="First Name"
-                            {...field}
-                            className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white uppercase"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="last_name"
-                    render={({ field }) => (
-                      <FormItem className="w-full flex flex-col">
-                        <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                          Last Name
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="text"
-                            placeholder="Last Name"
-                            {...field}
-                            className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white uppercase"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem className="w-full flex flex-col">
-                        <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                          Email
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="Email"
-                            {...field}
-                            className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="phone_number"
-                    render={({ field }) => (
-                      <FormItem className="w-full flex flex-col">
-                        <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                          Phone Number
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="text"
-                            placeholder="+639XXXXXXXXX"
-                            {...field}
-                            value={
-                              typeof field.value === "string"
-                                ? field.value
-                                : "+63"
-                            }
-                            onChange={(e) => {
-                              let val = e.target.value;
-                              if (!val.startsWith("+63")) {
-                                val = "+63" + val.replace(/^\+?63?/, "");
-                              }
-                              field.onChange(val);
-                            }}
-                            className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Password Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem className="w-full flex flex-col">
-                        <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                          Password
-                        </FormLabel>
-                        <FormControl className="mb-2">
-                          <Input
-                            type="password"
-                            placeholder="Password"
-                            {...field}
-                            className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
-                          />
-                        </FormControl>
-                        <FormMessage className="min-h-[1.25rem]" />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="confirm_password"
-                    render={({ field }) => (
-                      <FormItem className="w-full flex flex-col">
-                        <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                          Confirm Password
-                        </FormLabel>
-                        <FormControl className="mb-2">
-                          <Input
-                            type="password"
-                            placeholder="Confirm Password"
-                            {...field}
-                            className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
-                          />
-                        </FormControl>
-                        <FormMessage className="min-h-[1.25rem]" />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Nationality Select */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="nationality"
-                    render={({ field }) => (
-                      <FormItem className="w-full flex flex-col">
-                        <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                          Nationality
-                        </FormLabel>
-                        <FormControl>
-                          <Select
-                            value={field.value || ""}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white">
-                              <SelectValue placeholder="Select nationality" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {(
-                                selectField.find(
-                                  (f) => f.name === "nationality"
-                                )?.options ?? []
-                              ).map(
-                                (option: { value: string; label: string }) => (
+              {/* Form Section */}
+              <Form {...form}>
+                <form
+                  onSubmit={(e) => {
+                    console.log("Form submit event fired");
+                    form.handleSubmit(onSubmit)(e);
+                  }}
+                  className="space-y-6"
+                >
+                  {/* Role Select */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="role"
+                      render={({}) => (
+                        <FormItem className="w-full flex flex-col">
+                          <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                            Register as
+                          </FormLabel>
+                          <FormControl>
+                            <Select
+                              value={role}
+                              onValueChange={handleRoleChange}
+                            >
+                              <SelectTrigger className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white">
+                                <SelectValue placeholder="Select role" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {roleOptions.map((option) => (
                                   <SelectItem
                                     key={option.value}
                                     value={option.value}
                                   >
                                     {option.label}
                                   </SelectItem>
-                                )
-                              )}
-                            </SelectContent>
-                          </Select>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Personal Info Fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="first_name"
+                      render={({ field }) => (
+                        <FormItem className="w-full flex flex-col">
+                          <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                            First Name
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="text"
+                              placeholder="First Name"
+                              {...field}
+                              className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white uppercase"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="last_name"
+                      render={({ field }) => (
+                        <FormItem className="w-full flex flex-col">
+                          <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                            Last Name
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="text"
+                              placeholder="Last Name"
+                              {...field}
+                              className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white uppercase"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem className="w-full flex flex-col">
+                          <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                            Email
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="email"
+                              placeholder="Email"
+                              {...field}
+                              className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="phone_number"
+                      render={({ field }) => (
+                        <FormItem className="w-full flex flex-col">
+                          <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                            Phone Number
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="text"
+                              placeholder="+639XXXXXXXXX"
+                              {...field}
+                              value={
+                                typeof field.value === "string"
+                                  ? field.value
+                                  : "+63"
+                              }
+                              onChange={(e) => {
+                                let val = e.target.value;
+                                if (!val.startsWith("+63")) {
+                                  val = "+63" + val.replace(/^\+?63?/, "");
+                                }
+                                field.onChange(val);
+                              }}
+                              className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Password Fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem className="w-full flex flex-col">
+                          <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                            Password
+                          </FormLabel>
+                          <FormControl className="mb-2">
+                            <Input
+                              type="password"
+                              placeholder="Password"
+                              {...field}
+                              className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
+                            />
+                          </FormControl>
+                          <FormMessage className="min-h-[1.25rem]" />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="confirm_password"
+                      render={({ field }) => (
+                        <FormItem className="w-full flex flex-col">
+                          <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                            Confirm Password
+                          </FormLabel>
+                          <FormControl className="mb-2">
+                            <Input
+                              type="password"
+                              placeholder="Confirm Password"
+                              {...field}
+                              className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
+                            />
+                          </FormControl>
+                          <FormMessage className="min-h-[1.25rem]" />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Nationality Select */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="nationality"
+                      render={({ field }) => (
+                        <FormItem className="w-full flex flex-col">
+                          <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                            Nationality
+                          </FormLabel>
+                          <FormControl>
+                            <Select
+                              value={field.value || ""}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white">
+                                <SelectValue placeholder="Select nationality" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {(
+                                  selectField.find(
+                                    (f) => f.name === "nationality"
+                                  )?.options ?? []
+                                ).map(
+                                  (option: {
+                                    value: string;
+                                    label: string;
+                                  }) => (
+                                    <SelectItem
+                                      key={option.value}
+                                      value={option.value}
+                                    >
+                                      {option.label}
+                                    </SelectItem>
+                                  )
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Tour Guide Specific Fields */}
+                  {role === "Tour Guide" && (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="birth_date"
+                          render={({ field }) => (
+                            <FormItem className="w-full flex flex-col">
+                              <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                                Birth Date *
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="date"
+                                  {...field}
+                                  className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="sex"
+                          render={({ field }) => (
+                            <FormItem className="w-full flex flex-col">
+                              <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                                Sex *
+                              </FormLabel>
+                              <FormControl>
+                                <Select
+                                  value={field.value || ""}
+                                  onValueChange={field.onChange}
+                                >
+                                  <SelectTrigger className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white">
+                                    <SelectValue placeholder="Select sex" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="MALE">Male</SelectItem>
+                                    <SelectItem value="FEMALE">
+                                      Female
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-[#1c5461] mb-1">
+                            Profile Picture
+                          </label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            className="w-full px-4 py-3 border border-[#e6f7fa] rounded-md text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#3e979f]/10 file:text-[#3e979f] hover:file:bg-[#3e979f]/20"
+                          />
+                        </div>
+                        <FormField
+                          control={form.control}
+                          name="reason_for_applying"
+                          render={({ field }) => (
+                            <FormItem className="w-full flex flex-col">
+                              <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                                Reason for Applying *
+                              </FormLabel>
+                              <FormControl>
+                                <textarea
+                                  {...field}
+                                  placeholder="Reason for applying as a tour guide"
+                                  className="w-full px-4 py-3 border border-[#e6f7fa] rounded-md text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white min-h-[100px] resize-vertical"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Tour Operator Specific Fields */}
+                  {role === "Tour Operator" && (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="operator_name"
+                          render={({ field }) => (
+                            <FormItem className="w-full flex flex-col">
+                              <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                                Operator/Business Name *
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="text"
+                                  placeholder="Operator/Business Name"
+                                  {...field}
+                                  className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="business_email"
+                          render={({ field }) => (
+                            <FormItem className="w-full flex flex-col">
+                              <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                                Business Contact Email *
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="email"
+                                  placeholder="Business Contact Email"
+                                  {...field}
+                                  className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="mobile_number"
+                          render={({ field }) => (
+                            <FormItem className="w-full flex flex-col">
+                              <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                                Business Mobile Number *
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="tel"
+                                  placeholder="Business Mobile Number"
+                                  {...field}
+                                  className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="office_address"
+                          render={({ field }) => (
+                            <FormItem className="w-full flex flex-col">
+                              <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                                Office Address *
+                              </FormLabel>
+                              <FormControl>
+                                <textarea
+                                  {...field}
+                                  placeholder="Office Address"
+                                  className="w-full px-4 py-3 border border-[#e6f7fa] rounded-md text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white min-h-[100px] resize-vertical"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Terms and Conditions */}
+                  <FormField
+                    control={form.control}
+                    name="terms"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            className="border-[#3e979f] data-[state=checked]:bg-[#3e979f] data-[state=checked]:border-[#3e979f]"
+                          />
                         </FormControl>
-                        <FormMessage />
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="text-sm text-[#1c5461]">
+                            I agree to the{" "}
+                            <a
+                              href="/terms"
+                              className="text-[#3e979f] hover:underline"
+                            >
+                              Terms and Conditions
+                            </a>
+                          </FormLabel>
+                          <FormMessage />
+                        </div>
                       </FormItem>
                     )}
                   />
-                </div>
 
-                {/* Tour Guide Specific Fields */}
-                {role === "Tour Guide" && (
-                  <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="birth_date"
-                        render={({ field }) => (
-                          <FormItem className="w-full flex flex-col">
-                            <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                              Birth Date *
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="date"
-                                {...field}
-                                className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="sex"
-                        render={({ field }) => (
-                          <FormItem className="w-full flex flex-col">
-                            <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                              Sex *
-                            </FormLabel>
-                            <FormControl>
-                              <Select
-                                value={field.value || ""}
-                                onValueChange={field.onChange}
-                              >
-                                <SelectTrigger className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white">
-                                  <SelectValue placeholder="Select sex" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="MALE">Male</SelectItem>
-                                  <SelectItem value="FEMALE">Female</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-[#1c5461] mb-1">
-                          Profile Picture
-                        </label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileChange}
-                          className="w-full px-4 py-3 border border-[#e6f7fa] rounded-md text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#3e979f]/10 file:text-[#3e979f] hover:file:bg-[#3e979f]/20"
-                        />
-                      </div>
-                      <FormField
-                        control={form.control}
-                        name="reason_for_applying"
-                        render={({ field }) => (
-                          <FormItem className="w-full flex flex-col">
-                            <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                              Reason for Applying *
-                            </FormLabel>
-                            <FormControl>
-                              <textarea
-                                {...field}
-                                placeholder="Reason for applying as a tour guide"
-                                className="w-full px-4 py-3 border border-[#e6f7fa] rounded-md text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white min-h-[100px] resize-vertical"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </>
-                )}
+                  {/* reCAPTCHA */}
+                  <div className="flex justify-center">
+                    <ReCAPTCHA
+                      ref={recaptchaRef}
+                      sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+                      onChange={setCaptchaToken}
+                    />
+                  </div>
 
-                {/* Tour Operator Specific Fields */}
-                {role === "Tour Operator" && (
-                  <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="operator_name"
-                        render={({ field }) => (
-                          <FormItem className="w-full flex flex-col">
-                            <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                              Operator/Business Name *
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="text"
-                                placeholder="Operator/Business Name"
-                                {...field}
-                                className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="business_email"
-                        render={({ field }) => (
-                          <FormItem className="w-full flex flex-col">
-                            <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                              Business Contact Email *
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="email"
-                                placeholder="Business Contact Email"
-                                {...field}
-                                className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="mobile_number"
-                        render={({ field }) => (
-                          <FormItem className="w-full flex flex-col">
-                            <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                              Business Mobile Number *
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="tel"
-                                placeholder="Business Mobile Number"
-                                {...field}
-                                className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="office_address"
-                        render={({ field }) => (
-                          <FormItem className="w-full flex flex-col">
-                            <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                              Office Address *
-                            </FormLabel>
-                            <FormControl>
-                              <textarea
-                                {...field}
-                                placeholder="Office Address"
-                                className="w-full px-4 py-3 border border-[#e6f7fa] rounded-md text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white min-h-[100px] resize-vertical"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </>
-                )}
+                  {/* Submit Button */}
+                  <Button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-[#3e979f] to-[#1c5461] text-white font-semibold rounded-md shadow-md hover:from-[#35858b] hover:to-[#164349] focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:ring-offset-2 transition text-lg py-3"
+                    disabled={loading || !captchaToken}
+                    onClick={() => {
+                      console.log("Submit button clicked");
+                    }}
+                  >
+                    {loading ? "Registering..." : `Register as ${role}`}
+                  </Button>
+                </form>
+              </Form>
 
-                {/* Terms and Conditions */}
-                <FormField
-                  control={form.control}
-                  name="terms"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          className="border-[#3e979f] data-[state=checked]:bg-[#3e979f] data-[state=checked]:border-[#3e979f]"
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="text-sm text-[#1c5461]">
-                          I agree to the{" "}
-                          <a
-                            href="/terms"
-                            className="text-[#3e979f] hover:underline"
-                          >
-                            Terms and Conditions
-                          </a>
-                        </FormLabel>
-                        <FormMessage />
-                      </div>
-                    </FormItem>
-                  )}
-                />
-
-                {/* reCAPTCHA */}
-                <div className="flex justify-center">
-                  <ReCAPTCHA
-                    ref={recaptchaRef}
-                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
-                    onChange={setCaptchaToken}
-                  />
-                </div>
-
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-[#3e979f] to-[#1c5461] text-white font-semibold rounded-md shadow-md hover:from-[#35858b] hover:to-[#164349] focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:ring-offset-2 transition text-lg py-3"
-                  disabled={loading || !captchaToken}
-                  onClick={() => {
-                    console.log("Submit button clicked");
-                  }}
+              <p className="text-center text-[#51702c] text-base mt-6">
+                Already have an account?{" "}
+                <a
+                  href="/auth/login"
+                  className="text-[#3e979f] hover:underline font-semibold"
                 >
-                  {loading ? "Registering..." : `Register as ${role}`}
-                </Button>
-              </form>
-            </Form>
-
-            <p className="text-center text-[#51702c] text-base mt-6">
-              Already have an account?{" "}
-              <a
-                href="/auth/login"
-                className="text-[#3e979f] hover:underline font-semibold"
-              >
-                Sign in
-              </a>
-            </p>
+                  Sign in
+                </a>
+              </p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 }

@@ -104,7 +104,7 @@ export default function TouristSpotPage() {
           open={!!dialogTouristSpot}
           onOpenChange={() => setDialogTouristSpot(null)}
         >
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="lg:max-w-6xl h-[500px] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-[#1c5461]">
                 Tourist Spot Details

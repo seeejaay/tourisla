@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import Header from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
-const ARTICLES_PER_PAGE = 6;
+const ARTICLES_PER_PAGE = 20;
 import Image from "next/image";
 import {
   Carousel,
@@ -20,6 +20,7 @@ import {
 
 export default function PublicArticlesPage() {
   const router = useRouter();
+  const [selectedType, setSelectedType] = useState<string>("all");
   const { articles, fetchArticles } = useArticleManager();
   const [featured, setFeatured] = useState<Article[]>([]);
   const [regular, setRegular] = useState<Article[]>([]);
@@ -56,6 +57,11 @@ export default function PublicArticlesPage() {
     return article.thumbnail_url || "/images/article_image.webp";
   };
 
+  // All unique types for filter buttons
+  const allTypes = Array.from(
+    new Set(regular.map((article) => article.type).filter(Boolean))
+  );
+
   return (
     <>
       <Header />
@@ -79,7 +85,7 @@ export default function PublicArticlesPage() {
             </p>
           </div>
         </div>
-        <main className="  px-4 py-10 max-w-[1500px] mx-auto space-y-5">
+        <main className="px-4 py-10 max-w-[1500px] mx-auto space-y-5">
           {/* Featured Articles Carousel */}
           <h2 className="text-4xl font-extrabold text-[#1c5461] text-start ">
             Featured
@@ -134,41 +140,95 @@ export default function PublicArticlesPage() {
             </section>
           )}
 
-          {/* Regular Articles */}
           <section>
             <h2 className="text-4xl text-center font-bold text-[#1c5461] mb-6">
               Local Culture and History
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {paginatedRegular.map((article) => (
-                <Card
-                  key={article.id}
-                  className="group p-0 overflow-hidden rounded-2xl shadow border border-[#e6f7fa] hover:shadow-md transition bg-white flex flex-col"
+
+            {/* Type Filters */}
+            <div className="flex flex-wrap gap-3 justify-center mb-8">
+              <Button
+                variant={selectedType === "all" ? "default" : "outline"}
+                className={`rounded-full border-[#3e979f] text-[#1c5461] cursor-pointer hover:bg-[#e6f7fa] hover:text-[#3e979f] transition px-5}
+                  ${
+                    selectedType === "all"
+                      ? "bg-[#3e979f] text-white hover:bg-[#1c5461] hover:text-white"
+                      : ""
+                  }`}
+                onClick={() => setSelectedType("all")}
+              >
+                All
+              </Button>
+              {allTypes.map((type) => (
+                <Button
+                  key={type}
+                  variant={selectedType === type ? "default" : "outline"}
+                  className={
+                    `rounded-full border-[#3e979f] transition px-5 cursor-pointer ` +
+                    (selectedType === type
+                      ? " bg-[#3e979f] text-white hover:bg-[#1c5461] hover:text-white "
+                      : " text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] ")
+                  }
+                  onClick={() => setSelectedType(type)}
                 >
-                  <Image
-                    src={getArticleImage(article)}
-                    alt={article.title}
-                    width={400}
-                    height={200}
-                    className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="p-4 flex flex-col gap-2 flex-1">
-                    <h4 className="font-semibold text-lg text-[#1c5461] line-clamp-2 group-hover:text-[#3e979f] transition">
-                      {article.title}
-                    </h4>
-                    <p className="text-sm text-[#51702c]">
-                      By {article.author}
-                    </p>
-                    <Button
-                      variant="outline"
-                      className="mt-1 w-fit rounded-lg border-[#3e979f] text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] transition"
-                      onClick={() => router.push(`/articles/${article.id}`)}
-                    >
-                      View
-                    </Button>
-                  </div>
-                </Card>
+                  {type}
+                </Button>
               ))}
+            </div>
+
+            <div className="flex flex-wrap gap-8 justify-center">
+              {paginatedRegular
+                .filter(
+                  (article) =>
+                    selectedType === "all" || article.type === selectedType
+                )
+                .map((article) => (
+                  <Card
+                    key={article.id}
+                    className="group flex flex-col flex-grow min-w-[280px] max-w-[400px] basis-[320px] p-0 overflow-hidden rounded-2xl shadow border border-[#e6f7fa] hover:shadow-md transition bg-white"
+                  >
+                    <Image
+                      src={getArticleImage(article)}
+                      alt={article.title}
+                      width={400}
+                      height={200}
+                      className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="p-4 flex flex-col gap-2 flex-1">
+                      <h4 className="font-semibold text-lg text-[#1c5461] line-clamp-2 group-hover:text-[#3e979f] transition">
+                        {article.title}
+                      </h4>
+                      <p className="text-sm text-[#51702c]">
+                        By {article.author}
+                      </p>
+                      <div className="flex flex-wrap gap-2 mt-1 mb-2">
+                        {Array.isArray(article.tags) &&
+                          article.tags
+                            .flatMap((tag) =>
+                              tag
+                                .split(",")
+                                .map((t) => t.trim())
+                                .filter(Boolean)
+                            )
+                            .map((tag) => (
+                              <span
+                                key={tag}
+                                className="px-2 py-0.5 bg-[#e6f7fa] text-[#3e979f] rounded-full text-xs font-medium"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="mt-auto w-fit rounded-lg border-[#3e979f] text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] transition"
+                        onClick={() => router.push(`/articles/${article.id}`)}
+                      >
+                        View
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
             </div>
 
             {/* Pagination Controls */}
