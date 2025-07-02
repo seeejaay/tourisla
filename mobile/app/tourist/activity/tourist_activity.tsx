@@ -114,7 +114,7 @@ export default function TouristActivityScreen({ headerHeight }: TouristPackagesS
 
         {result.qr_code_url ? (
           <View style={styles.section}>
-            <Text style={styles.title}>Your Registration</Text>
+            <Text style={styles.title}>Your Current Registration</Text>
             <Text style={styles.label}>Show this QR code at the entrance:</Text>
             <View style={styles.qrBox}>
               <Image
