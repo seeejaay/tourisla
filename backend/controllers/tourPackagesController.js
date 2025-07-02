@@ -110,6 +110,7 @@ const updateTourPackageController = async (req, res) => {
     if (!touroperator_id) {
       return res.status(404).json({ message: "Tour operator not found." });
     }
+    const operatorId = touroperator_id.id;
     console.log(
       "Updating Tour Package with ID:",
       id,
@@ -168,7 +169,7 @@ const updateTourPackageController = async (req, res) => {
         .json({ error: "Available slots cannot be negative" });
     }
 
-    const updated = await updateTourPackage(id, touroperator_id, {
+    const updated = await updateTourPackage(id, operatorId, {
       package_name,
       location,
       description,
