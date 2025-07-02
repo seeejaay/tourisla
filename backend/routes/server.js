@@ -539,11 +539,7 @@ app.get(
 );
 
 // Routes for Admin verifying applicants
-app.get(
-  "/api/v1/guideApplicants",
-  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin", "Tour Operator"]),
-  viewTourGuideApplicantsController
-);
+app.get("/api/v1/guideApplicants", viewTourGuideApplicantsController);
 app.get(
   "/api/v1/guideApplicants/:applicantId",
   allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
