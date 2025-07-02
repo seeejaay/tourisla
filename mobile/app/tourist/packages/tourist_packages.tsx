@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator, FlatList, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator, FlatList, StatusBar, Dimensions } from 'react-native';
 import { fetchAllTourPackages } from '@/lib/api/tour-packages';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-
+import { toTitleCase } from '@/lib/utils/textFormat';
+import SearchBar from "@/components/SearchBar";
+import FilterDropdown from '@/components/FilterDropdown';
+import Pagination from '@/components/Pagination';
 
 interface TouristPackagesScreenProps {
   headerHeight: number;
@@ -15,11 +19,17 @@ interface TourPackage {
   description?: string;
   price?: number;
   duration?: string;
+  location?: string;
   created_at?: string;
   updated_at?: string;
   available_slots?: number; 
-  // add any other columns you have in tour_packages table
 }
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const CARD_GAP = 16;
+const CARD_WIDTH = SCREEN_WIDTH - CARD_GAP * 2;
+
+const ITEMS_PER_PAGE = 10; // Customize as needed
 
 export default function TouristPackagesScreen({ headerHeight }: TouristPackagesScreenProps) {
   const [packages, setPackages] = useState<TourPackage[]>([]);
@@ -27,6 +37,22 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  const [searchText, setSearchText] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('');
+  const filteredPackages = packages.filter(pkg =>
+    pkg.package_name.toLowerCase().includes(searchText.toLowerCase()) &&
+    (selectedFilter === '' || toTitleCase(pkg.location || '') === selectedFilter)
+  );
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.ceil(filteredPackages.length / ITEMS_PER_PAGE);
+  const paginatedPackages = filteredPackages.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+  const locationOptions = Array.from(
+    new Set(packages.map(pkg => toTitleCase(pkg.location || '')).filter(loc => loc))
+  );
+  
   useEffect(() => {
     const loadPackages = async () => {
       try {
@@ -42,28 +68,34 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
     loadPackages();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchText, selectedFilter]);
+
   const renderPackage = ({ item }: { item: TourPackage }) => (
-    <View style={styles.packageCard}>
-      {item.package_name ? (
-        <Text style={styles.packageName}>
-          {item.package_name
-            .toLowerCase()
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ')
-          }
-        </Text>
-      ) : null}
+    <TouchableOpacity
+      style={styles.packageCard}
+      onPress={() => router.push(`/tourist/packages/packages/${item.id}`)}
+      activeOpacity={0.9}
+    >
+      {item.package_name && (
+        <View style={styles.headerRow}>
+          <Text style={styles.packageName}>{toTitleCase(item.package_name)}</Text>
+          {item.price !== undefined && (
+            <Text style={styles.price}>₱ {item.price}</Text>
+          )}
+        </View>
+      )}
+
       {item.location ? (
-        <Text style={styles.packageLocation}>
-        {item.location
-          .toLowerCase()
-          .split(' ')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ')
-        }
-        </Text>
+        <View style={styles.locationRow}>
+          <Ionicons name="location-sharp" size={12} color="#737385" style={styles.locationIcon} />
+          <Text style={styles.packageLocation}>
+            {toTitleCase(item.location)}
+          </Text>
+        </View>
       ) : null}
+
       {item.available_slots !== undefined && (
         <View style={styles.slotsContainer}>
           <Text style={styles.slots}>
@@ -71,23 +103,7 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
           </Text>
         </View>
       )}
-      {item.price ? (
-        <View style={styles.cardFooter}>
-          <View style={styles.packagePriceContainer}>
-            <Text style={styles.packagePrice}>Price:</Text>
-            <Text style={styles.price}>₱{item.price}</Text>
-          </View>
-          <View style={styles.packagePriceContainer}>
-          <TouchableOpacity
-            style={styles.detailsButton}
-            onPress={() => router.push(`/tourist/packages/packages/${item.id}`)}
-          >
-            <Text style={styles.detailsButtonText}>View Details</Text>
-          </TouchableOpacity>
-          </View>
-        </View>
-      ) : null}
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -96,7 +112,22 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
       <View style={[styles.container, { paddingTop: headerHeight }]}>
         <Text style={styles.title}>Explore Tour Packages</Text>
         <Text style={styles.intro}>
-          Discover our curated tour packages designed to enhance your travel experience.</Text>
+          Discover our curated tour packages designed to enhance your travel experience.
+        </Text>
+        <View style={styles.searchFilterRow}>
+          <View style={styles.searchBarWrapper}>
+            <SearchBar
+              value={searchText}
+              onChangeText={setSearchText}
+              placeholder="Search packages..."
+            />
+          </View>
+          <FilterDropdown
+            options={locationOptions}
+            selected={selectedFilter}
+            onSelect={setSelectedFilter}
+          />
+        </View>
 
         {loading && (
           <View style={styles.loadingContainer}>
@@ -119,28 +150,31 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
 
         {!loading && !error && packages.length > 0 && (
           <View style={{ flex: 1 }}>
-  <FlatList
-    data={packages}
-    keyExtractor={pkg => pkg.id.toString()}
-    renderItem={renderPackage}
-    contentContainerStyle={styles.listContent}
-    showsVerticalScrollIndicator={false}
-  />
-
-  {/* Top fade */}
-  <LinearGradient
-    colors={['#f8fafc', 'transparent']}
-    style={styles.topFade}
-    pointerEvents="none"
-  />
-
-  {/* Bottom fade */}
-  <LinearGradient
-    colors={['transparent', '#f8fafc']}
-    style={styles.bottomFade}
-    pointerEvents="none"
-  />
-</View>
+            <>
+              <FlatList
+                data={paginatedPackages}
+                keyExtractor={pkg => pkg.id.toString()}
+                renderItem={renderPackage}
+                contentContainerStyle={styles.listContent}
+                showsVerticalScrollIndicator={false}
+                numColumns={1}
+                ListFooterComponent={
+                  <View style={styles.paginationWrapper}>
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={setCurrentPage}
+                    />
+                  </View>
+                }
+              />
+              <LinearGradient
+                colors={['transparent', '#f8fafc']}
+                style={styles.bottomFade}
+                pointerEvents="none"
+              />
+            </>
+          </View>
         )}
       </View>
     </SafeAreaView>
@@ -153,33 +187,32 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   container: {
+    padding: 16,
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f1f1f1',
   },
   title: {
-    fontSize: 34,
+    fontSize: 25,
     fontWeight: '900',
     color: '#1c5461',
-    marginTop: 16,
-    marginHorizontal: 16,
   },
   intro: {
-    fontSize: 16,
+    fontSize: 12,
     color: '#64748b',
-    marginHorizontal: 16,
-    marginBottom: 24,
+    marginBottom: 6,
+  },
+  searchFilterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 12,
+  },
+  searchBarWrapper: {
+    flex: 1,
   },
   listContent: {
-    paddingTop: 20,
+    paddingVertical: 20,
     paddingBottom: 100,
-  },
-  topFade: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 30,
-    zIndex: 1,
   },
   bottomFade: {
     position: 'absolute',
@@ -190,27 +223,46 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   packageCard: {
-    backgroundColor: '#daf8e4',
+    backgroundColor: '#f8fafc',
     padding: 16,
     borderRadius: 12,
-    marginBottom: 12,
+    width: '100%',
+    marginBottom: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 1, height: 5 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
-    shadowRadius: 4,
+    shadowRadius: 6,
     elevation: 1,
-    marginHorizontal: 16,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   packageName: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#0c5e58',
-    marginBottom: 0,
-  },
-  packageDescription: {
     fontSize: 16,
-    color: '#64748b',
+    fontWeight: '700',
+    color: '#0c5e58',
+    flex: 1,
+    marginRight: 12,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 8,
+  },
+  locationIcon: {
+    marginRight: 4,
+  },
+  price: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#224d57',
+  },
+  packageLocation: {
+    fontSize: 10,
+    color: '#737385',
+    fontWeight: '600',
   },
   slotsContainer: {
     flexDirection: 'row',
@@ -219,32 +271,6 @@ const styles = StyleSheet.create({
   slots: {
     fontSize: 12,
     color: '#5ea5aa',
-    fontWeight: '900',
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginTop: 12,
-  },
-  packagePriceContainer: {
-    flexDirection: 'column',
-    width: '50%',
-  },
-  packagePrice: {
-    fontSize: 11,
-    color: '#a0b4b8',
-    fontWeight: '900',
-  },
-  price: {
-    fontSize: 22,
-    color: '#1ca949',
-    fontWeight: '900',
-  },
-  packageLocation: {
-    fontSize: 12,
-    color: '#737385',
-    marginBottom: 20,
     fontWeight: '600',
   },
   loadingContainer: {
@@ -274,13 +300,7 @@ const styles = StyleSheet.create({
     color: '#64748b',
     fontSize: 16,
   },
-  detailsButton: {
-    borderRadius: 8,
-    marginTop: 8,
-    alignSelf: 'flex-end',
-  },
-  detailsButtonText: {
-    color: 'gray',
-    fontWeight: '700',
+  paginationWrapper: {
+    alignItems: 'center',
   },
 });

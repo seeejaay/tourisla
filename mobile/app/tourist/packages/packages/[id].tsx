@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, ScrollView, Platform, StatusBar, TouchableOpacity, Dimensions } from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, ActivityIndicator, ScrollView, StatusBar, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { Ionicons } from '@expo/vector-icons';
 import { fetchTourPackage } from "@/lib/api/tour-packages";
-import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
-
-interface TourPackageDetailsScreenProps {
-    headerHeight: number;
-}
+import HeaderWithBack from "@/components/HeaderWithBack";
 
 interface TourPackage {
   id: number;
@@ -27,20 +24,17 @@ interface TourPackage {
 }
 
 const sharedPackageGroupStyle = {
-    marginBottom: 8,
-    padding: 12,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 1, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 1,
-  };
+  marginBottom: 8,
+  padding: 12,
+  borderRadius: 8,
+  shadowColor: '#000',
+  shadowOffset: { width: 1, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 4,
+  elevation: 1,
+};
 
-const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 0;
-const { width, height } = Dimensions.get('window');
-
-export default function TourPackageDetailsScreen({ headerHeight }: TourPackageDetailsScreenProps) {
+export default function TourPackageDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
@@ -116,112 +110,106 @@ export default function TourPackageDetailsScreen({ headerHeight }: TourPackageDe
   }
 
   return (
-    <View style={[styles.container, { paddingTop: headerHeight }]}>
-        <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-        <View style={styles.navbar}>
-        <TouchableOpacity 
-          style={styles.navButton}
-          onPress={() => router.back()}
-        >
-          <FontAwesome5 name="arrow-left" size={18} color="#fff" />
-        </TouchableOpacity>
-        </View>
-    <ScrollView contentContainerStyle={styles.scrollContent}>
-    <View style={styles.content}>
-      {pkg.package_name && (
-        <Text style={styles.packageName}>
-          {pkg.package_name
-            .toLowerCase()
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ')}
-          {pkg.id}
-        </Text>
-      )}
-      {pkg.location && (
-        <Text style={styles.packageLocation}>
-          {pkg.location
-            .toLowerCase()
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ')}
-        </Text>
-      )}
-      {pkg.description && (
-        <Text style={styles.packageDescription}>{pkg.description.charAt(0).toUpperCase() + pkg.description.slice(1).toLowerCase()}</Text>
-      )}
-      <View style={styles.gridContainer}>
-        <View style={styles.gridItem}>
-          {pkg.inclusions !== undefined && (
-            <View style={styles.packagegroup1}>
-              <Text style={styles.gridLabelBlue}>Inclusions:</Text>
-                <Text style={styles.textcontent}>
-                {pkg.inclusions
-                  ?.toLowerCase()
-                  .split('. ')
-                  .map(sentence => sentence.charAt(0).toUpperCase() + sentence.slice(1))
-                  .join('. ')}
-                </Text>
-            </View>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      <HeaderWithBack
+        title="Package Details"
+        backgroundColor="#2eb1ab"
+        textColor="#ffffff"
+      />
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
+          {pkg.package_name && (
+            <Text style={styles.packageName}>
+              {pkg.package_name
+                .toLowerCase()
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ')} {pkg.id}
+            </Text>
           )}
-        </View>
-        <View style={styles.gridItem}>
-          {pkg.available_slots !== undefined && (
-            <View style={styles.packagegroup1}>
-              <Text style={styles.gridLabelBlue}>Available Slots:</Text>
-              <Text style={styles.textcontent}>{pkg.available_slots}</Text>
-            </View>
+          {pkg.location && (
+            <Text style={styles.packageLocation}>
+              {pkg.location
+                .toLowerCase()
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ')}
+            </Text>
           )}
-        </View>
+          {pkg.description && (
+            <Text style={styles.packageDescription}>
+              {pkg.description.charAt(0).toUpperCase() + pkg.description.slice(1).toLowerCase()}
+            </Text>
+          )}
 
-        <View style={styles.gridItem}>
-          {pkg.exclusions !== undefined && (
-            <View style={styles.packagegroup1}>
-              <Text style={styles.gridLabelBlue}>Exclusions:</Text>
+          <View style={styles.gridContainer}>
+            {pkg.inclusions && (
+              <View style={styles.packagegroup1}>
+                <Text style={styles.gridLabelBlue}>Inclusions:</Text>
                 <Text style={styles.textcontent}>
-                {pkg.exclusions
-                  ?.toLowerCase()
-                  .split('. ')
-                  .map(sentence => sentence.charAt(0).toUpperCase() + sentence.slice(1))
-                  .join('. ')}
-                </Text>
-            </View>
-          )}
-        </View>
-        <View style={styles.gridItem}>
-          {pkg.start_time && pkg.end_time && (
-            <View style={styles.scheduleCard}>
-              <Text style={styles.scheduleLabel}>Schedule</Text>
-              <View style={styles.scheduleRow}>
-                <Text style={styles.scheduleDate}>
-                  {formatDate(pkg.date_start)}
-                </Text>
-                <Text style={styles.scheduleDate}>→</Text>
-                <Text style={styles.scheduleDate}>
-                  {formatDate(pkg.date_end)}
+                  {pkg.inclusions
+                    .toLowerCase()
+                    .split('. ')
+                    .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+                    .join('. ')}
                 </Text>
               </View>
-              <View style={styles.scheduleRow}>
-                <Text style={styles.scheduleTime}>
-                  {formatTime(pkg.start_time)} - {formatTime(pkg.end_time)}
+            )}
+
+            {pkg.available_slots !== undefined && (
+              <View style={styles.packagegroup1}>
+                <Text style={styles.gridLabelBlue}>Available Slots:</Text>
+                <Text style={styles.textcontent}>{pkg.available_slots}</Text>
+              </View>
+            )}
+
+            {pkg.exclusions && (
+              <View style={styles.packagegroup1}>
+                <Text style={styles.gridLabelBlue}>Exclusions:</Text>
+                <Text style={styles.textcontent}>
+                  {pkg.exclusions
+                    .toLowerCase()
+                    .split('. ')
+                    .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+                    .join('. ')}
                 </Text>
               </View>
+            )}
+
+            {pkg.start_time && pkg.end_time && (
+              <View style={styles.scheduleCard}>
+                <Text style={styles.scheduleLabel}>Schedule</Text>
+                <View style={styles.scheduleRow}>
+                  <Text style={styles.scheduleDate}>{formatDate(pkg.date_start)}</Text>
+                  <Text style={styles.scheduleDate}>→</Text>
+                  <Text style={styles.scheduleDate}>{formatDate(pkg.date_end)}</Text>
+                </View>
+                <View style={styles.scheduleRow}>
+                  <Text style={styles.scheduleTime}>
+                    {formatTime(pkg.start_time)} - {formatTime(pkg.end_time)}
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
+
+          {pkg.price !== undefined && (
+            <View style={styles.pricecontent}>
+              <Text style={styles.packagePrice}>₱{pkg.price}</Text>
+              <Text style={styles.packagePriceText}>per person</Text>
             </View>
           )}
+
+          <TouchableOpacity
+            style={styles.bookButton}
+            onPress={() => router.push(`/tourist/packages/${pkg.id}/book`)}
+          >
+            <Text style={styles.bookButtonText}>Book Now</Text>
+          </TouchableOpacity>
         </View>
-      </View>
-      {pkg.price !== undefined && (
-        <View style={styles.pricecontent}>
-          <Text style={styles.packagePrice}>₱{pkg.price}</Text>
-          <Text style={styles.packagePriceText}>per person</Text>
-        </View>
-      )}
-        <TouchableOpacity style={styles.bookButton} onPress={() => router.push(`/tourist/packages/${pkg.id}/book`)}>
-        <Text style={styles.bookButtonText}>Book Now</Text>
-        </TouchableOpacity>
-    </View>
-    </ScrollView>
-    </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -230,31 +218,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f8fafc",
   },
-  navbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: STATUS_BAR_HEIGHT + 10,
-    paddingBottom: 10,
-    paddingHorizontal: 16,
-    backgroundColor: 'transparent',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-  },
-  navButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   scrollContent: {
-    flexGrow: 1,
-    justifyContent: "center",
+    paddingBottom: 24,
   },
   content: {
     margin: 16,
