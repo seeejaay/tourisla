@@ -14,23 +14,19 @@ import {
   Platform,
   StatusBar,
 } from "react-native";
-import { Stack } from "expo-router";
-import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import ImageViewer from "react-native-image-zoom-viewer";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import * as MediaLibrary from "expo-media-library";
 import { LinearGradient } from 'expo-linear-gradient';
-import { FontAwesome5 } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
+import HeaderWithBack from "@/components/HeaderWithBack";
 
-const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
 const mapImage = require("../../../assets/maps/cebu_tourist_map.webp");
 const headerImage = require("../../../assets/maps/mapheader.jpg");
 
-export default function TouristMapScreen({ headerHeight }) {
+export default function TouristMapScreen() {
   const [fullscreenVisible, setFullscreenVisible] = useState(false);
   const [downloadLoading, setDownloadLoading] = useState(false);
 
@@ -87,15 +83,11 @@ export default function TouristMapScreen({ headerHeight }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.navbar}>
-        <TouchableOpacity 
-          style={styles.navButton}
-          onPress={() => router.back()}
-        >
-          <FontAwesome5 name="arrow-left" size={18} color="#000" />
-        </TouchableOpacity>
-      </View>
+      <HeaderWithBack
+        title="Tourist Map"
+        backgroundColor="#f1f1f1"
+        textColor="#03312e"
+      />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.headerImageWrapper}>
           <Image source={headerImage} style={styles.headerImage} resizeMode="cover" />
@@ -116,14 +108,13 @@ export default function TouristMapScreen({ headerHeight }) {
           </TouchableOpacity>
 
           <Text style={styles.tapInstructionText}>Tap on the map to view in full screen</Text>
-          <View style={styles.divider} />
 
           <TouchableOpacity style={styles.downloadButton} onPress={downloadImage} disabled={downloadLoading}>
             {downloadLoading ? (
               <ActivityIndicator size="small" color="#ffffff" />
             ) : (
               <>
-                <Ionicons name="download-outline" size={20} color="#ffffff" style={styles.downloadIcon} />
+                <Ionicons name="download-outline" size={20} color="#24b4ab" style={styles.downloadIcon} />
                 <Text style={styles.downloadText}>Download Map to Gallery</Text>
               </>
             )}
@@ -166,24 +157,9 @@ export default function TouristMapScreen({ headerHeight }) {
 }
 
 const styles = StyleSheet.create({
-  navbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: STATUS_BAR_HEIGHT + 10,
-    paddingBottom: 10,
-    paddingHorizontal: 16,
-    backgroundColor: '#fff',
-  },
-  navButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   container: {
     flex: 1,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#f1f1f1",
   },
   scrollViewContent: {
     paddingBottom: 40,
@@ -213,7 +189,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: "#03312e",
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "900",
     alignSelf: "flex-start",
     marginHorizontal: 16,
@@ -221,19 +197,20 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   headerSubtitle: {
-    color: "#374151", // soft gray
-    fontSize: 16,
-    fontWeight: "700",
+    color: "#224d57",
+    fontSize: 14,
+    fontWeight: "600",
     alignSelf: "flex-start",
     marginHorizontal: 16,
     marginTop: 4,
-    lineHeight: 22,
+    lineHeight: 15,
+    fontStyle: "italic",
   },
   mapSection: {
     paddingHorizontal: 16,
   },
   mapImageWrapper: {
-    borderRadius: 16,
+    borderRadius: 8,
     overflow: "hidden",
     backgroundColor: "#000",
     shadowColor: "#000",
@@ -258,37 +235,29 @@ const styles = StyleSheet.create({
   tapInstructionText: {
     textAlign: "center",
     color: "#6b7280",
-    fontSize: 14,
+    fontSize: 12,
     marginTop: 12,
     marginBottom: 24,
   },
-  divider: {
-    marginVertical: 8,
-    height: 1,
-    backgroundColor: "#e5e7eb",
-  },
   downloadButton: {
-    backgroundColor: "#24b4ab",
-    borderRadius: 24,
+    backgroundColor: "#f1f1f1",
+    borderWidth: 1,
+    borderColor: "#24b4ab",
+    borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 24,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     marginTop: 8,
-    shadowColor: "#24b4ab",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 3,
   },
   downloadIcon: {
     marginRight: 10,
   },
   downloadText: {
-    color: "#ffffff",
+    color: "#24b4ab",
     fontWeight: "600",
-    fontSize: 16,
+    fontSize: 13,
   },
   modalContainer: {
     flex: 1,

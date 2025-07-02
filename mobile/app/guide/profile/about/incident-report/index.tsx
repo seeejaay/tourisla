@@ -16,12 +16,12 @@ import {
   StatusBar,
   SafeAreaView,
 } from "react-native";
-import { Stack } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { Formik } from "formik";
 import * as yup from "yup";
 import { useIncidentManager } from "@/hooks/useIncidentManager";
 import { router } from "expo-router";
+import HeaderWithBack from "@/components/HeaderWithBack";
 
 // Validation schema
 const incidentSchema = yup.object().shape({
@@ -78,15 +78,10 @@ export default function IncidentReportScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-    <Stack.Screen options={{ headerShown: false }} />
-    <View style={styles.navbar}>
-      <TouchableOpacity 
-        style={styles.navButton}
-        onPress={() => router.back()}
-      >
-        <FontAwesome5 name="arrow-left" size={18} color="#000" />
-      </TouchableOpacity>
-    </View>
+      <HeaderWithBack
+        backgroundColor="#f1f1f1"
+        textColor="#03312e"
+      />
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <Text style={styles.heading}>Incident Report Form</Text>
       <Text style={{ marginHorizontal: 16, color: "#475569", fontSize: 14, marginBottom: 20 }}>
@@ -264,27 +259,12 @@ export default function IncidentReportScreen() {
 }
 
 const styles = StyleSheet.create({
-  navbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: STATUS_BAR_HEIGHT + 10,
-    paddingBottom: 10,
-    paddingHorizontal: 16,
-    backgroundColor: '#fff',
-  },
-  navButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   container: {
     flex: 1,
     backgroundColor: "#f9fafb",
   },
   scrollViewContent: {
-    paddingBottom: 120,
+    paddingBottom: 40,
   },
   heading: { fontSize: 25, fontWeight: "900", marginBottom: 4, color: "#1c5461", marginHorizontal: 16, marginTop: 20 },
   field: { marginBottom: 16, marginHorizontal: 16 },
