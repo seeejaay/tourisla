@@ -69,6 +69,7 @@ export const useTouristSpotManager = () => {
       setLoading(true);
       setError("");
       try {
+        console.log("Viewing tourist spot with ID:", id);
         const data = await apiViewTouristSpot(id);
 
         return data;
