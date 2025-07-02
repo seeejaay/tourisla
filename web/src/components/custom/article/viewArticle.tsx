@@ -26,17 +26,21 @@ export default function ViewArticle({ article }: { article: Article }) {
           </p>
         </CardHeader>
         <CardContent className="space-y-6 py-2">
-          {article.thumbnail_url && (
+          {/* Show all images if present */}
+          {article.images && article.images.length > 0 && (
             <div>
               <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
-                Thumbnail
+                Images
               </Label>
-              <div className="mt-2 flex justify-center">
-                <img
-                  src={article.thumbnail_url}
-                  alt="Thumbnail"
-                  className="rounded-lg max-h-64 object-contain border"
-                />
+              <div className="flex flex-wrap gap-4 mt-2 justify-center">
+                {article.images.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img.image_url}
+                    alt={`Article image ${idx + 1}`}
+                    className="rounded-lg max-h-64 object-contain border"
+                  />
+                ))}
               </div>
             </div>
           )}
@@ -94,7 +98,9 @@ export default function ViewArticle({ article }: { article: Article }) {
             <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
               Status
             </Label>
-            <p className="capitalize text-[#1c5461]">{article.status}</p>
+            <p className="capitalize text-[#1c5461]">
+              {article.is_published ? "Published" : "Draft"}
+            </p>
           </div>
 
           <div>
@@ -108,10 +114,35 @@ export default function ViewArticle({ article }: { article: Article }) {
 
           <div>
             <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
+              Type
+            </Label>
+            <p className="text-[#1c5461]">{article.type}</p>
+          </div>
+
+          {article.barangay && (
+            <div>
+              <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
+                Barangay
+              </Label>
+              <p className="text-[#1c5461]">{article.barangay}</p>
+            </div>
+          )}
+
+          {article.summary && (
+            <div>
+              <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
+                Summary
+              </Label>
+              <p className="text-[#1c5461]">{article.summary}</p>
+            </div>
+          )}
+
+          <div>
+            <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
               Content
             </Label>
             <div className="whitespace-pre-line text-[#1c5461]">
-              {article.body}
+              {article.content}
             </div>
           </div>
         </CardContent>
