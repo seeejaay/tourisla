@@ -441,7 +441,7 @@ app.delete(
   authenticateTourGuide,
   deleteGuideRegisController
 );
-app.get("/api/v1/guideRegis", authenticateTourGuide, viewGuideRegisController);
+app.get("/api/v1/guideRegis", viewGuideRegisController);
 app.get(
   "/api/v1/guideRegis/:guideId",
   allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
