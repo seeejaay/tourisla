@@ -77,18 +77,31 @@ export default function ArticleDetailPage() {
 
           {/* --- All Images Gallery --- */}
           {article.images && article.images.length > 0 && (
-            <div className="flex flex-wrap gap-4 mb-8 justify-center">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 auto-rows-[160px]">
               {article.images.map(
                 (img, idx) =>
                   img.image_url && (
-                    <Image
+                    <div
                       key={idx}
-                      src={img.image_url}
-                      alt={`Article image ${idx + 1}`}
-                      width={200}
-                      height={200}
-                      className="rounded-lg object-cover border w-40 h-40"
-                    />
+                      className={
+                        // Example: make the first image span 2 columns and 2 rows on md+
+                        idx === 0
+                          ? "col-span-2 row-span-2 md:col-span-2 md:row-span-2"
+                          : // Example: make every 5th image span 2 rows
+                          idx % 5 === 0
+                          ? "row-span-2"
+                          : ""
+                      }
+                    >
+                      <Image
+                        src={img.image_url}
+                        alt={`Article image ${idx + 1}`}
+                        width={400}
+                        height={400}
+                        className="w-full h-full object-cover rounded-lg border"
+                        style={{ aspectRatio: "1 / 1" }}
+                      />
+                    </div>
                   )
               )}
             </div>
