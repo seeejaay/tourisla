@@ -21,7 +21,7 @@ type SidebarProps = {
 
 const Sidebar = ({ navigation }: SidebarProps) => {
   const router = useRouter();
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const pathName = usePathname();
 
   const handleLogout = async () => {
@@ -36,7 +36,7 @@ const Sidebar = ({ navigation }: SidebarProps) => {
   return (
     <aside
       aria-label="Sidebar"
-      className={`bg-gradient-to-b min-h-screen from-[#e6f7fa]/80 to-[#fffff1] border-r border-[#e6f7fa] 
+      className={`bg-gradient-to-b min-h-screen bg-white 
     text-[#1c5461] h-full flex flex-col transition-all duration-300 ease-in-out z-50
     ${isCollapsed ? "w-20" : "w-64"}  md:flex`}
     >
