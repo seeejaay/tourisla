@@ -24,183 +24,273 @@ export default function TouristSpotPage() {
     // eslint-disable-next-line
   }, [id]);
 
+  // Helper for bento grid layout
+  const getBentoClass = (idx: number) => {
+    if (idx === 0) return "col-span-2 row-span-2 md:col-span-2 md:row-span-2";
+    if (idx % 5 === 0) return "row-span-2";
+    return "";
+  };
+
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-[#f1f1f1] flex flex-col items-center py-10">
-        {loading ? (
-          <p className="text-lg text-center">Loading...</p>
-        ) : error ? (
-          <p className="text-red-500 text-center">{error}</p>
-        ) : touristSpot ? (
-          <div className="w-full max-w-3xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-200 p-8 space-y-10">
-            {/* Name */}
-            <div className="flex flex-col gap-2">
-              <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-                Name
-              </Label>
-              <span className="text-3xl md:text-4xl font-extrabold text-blue-800 tracking-tight break-words">
+      <div className="min-h-screen bg-[#f1f1f1]">
+        {/* Banner */}
+        {touristSpot?.images?.[0]?.image_url && (
+          <div className="relative pt-24 w-full h-[350px] md:h-[400px] overflow-hidden rounded-b-3xl shadow">
+            <img
+              src={touristSpot.images[0].image_url}
+              alt={touristSpot.name}
+              className="object-cover object-center w-full h-full"
+            />
+            <div className="absolute inset-0 bg-black/40 z-10" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-20 space-y-4">
+              <h2 className="text-4xl md:text-5xl font-extrabold text-white text-center drop-shadow-lg">
                 {touristSpot.name}
-              </span>
-            </div>
-
-            {/* Info Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-              {/* Column 1 */}
-              <div className="space-y-6 min-w-0">
-                <div>
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Type
-                  </Label>
-                  <div>
-                    {touristSpot.type || (
-                      <span className="italic text-muted-foreground">N/A</span>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Opening Hours
-                  </Label>
-                  <div>
-                    {touristSpot.opening_time || (
-                      <span className="italic text-muted-foreground">N/A</span>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Closing Hours
-                  </Label>
-                  <div>
-                    {touristSpot.closing_time || (
-                      <span className="italic text-muted-foreground">N/A</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              {/* Column 2 */}
-              <div className="space-y-6 min-w-0">
-                <div>
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Entrance Fee
-                  </Label>
-                  <div>
-                    {touristSpot.entrance_fee || (
-                      <span className="italic text-muted-foreground">N/A</span>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Contact Number
-                  </Label>
-                  <div>
-                    {touristSpot.contact_number || (
-                      <span className="italic text-muted-foreground">N/A</span>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Other Fees
-                  </Label>
-                  <div>
-                    {touristSpot.other_fees || (
-                      <span className="italic text-muted-foreground">N/A</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              {/* Column 3 */}
-              <div className="space-y-6 min-w-0">
-                <div>
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Address
-                  </Label>
-                  <div>
-                    {[
-                      touristSpot.barangay,
-                      touristSpot.municipality,
-                      touristSpot.province,
-                    ]
-                      .filter(Boolean)
-                      .join(", ") || (
-                      <span className="italic text-muted-foreground">N/A</span>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Location
-                  </Label>
-                  <div>
-                    {touristSpot.location ? (
-                      <a
-                        href={touristSpot.location}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        View on map
-                      </a>
-                    ) : (
-                      <span className="italic text-muted-foreground">N/A</span>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-                    Facebook Page
-                  </Label>
-                  {touristSpot.facebook_page ? (
-                    <a
-                      href={touristSpot.facebook_page.trim()}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline break-all"
-                    >
-                      {touristSpot.facebook_page}
-                    </a>
-                  ) : (
-                    <span className="italic text-muted-foreground">N/A</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Description & Rules */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="flex flex-col gap-2">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Description
-                </Label>
-                <div className="p-6 bg-gray-50 rounded-xl min-h-[100px] shadow-sm">
-                  <p className="text-base text-gray-700 whitespace-pre-line">
-                    {touristSpot.description || (
-                      <span className="italic text-muted-foreground">N/A</span>
-                    )}
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Rules
-                </Label>
-                <div className="p-6 bg-gray-50 rounded-xl min-h-[100px] shadow-sm">
-                  <div className="text-base text-gray-700 whitespace-pre-line">
-                    {touristSpot.rules || (
-                      <span className="italic text-muted-foreground">N/A</span>
-                    )}
-                  </div>
-                </div>
-              </div>
+              </h2>
+              <p className="text-lg md:text-xl text-[#e6f7fa] text-center font-semibold drop-shadow-lg">
+                {touristSpot.municipality}, {touristSpot.province}
+              </p>
             </div>
           </div>
-        ) : (
-          <p className="text-gray-500 text-center">Tourist spot not found.</p>
         )}
-      </main>
+
+        <main className="px-4 py-10 max-w-4xl mx-auto space-y-10">
+          {/* Bento Images Section */}
+          {touristSpot?.images && touristSpot.images.length > 1 && (
+            <section>
+              <Label className="text-xs uppercase tracking-wider text-[#3e979f] block mb-4">
+                Gallery
+              </Label>
+              <div className="grid grid-cols-2 gap-4">
+                {touristSpot.images
+                  .slice(0, 2) // Only get the first two images
+                  .map((img, idx) => (
+                    <div
+                      key={img.id || idx}
+                      className="overflow-hidden rounded-xl border border-[#e6f7fa] bg-[#f8fcfd] h-72"
+                    >
+                      <img
+                        src={img.image_url}
+                        alt={`Image ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+              </div>
+            </section>
+          )}
+          {/* Info Card */}
+          {touristSpot && (
+            <section>
+              <div className="bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-8 space-y-10">
+                {/* Info Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                  {/* Column 1 */}
+                  <div className="space-y-6 min-w-0">
+                    <div>
+                      <Label className="text-xs uppercase tracking-wider text-[#3e979f]">
+                        Type
+                      </Label>
+                      <div className="text-[#1c5461] font-semibold">
+                        {touristSpot.type || (
+                          <span className="italic text-[#bda156]">N/A</span>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs uppercase tracking-wider text-[#3e979f]">
+                        Opening Hours
+                      </Label>
+                      <div className="text-[#1c5461]">
+                        {touristSpot.opening_time || (
+                          <span className="italic text-[#bda156]">N/A</span>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs uppercase tracking-wider text-[#3e979f]">
+                        Closing Hours
+                      </Label>
+                      <div className="text-[#1c5461]">
+                        {touristSpot.closing_time || (
+                          <span className="italic text-[#bda156]">N/A</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Column 2 */}
+                  <div className="space-y-6 min-w-0">
+                    <div>
+                      <Label className="text-xs uppercase tracking-wider text-[#3e979f]">
+                        Entrance Fee
+                      </Label>
+                      <div className="text-[#1c5461]">
+                        {touristSpot.entrance_fee || (
+                          <span className="italic text-[#bda156]">N/A</span>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs uppercase tracking-wider text-[#3e979f]">
+                        Contact Number
+                      </Label>
+                      <div className="text-[#1c5461]">
+                        {touristSpot.contact_number || (
+                          <span className="italic text-[#bda156]">N/A</span>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs uppercase tracking-wider text-[#3e979f]">
+                        Other Fees
+                      </Label>
+                      <div className="text-[#1c5461]">
+                        {touristSpot.other_fees || (
+                          <span className="italic text-[#bda156]">N/A</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Column 3 */}
+                  <div className="space-y-6 min-w-0">
+                    <div>
+                      <Label className="text-xs uppercase tracking-wider text-[#3e979f]">
+                        Address
+                      </Label>
+                      <div className="text-[#1c5461]">
+                        {[
+                          touristSpot.barangay,
+                          touristSpot.municipality,
+                          touristSpot.province,
+                        ]
+                          .filter(Boolean)
+                          .join(", ") || (
+                          <span className="italic text-[#bda156]">N/A</span>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs uppercase tracking-wider text-[#3e979f]">
+                        Location
+                      </Label>
+                      <div>
+                        {touristSpot.location ? (
+                          <a
+                            href="#"
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              if (!navigator.geolocation) {
+                                window.open(
+                                  touristSpot.location?.includes(
+                                    "google.com/maps"
+                                  )
+                                    ? touristSpot.location
+                                    : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                                        touristSpot.location || ""
+                                      )}`,
+                                  "_blank"
+                                );
+                                return;
+                              }
+                              navigator.geolocation.getCurrentPosition(
+                                (pos) => {
+                                  // Try to extract lat/lng from Google Maps URL
+                                  let destLat, destLng;
+                                  const match = touristSpot.location.match(
+                                    /@(-?\d+\.\d+),(-?\d+\.\d+)/
+                                  );
+                                  if (match) {
+                                    destLat = match[1];
+                                    destLng = match[2];
+                                  }
+                                  // If not a Google Maps URL with @lat,lng, just use the address string
+                                  const destination =
+                                    destLat && destLng
+                                      ? `${destLat},${destLng}`
+                                      : encodeURIComponent(
+                                          touristSpot.location
+                                        );
+                                  const userLat = pos.coords.latitude;
+                                  const userLng = pos.coords.longitude;
+                                  const directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${destination}&travelmode=driving`;
+                                  window.open(directionsUrl, "_blank");
+                                },
+                                () => {
+                                  window.open(
+                                    touristSpot.location?.includes(
+                                      "google.com/maps"
+                                    )
+                                      ? touristSpot.location
+                                      : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                                          touristSpot.location || ""
+                                        )}`,
+                                    "_blank"
+                                  );
+                                }
+                              );
+                            }}
+                            className="inline-block w-full text-center mt-1 bg-[#1c5461] text-white rounded-full px-4 py-2 text-sm font-semibold shadow hover:bg-[#174d57] transition"
+                          >
+                            View on Maps
+                          </a>
+                        ) : (
+                          <span className="italic text-[#bda156]">N/A</span>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs uppercase tracking-wider text-[#3e979f]">
+                        Facebook Page
+                      </Label>
+                      {touristSpot.facebook_page &&
+                      touristSpot.facebook_page !== "null" ? (
+                        <a
+                          href={touristSpot.facebook_page.trim()}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#0da6ae] hover:underline break-all"
+                        >
+                          {touristSpot.facebook_page}
+                        </a>
+                      ) : (
+                        <span className="italic text-[#bda156]">N/A</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Full Width Description */}
+                <div className="flex flex-col gap-2">
+                  <Label className="text-xs uppercase tracking-wider text-[#3e979f]">
+                    Description
+                  </Label>
+                  <div className="p-6 bg-[#e6f7fa] rounded-xl min-h-[100px] shadow-sm w-full">
+                    <p className="text-base text-[#1c5461] whitespace-pre-line">
+                      {touristSpot.description || (
+                        <span className="italic text-[#bda156]">N/A</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                {/* Full Width Rules */}
+                <div className="flex flex-col gap-2">
+                  <Label className="text-xs uppercase tracking-wider text-[#3e979f]">
+                    Rules
+                  </Label>
+                  <div className="p-6 bg-[#e6f7fa] rounded-xl min-h-[100px] shadow-sm w-full">
+                    <div className="text-base text-[#1c5461] whitespace-pre-line">
+                      {touristSpot.rules || (
+                        <span className="italic text-[#bda156]">N/A</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+        </main>
+      </div>
       <Footer />
     </>
   );
