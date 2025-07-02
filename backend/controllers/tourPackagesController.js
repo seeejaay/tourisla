@@ -115,15 +115,6 @@ const updateTourPackageController = async (req, res) => {
     }
     const touroperator_id = operatorRegis.id;
 
-    console.log(
-      "Updating Tour Package with ID:",
-      id,
-      "by operator ID:",
-      touroperator_id,
-      "with data:",
-      req.body
-    );
-
     let {
       id,
       package_name,
