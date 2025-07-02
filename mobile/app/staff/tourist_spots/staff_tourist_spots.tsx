@@ -29,11 +29,15 @@ export default function StaffTouristSpots() {
     fetchTouristSpots();
   }, [fetchTouristSpots]);
 
+  const safeIncludes = (source: any, target: string): boolean =>
+    typeof source === 'string' && typeof target === 'string' &&
+    source.includes(target);
+
   const filteredSpots = touristSpots.filter((spot) => {
     const matchesSearch =
-      spot.name.toLowerCase().includes(search.toLowerCase()) ||
-      (spot.municipality && spot.municipality.toLowerCase().includes(search.toLowerCase())) ||
-      (spot.description && spot.description.toLowerCase().includes(search.toLowerCase()));
+    safeIncludes(spot.name, search) ||
+    safeIncludes(spot.municipality, search) ||
+    safeIncludes(spot.description, search);
   
     const matchesCategory =
       !selectedCategory || toTitleCase(spot.type) === selectedCategory;
@@ -96,7 +100,7 @@ export default function StaffTouristSpots() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#f9fafb" }}>
-      <HeaderWithBack backgroundColor="#287674" textColor="#f9fafb" />
+      <HeaderWithBack backgroundColor="#287674" textColor="#002b11" />
       <FlatList
         ref={listRef}
         data={paginatedSpots}
