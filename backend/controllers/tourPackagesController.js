@@ -110,6 +110,14 @@ const updateTourPackageController = async (req, res) => {
     if (!touroperator_id) {
       return res.status(404).json({ message: "Tour operator not found." });
     }
+    console.log(
+      "Updating Tour Package with ID:",
+      id,
+      "by operator ID:",
+      touroperator_id,
+      "with data:",
+      req.body
+    );
 
     let {
       package_name,
@@ -178,10 +186,11 @@ const updateTourPackageController = async (req, res) => {
       cancellation_note,
     });
 
-    if (!updated)
+    if (!updated || updated.length === 0) {
       return res.status(404).json({ message: "Tour package not found." });
+    }
 
-    res.json({ message: "Tour package updated", tourPackage: updated });
+    res.json({ message: "Tour package updated", tourPackage: updated[0] });
   } catch (err) {
     console.log(err.message);
     res.send(err.message);
