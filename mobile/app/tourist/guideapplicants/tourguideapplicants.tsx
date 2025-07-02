@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,18 +12,17 @@ import { useRouter } from "expo-router";
 import HeaderWithBack from "@/components/HeaderWithBack";
 
 export default function TourGuideApplicantsPage() {
-  const {
-    tourGuideApplicants,
-    loading,
-    error,
-    fetchTourGuideApplicants,
-  } = useTourGuideManager();
-
+  const { fetchAllTourGuideApplicants, loading, error } = useTourGuideManager();
+  const [applicants, setApplicants] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
-    fetchTourGuideApplicants();
-  }, [fetchTourGuideApplicants]);
+    const loadApplicants = async () => {
+      const data = await fetchAllTourGuideApplicants();
+      if (data) setApplicants(data);
+    };
+    loadApplicants();
+  }, [fetchAllTourGuideApplicants]);
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -44,11 +43,11 @@ export default function TourGuideApplicantsPage() {
         <ActivityIndicator size="large" color="#1c5461" style={styles.centered} />
       ) : error ? (
         <Text style={[styles.centered, styles.error]}>{error}</Text>
-      ) : tourGuideApplicants.length === 0 ? (
+      ) : applicants.length === 0 ? (
         <Text style={styles.centered}>No applicants found.</Text>
       ) : (
         <FlatList
-          data={tourGuideApplicants}
+          data={applicants}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
           contentContainerStyle={{ padding: 16, gap: 10 }}
