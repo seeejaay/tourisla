@@ -289,8 +289,8 @@ export function DataTable<TData, TValue>({
       {/* Add Dialog */}
       {AddDialogComponent && (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className=" bg-[#f8fcfd] lg:min-w-3xl min-h-[35rem] overflow-y-auto">
-            <DialogHeader className="p-0 m-0  h-16 flex items-start justify-center">
+          <DialogContent className="w-full max-w-[98vw] sm:max-w-lg md:max-w-xl lg:max-w-4xl p-2 sm:p-4 overflow-y-auto max-h-[90vh]">
+            <DialogHeader className="p-0 m-0 h-16 flex items-start justify-center">
               <DialogTitle className="text-lg font-semibold text-[#1c5461]">
                 {addDialogTitle ?? "Add"}
               </DialogTitle>

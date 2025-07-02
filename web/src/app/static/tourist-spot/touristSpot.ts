@@ -93,15 +93,15 @@ export const touristSpotFields: TouristSpotField[] = [
   },
   {
     name: "entrance_fee",
-    label: "Entrance Fee (N/A if none)",
+    label: "Entrance Fee",
     type: "text",
-    placeholder: "e.g., 50.00",
+    placeholder: "e.g., 50.00, N/A if none",
   },
   {
     name: "other_fees",
-    label: "Other Fees (N/A if none)",
+    label: "Other Fees",
     type: "text",
-    placeholder: "e.g., Parking fee, Guide fee",
+    placeholder: "e.g., Parking fee, Guide fee, N/A if none",
   },
   {
     name: "contact_number",
