@@ -108,11 +108,10 @@ export default function TourPackageDetailsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
       <HeaderWithBack
         title="Package Details"
-        backgroundColor="#2eb1ab"
-        textColor="#ffffff"
+        backgroundColor="#transparent"
+        textColor="#002b11"
       />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>

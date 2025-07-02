@@ -105,12 +105,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   navButton: {
-    backgroundColor: "#e0f2f1",
+    backgroundColor: "#cff5f2",
     padding: 8,
     borderRadius: 6,
   },
   disabledButton: {
-    backgroundColor: "#f1f5f9",
+    backgroundColor: "#cff5f2",
   },
   pageNumbers: {
     flexDirection: "row",
