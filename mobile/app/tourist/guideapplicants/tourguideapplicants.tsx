@@ -6,14 +6,21 @@ import {
   ActivityIndicator,
   StyleSheet,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { useTourGuideManager } from "@/hooks/useTourGuideManager";
 import { useRouter } from "expo-router";
 import HeaderWithBack from "@/components/HeaderWithBack";
+import SearchBar from "@/components/SearchBar";
+import FilterDropdown from "@/components/FilterDropdown";
+import { toTitleCase } from "@/lib/utils/textFormat";
 
 export default function TourGuideApplicantsPage() {
   const { fetchAllTourGuideApplicants, loading, error } = useTourGuideManager();
   const [applicants, setApplicants] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+
   const router = useRouter();
 
   useEffect(() => {
@@ -24,30 +31,106 @@ export default function TourGuideApplicantsPage() {
     loadApplicants();
   }, [fetchAllTourGuideApplicants]);
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      onPress={() => router.push(`/admin/tour_guide_applicant_view?id=${item.id}`)}
-      style={styles.card}
-    >
-      <Text style={styles.name}>{item.full_name}</Text>
-      <Text style={styles.email}>{item.email}</Text>
-      <Text style={styles.status}>Status: {item.status}</Text>
-    </TouchableOpacity>
+  const filteredApplicants = applicants.filter((applicant) => {
+    const fullName = `${applicant.first_name} ${applicant.last_name}`.toLowerCase();
+    const queryMatch =
+      fullName.includes(searchQuery.toLowerCase()) ||
+      applicant.email?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const statusMatch =
+      !selectedCategory || applicant.application_status === selectedCategory;
+
+    return queryMatch && statusMatch;
+  });
+
+  const uniqueStatuses = Array.from(
+    new Set(applicants.map((a) => a.application_status).filter(Boolean))
   );
 
+  const getStatusStyle = (status) => {
+    switch (status?.toLowerCase()) {
+      case "pending":
+        return { backgroundColor: "#ff9800", color: "#fff" };
+      case "approved":
+        return { backgroundColor: "#4caf50", color: "#fff" };
+      case "rejected":
+        return { backgroundColor: "#f44336", color: "#fff" };
+      default:
+        return { backgroundColor: "#9e9e9e", color: "#fff" };
+    }
+  };
+  
+  const renderItem = ({ item }) => {
+    const statusStyle = getStatusStyle(item.application_status);
+  
+    return (
+      <TouchableOpacity
+        onPress={() =>
+          router.push(`/admin/tour_guide_applicant_view?id=${item.id}`)
+        }
+        style={styles.card}
+      >
+        <View style={{ position: "relative" }}>
+          <View
+            style={[
+              styles.statusBadge,
+              { backgroundColor: statusStyle.backgroundColor },
+            ]}
+          >
+            <Text style={[styles.statusText, { color: statusStyle.color }]}>
+              {toTitleCase(item.application_status) || "N/A"}
+            </Text>
+          </View>
+  
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <Image
+              source={{ uri: item.profile_picture || "https://via.placeholder.com/50" }}
+              style={{ width: 50, height: 50, borderRadius: 25 }}
+            />
+            <View>
+              <Text style={styles.name}>
+                {`${toTitleCase(item.first_name)} ${toTitleCase(item.last_name)}`}
+              </Text>
+              <Text style={styles.email}>{toTitleCase(item.email)}</Text>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+  
   return (
     <View style={styles.container}>
-      <HeaderWithBack title="Tour Guide Applicants" backgroundColor="#1c5461" textColor="#fff" />
+      <HeaderWithBack
+        title="Tour Guide Applicants"
+        backgroundColor="transparent"
+        textColor="#000"
+      />
+
+      <View style={{ paddingHorizontal: 16, flexDirection: "row", gap: 4, paddingTop: 16 }}>
+        <View style={{ flex: 1 }}>
+          <SearchBar
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search by name or email"
+          />
+        </View>
+        <FilterDropdown
+          options={uniqueStatuses}
+          selected={selectedCategory}
+          onSelect={setSelectedCategory}
+        />
+      </View>
 
       {loading ? (
         <ActivityIndicator size="large" color="#1c5461" style={styles.centered} />
       ) : error ? (
         <Text style={[styles.centered, styles.error]}>{error}</Text>
-      ) : applicants.length === 0 ? (
+      ) : filteredApplicants.length === 0 ? (
         <Text style={styles.centered}>No applicants found.</Text>
       ) : (
         <FlatList
-          data={applicants}
+          data={filteredApplicants}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
           contentContainerStyle={{ padding: 16, gap: 10 }}
@@ -88,5 +171,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#00796b",
     marginTop: 4,
+    fontWeight: "700",
+  },
+  statusBadge: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderTopRightRadius: 10,
+    borderBottomLeftRadius: 10,
+    zIndex: 1,
+  },
+  
+  statusText: {
+    fontSize: 12,
+    fontWeight: "bold",
   },
 });
