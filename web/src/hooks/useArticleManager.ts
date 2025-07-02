@@ -24,6 +24,7 @@ export const useArticleManager = () => {
     setError("");
     try {
       const data = await fetchArticles();
+      console.log("Fetched articles:", data);
       setArticles(data);
     } catch (err) {
       setError("Error fetching articles: " + err);
@@ -55,18 +56,24 @@ export const useArticleManager = () => {
       setLoading(true);
       setError("");
       try {
+        console.log("Editing article with ID:", id, "Data:", articleData);
         let dataToSend: ArticleSchema | FormData = articleData;
 
-        // Convert to FormData if a new thumbnail file is present
+        // Convert to FormData if a new image file is present
         if (
           typeof FormData !== "undefined" &&
-          Object.prototype.hasOwnProperty.call(articleData, "thumbnail") &&
-          articleData.thumbnail instanceof File
+          Object.prototype.hasOwnProperty.call(articleData, "images") &&
+          Array.isArray(articleData.images) &&
+          articleData.images[0] instanceof File
         ) {
           const formData = new FormData();
           Object.entries(articleData).forEach(([key, value]) => {
-            if (key === "thumbnail" && value instanceof File) {
-              formData.append("thumbnail", value);
+            if (
+              key === "images" &&
+              Array.isArray(value) &&
+              value[0] instanceof File
+            ) {
+              formData.append("images", value[0]);
             } else if (typeof value === "boolean") {
               formData.append(key, value ? "true" : "false");
             } else if (typeof value === "number") {
@@ -90,7 +97,6 @@ export const useArticleManager = () => {
     },
     []
   );
-
   const remove = useCallback(async (id: number): Promise<boolean> => {
     setLoading(true);
     setError("");
@@ -111,6 +117,7 @@ export const useArticleManager = () => {
     setError("");
     try {
       const result = await viewArticle(id);
+      console.log("Viewed article:", result);
       return result;
     } catch (err) {
       setError("Error viewing article: " + err);
