@@ -38,11 +38,11 @@ import Image from "next/image";
 const baseSignupSchema = z.object({
   first_name: z
     .string()
-    .regex(/^[a-zA-Z]+$/, "First name must contain only letters")
+    .regex(/^[a-zA-Z\s]+$/, "First name must contain only letters and spaces")
     .min(3, "First name is required"),
   last_name: z
     .string()
-    .regex(/^[a-zA-Z]+$/, "Last name must contain only letters")
+    .regex(/^[a-zA-Z\s]+$/, "Last name must contain only letters and spaces")
     .min(2, "Last name is required"),
   email: z.string().email(),
   password: z.string(),
