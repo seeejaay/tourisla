@@ -17,6 +17,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+
 export default function PublicArticlesPage() {
   const router = useRouter();
   const { articles, fetchArticles } = useArticleManager();
@@ -34,15 +35,26 @@ export default function PublicArticlesPage() {
   useEffect(() => {
     const load = async () => {
       await fetchArticles();
-
-      const published = articles.filter((a) => a.status === "PUBLISHED");
-
-      setFeatured(published.filter((a) => a.is_featured));
-      setRegular(published.filter((a) => !a.is_featured));
     };
-
     load();
-  }, [articles, fetchArticles]);
+    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    // Filter only published articles
+    const published = articles.filter((a) => a.is_published);
+
+    setFeatured(published.filter((a) => a.is_featured));
+    setRegular(published.filter((a) => !a.is_featured));
+  }, [articles]);
+
+  // Helper to get the best image for an article
+  const getArticleImage = (article: Article) => {
+    if (article.images && article.images.length > 0) {
+      return article.images[0].image_url;
+    }
+    return article.thumbnail_url || "/images/article_image.webp";
+  };
 
   return (
     <>
@@ -62,7 +74,6 @@ export default function PublicArticlesPage() {
             <h2 className="text-5xl font-extrabold text-white text-center drop-shadow-lg">
               Kakyop, Sara Kag Bwas
             </h2>
-
             <p className="text-xl text-white text-center font-semibold drop-shadow-lg">
               Yesterday, Today, and Tomorrow
             </p>
@@ -86,15 +97,13 @@ export default function PublicArticlesPage() {
                   {featured.map((article) => (
                     <CarouselItem key={article.id} className="basis-full">
                       <Card className="group relative p-0 overflow-hidden rounded-2xl shadow border border-[#e6f7fa] hover:shadow-md transition bg-white flex flex-col h-[32rem]">
-                        {article.thumbnail_url && (
-                          <Image
-                            src={article.thumbnail_url}
-                            alt={article.title}
-                            fill
-                            className="object-cover w-full h-full"
-                            style={{ zIndex: 0 }}
-                          />
-                        )}
+                        <Image
+                          src={getArticleImage(article)}
+                          alt={article.title}
+                          fill
+                          className="object-cover w-full h-full"
+                          style={{ zIndex: 0 }}
+                        />
                         {/* Overlay for dimming */}
                         <div className="absolute inset-0 bg-black/40 z-10 transition group-hover:bg-black/50" />
                         {/* Details on top of image */}
@@ -136,15 +145,13 @@ export default function PublicArticlesPage() {
                   key={article.id}
                   className="group p-0 overflow-hidden rounded-2xl shadow border border-[#e6f7fa] hover:shadow-md transition bg-white flex flex-col"
                 >
-                  {article.thumbnail_url && (
-                    <Image
-                      src={article.thumbnail_url}
-                      alt={article.title}
-                      width={400}
-                      height={200}
-                      className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  )}
+                  <Image
+                    src={getArticleImage(article)}
+                    alt={article.title}
+                    width={400}
+                    height={200}
+                    className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
                   <div className="p-4 flex flex-col gap-2 flex-1">
                     <h4 className="font-semibold text-lg text-[#1c5461] line-clamp-2 group-hover:text-[#3e979f] transition">
                       {article.title}

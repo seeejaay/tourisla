@@ -667,7 +667,7 @@ app.get("/api/v1/rules/:ruleId", viewRuleByIdController);
 // Routes — Articles
 app.post(
   "/api/v1/articles",
-  allowedRoles(["Admin","Cultural Director"]),
+  allowedRoles(["Admin", "Cultural Director"]),
   upload.array("images", 5),
   createArticleController
 );
@@ -675,13 +675,13 @@ app.post(
 app.put(
   "/api/v1/articles/:articleId",
   allowedRoles(["Admin", "Cultural Director"]),
-  upload.none(),
+  upload.array("images", 5),
   editArticleController
 );
 
 app.delete(
   "/api/v1/articles/:articleId",
-  allowedRoles(["Admin","Cultural Director"]),
+  allowedRoles(["Admin", "Cultural Director"]),
   deleteArticleController
 );
 
@@ -691,14 +691,14 @@ app.get("/api/v1/articles/:articleId", viewArticleByIdController);
 
 app.post(
   "/api/v1/articles/:articleId/images",
-  allowedRoles(["Admin","Cultural Director"]),
+  allowedRoles(["Admin", "Cultural Director"]),
   upload.array("images", 5),
   uploadArticleImagesController
 );
 
 app.delete(
   "/api/v1/articles/images/:imageId",
-  allowedRoles(["Admin","Cultural Director"]),
+  allowedRoles(["Admin", "Cultural Director"]),
   deleteArticleImageController
 );
 

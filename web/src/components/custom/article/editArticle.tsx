@@ -19,12 +19,41 @@ export default function EditArticle({
   onCancel: () => void;
 }) {
   const [form, setForm] = useState<Article>({ ...article });
-  const [thumbnail, setThumbnail] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(
-    article.thumbnail_url || null
-  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>(
+    article.images?.map((img) => img.image_url) || []
+  );
+
+  // Handle image file selection and previews
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    setImageFiles(files);
+
+    // Generate previews for new files
+    if (files.length > 0) {
+      const fileReaders: FileReader[] = [];
+      const newPreviews: string[] = [];
+      files.forEach((file, idx) => {
+        const reader = new FileReader();
+        fileReaders.push(reader);
+        reader.onload = (ev) => {
+          newPreviews[idx] = ev.target?.result as string;
+          // Only update previews when all files are loaded
+          if (newPreviews.filter(Boolean).length === files.length) {
+            setPreviews([
+              ...(article.images?.map((img) => img.image_url) || []),
+              ...newPreviews,
+            ]);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    } else {
+      setPreviews(article.images?.map((img) => img.image_url) || []);
+    }
+  };
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -39,57 +68,43 @@ export default function EditArticle({
     }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setThumbnail(file);
-    if (file) {
-      setForm((prev) => ({
-        ...prev,
-        thumbnail: file,
-      }));
-      const reader = new FileReader();
-      reader.onload = () => setPreview(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const result = articleSchema.safeParse({
-      ...form,
-      thumbnail_url: "placeholder",
-    });
-    if (!result.success) {
-      setError(result.error.errors[0].message);
+    // Always set updated_by before validation
+    const formWithUpdater = { ...form, updated_by: form.updated_by || "ADMIN" };
+
+    // ...rest of your code, but use formWithUpdater instead of form...
+    const hasExistingImage =
+      formWithUpdater.images &&
+      formWithUpdater.images.length > 0 &&
+      formWithUpdater.images[0].image_url;
+    if (imageFiles.length === 0 && !hasExistingImage) {
+      setError("At least one image is required.");
       setLoading(false);
       return;
     }
 
+    const formForValidation = { ...formWithUpdater };
+    if (imageFiles.length > 0) {
+      delete formForValidation.images;
+    }
+    const result = articleSchema.safeParse(formForValidation);
+    if (!result.success) {
+      setError(result.error.errors.map((e) => e.message).join(", "));
+      setLoading(false);
+      return;
+    }
+
+    const dataToSend = {
+      ...formWithUpdater,
+      images: imageFiles.length > 0 ? imageFiles : formWithUpdater.images,
+    };
+
     try {
-      const formData = new FormData();
-      Object.entries(form).forEach(([key, val]) => {
-        formData.append(key, val?.toString());
-      });
-
-      if (thumbnail) {
-        formData.append("thumbnail", thumbnail);
-      }
-
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}articles/${form.id}`,
-        {
-          method: "PUT",
-          body: formData,
-          credentials: "include",
-        }
-      );
-
-      if (!res.ok) throw new Error("Failed to update article");
-
-      onSave(form);
+      await onSave(dataToSend as Article);
     } catch (err) {
       setError("Failed to update article. " + err);
     } finally {
@@ -101,27 +116,75 @@ export default function EditArticle({
     <Card className="w-full max-w-2xl mx-auto border-none shadow-none">
       <CardContent>
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          {error && <div className="text-red-500 text-sm">{error}</div>}
+          {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
+
+          {/* Hidden required fields */}
+          <Input type="hidden" name="author" value={form.author} />
+          <Input type="hidden" name="updated_by" value={form.updated_by} />
 
           <div className="flex flex-col gap-1">
             <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
-              Thumbnail Image
+              Images <span className="text-red-500">*</span>
             </Label>
-            <Input type="file" accept="image/*" onChange={handleFileChange} />
-            {preview && (
-              <img
-                src={preview}
-                alt="Thumbnail preview"
-                className="mt-2 w-40 rounded border"
-              />
+            <Input
+              id="images"
+              type="file"
+              name="images"
+              accept="image/*"
+              multiple
+              onChange={handleImageChange}
+            />
+            {/* Show existing images */}
+            {form.images &&
+              Array.isArray(form.images) &&
+              form.images.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  <p className="text-xs text-gray-500">Current Images</p>
+                  <div className="flex flex-wrap gap-2">
+                    {form.images.map((image, idx: number) => (
+                      <div
+                        key={idx}
+                        className="relative aspect-square w-24 h-24 rounded-md overflow-hidden border border-gray-200"
+                      >
+                        <img
+                          src={image.image_url.replace(/\s/g, "")}
+                          alt={`Article Image ${idx + 1}`}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            {/* Show previews for new images */}
+            {imageFiles.length > 0 && (
+              <div className="flex gap-2 mt-2 flex-wrap">
+                {previews
+                  .slice(-imageFiles.length)
+                  .map(
+                    (src, idx) =>
+                      src && (
+                        <img
+                          key={idx}
+                          src={src}
+                          alt={`Preview ${idx + 1}`}
+                          className="w-24 h-24 object-cover rounded border"
+                        />
+                      )
+                  )}
+              </div>
             )}
           </div>
 
+          {/* Main fields */}
           {[
             { name: "title", label: "Title" },
-            { name: "body", label: "Content", type: "textarea" },
+            { name: "content", label: "Content", type: "textarea" },
             { name: "video_url", label: "Video URL" },
             { name: "tags", label: "Tags (comma-separated)" },
+            { name: "type", label: "Type" },
+            { name: "barangay", label: "Barangay" },
+            { name: "summary", label: "Summary", type: "textarea" },
           ].map((field) => (
             <div key={field.name} className="flex flex-col gap-1">
               <Label
@@ -142,36 +205,39 @@ export default function EditArticle({
                 <Input
                   id={field.name}
                   name={field.name}
-                  type={field.type || "text"}
                   value={form[field.name as keyof Article] || ""}
                   onChange={handleChange}
+                  type={field.type || "text"}
                   className="bg-white border-[#e6f7fa] focus:border-[#3e979f] focus:ring-[#3e979f]"
                 />
               )}
             </div>
           ))}
 
-          <div className="flex flex-col gap-1">
-            <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
-              Status
-            </Label>
-            <select
-              name="status"
-              value={form.status}
-              onChange={handleChange}
-              className="border border-[#e6f7fa] rounded px-2 py-2 text-sm bg-white focus:border-[#3e979f] focus:ring-[#3e979f]"
+          {/* is_published checkbox */}
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="is_published"
+              checked={!!form.is_published}
+              onCheckedChange={(checked) =>
+                setForm((prev) => ({ ...prev, is_published: !!checked }))
+              }
+            />
+            <Label
+              htmlFor="is_published"
+              className="text-[#1c5461] font-semibold"
             >
-              <option value="DRAFT">Draft</option>
-              <option value="PUBLISHED">Published</option>
-            </select>
+              Published
+            </Label>
           </div>
 
+          {/* is_featured checkbox */}
           <div className="flex items-center gap-2">
             <Checkbox
               id="is_featured"
-              checked={form.is_featured}
+              checked={!!form.is_featured}
               onCheckedChange={(checked) =>
-                setForm((prev) => ({ ...prev, is_featured: checked }))
+                setForm((prev) => ({ ...prev, is_featured: !!checked }))
               }
             />
             <Label

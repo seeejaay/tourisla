@@ -21,11 +21,14 @@ export default function AddArticle({
   const [form, setForm] = useState({
     title: "",
     author: currentUser,
-    body: "",
+    content: "",
     video_url: "",
     tags: "",
-    status: "DRAFT",
+    type: "",
+    is_published: false,
     is_featured: false,
+    barangay: "",
+    summary: "",
     updated_by: currentUser,
   });
 
@@ -79,7 +82,7 @@ export default function AddArticle({
       });
 
       if (thumbnail) {
-        formData.append("thumbnail", thumbnail);
+        formData.append("images", thumbnail);
       }
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}articles`, {
@@ -106,9 +109,14 @@ export default function AddArticle({
 
           <div className="flex flex-col gap-1">
             <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
-              Thumbnail Image
+              Thumbnail Image <span className="text-red-500">*</span>
             </Label>
-            <Input type="file" accept="image/*" onChange={handleFileChange} />
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              required
+            />
             {preview && (
               <img
                 src={preview}
@@ -118,11 +126,15 @@ export default function AddArticle({
             )}
           </div>
 
+          {/* Main fields */}
           {[
             { name: "title", label: "Title" },
-            { name: "body", label: "Content", type: "textarea" },
+            { name: "content", label: "Content", type: "textarea" },
             { name: "video_url", label: "Video URL" },
             { name: "tags", label: "Tags (comma-separated)" },
+            { name: "type", label: "Type" },
+            { name: "barangay", label: "Barangay" },
+            { name: "summary", label: "Summary", type: "textarea" },
           ].map((field) => (
             <div key={field.name} className="flex flex-col gap-1">
               <Label
@@ -154,21 +166,24 @@ export default function AddArticle({
             </div>
           ))}
 
-          <div className="flex flex-col gap-1">
-            <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
-              Status
-            </Label>
-            <select
-              name="status"
-              value={form.status}
-              onChange={handleChange}
-              className="border border-[#e6f7fa] rounded px-2 py-2 text-sm bg-white focus:border-[#3e979f] focus:ring-[#3e979f]"
+          {/* is_published checkbox */}
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="is_published"
+              checked={form.is_published}
+              onCheckedChange={(checked) =>
+                setForm((prev) => ({ ...prev, is_published: checked }))
+              }
+            />
+            <Label
+              htmlFor="is_published"
+              className="text-[#1c5461] font-semibold"
             >
-              <option value="DRAFT">Draft</option>
-              <option value="PUBLISHED">Published</option>
-            </select>
+              Published
+            </Label>
           </div>
 
+          {/* is_featured checkbox */}
           <div className="flex items-center gap-2">
             <Checkbox
               id="is_featured"
