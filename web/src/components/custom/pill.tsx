@@ -143,7 +143,7 @@ export default function Pill({ className }: PillProps) {
                 <User className="w-4 h-4 text-gray-500" />
                 Sign Up
               </DropdownMenuItem>
-              <DropdownMenuItem
+              {/* <DropdownMenuItem
                 className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer flex items-center gap-3"
                 onClick={() => router.push("/auth/signup/tour-guide")}
               >
@@ -157,7 +157,7 @@ export default function Pill({ className }: PillProps) {
               >
                 <User className="w-4 h-4 text-gray-500" />
                 Sign Up as Tour Operator
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
 
               <DropdownMenuItem
                 className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer flex items-center gap-3"
