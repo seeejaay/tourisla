@@ -9,6 +9,7 @@ const links = [
   { label: "Tourist Spots", path: "/tourist/tourist_spots/tourist_tourist_spots", icon: "map-marker" },
   { label: "Map", path: "/tourist/map/tourist_map", icon: "map" },
   { label: "Incident-Report", path: "/tourist/profile/about/incident-report", icon: "flag" },
+  { label: "List of Tour Guides", path: "/tourist/guideapplicants/tourguideapplicants", icon: "users" },
 ];
 
 export default function MoreScreen({ headerHeight }: { headerHeight?: number }) {
