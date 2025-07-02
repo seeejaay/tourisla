@@ -106,7 +106,11 @@ const createTourPackageController = async (req, res) => {
 const updateTourPackageController = async (req, res) => {
   try {
     const { id } = req.params;
-    const touroperator_id = req.user.id;
+    const touroperator_id = getOperatorRegisById(req.user.id);
+    if (!touroperator_id) {
+      return res.status(404).json({ message: "Tour operator not found." });
+    }
+
     let {
       package_name,
       location,

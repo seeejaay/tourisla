@@ -32,6 +32,7 @@ export const editTourPackage = async (packageId, packageData) => {
       "and data:",
       packageData
     );
+    console.log("API URL:", `${API_URL}tour-packages/${packageId}`);
     const response = await axios.put(
       `${API_URL}tour-packages/${packageId}`,
       packageData,

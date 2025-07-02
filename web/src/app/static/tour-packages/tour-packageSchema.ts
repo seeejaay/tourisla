@@ -88,14 +88,10 @@ const tourPackageSchema = z.object({
     .max(365, { message: "Cancellation days must be less than 365." }),
   cancellation_note: z
     .string()
-    .min(10, { message: "Cancellation policy is required." })
     .max(500, {
       message: "Cancellation policy must be less than 500 characters.",
     })
-    .regex(/^[a-zA-Z0-9\s,.'-]+$/, {
-      message:
-        "Cancellation policy can only contain letters, numbers, spaces, and common punctuation.",
-    }),
+    .optional(),
 });
 
 export type TourPackage = z.infer<typeof tourPackageSchema>;

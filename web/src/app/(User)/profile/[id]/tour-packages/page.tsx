@@ -3,8 +3,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
 import AddTourPackage from "@/components/custom/tour-package/addTourPackage";
+import EditTourPackage from "@/components/custom/tour-package/editTourPackage";
 import DeleteTourPackage from "@/components/custom/tour-package/deleteTourPackage";
-import { Loader2, AlertTriangle, Plus } from "lucide-react";
+
+import { Loader2, AlertTriangle, Plus, Pencil } from "lucide-react";
 import { useParams } from "next/navigation";
 import {
   Dialog,
@@ -54,6 +56,10 @@ export default function TourPackagesPage() {
   const { fetchAll, loading, error } = useTourPackageManager();
   const [packages, setPackages] = useState<TourPackage[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingPackage, setEditingPackage] = useState<TourPackage | null>(
+    null
+  );
   const params = useParams();
 
   // Ensure id is always a string
@@ -73,6 +79,13 @@ export default function TourPackagesPage() {
   // Handle create success
   const handleCreateSuccess = async () => {
     setDialogOpen(false);
+    await loadPackages();
+  };
+
+  // Handle edit success
+  const handleEditSuccess = async () => {
+    setEditDialogOpen(false);
+    setEditingPackage(null);
     await loadPackages();
   };
 
@@ -116,6 +129,27 @@ export default function TourPackagesPage() {
               onCancel={() => setDialogOpen(false)}
               operatorId={id}
             />
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog for Editing Tour Package */}
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent className="sm:max-w-[600px] lg:max-w-3xl overflow-y-auto max-h-[80vh] rounded-lg">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-semibold">
+                Edit Tour Package
+              </DialogTitle>
+            </DialogHeader>
+            {editingPackage && (
+              <EditTourPackage
+                tourPackage={editingPackage}
+                onSuccess={handleEditSuccess}
+                onCancel={() => {
+                  setEditDialogOpen(false);
+                  setEditingPackage(null);
+                }}
+              />
+            )}
           </DialogContent>
         </Dialog>
 
@@ -210,7 +244,20 @@ export default function TourPackagesPage() {
                       day: "numeric",
                     })}
                   </span>
-                  <DeleteTourPackage id={pkg.id} onDeleted={loadPackages} />
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setEditingPackage(pkg);
+                        setEditDialogOpen(true);
+                      }}
+                    >
+                      <Pencil className="w-4 h-4 mr-1" />
+                      Edit
+                    </Button>
+                    <DeleteTourPackage id={pkg.id} onDeleted={loadPackages} />
+                  </div>
                 </CardFooter>
               </Card>
             ))}
