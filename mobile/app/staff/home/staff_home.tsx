@@ -149,7 +149,7 @@ export default function TouristHome() {
                 {article.title.replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())}
               </Text>
               <Text style={styles.articleBodyOverlay}>
-                {article.body.slice(0, 40).replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())}...
+                {article.content.slice(0, 40).replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())}...
               </Text>
                 <View style={styles.readMoreBtn}>
                   <Text style={styles.readMoreText}>Read more →</Text>

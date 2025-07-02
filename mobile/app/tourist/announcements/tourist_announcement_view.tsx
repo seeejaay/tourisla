@@ -36,7 +36,7 @@ interface Announcement {
   image_url?: string;
 }
 
-export default function StaffAnnouncementViewScreen() {
+export default function TouristAnnouncementViewScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { viewAnnouncement, loading, error } = useAnnouncementManager();
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   },
   locationText: { marginLeft: 8, fontSize: 14, color: '#334155' },
   descriptionText: { fontSize: 14, lineHeight: 20, color: '#475569' },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#1c8773' },
   loadingText: { color: '#cbd5e1', marginTop: 16, fontSize: 16 },
   errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a', padding: 24 },
   errorTitle: { fontSize: 22, fontWeight: '700', color: '#fff', marginTop: 16, marginBottom: 8 },
