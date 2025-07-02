@@ -36,6 +36,11 @@ export const navigation = [
     href: "/hotlines",
     title: "Hotline",
   },
+  {
+    tag: "Verify Tour Guide",
+    href: "/tour-guides",
+    title: "Verify Tour Guide",
+  },
 ];
 export const footerNavigation = [
   {
