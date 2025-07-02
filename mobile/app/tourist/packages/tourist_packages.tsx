@@ -187,30 +187,33 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   container: {
-    padding: 16,
     flex: 1,
     backgroundColor: '#f1f1f1',
   },
   title: {
+    marginHorizontal: 16,
     fontSize: 25,
     fontWeight: '900',
-    color: '#1c5461',
+    color: '#002b11',
   },
   intro: {
     fontSize: 12,
-    color: '#64748b',
+    color: '#002b11',
     marginBottom: 6,
+    marginHorizontal: 16,
   },
   searchFilterRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     marginBottom: 12,
+    marginHorizontal: 16,
   },
   searchBarWrapper: {
     flex: 1,
   },
   listContent: {
+    paddingHorizontal: 16,
     paddingVertical: 20,
     paddingBottom: 100,
   },
@@ -227,12 +230,12 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     width: '100%',
-    marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    elevation: 1,
+    marginBottom: 12,
+    elevation: 8,
+    shadowColor: '#7b7b7b',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
   },
   headerRow: {
     flexDirection: 'row',
@@ -242,7 +245,7 @@ const styles = StyleSheet.create({
   packageName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#0c5e58',
+    color: '#002b11',
     flex: 1,
     marginRight: 12,
   },
@@ -257,7 +260,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 16,
     fontWeight: '900',
-    color: '#224d57',
+    color: '#002b11',
   },
   packageLocation: {
     fontSize: 10,
@@ -270,7 +273,7 @@ const styles = StyleSheet.create({
   },
   slots: {
     fontSize: 12,
-    color: '#5ea5aa',
+    color: '#61daaf',
     fontWeight: '600',
   },
   loadingContainer: {
