@@ -255,6 +255,10 @@ const viewTouristSpotByIdController = async (req, res) => {
       return res.status(404).json({ error: "Tourist spot not found" });
     }
 
+    const images = await getTouristSpotImages(touristSpotId);
+    // If images are objects, map to image_url
+    spot.images = images.map((img) => (img.image_url ? img : img));
+
     res.json(spot);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch tourist spot" });
