@@ -3,6 +3,7 @@ import { useHotlineManager } from "@/hooks/useHotlineManager";
 import { useState } from "react";
 import Header from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
+import Link from "next/link";
 export default function HotlinesPage() {
   const { hotlines, loading, error } = useHotlineManager();
   const [search, setSearch] = useState("");
@@ -23,6 +24,14 @@ export default function HotlinesPage() {
           <h1 className="text-3xl font-extrabold mb-6 text-[#1c5461] text-center">
             Emergency Hotlines
           </h1>
+          <div className="flex justify-end mb-6">
+            <Link href="/incident-report">
+              <button className="bg-[#3e979f] hover:bg-[#1c5461] cursor-pointer text-white font-semibold px-6 py-2 rounded-lg shadow transition">
+                Report an Incident
+              </button>
+            </Link>
+          </div>
+
           <input
             type="text"
             placeholder="Search by type, municipality, number, or address..."

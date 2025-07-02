@@ -28,112 +28,96 @@ function extractLatLng(url: string): { lat: number; lng: number } | null {
 // Map style
 const bantayanMapStyle = [
   // General background
-  { elementType: "geometry", stylers: [{ color: "#e0f7fa" }] }, // light turquoise
-  { elementType: "labels.text.fill", stylers: [{ color: "#008080" }] }, // teal
-  { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
+  {
+    elementType: "geometry",
+    stylers: [{ color: "#f5f5f5" }], // Light neutral background
+  },
+  {
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#1c8773" }], // Dark teal from your palette
+  },
+  {
+    elementType: "labels.text.stroke",
+    stylers: [{ color: "#ffffff" }],
+  },
 
-  // Water
+  // Water - using your primary blues
   {
     featureType: "water",
     elementType: "geometry",
-    stylers: [{ color: "#0077b6" }], // deep cyan blue
+    stylers: [
+      { color: "#0f4e73" }, // Darker in deep areas
+    ],
   },
   {
     featureType: "water",
     elementType: "labels.text.fill",
-    stylers: [{ color: "#005f6b" }],
+    stylers: [{ color: "#0da6ae" }], // Secondary blue
   },
 
-  // Parks and nature
+  // Parks and nature - using your greens
   {
     featureType: "poi.park",
     elementType: "geometry.fill",
-    stylers: [{ color: "#b6f5c9" }], // soft mint green
+    stylers: [{ color: "#2eb1ab" }], // Soft green
   },
   {
     featureType: "poi.park",
     elementType: "labels.text.fill",
-    stylers: [{ color: "#388e3c" }],
+    stylers: [{ color: "#1c8773" }], // Dark green
   },
 
-  // Roads
+  // Roads - using neutrals with accent colors
   {
     featureType: "road",
     elementType: "geometry",
-    stylers: [{ color: "#b2ebf2" }], // pale teal
+    stylers: [{ color: "#ffffff" }], // White roads
   },
   {
     featureType: "road",
     elementType: "labels.text.fill",
-    stylers: [{ color: "#00897b" }],
-  },
-  {
-    featureType: "road",
-    elementType: "labels.text.stroke",
-    stylers: [{ color: "#ffffff" }],
+    stylers: [{ color: "#1c8773" }],
   },
   {
     featureType: "road.highway",
     elementType: "geometry",
-    stylers: [{ color: "#4dd0e1" }], // bright turquoise
+    stylers: [{ color: "#a2c8d3" }], // Soft blue from palette
   },
   {
     featureType: "road.highway",
     elementType: "geometry.stroke",
-    stylers: [{ color: "#00bcd4" }],
-  },
-  {
-    featureType: "road.highway",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#006064" }],
+    stylers: [{ color: "#00bdd0" }], // Primary blue
   },
 
-  // Points of Interest
+  // Points of Interest - using accent colors
   {
     featureType: "poi",
     elementType: "geometry",
-    stylers: [{ color: "#b6f5c9" }], // soft mint green
+    stylers: [{ color: "#e8babc" }], // Soft pink from palette
   },
   {
     featureType: "poi",
     elementType: "labels.text.fill",
-    stylers: [{ color: "#00796b" }],
+    stylers: [{ color: "#1c8773" }],
   },
 
   // Landscape
   {
     featureType: "landscape.natural",
     elementType: "geometry",
-    stylers: [{ color: "#009688" }], // rainforest teal-green
+    stylers: [{ color: "#286447" }], // Soft pinkish from palette
   },
   {
     featureType: "landscape.man_made",
     elementType: "geometry",
-    stylers: [{ color: "#a7ffeb" }], // spring green
+    stylers: [{ color: "#2b5334" }], // Light neutral
   },
 
-  // Administrative
-  {
-    featureType: "administrative",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#00838f" }],
-  },
-  {
-    featureType: "administrative.country",
-    elementType: "geometry.stroke",
-    stylers: [{ color: "#00bcd4" }],
-  },
-
-  // Transit
-  {
-    featureType: "transit",
-    elementType: "geometry",
-    stylers: [{ color: "#b2ebf2" }],
-  },
+  // Transit - using accent colors
   {
     featureType: "transit.station",
     elementType: "geometry",
-    stylers: [{ color: "#80deea" }],
+    stylers: [{ color: "#fecfa1" }], // Peach accent
   },
 ];
 const containerStyle = {
@@ -274,13 +258,13 @@ export default function MapPage() {
           <GoogleMap
             mapContainerStyle={containerStyle}
             center={center}
-            zoom={13}
+            zoom={14}
             options={{
               styles: bantayanMapStyle,
               streetViewControl: false,
               mapTypeControl: false,
-              fullscreenControl: false,
-              scrollwheel: false,
+              fullscreenControl: true,
+              scrollwheel: true,
               mapTypeId: "terrain",
             }}
           >
