@@ -23,6 +23,7 @@ export default function AddTouristSpot({
     }
     return acc;
   }, {} as Record<string | number, string | number | string[]>);
+
   initialForm.image = "";
   initialForm.province = "CEBU";
 
@@ -86,9 +87,12 @@ export default function AddTouristSpot({
   };
 
   return (
-    <div className="w-full flex flex-col items-center justify-center">
-      <form onSubmit={handleSubmit} className="w-full max-w-5xl  p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="w-full flex flex-col items-center justify-start">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-2xl p-4 sm:p-6 space-y-8"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {touristSpotFields
             .filter(
               (field) =>
@@ -101,7 +105,7 @@ export default function AddTouristSpot({
                 ].includes(field.name)
             )
             .map((field) => (
-              <div className="space-y-1" key={field.name}>
+              <div className="space-y-1 w-full" key={field.name}>
                 <Label
                   htmlFor={field.name}
                   className="block text-sm font-semibold mb-1 text-[#1c5461]"
@@ -254,13 +258,16 @@ export default function AddTouristSpot({
           />
         </div>
 
-        {error && (
-          <div className="px-3 py-2 text-sm text-red-600 bg-red-50 rounded-md">
-            {error}
-          </div>
-        )}
+        {error && <div className="text-red-500 text-sm">{error}</div>}
 
         <div className="flex gap-2 justify-end pt-2">
+          <Button
+            type="submit"
+            disabled={loading}
+            className="bg-[#3e979f] hover:bg-[#1c5461] text-white font-semibold px-6 py-2 rounded-lg shadow"
+          >
+            {loading ? "Adding..." : "Add Tourist Spot"}
+          </Button>
           {onCancel && (
             <Button
               type="button"
@@ -271,13 +278,6 @@ export default function AddTouristSpot({
               Cancel
             </Button>
           )}
-          <Button
-            type="submit"
-            disabled={loading}
-            className="bg-[#3e979f] hover:bg-[#1c5461] text-white font-semibold px-6 py-2 rounded-lg shadow"
-          >
-            {loading ? "Adding..." : "Add Tourist Spot"}
-          </Button>
         </div>
       </form>
     </div>

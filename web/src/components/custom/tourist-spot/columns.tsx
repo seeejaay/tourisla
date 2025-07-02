@@ -41,25 +41,6 @@ export function columns(
       enableSorting: true,
     },
     {
-      accessorKey: "type",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="w-32 font-bold text-left flex items-center gap-1 px-0 py-1"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Type
-          <ArrowUpDown className="ml-1 h-4 w-4 text-[#3e979f]" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <span className="uppercase text-xs tracking-wide text-[#1c5461]">
-          {row.original.type}
-        </span>
-      ),
-      enableSorting: true,
-    },
-    {
       id: "address",
       header: ({ column }) => (
         <Button
