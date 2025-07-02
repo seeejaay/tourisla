@@ -105,9 +105,8 @@ const createTourPackageController = async (req, res) => {
 
 const updateTourPackageController = async (req, res) => {
   try {
-    if (!touroperator_id) {
-      return res.status(404).json({ message: "Tour operator not found." });
-    }
+    console.log("Backend Updating Tour Package with data:", req.body);
+
     const user = req.session.user;
     const userId = user.id;
     const operatorRegis = await getOperatorRegisById(userId);
