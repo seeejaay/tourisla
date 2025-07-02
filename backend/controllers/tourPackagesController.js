@@ -108,7 +108,7 @@ const updateTourPackageController = async (req, res) => {
     if (!touroperator_id) {
       return res.status(404).json({ message: "Tour operator not found." });
     }
-    const operatorId = touroperator_id.id;
+
     console.log(
       "Updating Tour Package with ID:",
       id,
