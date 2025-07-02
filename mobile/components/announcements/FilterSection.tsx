@@ -111,9 +111,9 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   filterToggleText: {
-    color: '#d4af84',
+    color: '#224d57',
     fontSize: 14,
-    fontWeight: '900',
+    fontWeight: '700',
   },
   filterBadge: {
     position: 'absolute',
