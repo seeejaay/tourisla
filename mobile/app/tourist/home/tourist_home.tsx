@@ -8,7 +8,7 @@ import {
   Image,
   Platform,
   Dimensions,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons, Feather, FontAwesome5 } from '@expo/vector-icons';
@@ -16,13 +16,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as auth from '@/lib/api/auth';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useArticleManager } from "@/hooks/useArticleManager";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 
 const { width } = Dimensions.get('window');
 
@@ -58,7 +51,9 @@ export default function TouristHome() {
             style={StyleSheet.absoluteFill}
           />
           <View style={styles.heroTextContainer}>
-            <Text style={styles.heroTitle}>Discover <Text style={{ color: '#f0be2a' }}>Bantayan</Text> Island</Text>
+            <Text style={styles.heroTitle}>
+              Discover <Text style={{ color: '#f0be2a' }}>Bantayan</Text> Island
+            </Text>
             <Text style={styles.heroSubtitle}>
               Where emerald jungles meet turquoise waters in perfect harmony
             </Text>
@@ -78,29 +73,39 @@ export default function TouristHome() {
         <LinearGradient
           colors={['rgb(230, 247, 250)', '#fffff1']}
           start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 5}}
+          end={{ x: 0.5, y: 5 }}
           style={styles.introSection}
         >
           <Text style={styles.sectionTitle}>Your Island Escape Awaits</Text>
           <View style={styles.sectionUnderline} />
           <Text style={styles.sectionText}>
-            Immerse yourself in the breathtaking beauty of Bantayan Island—where crystal-clear waters, lush jungles, and vibrant local culture create the perfect getaway. Whether you seek adventure, relaxation, or a taste of authentic island life, Bantayan offers something for every traveler.
+            Immerse yourself in the breathtaking beauty of Bantayan Island—where crystal-clear
+            waters, lush jungles, and vibrant local culture create the perfect getaway.
           </Text>
           <View style={styles.cardRow}>
             <View style={styles.card}>
               <FontAwesome5 name="leaf" size={24} color="#019375" />
               <Text style={styles.cardTitle}>Eco-Friendly Adventures</Text>
-              <Text style={styles.cardText}>Explore pristine beaches, hidden lagoons, and scenic trails while supporting sustainable tourism and local communities.</Text>
+              <Text style={styles.cardText}>
+                Explore pristine beaches, hidden lagoons, and scenic trails while supporting
+                sustainable tourism and local communities.
+              </Text>
             </View>
             <View style={styles.card}>
               <Feather name="map-pin" size={24} color="#3e979f" />
               <Text style={styles.cardTitle}>Rich Culture & Heritage</Text>
-              <Text style={styles.cardText}>Experience the warmth of Bantayan’s people, savor local delicacies, and discover the island’s unique traditions and history.</Text>
+              <Text style={styles.cardText}>
+                Experience the warmth of Bantayan’s people, savor local delicacies, and discover the
+                island’s unique traditions and history.
+              </Text>
             </View>
             <View style={styles.card}>
               <Feather name="umbrella" size={24} color="#f8d56b" />
               <Text style={styles.cardTitle}>Unwind & Reconnect</Text>
-              <Text style={styles.cardText}>Find your sanctuary in tranquil resorts, enjoy breathtaking sunsets, and reconnect with nature and yourself.</Text>
+              <Text style={styles.cardText}>
+                Find your sanctuary in tranquil resorts, enjoy breathtaking sunsets, and reconnect
+                with nature and yourself.
+              </Text>
             </View>
           </View>
         </LinearGradient>
@@ -109,15 +114,12 @@ export default function TouristHome() {
         <View style={styles.touristSpotSection}>
           <Text style={styles.sectionTitle}>Must-See Tourist Spots</Text>
           <View style={styles.sectionUnderline} />
-          <Text style={styles.sectionText}>Discover the natural wonders and iconic destinations of Bantayan Island.</Text>
+          <Text style={styles.sectionText}>
+            Discover the natural wonders and iconic destinations of Bantayan Island.
+          </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {touristSpots.map((spot, idx) => (
-              <Image
-                key={idx}
-                source={spot}
-                style={styles.spotImage}
-                resizeMode="cover"
-              />
+              <Image key={idx} source={spot} style={styles.spotImage} resizeMode="cover" />
             ))}
           </ScrollView>
         </View>
@@ -126,37 +128,45 @@ export default function TouristHome() {
         <View style={styles.articlesSection}>
           <Text style={styles.sectionTitle}>Island Heritage</Text>
           <View style={styles.sectionUnderline} />
-          <Text style={styles.sectionText}>Read the history, culture, and stories that shape Bantayan Island</Text>
+          <Text style={styles.sectionText}>
+            Read the history, culture, and stories that shape Bantayan Island
+          </Text>
           {loadingArticles ? (
             <Text style={{ color: '#3e979f', textAlign: 'center' }}>Loading articles...</Text>
           ) : (
-            articles.slice(0, 3).map((article) => (
-            <TouchableOpacity
-              key={article.id}
-              onPress={() => router.push(`/tourist/culture/${article.id}`)}
-              style={styles.articleCard}
-            >
-              <Image
-                source={{ uri: article.thumbnail_url }}
-                style={styles.articleImage}
-              />
-              <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.7)']}
-                style={styles.gradientOverlay}
-              />
-              <View style={styles.articleOverlayContent}>
-              <Text style={styles.articleTitleOverlay}>
-                {article.title.replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())}
-              </Text>
-              <Text style={styles.articleBodyOverlay}>
-                {article.body.slice(0, 40).replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())}...
-              </Text>
-                <View style={styles.readMoreBtn}>
-                  <Text style={styles.readMoreText}>Read more →</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-            ))
+            Array.isArray(articles) && articles.length > 0 ? (
+              articles.slice(0, 3).map((article) => (
+                <TouchableOpacity
+                  key={article.id}
+                  onPress={() => router.push(`/tourist/culture/${article.id}`)}
+                  style={styles.articleCard}
+                >
+                  <Image source={{ uri: article.thumbnail_url }} style={styles.articleImage} />
+                  <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.7)']}
+                    style={styles.gradientOverlay}
+                  />
+                  <View style={styles.articleOverlayContent}>
+                    <Text style={styles.articleTitleOverlay}>
+                      {article.title.replace(/\w\S*/g, (word) =>
+                        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                      )}
+                    </Text>
+                    <Text style={styles.articleBodyOverlay}>
+                      {article.content.slice(0, 40).replace(/\w\S*/g, (word) =>
+                        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                      )}
+                      ...
+                    </Text>
+                    <View style={styles.readMoreBtn}>
+                      <Text style={styles.readMoreText}>Read more →</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <Text style={{ textAlign: 'center', color: '#999' }}>No articles available.</Text>
+            )
           )}
         </View>
       </ScrollView>
@@ -172,6 +182,7 @@ export default function TouristHome() {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
