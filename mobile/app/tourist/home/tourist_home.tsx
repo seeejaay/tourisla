@@ -33,6 +33,7 @@ export default function TouristHome() {
   const { articles, loading: loadingArticles } = useArticleManager();
 
   return (
+    <View style={{ flex: 1 }}>
     <View style={[styles.container, { paddingTop: headerHeight }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -170,19 +171,10 @@ export default function TouristHome() {
           )}
         </View>
       </ScrollView>
-
-      {/* Weather FAB Button */}
-      <TouchableOpacity
-        style={styles.weatherFab}
-        onPress={() => router.push('/tourist/weather')}
-        activeOpacity={0.8}
-      >
-        <MaterialCommunityIcons name="weather-partly-cloudy" size={24} color="white" />
-      </TouchableOpacity>
+    </View>
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -303,22 +295,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginRight: 16,
     marginBottom: 8,
-  },
-  weatherFab: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 40 : 108,
-    left: 8,
-    width: 56,
-    height: 56,
-    borderRadius: 20,
-    backgroundColor: '#24b4ab',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 5,
   },
   articlesSection: {
     marginTop: 20,

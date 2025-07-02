@@ -1,356 +1,283 @@
 import React, { useEffect, useState } from "react";
 import {
+  SafeAreaView,
   View,
   Text,
   ScrollView,
   Image,
   TouchableOpacity,
-  StyleSheet,
+  FlatList,
   Dimensions,
-  StatusBar,
-  Platform,
+  StyleSheet,
 } from "react-native";
-import { useRouter } from "expo-router";
 import { useArticleManager } from "@/hooks/useArticleManager";
 import { Article } from "@/static/article/useArticleSchema";
-import { FontAwesome5, Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-
-const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
-const { width } = Dimensions.get('window');
-
-interface TourPackageDetailsScreenProps {
-    headerHeight: number;
-}
+import Carousel from "react-native-reanimated-carousel";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import HeaderWithBack from "@/components/HeaderWithBack";
 
 const ARTICLES_PER_PAGE = 6;
 
-export default function CultureScreen({ headerHeight }: TourPackageDetailsScreenProps) {
+export default function PublicArticlesScreen() {
   const router = useRouter();
   const { articles, fetchArticles } = useArticleManager();
   const [featured, setFeatured] = useState<Article[]>([]);
   const [regular, setRegular] = useState<Article[]>([]);
   const [page, setPage] = useState(1);
-
-  const startIndex = (page - 1) * ARTICLES_PER_PAGE;
-  const paginatedRegular = regular.slice(startIndex, startIndex + ARTICLES_PER_PAGE);
-  const hasMore = startIndex + ARTICLES_PER_PAGE < regular.length;
+  const screenWidth = Dimensions.get("window").width;
 
   useEffect(() => {
-    const load = async () => {
-      await fetchArticles();
-      const published = articles.filter((a) => a.status === "PUBLISHED");
-      setFeatured(published.filter((a) => a.is_featured));
-      setRegular(published.filter((a) => !a.is_featured));
-    };
-    load();
-  }, [articles, fetchArticles]);
+    fetchArticles();
+  }, []);
+
+  useEffect(() => {
+    const published = articles.filter((a) => a.is_published);
+    setFeatured(published.filter((a) => a.is_featured));
+    setRegular(published.filter((a) => !a.is_featured));
+  }, [articles]);
+
+  const getArticleImage = (article: Article) => {
+    if (article.images?.length > 0) {
+      return article.images[0].image_url;
+    }
+    return article.thumbnail_url || require("@/assets/images/article_image.webp");
+  };
+
+  const paginatedRegular = regular.slice(
+    (page - 1) * ARTICLES_PER_PAGE,
+    page * ARTICLES_PER_PAGE
+  );
+
+  const hasMore = page * ARTICLES_PER_PAGE < regular.length;
+
+  const goToArticle = (id: number) => {
+    router.push(`/staff/culture/${id}`);
+  };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      <View style={styles.navbar}>
-        <TouchableOpacity 
-          style={styles.navButton}
-          onPress={() => router.back()}
-        >
-          <FontAwesome5 name="arrow-left" size={18} color="#000" />
-        </TouchableOpacity>
+    <SafeAreaView style={{ flex: 1 }}>
+    <HeaderWithBack
+      title="Local Culture and History"
+      onBackPress={() => router.back()}
+    />
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 32 }} // adjust padding as needed
+    >
+      <View style={styles.header}>
+        <Image
+          source={require("@/assets/images/article_image.webp")}
+          style={styles.headerImage}
+          resizeMode="cover"
+        />
+        <View style={styles.overlay} />
+        <View style={styles.headerTextContainer}>
+          <Text style={styles.headerTitle}>Kakyop, Sara Kag Bwas</Text>
+          <Text style={styles.headerSubtitle}>Yesterday, Today, and Tomorrow</Text>
         </View>
-      <ScrollView 
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Featured Section - Now with horizontal scroll */}
-        {featured.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.mainTitle}>Featured Articles</Text>
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.featuredContainer}
-            >
-              {featured.map((article) => (
-                <TouchableOpacity
-                key={article.id}
-                style={styles.featuredCard}
-                onPress={() => router.push(`/staff/culture/${article.id}`)}
+      </View>
+
+      {/* Featured Carousel */}
+      {featured.length > 0 && (
+        <>
+          <Text style={styles.sectionTitle}>Featured</Text>
+          <Carousel
+            loop
+            width={screenWidth}
+            height={300}
+            data={featured}
+            scrollAnimationDuration={1000}
+            modeConfig={{
+              parallaxScrollingScale: 0.95, // scale down a bit for effect
+              parallaxScrollingOffset: 20,  // reduce this to lessen spacing
+              parallaxAdjacentItemScale: 0.9,
+            }}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => goToArticle(item.id)}
+                style={styles.carouselCard}
               >
-                {article.thumbnail_url && (
-                  <View style={styles.featuredImageContainer}>
-                    <Image
-                      source={{ uri: article.thumbnail_url }}
-                      style={styles.featuredThumbnail}
-                    />
-                    <LinearGradient
-                      colors={["transparent", "rgba(0,0,0,0.7)"]}
-                      style={styles.featuredOverlay}
-                    />
-                    <View style={styles.featuredTextOverlay}>
-                      <Text style={styles.featuredTitleOverlay} numberOfLines={2}>
-                        {article.title}
-                      </Text>
-                      <Text style={styles.featuredAuthorOverlay}>By {article.author}</Text>
-                    </View>
-                  </View>
-                )}
-              </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-
-        {/* Regular Articles - Vertical List with "View All" button */}
-        <View style={styles.section}>
-          <View style={styles.moreHeader}>
-            <Text style={styles.sectionTitle}>More Articles</Text>
-            <TouchableOpacity onPress={() => router.push("/staff/culture")}>
-              <Text style={styles.viewAllText}>See All</Text>
-            </TouchableOpacity>
-          </View>
-
-          {paginatedRegular.slice(0, 3).map((article) => (
-            <TouchableOpacity
-              key={article.id}
-              style={styles.articleCardVertical}
-              onPress={() => router.push(`/staff/culture/${article.id}`)}
-            >
-              {article.thumbnail_url && (
-                <Image 
-                  source={{ uri: article.thumbnail_url }} 
-                  style={styles.articleThumbnailVertical} 
+                <Image
+                  source={{ uri: getArticleImage(item) }}
+                  style={styles.carouselImage}
                 />
-              )}
-              <View style={styles.articleTextVertical}>
-                <Text style={styles.articleTitle} numberOfLines={2}>
-                  {article.title.replace(/\b\w/g, char => char.toUpperCase())}
-                </Text>
-                <Text style={styles.articleAuthor}>By {article.author}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
+                <View style={styles.carouselOverlay} />
+                <View style={styles.carouselText}>
+                  <Text style={styles.carouselTitle}>{item.title}</Text>
+                  <Text style={styles.carouselAuthor}>By {item.author}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          />
+        </>
+      )}
 
-          {/* Modern Pagination */}
-          <View style={styles.pagination}>
-            {page > 1 && (
-              <TouchableOpacity 
-                onPress={() => setPage((p) => p - 1)} 
-                style={[styles.paginationButton, styles.prevButton]}
-              >
-                <Ionicons name="chevron-back" size={16} color="#1d4ed8" />
-                <Text style={styles.paginationButtonText}>Previous</Text>
-              </TouchableOpacity>
-            )}
-            {hasMore && (
-              <TouchableOpacity 
-                onPress={() => setPage((p) => p + 1)} 
-                style={[styles.paginationButton, styles.nextButton]}
-              >
-                <Text style={styles.paginationButtonText}>Load More</Text>
-                <Ionicons name="chevron-forward" size={16} color="#1d4ed8" />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      </ScrollView>
-    </View>
+      {/* Regular Articles */}
+      <Text style={[styles.sectionTitle, { marginTop: 20 }]}>
+        Local Culture and History
+      </Text>
+      <FlatList
+        data={paginatedRegular}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => goToArticle(item.id)}
+          >
+            <Image
+              source={{ uri: getArticleImage(item) }}
+              style={styles.cardImage}
+            />
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>{item.title}</Text>
+              <Text style={styles.cardAuthor}>By {item.author}</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+        scrollEnabled={false}
+      />
+
+      {/* Pagination */}
+      <View style={styles.pagination}>
+        {page > 1 && (
+          <TouchableOpacity
+            onPress={() => setPage((p) => p - 1)}
+            style={styles.paginationButton}
+          >
+            <Ionicons name="chevron-back" size={20} color="#1c5461" />
+            <Text style={styles.paginationText}>Previous</Text>
+          </TouchableOpacity>
+        )}
+        {hasMore && (
+          <TouchableOpacity
+            onPress={() => setPage((p) => p + 1)}
+            style={[styles.paginationButton, styles.paginationNext]}
+          >
+            <Text style={[styles.paginationText, { color: "white" }]}>
+              Load More
+            </Text>
+            <Ionicons name="chevron-forward" size={20} color="white" />
+          </TouchableOpacity>
+        )}
+      </View>
+    </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  navbar: {
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    flexDirection: "row",
+  container: { flex: 1, backgroundColor: "#f1f1f1" },
+  header: { position: "relative", height: 250 },
+  headerImage: { width: "100%", height: "100%" },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  headerTextContainer: {
+    position: "absolute",
+    top: 70,
+    left: 20,
+    right: 20,
     alignItems: "center",
-    zIndex: 10,
   },
-  navButton: {
-    padding: 8,
+  headerTitle: {
+    fontSize: 28,
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
   },
-  container: {
-    flex: 1,
-    backgroundColor: "#f8fafc",
-  },
-  scrollContainer: {
-    paddingBottom: 40,
-  },
-  section: {
-    marginBottom: 24,
-    paddingHorizontal: 16,
-  },
-  mainTitle: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: '#1c5461',
-    marginBottom: 16,
-    marginTop: 8,
+  headerSubtitle: {
+    fontSize: 16,
+    color: "#e6f7fa",
+    marginTop: 5,
+    fontWeight: "600",
+    textAlign: "center",
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1c5461',
-    marginBottom: 16,
-    marginTop: 8,
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#1c5461",
+    marginVertical: 12,
+    paddingHorizontal: 16,
   },
-  featuredContainer: {
-    paddingBottom: 8,
+  carouselCard: {
+    borderRadius: 16,
+    overflow: "hidden",
+    marginHorizontal: 16,
+    height: "100%",
+    justifyContent: "flex-end",
   },
-  featuredCard: {
-    width: width * 0.6, // narrower for portrait feel
-    height: 240,        // taller card
-    marginRight: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
-    backgroundColor: '#fff',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
-  },
-  featuredThumbnail: {
+  carouselImage: {
+    ...StyleSheet.absoluteFillObject,
     width: "100%",
     height: "100%",
-    resizeMode: "cover", // keep it neat and cropped
   },
-  featuredTextContainer: {
-    padding: 12,
+  carouselOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.4)",
   },
-  featuredTitle: {
+  carouselText: {
+    padding: 16,
+    zIndex: 10,
+  },
+  carouselTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "white",
+    marginBottom: 6,
+  },
+  carouselAuthor: {
+    color: "#e6f7fa",
+  },
+  card: {
+    margin: 16,
+    backgroundColor: "white",
+    borderRadius: 16,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#e6f7fa",
+    marginBottom: 0, 
+  },
+  cardImage: {
+    width: "100%",
+    height: 160,
+  },
+  cardContent: {
+    padding: 16,
+  },
+  cardTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1e293b',
-    marginBottom: 4,
+    fontWeight: "600",
+    color: "#1c5461",
   },
-  featuredAuthor: {
-    fontSize: 12,
-    color: '#64748b',
-  },
-  articlesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  articleCard: {
-    width: '48%',
-    marginBottom: 16,
-    borderRadius: 10,
-    overflow: 'hidden',
-    backgroundColor: '#fff',
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 4,
-  },
-  articleThumbnail: {
-    width: '100%',
-    height: 120,
-  },
-  articleTextContainer: {
-    padding: 10,
-  },
-  articleTitle: {
-    fontSize: 14,
-    fontWeight: '900',
-    color: '#1e293b',
-    marginBottom: 4,
-  },
-  articleAuthor: {
-    fontSize: 11,
-    color: '#64748b',
+  cardAuthor: {
+    color: "#51702c",
+    fontSize: 13,
+    marginTop: 4,
   },
   pagination: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 24,
-    gap: 12,
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 20,
+    marginVertical: 8,
   },
   paginationButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    backgroundColor: '#fff',
+    borderColor: "#3e979f",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 999,
   },
-  prevButton: {
-    paddingRight: 12,
+  paginationNext: {
+    backgroundColor: "#3e979f",
+    borderColor: "transparent",
   },
-  nextButton: {
-    paddingLeft: 12,
+  paginationText: {
+    color: "#1c5461",
+    fontWeight: "600",
+    marginHorizontal: 4,
   },
-  paginationButtonText: {
-    fontSize: 14,
-    color: '#1d4ed8',
-    fontWeight: '500',
-  },
-  moreHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  viewAllText: {
-    fontSize: 14,
-    color: '#979a9f',
-    fontWeight: '700',
-  },
-  articleCardVertical: {
-    flexDirection: 'row',
-    marginBottom: 8,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-  articleThumbnailVertical: {
-    width: 120,
-    height: 100,
-  },
-  articleTextVertical: {
-    flex: 1,
-    padding: 10,
-    justifyContent: 'center',
-  },  
-  featuredImageContainer: {
-    position: "relative",
-    width: "100%",
-    height: "100%", // fill full card height
-  },
-  
-  featuredOverlay: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: "100%",
-    borderRadius: 12,
-  },
-  
-  featuredTextOverlay: {
-    position: "absolute",
-    bottom: 12,
-    left: 12,
-    right: 12,
-  },
-  
-  featuredTitleOverlay: {
-    color: "#fff",
-    fontSize: 18, // slightly larger
-    fontWeight: "900",
-    textShadowColor: "rgba(0, 0, 0, 0.7)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-  },
-  
-  featuredAuthorOverlay: {
-    color: "#e2e8f0",
-    fontSize: 12,
-    marginTop: 2,
-  },
-  
 });
