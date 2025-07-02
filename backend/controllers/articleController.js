@@ -9,7 +9,11 @@ const {
   deleteArticleImage,
 } = require("../models/articleModel.js");
 
-const { s3Client, PutObjectCommand, deleteS3Object } = require("../utils/s3.js");
+const {
+  s3Client,
+  PutObjectCommand,
+  deleteS3Object,
+} = require("../utils/s3.js");
 
 const createArticleController = async (req, res) => {
   try {
@@ -94,6 +98,7 @@ const editArticleController = async (req, res) => {
     type = type?.toUpperCase();
     barangay = barangay?.toUpperCase();
 
+    // Update article fields
     const updated = await editArticle(articleId, {
       title,
       author,
@@ -107,7 +112,28 @@ const editArticleController = async (req, res) => {
       summary,
     });
 
-    res.json(updated);
+    // Handle new image uploads (if any)
+    let imageUrls = [];
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files.slice(0, 5)) {
+        const s3Key = `article_images/${Date.now()}_${file.originalname}`;
+        const uploadParams = {
+          Bucket: process.env.AWS_S3_BUCKET,
+          Key: s3Key,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        };
+        await s3Client.send(new PutObjectCommand(uploadParams));
+        const imageUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+        imageUrls.push(imageUrl);
+      }
+      await addArticleImages(articleId, imageUrls);
+    }
+
+    // Get all images for this article
+    const images = await getArticleImages(articleId);
+
+    res.json({ ...updated, images });
   } catch (err) {
     console.error(err);
     res.status(500).send(err.message);
@@ -197,7 +223,9 @@ const deleteArticleImageController = async (req, res) => {
 
     const imageUrl = deletedImage.image_url;
     const url = new URL(imageUrl);
-    const s3Key = url.pathname.startsWith("/") ? url.pathname.slice(1) : url.pathname;
+    const s3Key = url.pathname.startsWith("/")
+      ? url.pathname.slice(1)
+      : url.pathname;
 
     try {
       await deleteS3Object(s3Key);

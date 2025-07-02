@@ -6,6 +6,7 @@ import { Article } from "@/app/static/article/useArticleSchema";
 import Image from "next/image";
 import Header from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
+
 export default function ArticleDetailPage() {
   const { id } = useParams();
 
@@ -53,12 +54,14 @@ export default function ArticleDetailPage() {
       <div className="min-h-screen ">
         <main className="max-w-5xl mx-auto px-4 pt-32 pb-16">
           {/* Title over image if present */}
-          {article.thumbnail_url ? (
+          {article.images &&
+          article.images.length > 0 &&
+          article.images[0].image_url ? (
             <div className="relative w-full h-64 flex items-center justify-center mb-8">
               <Image
                 width={800}
                 height={400}
-                src={article.thumbnail_url}
+                src={article.images[0].image_url}
                 alt={article.title}
                 className="w-full h-64 object-cover rounded-lg"
               />
@@ -70,6 +73,38 @@ export default function ArticleDetailPage() {
             <h1 className="text-4xl font-extrabold text-[#1c5461] text-center mb-8">
               {article.title}
             </h1>
+          )}
+
+          {/* --- All Images Gallery --- */}
+          {article.images && article.images.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 auto-rows-[160px]">
+              {article.images.map(
+                (img, idx) =>
+                  img.image_url && (
+                    <div
+                      key={idx}
+                      className={
+                        // Example: make the first image span 2 columns and 2 rows on md+
+                        idx === 0
+                          ? "col-span-2 row-span-2 md:col-span-2 md:row-span-2"
+                          : // Example: make every 5th image span 2 rows
+                          idx % 5 === 0
+                          ? "row-span-2"
+                          : ""
+                      }
+                    >
+                      <Image
+                        src={img.image_url}
+                        alt={`Article image ${idx + 1}`}
+                        width={400}
+                        height={400}
+                        className="w-full h-full object-cover rounded-lg border"
+                        style={{ aspectRatio: "1 / 1" }}
+                      />
+                    </div>
+                  )
+              )}
+            </div>
           )}
 
           {/* Author and tags */}
@@ -103,7 +138,7 @@ export default function ArticleDetailPage() {
           {/* Content */}
           <section className="mb-8">
             <div className=" text-gray-800 text-lg leading-relaxed  text-justify ">
-              {toTitleCase(article.body)}
+              {toTitleCase(article.content)}
             </div>
           </section>
           {/* Video */}
