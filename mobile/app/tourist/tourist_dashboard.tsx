@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import TouristHomeScreen from "./home/tourist_home";
-import TouristRegistrationScreen from "./regis/tourist_regis.tsx";
+import TouristRegistrationScreen from "./regis/tourist_regis";
 import TouristActivityScreen from "./activity/tourist_activity";
 import TouristPackagesScreen from "./packages/tourist_packages";
 import MoreScreen from "./more/MoreScreen";
@@ -36,19 +36,19 @@ function ProfileHeader() {
     const fetchCurrentUser = async () => {
       try {
         setLoading(true);
-  
+
         const storedUser = await AsyncStorage.getItem("userData");
-  
+
         if (!storedUser) {
           throw new Error("No stored user found");
         }
-  
+
         const userData = JSON.parse(storedUser);
-  
+
         if (!userData || !userData.role) {
           throw new Error("Invalid user data");
         }
-  
+
         setCurrentUser(userData);
       } catch (error) {
         console.warn("User not found or session invalid:", error.message);
@@ -58,7 +58,7 @@ function ProfileHeader() {
         setLoading(false);
       }
     };
-  
+
     fetchCurrentUser();
   }, []);
 

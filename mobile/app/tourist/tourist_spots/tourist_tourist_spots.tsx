@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "expo-router";
 import {
   View,
@@ -16,7 +16,8 @@ import FilterDropdown from "@/components/FilterDropdown";
 import Pagination from "@/components/Pagination";
 
 export default function TouristTouristSpots() {
-  const { touristSpots, loading, error, fetchTouristSpots } = useTouristSpotManager();
+  const { touristSpots, loading, error, fetchTouristSpots } =
+    useTouristSpotManager();
   const router = useRouter();
   const listRef = useRef<FlatList>(null);
 
@@ -30,18 +31,19 @@ export default function TouristTouristSpots() {
   }, [fetchTouristSpots]);
 
   const safeIncludes = (source: any, target: string): boolean =>
-    typeof source === 'string' && typeof target === 'string' &&
+    typeof source === "string" &&
+    typeof target === "string" &&
     source.includes(target);
 
   const filteredSpots = touristSpots.filter((spot) => {
     const matchesSearch =
-    safeIncludes(spot.name, search) ||
-    safeIncludes(spot.municipality, search) ||
-    safeIncludes(spot.description, search);
-  
+      safeIncludes(spot.name, search) ||
+      safeIncludes(spot.municipality, search) ||
+      safeIncludes(spot.description, search);
+
     const matchesCategory =
       !selectedCategory || toTitleCase(spot.type) === selectedCategory;
-  
+
     return matchesSearch && matchesCategory;
   });
 
@@ -109,7 +111,9 @@ export default function TouristTouristSpots() {
         ListHeaderComponent={
           <View style={styles.container}>
             <Text style={styles.title}>Tourist Spots</Text>
-            <View style={{ paddingHorizontal: 16, flexDirection: "row", gap: 4 }}>
+            <View
+              style={{ paddingHorizontal: 16, flexDirection: "row", gap: 4 }}
+            >
               <View style={{ flex: 1, alignItems: "center" }}>
                 <SearchBar
                   value={search}
@@ -123,7 +127,9 @@ export default function TouristTouristSpots() {
                 onSelect={setSelectedCategory}
               />
             </View>
-            {loading && <Text style={styles.statusText}>Loading tourist spots...</Text>}
+            {loading && (
+              <Text style={styles.statusText}>Loading tourist spots...</Text>
+            )}
             {error && <Text style={styles.errorText}>{error}</Text>}
             {!loading && filteredSpots.length === 0 && (
               <Text style={styles.statusText}>No tourist spots found.</Text>
