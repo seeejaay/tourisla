@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 
 export default function TouristSpotPage() {
   const { id } = useParams<{ id: string }>();
-  const { viewTouristSpot, loading, error } = useTouristSpotManager();
+  const { viewTouristSpot } = useTouristSpotManager();
   const [touristSpot, setTouristSpot] = useState<TouristSpot | null>(null);
 
   useEffect(() => {
@@ -23,13 +23,6 @@ export default function TouristSpotPage() {
     fetchSpot();
     // eslint-disable-next-line
   }, [id]);
-
-  // Helper for bento grid layout
-  const getBentoClass = (idx: number) => {
-    if (idx === 0) return "col-span-2 row-span-2 md:col-span-2 md:row-span-2";
-    if (idx % 5 === 0) return "row-span-2";
-    return "";
-  };
 
   return (
     <>
