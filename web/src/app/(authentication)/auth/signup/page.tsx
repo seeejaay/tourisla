@@ -5,7 +5,6 @@ import { useRef, useState } from "react";
 import { useUserManager } from "@/hooks/useUserManager";
 import { useTourGuideManager } from "@/hooks/useTourGuideManager";
 import { useTourOperatorManager } from "@/hooks/useTourOperatorManager";
-import signUpForm from "@/app/static/signupForm";
 import selectFields from "@/app/static/selectFields";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,9 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import signupSchema from "@/app/static/userManagerSchema";
-import { tourGuideSchema } from "@/app/static/tour-guide/useTourGuideManagerSchema";
-import { tourOperatorSchema } from "@/app/static/tour-operator/useTourOperatorManagerSchema";
 import Image from "next/image";
 
 // --- Fix for .extend() error ---
@@ -39,12 +35,20 @@ import Image from "next/image";
 // If your signupSchema is a ZodEffects, you must move .extend() to the base object.
 
 const baseSignupSchema = z.object({
-  first_name: z.string(),
-  last_name: z.string(),
+  first_name: z
+    .string()
+    .regex(/^[a-zA-Z]+$/, "First name must contain only letters")
+    .min(3, "First name is required"),
+  last_name: z
+    .string()
+    .regex(/^[a-zA-Z]+$/, "Last name must contain only letters")
+    .min(2, "Last name is required"),
   email: z.string().email(),
   password: z.string(),
   confirm_password: z.string(),
-  phone_number: z.string(),
+  phone_number: z.string().regex(/^\+63\d{10}$/, {
+    message: "Phone number must be in Philippine format: +639XXXXXXXXX",
+  }),
   role: z.enum(["Tourist", "Tour Guide", "Tour Operator"]),
   nationality: z.string(),
   terms: z.boolean(),
@@ -53,14 +57,61 @@ const baseSignupSchema = z.object({
 
 const extendedSignupSchema = baseSignupSchema.extend({
   // Tour Guide fields
-  birth_date: z.string().optional(),
-  sex: z.enum(["MALE", "FEMALE"]).optional(),
-  reason_for_applying: z.string().optional(),
+  birth_date: z
+    .string()
+    .optional()
+    .or(z.literal(""))
+    .refine((val) => {
+      if (!val) return true; // allow empty for non-Tour Guide
+      const date = new Date(val);
+      if (isNaN(date.getTime()) || date > new Date()) return false;
+      // Check if 18 years old or older
+      const today = new Date();
+      let age = today.getFullYear() - date.getFullYear();
+      const m = today.getMonth() - date.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
+        age--;
+      }
+      return age >= 18;
+    }, "You must be at least 18 years old."),
+  sex: z.enum(["MALE", "FEMALE"]).optional().or(z.literal("")),
+  reason_for_applying: z
+    .string()
+    .regex(/^[\w\s.,!?]+$/, {
+      message:
+        "Reason for applying must contain only letters, numbers, and punctuation",
+    })
+    .min(10, "Reason for applying must be at least 10 characters long")
+    .optional()
+    .or(z.literal("")),
   // Tour Operator fields
-  operator_name: z.string().optional(),
-  business_email: z.string().email().optional(),
-  mobile_number: z.string().optional(),
-  office_address: z.string().optional(),
+  operator_name: z
+    .string()
+    .regex(/^[\w\s]+$/, {
+      message: "Operator name must contain only letters, numbers, and spaces",
+    })
+    .or(z.literal(""))
+    .optional(),
+  business_email: z
+    .string()
+    .email("Invalid email")
+    .or(z.literal(""))
+    .optional(),
+  mobile_number: z
+    .string()
+    .regex(/^\+63\d{10}$/, {
+      message: "Mobile number must be in Philippine format: +639XXXXXXXXX",
+    })
+    .or(z.literal(""))
+    .optional(),
+  office_address: z
+    .string()
+    .regex(/^[\w\s.,-]+$/, {
+      message:
+        "Office address must contain only letters, numbers, and punctuation",
+    })
+    .or(z.literal(""))
+    .optional(),
 });
 
 const roleOptions = [
@@ -74,7 +125,7 @@ export default function SignUp() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
 
-  const { registerUser, error: userError, loading } = useUserManager();
+  const { registerUser, loading } = useUserManager();
   const { createTourGuideApplicant } = useTourGuideManager();
   const { createApplicant: createTourOperatorApplicant } =
     useTourOperatorManager();
@@ -104,7 +155,7 @@ export default function SignUp() {
       status: "Active",
       // Tour Guide fields
       birth_date: "",
-      sex: undefined,
+      sex: "",
       reason_for_applying: "",
       // Tour Operator fields
       operator_name: "",
@@ -135,7 +186,7 @@ export default function SignUp() {
   const onSubmit = async (data: z.infer<typeof extendedSignupSchema>) => {
     setError(null);
     setSuccess(null);
-
+    console.log("Form data:", data);
     // Validate reCAPTCHA
     if (!captchaToken) {
       setError("Please complete the reCAPTCHA.");
@@ -310,11 +361,18 @@ export default function SignUp() {
                 </div>
               </div>
             )}
-
+            {/* {Object.keys(form.formState.errors).length > 0 && (
+              <pre style={{ color: "red" }}>
+                {JSON.stringify(form.formState.errors, null, 2)}
+              </pre>
+            )} */}
             {/* Form Section */}
             <Form {...form}>
               <form
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={(e) => {
+                  console.log("Form submit event fired");
+                  form.handleSubmit(onSubmit)(e);
+                }}
                 className="space-y-6"
               >
                 {/* Role Select */}
@@ -322,7 +380,7 @@ export default function SignUp() {
                   <FormField
                     control={form.control}
                     name="role"
-                    render={({ field }) => (
+                    render={({}) => (
                       <FormItem className="w-full flex flex-col">
                         <FormLabel className="text-[#1c5461] text-sm font-semibold">
                           Register as
@@ -749,6 +807,9 @@ export default function SignUp() {
                   type="submit"
                   className="w-full bg-gradient-to-r from-[#3e979f] to-[#1c5461] text-white font-semibold rounded-md shadow-md hover:from-[#35858b] hover:to-[#164349] focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:ring-offset-2 transition text-lg py-3"
                   disabled={loading || !captchaToken}
+                  onClick={() => {
+                    console.log("Submit button clicked");
+                  }}
                 >
                   {loading ? "Registering..." : `Register as ${role}`}
                 </Button>
