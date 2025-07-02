@@ -196,8 +196,8 @@ import InputSpinner from "@/components/InputSpinner";
     <SafeAreaView style={styles.container}>
       <HeaderWithBack
         title="Package Details"
-        backgroundColor="#2eb1ab"
-        textColor="#ffffff"
+        backgroundColor="#transparent"
+        textColor="#002b11"
       />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {bookingLoading ? (

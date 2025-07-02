@@ -51,7 +51,11 @@ const styles = StyleSheet.create({
    elevation: 5,
   },
   navButton: {
-    padding: 8,
+    backgroundColor: "#f0f0eb",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 18,
+    elevation: 5,
   },
   navTitle: {
     fontSize: 18,

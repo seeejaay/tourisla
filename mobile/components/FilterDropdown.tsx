@@ -11,6 +11,7 @@ import {
   UIManager,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { toTitleCase } from "@/lib/utils/textFormat";
 
 type FilterDropdownProps = {
   label?: string;
@@ -66,14 +67,18 @@ export default function FilterDropdown({
                 keyExtractor={(item) => item}
                 renderItem={({ item }) => (
                   <TouchableOpacity onPress={() => handleSelect(item)}>
-                    <Text
-                      style={[
-                        styles.optionText,
-                        selected === item && styles.selectedOption,
-                      ]}
-                    >
-                      {item}
-                    </Text>
+                    <View style={styles.optionContainer}>
+                      <Text
+                        style={[
+                          styles.optionText,
+                          selected === item && styles.selectedOption,
+                        ]}
+                        numberOfLines={2}
+                        ellipsizeMode="tail"
+                      >
+                        {toTitleCase(item)}
+                      </Text>
+                    </View>
                   </TouchableOpacity>
                 )}
               />
@@ -126,19 +131,23 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     color: "#1c5461",
   },
+  optionContainer: {
+    alignItems: 'flex-end',
+    width: '100%',
+  },
   optionText: {
     fontSize: 12,
-    paddingVertical: 4,
     color: "#1c5461",
-    alignSelf: "flex-end",
+    textAlign: 'right',
+    flexWrap: 'wrap',
   },
   selectedOption: {
     fontWeight: "bold",
     color: "#287674",
   },
   closeButton: {
-    marginTop: 4,
-    alignSelf: "center",
+    marginTop: 8,
+    alignSelf: "flex-start",
     paddingVertical: 8,
     paddingHorizontal: 16,
     backgroundColor: "#287674",

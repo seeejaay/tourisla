@@ -103,7 +103,7 @@ export default function AdminAnnouncementsScreen() {
     return (
         <SafeAreaView style={styles.safeContainer}>
             <View style={styles.container}>
-            <HeaderWithBack backgroundColor="#287674" textColor="#f9fafb"/>
+            <HeaderWithBack backgroundColor="transparent" textColor="#002b11"/>
                 <ScrollView
                     ref={scrollRef}
                     style={styles.scrollView}
