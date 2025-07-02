@@ -107,6 +107,7 @@ export const useTourPackageManager = () => {
       setLoading(true);
       setError("");
       try {
+        console.log(`Front end Editing tour package with ID ${id} data:`, data);
         const validated = tourPackageSchema.parse(data);
         const updatedPackage = await editTourPackage(id, validated);
         setTourPackages((prev) =>
