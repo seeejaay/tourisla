@@ -4,15 +4,13 @@ const articleSchema = z.object({
   id: z.number().optional(),
   title: z.string().min(1, "Title is required"),
   author: z.string().min(1, "Author is required"),
-  body: z.string().min(1, "Body is required"),
+  content: z.string().min(1, "Content is required"), // changed from body
   video_url: z.string().url().optional(),
-  // thumbnail_url: z.union([
-  // z.string().url({ message: "Invalid URL" }),
-  // z.literal(""),
-  // z.undefined(),  
-  // ]),
   tags: z.string().optional(),
-  status: z.enum(["PUBLISHED", "DRAFT", "published", "draft"]),
+  type: z.string().min(1, "Type is required"),
+  barangay: z.string().optional(),
+  summary: z.string().optional(),
+  is_published: z.boolean(), // changed from status
   is_featured: z.boolean(),
   updated_by: z.string(),
 });

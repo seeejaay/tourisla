@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
+  SafeAreaView,
   View,
   Text,
   ActivityIndicator,
   StyleSheet,
   ScrollView,
-  StatusBar,
   TextInput,
   TouchableOpacity,
   Platform,
@@ -22,16 +22,11 @@ import { useCreateBooking } from "@/hooks/useBookingManager";
 import { useTourPackageManager } from "@/hooks/useTourPackagesManager";
 import BookingSchemaMobile from "@/static/booking/bookingSchema";
 import { bookingFields } from "@/static/booking/booking";
+import HeaderWithBack from "@/components/HeaderWithBack";
+import InputSpinner from "@/components/InputSpinner";
 
-interface TourPackageDetailsScreenProps {
-  headerHeight: number;
-}
-const STATUS_BAR_HEIGHT =
-  Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0;
 
-export default function BookScreen({
-  headerHeight,
-}: TourPackageDetailsScreenProps) {
+  export default function BookScreen() {
   interface Booking {
     id: number;
     scheduled_date: string;
@@ -198,17 +193,13 @@ export default function BookScreen({
   };
 
   return (
-    <View style={[styles.container, { paddingTop: headerHeight }]}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      <View style={styles.navbar}>
-        <TouchableOpacity
-          style={styles.navButton}
-          onPress={() => router.back()}
-        >
-          <FontAwesome5 name="arrow-left" size={18} color="#fff" />
-        </TouchableOpacity>
-      </View>
-      <ScrollView>
+    <SafeAreaView style={styles.container}>
+      <HeaderWithBack
+        title="Package Details"
+        backgroundColor="#transparent"
+        textColor="#002b11"
+      />
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {bookingLoading ? (
           <ActivityIndicator
             size="large"
@@ -230,20 +221,21 @@ export default function BookScreen({
               if (field.name === "proof_of_payment") {
                 return (
                   <View key={field.name}>
-                    <Text>{field.label || "Proof of Payment"}:</Text>
+                    <Text style={styles.labelWithSpacing}>{field.label || "Proof of Payment"}:</Text>
                     <TouchableOpacity
                       style={styles.uploadButton}
                       onPress={pickProofOfPayment}
                     >
-                      <Text style={styles.uploadButtonText}>
-                        Pick Proof of Payment
+                      <Text
+                        style={styles.uploadButtonText}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
+                        {form.proof_of_payment?.name
+                          ? `Choose File: ${form.proof_of_payment.name}`
+                          : "Choose File"}
                       </Text>
                     </TouchableOpacity>
-                    {form.proof_of_payment && (
-                      <Text style={styles.fileSelectedText}>
-                        File Selected: {form.proof_of_payment.name}
-                      </Text>
-                    )}
                   </View>
                 );
               }
@@ -251,54 +243,18 @@ export default function BookScreen({
               // Custom UI for number_of_guests
               if (field.name === "number_of_guests") {
                 return (
-                  <View key={field.name}>
-                    <Text>{field.label || "Number of Guests"}:</Text>
-                    <View style={styles.spinnerContainer}>
-                      <TextInput
-                        style={styles.spinnerInput}
-                        keyboardType="number-pad"
-                        value={String(form.number_of_guests)}
-                        onChangeText={(text) =>
-                          setForm((prev) => ({
-                            ...prev,
-                            number_of_guests: Number(text) || 1,
-                          }))
-                        }
-                      />
-                      <View
-                        style={{
-                          flexDirection: "column",
-                          alignItems: "center",
-                        }}
-                      >
-                        <TouchableOpacity
-                          onPress={() =>
-                            setForm((prev) => ({
-                              ...prev,
-                              number_of_guests: prev.number_of_guests + 1,
-                            }))
-                          }
-                          style={styles.spinnerButton}
-                        >
-                          <Text style={styles.spinnerButtonText}>▲</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          onPress={() =>
-                            setForm((prev) => ({
-                              ...prev,
-                              number_of_guests: Math.max(
-                                1,
-                                prev.number_of_guests - 1
-                              ),
-                            }))
-                          }
-                          style={styles.spinnerButton}
-                        >
-                          <Text style={styles.spinnerButtonText}>▼</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
+                  <InputSpinner
+                    key={field.name}
+                    label={field.label || "Number of Guests"}
+                    value={form.number_of_guests}
+                    onChange={(newVal) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        number_of_guests: newVal,
+                      }))
+                    }
+                    min={1}
+                  />
                 );
               }
 
@@ -306,7 +262,7 @@ export default function BookScreen({
               if (field.name === "scheduled_date") {
                 return (
                   <View key={field.name}>
-                    <Text>{field.label || "Scheduled Date"}:</Text>
+                    <Text style={styles.labelWithSpacing}>{field.label || "Scheduled Date"}:</Text>
                     <TextInput
                       style={styles.input}
                       value={
@@ -370,40 +326,21 @@ export default function BookScreen({
           </>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  navbar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingTop: STATUS_BAR_HEIGHT + 10,
-    paddingBottom: 10,
+  container: { flex: 1, backgroundColor: "#f8fafc" },
+  scrollContent: {
     paddingHorizontal: 16,
-    backgroundColor: "transparent",
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
+    paddingBottom: 24,
   },
-  navButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    backgroundColor: "rgba(15, 23, 42, 0.7)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  container: { flex: 1, padding: 16, backgroundColor: "#f8fafc" },
   heading: {
     fontSize: 24,
     fontWeight: "900",
-    color: "#1c5461",
+    color: "#002b11",
     marginVertical: 8,
-    marginTop: 100,
   },
   bookingCard: {
     backgroundColor: "#f1f5f9",
@@ -412,6 +349,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   errorText: { color: "#ef4444", marginVertical: 8 },
+  labelWithSpacing: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: "#7b7b7b",
+    marginBottom: 8, // <- more spacing than the default label
+  },
   input: {
     padding: 10,
     borderWidth: 1,
@@ -420,17 +363,27 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   uploadButton: {
-    backgroundColor: "#24b4ab",
+    borderWidth: 1,
+    borderColor: "#898989",
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 6,
-    alignItems: "center",
     marginBottom: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  uploadButtonText: { color: "#fff", fontWeight: "600", paddingVertical: 5, },
+  uploadButtonText: {
+    color: "#7b7b7b",
+    fontWeight: "500",
+    paddingVertical: 5,
+    flex: 1,
+    flexShrink: 1,
+    numberOfLines: 1,
+  },
   fileSelectedText: { fontSize: 12, color: "#475569", marginBottom: 8 },
   bookButton: {
-    backgroundColor: "#24b4ab",
+    backgroundColor: "#61daaf",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -445,27 +398,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
   },
-  spinnerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: 6,
-    paddingHorizontal: 4,
-    width: "100%",
-    marginBottom: 16,
-  },
-  spinnerButton: {
-    padding: 0,
-    justifyContent: "flex-start",
-  },
-  spinnerButtonText: {
-    fontSize: 15,
-    fontWeight: "100",
-  },
-  spinnerInput: {
-    flex: 1,
-  },
   textPrice: {
     marginBottom: 8,
     fontWeight: "700",
@@ -474,8 +406,8 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#0f172a",
+    fontWeight: "500",
+    color: "#7b7b7b",
     marginBottom: 4,
   },
   helperText: {

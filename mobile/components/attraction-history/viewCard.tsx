@@ -34,8 +34,26 @@ export const ViewCard: React.FC<ViewCardProps> = ({
           <Text style={styles.subText}>
             Registration: {new Date(log.registration_date).toLocaleDateString()}
           </Text>
+          <TouchableOpacity style={styles.detailsButton} onPress={onClick}>
+              <Text style={styles.detailsText}>View Details</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.feedbackButton,
+              feedbackGiven && styles.disabledButton,
+            ]}
+            onPress={onFeedback}
+            disabled={feedbackGiven}
+          >
+            <Text style={styles.feedbackText}>
+                {feedbackGiven ? 'Feedback Submitted' : 'Leave Feedback'}
+            </Text>
+          </TouchableOpacity>
         </View>
         <View style={styles.qrContainer}>
+            <Text style={[styles.subText, { alignSelf: 'flex-end', marginBottom: 4 }]}>
+            Registration ID: {log.registration_id}
+            </Text>
           <Image
             source={{ uri: log.qr_code_url }}
             style={styles.qrImage}
@@ -43,32 +61,15 @@ export const ViewCard: React.FC<ViewCardProps> = ({
           />
         </View>
       </View>
-      <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.detailsButton} onPress={onClick}>
-              <Text style={styles.detailsText}>View Details</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.feedbackButton,
-                feedbackGiven && styles.disabledButton,
-              ]}
-              onPress={onFeedback}
-              disabled={feedbackGiven}
-            >
-              <Text style={styles.feedbackText}>
-                {feedbackGiven ? 'Feedback Submitted' : 'Leave Feedback'}
-              </Text>
-            </TouchableOpacity>
-        </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f8fcfd',
     borderRadius: 16,
-    marginBottom: 20,
+    marginBottom: 8,
     padding: 16,
     elevation: 3,
     shadowColor: '#000',
@@ -81,22 +82,22 @@ const styles = StyleSheet.create({
   content: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 8,
+    gap: 4,
   },
   spotName: {
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: '800',
     color: '#0f172a',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   boldText: {
     fontWeight: '600',
     color: '#1f2937',
-    fontSize: 14,
+    fontSize: 12,
     marginTop: 2,
   },
   subText: {
-    fontSize: 13,
+    fontSize: 11,
     color: '#475569',
     marginTop: 2,
   },
@@ -112,28 +113,30 @@ const styles = StyleSheet.create({
   },
   detailsButton: {
     flex: 1, 
+    marginTop: 8, 
+    marginBottom: 4,
     paddingVertical: 8,
     paddingHorizontal: 14,
-    backgroundColor: '#64c5a5',
+    backgroundColor: '#3e979f',
     borderRadius: 8,
   },
   detailsText: {
     color: '#ffffff',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: 12,
     textAlign: 'center',
   },
   feedbackButton: {
     flex: 1, 
     paddingVertical: 8,
     paddingHorizontal: 14,
-    backgroundColor: '#0086ad',
+    backgroundColor: '#51702c',
     borderRadius: 8,
   },
   feedbackText: {
     color: '#ffffff',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: 12,
     textAlign: 'center',
   },
   disabledButton: {
@@ -145,7 +148,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   qrImage: {
-    width: '100%',
+    alignSelf: 'flex-end',
+    width: '90%',
     aspectRatio: 1,
     borderRadius: 12,
     borderWidth: 1,

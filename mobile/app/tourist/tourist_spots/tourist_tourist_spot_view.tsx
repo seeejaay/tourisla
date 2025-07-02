@@ -45,6 +45,17 @@ export default function TouristSpotView() {
     });
     setCurrentIndex(newIndex);
   };
+  const getLatLngFromGoogleMapsUrl = (url: string) => {
+    const match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (match) {
+      return `${match[1]},${match[2]}`;
+    }
+    const coords = url.match(/\/place\/(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (coords) {
+      return `${coords[1]},${coords[2]}`;
+    }
+    return null;
+  };
 
   useEffect(() => {
     fetchTouristSpots();
@@ -160,11 +171,26 @@ export default function TouristSpotView() {
         )}
         </View>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
-          {spot.location && (
-            <TouchableOpacity onPress={() => Linking.openURL(spot.location)}>
-              <Text style={styles.link}>View on Map</Text>
-            </TouchableOpacity>
-          )}
+        {spot.location && (
+          <TouchableOpacity
+            onPress={() => {
+              const coordinates = getLatLngFromGoogleMapsUrl(spot.location);
+              const encodedName = encodeURIComponent(spot.name);
+
+              const destination = coordinates
+                ? `${coordinates}`
+                : `${encodedName}`;
+
+              const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+
+              Linking.openURL(url);
+            }}
+          >
+            <Text style={styles.link}>Navigate with Google Maps</Text>
+          </TouchableOpacity>
+
+        )}
+
         </View>
       </View>
 
