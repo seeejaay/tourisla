@@ -133,10 +133,7 @@ const updateTourPackageController = async (req, res) => {
       cancellation_days,
       cancellation_note,
     } = req.body;
-    operatorRegis = await getOperatorRegisById(touroperator_id);
-    if (!operatorRegis) {
-      return res.status(404).json({ message: "Tour operator not found." });
-    }
+
     package_name = package_name.toUpperCase();
     location = location.toUpperCase();
     description = description.toUpperCase();
