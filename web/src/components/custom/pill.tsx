@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { User, LogIn, LogOut, Ambulance } from "lucide-react";
+import { User, LogIn, LogOut } from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
 
@@ -103,13 +103,13 @@ export default function Pill({ className }: PillProps) {
                 Profile
               </DropdownMenuItem>
 
-              <DropdownMenuItem
+              {/* <DropdownMenuItem
                 className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer flex items-center gap-3"
                 onClick={() => router.push(`/hotlines`)}
               >
                 <Ambulance className="w-4 h-4 text-gray-500" />
                 Hotline
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
 
               <DropdownMenuSeparator className="my-1 bg-gray-100" />
 
@@ -159,13 +159,13 @@ export default function Pill({ className }: PillProps) {
                 Sign Up as Tour Operator
               </DropdownMenuItem> */}
 
-              <DropdownMenuItem
+              {/* <DropdownMenuItem
                 className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer flex items-center gap-3"
                 onClick={() => router.push(`/hotlines`)}
               >
                 <Ambulance className="w-4 h-4 text-gray-500" />
                 Hotline
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
             </>
           )}
         </DropdownMenuContent>
