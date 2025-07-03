@@ -171,7 +171,7 @@ export default function TourPackagesPage() {
                 {/* Package Image */}
                 <div className="relative h-40 w-full">
                   <Image
-                    src={pkg.image_url || "/images/nature/sea.jpg"}
+                    src="/images/nature/sea.jpg"
                     alt={pkg.package_name}
                     fill
                     className="object-cover rounded-t-2xl"
