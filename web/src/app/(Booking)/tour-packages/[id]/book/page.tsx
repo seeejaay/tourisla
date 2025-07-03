@@ -207,7 +207,7 @@ export default function BookingPage() {
         <section className="relative h-56 w-full flex items-center justify-center overflow-hidden mb-10">
           <div className="absolute inset-0">
             <img
-              src="/images/bg_hero.webp"
+              src="/images/article_image.webp"
               alt="Book Tour Package"
               className="w-full h-full object-cover object-center brightness-[40%]"
             />
