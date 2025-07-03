@@ -82,7 +82,7 @@ export default function ViewTourPackagePage() {
         {/* Hero Section */}
         <section className="relative h-72 flex items-center justify-center overflow-hidden mb-10">
           <Image
-            src="/images/bg_hero.webp"
+            src="/images/article_image.webp"
             alt="Tour Packages Hero"
             fill
             className="object-cover object-center brightness-[40%]"
@@ -105,7 +105,7 @@ export default function ViewTourPackagePage() {
             {/* Package Image */}
             <div className="relative w-full h-56 sm:h-72">
               <Image
-                src={tourPackage.image_url || "/images/nature/sea.jpg"}
+                src="/images/article_image.webp"
                 alt={tourPackage.package_name}
                 fill
                 className="object-cover object-center rounded-t-2xl"
