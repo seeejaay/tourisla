@@ -106,7 +106,7 @@ export default function TourPackagesPage() {
         {/* Hero Section */}
         <section className="relative h-72 flex items-center justify-center overflow-hidden mb-10">
           <Image
-            src="/images/bg_hero.webp"
+            src="/images/article_image.webp"
             alt="Tour Packages Hero"
             fill
             className="object-cover object-center brightness-[40%]"
