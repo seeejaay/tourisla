@@ -48,16 +48,6 @@ export const tourOperatorDocuFields = [
       { value: "DOLE_REGISTRATION", label: "DOLE Registration" },
       { value: "EMPLOYEE_LIST", label: "Employee List" },
       { value: "MANAGER_RESUME_ID", label: "Manager Resume/ID" },
-      {
-        value: "MANAGER_PROOF_OF_EXPERIENCE",
-        label: "Manager Proof of Experience",
-      },
-      { value: "TOUR_PACKAGES_LIST", label: "Tour Packages List" },
-      { value: "PARTNER_ESTABLISHMENTS", label: "Partner Establishments" },
-      { value: "VOUCHER_SAMPLE", label: "Voucher Sample" },
-      { value: "CLIENT_FEEDBACK_FORM", label: "Client Feedback Form" },
-      { value: "AFFIDAVIT_OF_UNDERTAKING", label: "Affidavit of Undertaking" },
-      { value: "ECC_OR_CNC", label: "ECC or CNC" },
     ],
   },
   {
