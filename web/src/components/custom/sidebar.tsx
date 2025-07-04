@@ -36,8 +36,8 @@ const Sidebar = ({ navigation }: SidebarProps) => {
   return (
     <aside
       aria-label="Sidebar"
-      className={`bg-gradient-to-b min-h-screen bg-white 
-    text-[#1c5461] h-full flex flex-col transition-all duration-300 ease-in-out z-50
+      className={`bg-gradient-to-b h-screen bg-white 
+    text-[#1c5461] h-full flex flex-col transition-all duration-300 ease-in-out z-50 overflow-y-auto
     ${isCollapsed ? "w-20" : "w-64"}  md:flex`}
     >
       {/* Sidebar Header */}
