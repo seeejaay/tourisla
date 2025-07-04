@@ -43,7 +43,7 @@ interface DataTableProps<TData, TValue> {
   addDialogTitle?: string;
   AddDialogComponent?: React.ReactNode;
   searchPlaceholder?: string;
-  searchColumn?: string;
+  searchColumn?: string | string[];
 }
 
 export function DataTable<TData, TValue>({
@@ -66,8 +66,28 @@ export function DataTable<TData, TValue>({
   });
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
+  // New: Local search state for multi-column search
+  const [searchValue, setSearchValue] = React.useState("");
+
+  // New: Filter data based on searchColumn(s)
+  const filteredData = React.useMemo(() => {
+    const columnsToSearch: (keyof TData | string)[] = Array.isArray(
+      searchColumn
+    )
+      ? searchColumn
+      : [searchColumn];
+    if (!searchValue) return data;
+    return data.filter((row) =>
+      columnsToSearch.some((col: keyof TData | string) =>
+        String(row[col as keyof TData] ?? "")
+          .toLowerCase()
+          .includes(searchValue.toLowerCase())
+      )
+    );
+  }, [data, searchColumn, searchValue]);
+
   const table = useReactTable({
-    data,
+    data: filteredData, // Use filtered data
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -93,15 +113,8 @@ export function DataTable<TData, TValue>({
           <div className="flex items-center gap-2 w-full justify-between">
             <Input
               placeholder={searchPlaceholder}
-              value={
-                (table.getColumn(searchColumn)?.getFilterValue() as string) ??
-                ""
-              }
-              onChange={(event) =>
-                table
-                  .getColumn(searchColumn)
-                  ?.setFilterValue(event.target.value)
-              }
+              value={searchValue}
+              onChange={(event) => setSearchValue(event.target.value)}
               className="max-w-md w-full"
             />
             {AddDialogComponent && (

@@ -4,6 +4,7 @@ import {
   createOnlineIslandEntry,
   getIslandEntryStatus,
   getTourismFee,
+  getAllIslandEntries as apigetAllIslandEntries,
 } from "@/lib/api/islandEntry";
 
 import type { RegistrationPayload } from "@/app/islandEntry-regis/page";
@@ -11,14 +12,17 @@ import type { RegistrationPayload } from "@/app/islandEntry-regis/page";
 export function useIslandEntryManager() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RegistrationPayload>();
-  const [fee, setFee] = useState<{ amount: number; is_enabled: boolean } | null>(null);
+  const [fee, setFee] = useState<{
+    amount: number;
+    is_enabled: boolean;
+  } | null>(null);
   const [paymentLink, setPaymentLink] = useState<string | null>(null);
 
   const fetchFee = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getTourismFee(); 
-      setFee(data); 
+      const data = await getTourismFee();
+      setFee(data);
     } finally {
       setLoading(false);
     }
@@ -61,6 +65,19 @@ export function useIslandEntryManager() {
     }
   };
 
+  const getAllIslandEntries = useCallback(async () => {
+    setLoading(true);
+    try {
+      const entries = await apigetAllIslandEntries();
+      return entries;
+    } catch (error) {
+      console.error("Error fetching island entries:", error);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     loading,
     result,
@@ -69,5 +86,6 @@ export function useIslandEntryManager() {
     fetchFee,
     register,
     checkPaymentStatus,
+    getAllIslandEntries,
   };
 }
