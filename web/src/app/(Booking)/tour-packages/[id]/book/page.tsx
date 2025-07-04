@@ -286,23 +286,37 @@ export default function BookingPage() {
                       className="w-full"
                     />
                   ) : (
-                    <input
-                      type={field.type}
-                      name={field.name}
-                      value={
-                        form[field.name] !== undefined &&
-                        form[field.name] !== null &&
-                        typeof form[field.name] !== "object"
-                          ? form[field.name]
-                          : field.type === "number"
-                          ? 1
-                          : ""
-                      }
-                      onChange={handleChange}
-                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2"
-                      min={field.type === "number" ? 1 : undefined}
-                      required={field.name !== "notes"}
-                    />
+                    <>
+                      {field.name === "number_of_guests" && tourPackage && (
+                        <p className="text-xs text-gray-600 mb-1">
+                          Maximum Guests: {tourPackage.available_slots}
+                        </p>
+                      )}
+                      <input
+                        type={field.type}
+                        name={field.name}
+                        value={
+                          form[field.name] !== undefined &&
+                          form[field.name] !== null &&
+                          typeof form[field.name] !== "object"
+                            ? form[field.name]
+                            : field.type === "number"
+                            ? 1
+                            : ""
+                        }
+                        onChange={handleChange}
+                        className="w-full border border-[#3e979f] rounded-lg px-3 py-2"
+                        min={field.type === "number" ? 1 : undefined}
+                        max={
+                          field.type === "number" &&
+                          tourPackage &&
+                          field.name === "number_of_guests"
+                            ? tourPackage.available_slots
+                            : undefined
+                        }
+                        required={field.name !== "notes"}
+                      />
+                    </>
                   )}
                 </div>
               ))}
