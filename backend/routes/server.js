@@ -23,6 +23,7 @@ app.use(
       "http://dev.tourisla.local:3000",
       "https://tourisla.vercel.app",
       "https://tourisla.space",
+      "httpsL://tourisla.netlify.app",
       process.env.CLIENT_URL,
     ].filter(Boolean),
     credentials: true,
