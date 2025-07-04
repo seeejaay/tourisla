@@ -1,8 +1,9 @@
+import { withNetlify } from "@netlify/next";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-
+  trailingSlash: true,
   typescript: { ignoreBuildErrors: true },
   allowedDevOrigins: [
     "http://localhost:3000",
@@ -22,4 +23,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNetlify(nextConfig);
