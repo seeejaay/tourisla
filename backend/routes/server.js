@@ -779,6 +779,11 @@ app.get(
 );
 app.post("/api/v1/island-entry/status", checkPayMongoPaymentStatusController);
 app.get(
+  "/api/v1/island-entry",
+  allowedRoles(["Tourism Officer"]),
+  getAllIslandEntriesController
+);
+app.get(
   "/api/v1/island-entry/latest",
   authenticateUser,
   getLatestIslandEntryController

@@ -12,6 +12,7 @@ const {
   saveIslandEntryPayment,
   getLatestIslandEntryByUserId,
   logIslandEntryByRegistration,
+  getAllIslandEntries,
 } = require("../models/islandEntryRegisModel");
 const { sendIslandEntryEmail } = require("../utils/email");
 const s3Client = new S3Client({
@@ -438,6 +439,16 @@ const markIslandEntryPaidController = async (req, res) => {
   }
 };
 
+const getAllIslandEntriesController = async (req, res) => {
+  try {
+    const entries = await getAllIslandEntries();
+    res.status(200).json(entries);
+  } catch (error) {
+    console.error("Error fetching all island entries:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   registerIslandEntryController,
   manualIslandEntryCheckInController,
@@ -446,4 +457,5 @@ module.exports = {
   registerIslandWalkInController,
   getLatestIslandEntryController,
   markIslandEntryPaidController,
+  getAllIslandEntriesController,
 };

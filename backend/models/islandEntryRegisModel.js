@@ -1,7 +1,14 @@
 const db = require("../db/index");
 
 // Create new island entry registration
-const createIslandEntryRegistration = async ({ unique_code, qr_code_url, payment_method, status, total_fee, user_id }) => {
+const createIslandEntryRegistration = async ({
+  unique_code,
+  qr_code_url,
+  payment_method,
+  status,
+  total_fee,
+  user_id,
+}) => {
   const result = await db.query(
     `INSERT INTO island_entry_registration 
      (unique_code, qr_code_url, payment_method, status, total_fee, user_id)
@@ -54,7 +61,10 @@ const getIslandEntryByCode = async (uniqueCode) => {
 };
 
 // Log island entry
-const logIslandEntryByRegistration = async ({ registrationId, scannedByUserId }) => {
+const logIslandEntryByRegistration = async ({
+  registrationId,
+  scannedByUserId,
+}) => {
   const result = await db.query(
     `INSERT INTO island_entry_registration_logs 
       (registration_id, scanned_by_user_id, visit_date)
@@ -66,7 +76,13 @@ const logIslandEntryByRegistration = async ({ registrationId, scannedByUserId })
   return result.rows[0];
 };
 
-const saveIslandEntryPayment = async ({ registration_id, amount, status, payment_link, reference_num }) => {
+const saveIslandEntryPayment = async ({
+  registration_id,
+  amount,
+  status,
+  payment_link,
+  reference_num,
+}) => {
   const result = await db.query(
     `INSERT INTO island_entry_payments 
       (registration_id, amount, status, payment_link, reference_num)
@@ -89,6 +105,10 @@ const getLatestIslandEntryByUserId = async (userId) => {
   return result.rows[0];
 };
 
+const getAllIslandEntries = async () => {
+  const result = await db.query(`SELECT * FROM island_entry_registration`);
+  return result.rows;
+};
 
 module.exports = {
   createIslandEntryRegistration,
@@ -98,4 +118,5 @@ module.exports = {
   logIslandEntryByRegistration,
   saveIslandEntryPayment,
   getLatestIslandEntryByUserId,
+  getAllIslandEntries,
 };
