@@ -109,7 +109,7 @@ const getAllIslandEntries = async () => {
   const result = await db.query(`
     SELECT ier.*, u.first_name, u.last_name
     FROM island_entry_registration ier
-    JOIN users u ON ier.user_id = u.id
+    JOIN users u ON ier.user_id = u.user_id
   `);
   return result.rows;
 };
