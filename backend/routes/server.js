@@ -193,6 +193,7 @@ const {
   registerIslandWalkInController,
   getLatestIslandEntryController,
   markIslandEntryPaidController,
+  getAllIslandEntriesController,
 } = require("../controllers/islandEntryRegisController");
 
 const {
