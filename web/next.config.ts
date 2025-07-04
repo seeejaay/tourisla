@@ -1,4 +1,3 @@
-import { withNetlify } from "@netlify/next";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -23,4 +22,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNetlify(nextConfig);
+export default nextConfig;
