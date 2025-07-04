@@ -295,7 +295,7 @@ export default function Home() {
                       </div>
                       {/* Optional: Overlay on hover */}
                       <div className="absolute inset-0 bg-[#2a7b8d]/[20%] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                        <span className="bg-[#2a7b8d] shadow-lg text-white font-semibold rounded-full px-6 py-3 shadow-lg">
+                        <span className="bg-[#2a7b8d] shadow-lg text-white font-semibold rounded-full px-6 py-3 ">
                           View Article
                         </span>
                       </div>

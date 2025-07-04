@@ -191,12 +191,19 @@ export default function ViewTourPackagePage() {
                   </div>
                 )}
               <button
-                className="w-full px-6 py-3 bg-[#3e979f] cursor-pointer hover:bg-[#1c5461] text-white rounded-lg font-semibold shadow transition mb-2"
+                className={`w-full px-6 py-3 rounded-lg font-semibold shadow transition mb-2 ${
+                  tourPackage.available_slots === 0
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-[#3e979f] cursor-pointer hover:bg-[#1c5461] text-white"
+                }`}
                 onClick={() =>
                   router.push(`/tour-packages/${tourPackage.id}/book`)
                 }
+                disabled={tourPackage.available_slots === 0}
               >
-                Book Now
+                {tourPackage.available_slots === 0
+                  ? "Fully Booked"
+                  : "Book Now"}
               </button>
               <button
                 className="w-full px-6 py-2 cursor-pointer bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-lg font-semibold shadow transition"
