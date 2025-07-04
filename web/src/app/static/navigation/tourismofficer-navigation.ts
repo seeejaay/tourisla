@@ -9,6 +9,7 @@ import {
   Scale,
   ContactRound,
   Contact,
+  Clipboard,
 } from "lucide-react";
 import type { NavItem } from "@/components/custom/sidebar";
 
@@ -37,6 +38,12 @@ const tourismOfficerNavigation = (): NavItem[] => {
       href: `/tourism-officer/hotline`,
       title: "Hotlines",
       icon: Phone,
+    },
+    {
+      name: "Island Entry",
+      href: `/tourism-officer/island-entry-logs`,
+      title: "Island Entry",
+      icon: Clipboard,
     },
     {
       name: "Rules",
