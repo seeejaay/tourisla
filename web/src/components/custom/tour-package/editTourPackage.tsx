@@ -290,7 +290,7 @@ export default function EditTourPackage({
               <input
                 name="date_start"
                 type="date"
-                value={form.date_start}
+                value={form.date_start ? form.date_start.split("T")[0] : ""}
                 onChange={handleChange}
                 className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                 required
@@ -303,7 +303,7 @@ export default function EditTourPackage({
               <input
                 name="date_end"
                 type="date"
-                value={form.date_end}
+                value={form.date_end ? form.date_end.split("T")[0] : ""}
                 onChange={handleChange}
                 className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                 required
