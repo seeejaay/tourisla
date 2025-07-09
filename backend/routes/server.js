@@ -24,6 +24,7 @@ app.use(
       "https://tourisla.vercel.app",
       "https://tourisla.space",
       "https://tourisla.netlify.app",
+      "https://tourisla-seven.vercel.app",
       process.env.CLIENT_URL,
     ].filter(Boolean),
     credentials: true,
