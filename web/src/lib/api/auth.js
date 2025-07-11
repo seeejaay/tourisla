@@ -103,7 +103,7 @@ export const currentUser = async () => {
     return response.data;
   } catch (err) {
     console.error(
-      "Error fetching user data:",
+      "Error fetching current user:",
       err.response?.data || err.message
     );
     throw err;
