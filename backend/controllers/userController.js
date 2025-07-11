@@ -24,8 +24,10 @@ const createUserController = async (req, res) => {
       phone_number,
       role,
       nationality,
+      birth_date,
     } = req.body;
-
+    console.log(req.body);
+    console.log("Creating user with email:", birth_date);
     const formatedFirstName = first_name.toUpperCase();
     const formatedLastName = last_name.toUpperCase();
     const formatedEmail = email.toUpperCase();
@@ -104,6 +106,7 @@ const createUserController = async (req, res) => {
       phone_number,
       role: assignedRole,
       nationality,
+      birth_date,
     });
 
     await sendWelcomeEmail(email, first_name, last_name);

@@ -54,27 +54,22 @@ const baseSignupSchema = z.object({
   nationality: z.string(),
   terms: z.boolean(),
   status: z.literal("Active"),
+  birth_date: z.string().refine((val) => {
+    if (!val) return false;
+    const date = new Date(val);
+    if (isNaN(date.getTime()) || date > new Date()) return false;
+    // Check if 18 years old or older
+    const today = new Date();
+    let age = today.getFullYear() - date.getFullYear();
+    const m = today.getMonth() - date.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
+      age--;
+    }
+    return age >= 18;
+  }, "You must be at least 18 years old."),
 });
 
 const extendedSignupSchema = baseSignupSchema.extend({
-  // Tour Guide fields
-  birth_date: z
-    .string()
-    .optional()
-    .or(z.literal(""))
-    .refine((val) => {
-      if (!val) return true; // allow empty for non-Tour Guide
-      const date = new Date(val);
-      if (isNaN(date.getTime()) || date > new Date()) return false;
-      // Check if 18 years old or older
-      const today = new Date();
-      let age = today.getFullYear() - date.getFullYear();
-      const m = today.getMonth() - date.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
-        age--;
-      }
-      return age >= 18;
-    }, "You must be at least 18 years old."),
   sex: z.enum(["MALE", "FEMALE"]).optional().or(z.literal("")),
   reason_for_applying: z
     .string()
@@ -114,7 +109,6 @@ const extendedSignupSchema = baseSignupSchema.extend({
     .or(z.literal(""))
     .optional(),
 });
-
 const roleOptions = [
   { value: "Tourist", label: "Tourist" },
   { value: "Tour Guide", label: "Tour Guide" },
@@ -154,11 +148,9 @@ export default function SignUp() {
       nationality: "",
       terms: false,
       status: "Active",
-      // Tour Guide fields
       birth_date: "",
       sex: "",
       reason_for_applying: "",
-      // Tour Operator fields
       operator_name: "",
       business_email: "",
       mobile_number: "",
@@ -239,6 +231,7 @@ export default function SignUp() {
         role,
         nationality: data.nationality,
         terms: data.terms,
+        birth_date: data.birth_date,
       };
 
       const response = await registerUser(userPayload, captchaToken);
@@ -516,6 +509,26 @@ export default function SignUp() {
                         </FormItem>
                       )}
                     />
+                    {/* Birth Date - always visible */}
+                    <FormField
+                      control={form.control}
+                      name="birth_date"
+                      render={({ field }) => (
+                        <FormItem className="w-full flex flex-col">
+                          <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                            Birth Date
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="date"
+                              {...field}
+                              className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
 
                   {/* Password Fields */}
@@ -611,25 +624,6 @@ export default function SignUp() {
                   {role === "Tour Guide" && (
                     <>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="birth_date"
-                          render={({ field }) => (
-                            <FormItem className="w-full flex flex-col">
-                              <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                                Birth Date *
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="date"
-                                  {...field}
-                                  className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
                         <FormField
                           control={form.control}
                           name="sex"

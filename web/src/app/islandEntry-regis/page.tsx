@@ -8,6 +8,8 @@ import { getLatestIslandEntry } from "@/lib/api/islandEntry";
 import * as yup from "yup";
 import Header from "@/components/custom/header";
 import Image from "next/image";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 export interface GroupMember {
   name: string;
   sex: string;
@@ -30,14 +32,24 @@ export interface LatestEntry {
   payment_link?: string;
   paymongo_status?: string;
 }
-
+export interface User {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  role: string;
+  birth_date: string;
+}
 export default function IslandEntryPage() {
+  const router = useRouter();
   const [companions, setCompanions] = useState<GroupMember[]>([]);
   const [showResult, setShowResult] = useState(false);
   const [showPaymentLink, setShowPaymentLink] = useState(false);
   const [latestEntry, setLatestEntry] = useState<LatestEntry | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-
+  const { loggedInUser } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
   const {
     loading,
     result,
@@ -49,6 +61,27 @@ export default function IslandEntryPage() {
   } = useIslandEntryManager();
 
   useEffect(() => {
+    async function fetchUser() {
+      const response = await loggedInUser(router);
+      if (!response || !response.data?.user) {
+        router.push("/auth/login?redirect=/islandEntry-regis");
+      } else {
+        // Only keep needed fields
+        const { first_name, last_name, email, phone_number, birth_date } =
+          response.data.user;
+        setUser({
+          first_name,
+          last_name,
+          email,
+          phone_number,
+          birth_date,
+        } as User);
+      }
+    }
+    fetchUser();
+  }, [loggedInUser, router]);
+
+  useEffect(() => {
     fetchFee();
   }, [fetchFee]);
 
@@ -58,15 +91,36 @@ export default function IslandEntryPage() {
     }
   }, [showResult]);
 
+  // Calculate exact age from birth_date
+  function getExactAge(birthDateStr: string) {
+    const birthDate = new Date(birthDateStr);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  }
+
+  // Helper to get main visitor initial values from user
+  const getInitialMainVisitor = (user: User | null) => ({
+    name: user ? `${user.first_name} ${user.last_name}` : "",
+    sex: "",
+    age:
+      user && user.birth_date
+        ? new Date().getFullYear() - new Date(user.birth_date).getFullYear()
+        : 0,
+    is_foreign: false,
+    municipality: "",
+    province: "",
+    country: "",
+  });
+
   const formik = useFormik({
+    enableReinitialize: true,
     initialValues: {
-      name: "",
-      sex: "",
-      age: 0,
-      is_foreign: false,
-      municipality: "",
-      province: "",
-      country: "",
+      ...getInitialMainVisitor(user),
       companions: [],
       payment_method: "Cash",
       total_fee: 0,
@@ -284,6 +338,19 @@ export default function IslandEntryPage() {
                           onChange={formik.handleChange}
                           className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                           placeholder={`Enter ${field.label.toLowerCase()}`}
+                          // Autofill for main visitor fields
+                          {...(field.name === "name" && user
+                            ? {
+                                value: `${user.first_name} ${user.last_name}`,
+                                readOnly: true,
+                              }
+                            : {})}
+                          {...(field.name === "age" && user && user.birth_date
+                            ? {
+                                value: getExactAge(user.birth_date),
+                                readOnly: true,
+                              }
+                            : {})}
                         />
                         {formik.touched[field.name] &&
                           formik.errors[field.name] && (
