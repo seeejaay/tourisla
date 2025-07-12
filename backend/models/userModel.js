@@ -11,10 +11,11 @@ const createUser = async (userData) => {
     nationality,
     status = "Active",
     birth_date,
+    sex,
   } = userData;
 
   const result = await db.query(
-    "INSERT INTO users (first_name, last_name, email, password, phone_number, role, nationality, created_at, status,birth_date) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8,$9) RETURNING *",
+    "INSERT INTO users (first_name, last_name, email, password, phone_number, role, nationality, created_at, status,birth_date, sex) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8,$9,$10) RETURNING *",
     [
       first_name,
       last_name,
@@ -25,6 +26,7 @@ const createUser = async (userData) => {
       nationality,
       status,
       birth_date,
+      sex,
     ]
   );
 

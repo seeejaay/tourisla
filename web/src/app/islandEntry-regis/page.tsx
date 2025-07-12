@@ -40,6 +40,8 @@ export interface User {
   phone_number: string;
   role: string;
   birth_date: string;
+  nationality: string;
+  sex: string;
 }
 export default function IslandEntryPage() {
   const router = useRouter();
@@ -67,14 +69,23 @@ export default function IslandEntryPage() {
         router.push("/auth/login?redirect=/islandEntry-regis");
       } else {
         // Only keep needed fields
-        const { first_name, last_name, email, phone_number, birth_date } =
-          response.data.user;
+        const {
+          first_name,
+          last_name,
+          email,
+          phone_number,
+          birth_date,
+          nationality,
+          sex,
+        } = response.data.user;
         setUser({
           first_name,
           last_name,
           email,
           phone_number,
           birth_date,
+          nationality,
+          sex,
         } as User);
       }
     }
@@ -106,15 +117,15 @@ export default function IslandEntryPage() {
   // Helper to get main visitor initial values from user
   const getInitialMainVisitor = (user: User | null) => ({
     name: user ? `${user.first_name} ${user.last_name}` : "",
-    sex: "",
+    sex: user?.sex || "",
     age:
       user && user.birth_date
         ? new Date().getFullYear() - new Date(user.birth_date).getFullYear()
         : 0,
-    is_foreign: false,
+    is_foreign: user?.nationality?.toLowerCase() !== "philippines",
     municipality: "",
     province: "",
-    country: "",
+    country: user?.nationality,
   });
 
   const formik = useFormik({
@@ -271,6 +282,44 @@ export default function IslandEntryPage() {
                     if (field.showIf && !field.showIf(formik.values))
                       return null;
                     if (field.type === "select") {
+                      if (field.name === "country" && user) {
+                        return (
+                          <div key={field.name}>
+                            <label className="block font-semibold mb-2 text-[#1c5461]">
+                              {field.label}
+                            </label>
+                            <input
+                              type="text"
+                              name={field.name}
+                              value={user.nationality}
+                              readOnly
+                              className="w-full border border-[#3e979f] rounded-lg px-3
+                              py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#d7d9da] "
+                              placeholder={`Enter ${field.label.toLowerCase()}`}
+                            />
+                          </div>
+                        );
+                      }
+
+                      if (field.name === "sex" && user) {
+                        return (
+                          <div key={field.name}>
+                            <label className="block font-semibold mb-2 text-[#1c5461]">
+                              {field.label}
+                            </label>
+                            <input
+                              type="text"
+                              name={field.name}
+                              value={user.sex}
+                              readOnly
+                              className="w-full border border-[#3e979f] rounded-lg px-3
+                            py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#d7d9da]"
+                              placeholder={`Enter ${field.label.toLowerCase()}`}
+                            />
+                          </div>
+                        );
+                      }
+
                       return (
                         <div key={field.name}>
                           <label className="block font-semibold mb-2 text-[#1c5461]">
@@ -316,9 +365,14 @@ export default function IslandEntryPage() {
                           <input
                             type="checkbox"
                             name={field.name}
-                            checked={formik.values[field.name]}
+                            checked={
+                              user?.nationality?.toLowerCase() !== "philippines"
+                            }
+                            disabled={true}
+                            readOnly={true}
+                            value={formik.values[field.name]}
                             onChange={formik.handleChange}
-                            className="accent-[#3e979f] scale-125"
+                            className="accent-[#3e979f] scale-125 "
                           />
                           <label className="font-medium text-[#1c5461] ml-2">
                             {field.label}
@@ -336,7 +390,12 @@ export default function IslandEntryPage() {
                           name={field.name}
                           value={formik.values[field.name]}
                           onChange={formik.handleChange}
-                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                          className={`w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none ${
+                            (field.name === "name" && user) ||
+                            (field.name === "age" && user && user.birth_date)
+                              ? "bg-[#d7d9da]"
+                              : "bg-[#f8fcfd]"
+                          }`}
                           placeholder={`Enter ${field.label.toLowerCase()}`}
                           // Autofill for main visitor fields
                           {...(field.name === "name" && user

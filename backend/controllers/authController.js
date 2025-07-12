@@ -34,6 +34,7 @@ const loginUser = async (req, res) => {
       role: user.role,
       nationality: user.nationality,
       birthDate: user.birth_date,
+      sex: user.sex,
     };
     await loginDate(email, ipAddress);
     res.status(200).json({

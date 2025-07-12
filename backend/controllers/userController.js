@@ -25,12 +25,14 @@ const createUserController = async (req, res) => {
       role,
       nationality,
       birth_date,
+      sex,
     } = req.body;
     console.log(req.body);
     console.log("Creating user with email:", birth_date);
     const formatedFirstName = first_name.toUpperCase();
     const formatedLastName = last_name.toUpperCase();
     const formatedEmail = email.toUpperCase();
+    const formattedSex = sex.toUpperCase();
 
     const captchaToken = req.body.captchaToken;
     const isAdmin = req.session.user && req.session.user.role === "Admin";
@@ -107,6 +109,7 @@ const createUserController = async (req, res) => {
       role: assignedRole,
       nationality,
       birth_date,
+      sex: formattedSex,
     });
 
     await sendWelcomeEmail(email, first_name, last_name);
