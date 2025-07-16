@@ -933,8 +933,8 @@ app.delete(
   deletePolicyController
 );
 
-//tripadvisors
-app.get("/tripadvisor/hotels", getTripadvisorHotelsWithPhotos);
+//tripadvisors temporary turned off
+// app.get("/tripadvisor/hotels", getTripadvisorHotelsWithPhotos);
 
 app.get(
   "/api/v1/visitor-logs",
