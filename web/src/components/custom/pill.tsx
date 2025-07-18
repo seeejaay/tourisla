@@ -97,7 +97,7 @@ export default function Pill({ className }: PillProps) {
 
               <DropdownMenuItem
                 className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer flex items-center gap-3"
-                onClick={() => router.push("/profile")}
+                onClick={() => router.push(`/profile/${user.id}`)}
               >
                 <User className="w-4 h-4 text-gray-500" />
                 Profile

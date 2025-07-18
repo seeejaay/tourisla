@@ -10,6 +10,15 @@ import Header from "@/components/custom/header";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { fetchRegions, fetchCities } from "@/lib/api/philippines";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
+
 export interface GroupMember {
   name: string;
   sex: string;
@@ -33,16 +42,25 @@ export interface LatestEntry {
   paymongo_status?: string;
 }
 export interface User {
-  id: string;
+  id?: string;
   first_name: string;
   last_name: string;
   email: string;
   phone_number: string;
-  role: string;
+  role?: string;
   birth_date: string;
   nationality: string;
   sex: string;
 }
+
+export interface Region {
+  code: string;
+  name: string;
+  regionName: string;
+  islandGroupCode: string;
+  psgc10DigitCode: string;
+}
+
 export default function IslandEntryPage() {
   const router = useRouter();
   const [companions, setCompanions] = useState<GroupMember[]>([]);
@@ -52,15 +70,13 @@ export default function IslandEntryPage() {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const { loggedInUser } = useAuth();
   const [user, setUser] = useState<User | null>(null);
-  const {
-    loading,
-    result,
-    fee,
-    fetchFee,
-    register,
-    // paymentLink,
-    // checkPaymentStatus,
-  } = useIslandEntryManager();
+  const { loading, result, fee, fetchFee, register } = useIslandEntryManager();
+
+  // For region/city dropdowns
+  const [regionList, setRegions] = useState<Region[]>([]);
+  const [cityList, setCities] = useState<{
+    [key: string]: { code: string; name: string }[];
+  }>({});
 
   useEffect(() => {
     async function fetchUser() {
@@ -68,7 +84,6 @@ export default function IslandEntryPage() {
       if (!response || !response.data?.user) {
         router.push("/auth/login?redirect=/islandEntry-regis");
       } else {
-        // Only keep needed fields
         const {
           first_name,
           last_name,
@@ -90,11 +105,26 @@ export default function IslandEntryPage() {
       }
     }
     fetchUser();
-  }, [loggedInUser, router]);
-
-  useEffect(() => {
     fetchFee();
-  }, [fetchFee]);
+    fetchRegions().then(setRegions);
+    fetchCities().then((data) => {
+      const citiesByRegion: {
+        [key: string]: { code: string; name: string }[];
+      } = {};
+      data.forEach(
+        (city: { name: string; regionCode: string; code: string }) => {
+          if (!citiesByRegion[city.regionCode]) {
+            citiesByRegion[city.regionCode] = [];
+          }
+          citiesByRegion[city.regionCode].push({
+            code: city.code,
+            name: city.name,
+          });
+        }
+      );
+      setCities(citiesByRegion);
+    });
+  }, [loggedInUser, router, fetchFee]);
 
   useEffect(() => {
     if (showResult) {
@@ -102,7 +132,6 @@ export default function IslandEntryPage() {
     }
   }, [showResult]);
 
-  // Calculate exact age from birth_date
   function getExactAge(birthDateStr: string) {
     const birthDate = new Date(birthDateStr);
     const today = new Date();
@@ -114,19 +143,23 @@ export default function IslandEntryPage() {
     return age;
   }
 
-  // Helper to get main visitor initial values from user
   const getInitialMainVisitor = (user: User | null) => ({
     name: user ? `${user.first_name} ${user.last_name}` : "",
     sex: user?.sex || "",
-    age:
-      user && user.birth_date
-        ? new Date().getFullYear() - new Date(user.birth_date).getFullYear()
-        : 0,
+    age: user && user.birth_date ? getExactAge(user.birth_date) : 0,
     is_foreign: user?.nationality?.toLowerCase() !== "philippines",
     municipality: "",
     province: "",
-    country: user?.nationality,
+    country: user?.nationality || "",
   });
+
+  const getCitiesForRegionCode = (regionCode: string) => {
+    return cityList[regionCode] || [];
+  };
+
+  const getRegionCodeByName = (regionName: string) => {
+    return regionList.find((reg) => reg.name === regionName)?.code || "";
+  };
 
   const formik = useFormik({
     enableReinitialize: true,
@@ -207,9 +240,18 @@ export default function IslandEntryPage() {
     field: keyof GroupMember,
     value: string | boolean | number
   ) => {
-    const updated = companions.map((c, i) =>
-      i === idx ? { ...c, [field]: value } : c
-    );
+    const updated = companions.map((c, i) => {
+      if (i !== idx) return c;
+      // If is_foreign is unchecked, set country to Philippines
+      if (field === "is_foreign" && value === false) {
+        return { ...c, [field]: value, country: "Philippines" };
+      }
+      // If province changes, reset municipality
+      if (field === "province") {
+        return { ...c, [field]: value, municipality: "" };
+      }
+      return { ...c, [field]: value };
+    });
     setCompanions(updated);
     formik.setFieldValue("companions", updated);
   };
@@ -282,25 +324,7 @@ export default function IslandEntryPage() {
                     if (field.showIf && !field.showIf(formik.values))
                       return null;
                     if (field.type === "select") {
-                      if (field.name === "country" && user) {
-                        return (
-                          <div key={field.name}>
-                            <label className="block font-semibold mb-2 text-[#1c5461]">
-                              {field.label}
-                            </label>
-                            <input
-                              type="text"
-                              name={field.name}
-                              value={user.nationality}
-                              readOnly
-                              className="w-full border border-[#3e979f] rounded-lg px-3
-                              py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#d7d9da] "
-                              placeholder={`Enter ${field.label.toLowerCase()}`}
-                            />
-                          </div>
-                        );
-                      }
-
+                      // Sex field: autofill and readonly from user
                       if (field.name === "sex" && user) {
                         return (
                           <div key={field.name}>
@@ -312,47 +336,126 @@ export default function IslandEntryPage() {
                               name={field.name}
                               value={user.sex}
                               readOnly
-                              className="w-full border border-[#3e979f] rounded-lg px-3
-                            py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#d7d9da]"
+                              disabled
+                              className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f0f0f0] cursor-not-allowed"
                               placeholder={`Enter ${field.label.toLowerCase()}`}
                             />
                           </div>
                         );
                       }
-
+                      // Country field: shadcn Select
+                      if (field.name === "country") {
+                        return (
+                          <div key={field.name}>
+                            <label className="block font-semibold mb-2 text-[#1c5461]">
+                              {field.label}
+                            </label>
+                            <input
+                              type="text"
+                              name={field.name}
+                              value={user?.nationality}
+                              className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f0f0f0] cursor-not-allowed"
+                              placeholder={`Enter ${field.label.toLowerCase()}`}
+                              readOnly
+                              disabled
+                            />
+                          </div>
+                        );
+                      }
+                      // Province (region) dropdown: shadcn Select
+                      if (field.name === "province") {
+                        return (
+                          <div key={field.name}>
+                            <label className="block font-semibold mb-2 text-[#1c5461]">
+                              Region
+                            </label>
+                            <Select
+                              value={formik.values.province}
+                              onValueChange={(value) => {
+                                formik.setFieldValue("province", value);
+                                formik.setFieldValue("municipality", "");
+                              }}
+                            >
+                              <SelectTrigger className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]">
+                                <SelectValue placeholder="Select region..." />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-40 overflow-y-auto">
+                                {regionList.map((reg) => (
+                                  <SelectItem key={reg.code} value={reg.name}>
+                                    {reg.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        );
+                      }
+                      // Municipality (city) dropdown: shadcn Select
+                      if (field.name === "municipality") {
+                        const regionCode = getRegionCodeByName(
+                          formik.values.province
+                        );
+                        const cities = getCitiesForRegionCode(regionCode);
+                        return (
+                          <div key={field.name}>
+                            <label className="block font-semibold mb-2 text-[#1c5461]">
+                              City / Municipality
+                            </label>
+                            <Select
+                              value={formik.values.municipality}
+                              onValueChange={(value) =>
+                                formik.setFieldValue("municipality", value)
+                              }
+                              disabled={!formik.values.province}
+                            >
+                              <SelectTrigger className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]">
+                                <SelectValue placeholder="Select municipality..." />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-40 overflow-y-auto">
+                                {cities.map((city) => (
+                                  <SelectItem key={city.code} value={city.name}>
+                                    {city.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        );
+                      }
+                      // Default select: shadcn Select
                       return (
                         <div key={field.name}>
                           <label className="block font-semibold mb-2 text-[#1c5461]">
                             {field.label}
                           </label>
-                          <select
-                            name={field.name}
+                          <Select
                             value={formik.values[field.name]}
-                            onChange={formik.handleChange}
-                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                            onValueChange={(value) =>
+                              formik.setFieldValue(field.name, value)
+                            }
                           >
-                            <option value="">Select...</option>
-                            {field.options.map((opt) => (
-                              <option
-                                key={
-                                  typeof opt === "object"
-                                    ? opt.value || opt.label
-                                    : opt
-                                }
-                                value={
-                                  typeof opt === "object" ? opt.value : opt
-                                }
-                              >
-                                {typeof opt === "object" ? opt.label : opt}
-                              </option>
-                            ))}
-                          </select>
-                          {formik.touched[field.name] &&
-                            formik.errors[field.name] && (
-                              <div className="text-red-500 text-xs mt-1">
-                                {formik.errors[field.name]}
-                              </div>
-                            )}
+                            <SelectTrigger className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]">
+                              <SelectValue
+                                placeholder={`Select ${field.label.toLowerCase()}...`}
+                              />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-40 overflow-y-auto">
+                              {(field.options ?? []).map((opt) => (
+                                <SelectItem
+                                  key={
+                                    typeof opt === "object"
+                                      ? opt.value || opt.label
+                                      : opt
+                                  }
+                                  value={
+                                    typeof opt === "object" ? opt.value : opt
+                                  }
+                                >
+                                  {typeof opt === "object" ? opt.label : opt}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       );
                     }
@@ -360,26 +463,23 @@ export default function IslandEntryPage() {
                       return (
                         <div
                           key={field.name}
-                          className="flex items-center mt-2"
+                          className="flex items-center mt-2 pt-4 cursor-not-allowed "
                         >
                           <input
                             type="checkbox"
                             name={field.name}
-                            checked={
-                              user?.nationality?.toLowerCase() !== "philippines"
-                            }
-                            disabled={true}
-                            readOnly={true}
-                            value={formik.values[field.name]}
+                            checked={formik.values[field.name]}
                             onChange={formik.handleChange}
-                            className="accent-[#3e979f] scale-125 "
+                            className="accent-[#3e979f]  cursor-not-allowed"
+                            disabled
                           />
-                          <label className="font-medium text-[#1c5461] ml-2">
+                          <label className="font-medium text-[#1c5461] ml-2 cursor-not-allowed">
                             {field.label}
                           </label>
                         </div>
                       );
                     }
+                    // Default: text/number input
                     return (
                       <div key={field.name}>
                         <label className="block font-semibold mb-2 text-[#1c5461]">
@@ -390,24 +490,23 @@ export default function IslandEntryPage() {
                           name={field.name}
                           value={formik.values[field.name]}
                           onChange={formik.handleChange}
-                          className={`w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none ${
-                            (field.name === "name" && user) ||
-                            (field.name === "age" && user && user.birth_date)
-                              ? "bg-[#d7d9da]"
-                              : "bg-[#f8fcfd]"
-                          }`}
                           placeholder={`Enter ${field.label.toLowerCase()}`}
-                          // Autofill for main visitor fields
                           {...(field.name === "name" && user
                             ? {
                                 value: `${user.first_name} ${user.last_name}`,
                                 readOnly: true,
+                                disabled: true,
+                                className:
+                                  "w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f0f0f0] cursor-not-allowed",
                               }
                             : {})}
                           {...(field.name === "age" && user && user.birth_date
                             ? {
                                 value: getExactAge(user.birth_date),
                                 readOnly: true,
+                                disabled: true,
+                                className:
+                                  "w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f0f0f0] cursor-not-allowed",
                               }
                             : {})}
                         />
@@ -448,38 +547,182 @@ export default function IslandEntryPage() {
                       {islandEntryFields.map((field) => {
                         if (field.showIf && !field.showIf(comp)) return null;
                         if (field.type === "select") {
+                          // Country field: dropdown for companions
+                          if (field.name === "country") {
+                            const isForeign = comp.is_foreign;
+                            return (
+                              <div key={field.name}>
+                                <label className="block font-semibold mb-2 text-[#1c5461]">
+                                  {field.label}
+                                </label>
+                                <Select
+                                  value={
+                                    isForeign ? comp.country : "Philippines"
+                                  }
+                                  onValueChange={(value) =>
+                                    handleCompanionChange(
+                                      idx,
+                                      field.name as keyof GroupMember,
+                                      value
+                                    )
+                                  }
+                                  disabled={!isForeign}
+                                >
+                                  <SelectTrigger
+                                    className={`w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd] ${
+                                      !isForeign
+                                        ? "cursor-not-allowed opacity-70"
+                                        : ""
+                                    }`}
+                                  >
+                                    <SelectValue placeholder="Select country..." />
+                                  </SelectTrigger>
+                                  <SelectContent className="max-h-40 overflow-y-auto">
+                                    {(field.options ?? []).map((opt) => (
+                                      <SelectItem
+                                        key={
+                                          typeof opt === "object"
+                                            ? opt.value || opt.label
+                                            : opt
+                                        }
+                                        value={
+                                          typeof opt === "object"
+                                            ? opt.value
+                                            : opt
+                                        }
+                                      >
+                                        {typeof opt === "object"
+                                          ? opt.label
+                                          : opt}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                {!isForeign && (
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    Country is set to Philippines for local
+                                    visitors.
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          }
+                          // Province (region) dropdown for companions
+                          if (field.name === "province") {
+                            return (
+                              <div key={field.name}>
+                                <label className="block font-semibold mb-2 text-[#1c5461]">
+                                  Region
+                                </label>
+                                <Select
+                                  value={comp.province}
+                                  onValueChange={(value) =>
+                                    handleCompanionChange(
+                                      idx,
+                                      "province",
+                                      value
+                                    )
+                                  }
+                                >
+                                  <SelectTrigger className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]">
+                                    <SelectValue placeholder="Select region..." />
+                                  </SelectTrigger>
+                                  <SelectContent className="max-h-40 overflow-y-auto">
+                                    {regionList.map((reg) => (
+                                      <SelectItem
+                                        key={reg.code}
+                                        value={reg.name}
+                                      >
+                                        {reg.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            );
+                          }
+
+                          // Municipality (city) dropdown for companions
+                          if (field.name === "municipality") {
+                            const regionCode = getRegionCodeByName(
+                              comp.province
+                            );
+                            const cities = getCitiesForRegionCode(regionCode);
+                            return (
+                              <div key={field.name}>
+                                <label className="block font-semibold mb-2 text-[#1c5461]">
+                                  City / Municipality
+                                </label>
+                                <Select
+                                  value={comp.municipality}
+                                  onValueChange={(value) =>
+                                    handleCompanionChange(
+                                      idx,
+                                      "municipality",
+                                      value
+                                    )
+                                  }
+                                  disabled={!comp.province}
+                                >
+                                  <SelectTrigger className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]">
+                                    <SelectValue placeholder="Select municipality..." />
+                                  </SelectTrigger>
+                                  <SelectContent className="max-h-40 overflow-y-auto">
+                                    {cities.map((city) => (
+                                      <SelectItem
+                                        key={city.code}
+                                        value={city.name}
+                                      >
+                                        {city.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            );
+                          }
+                          // Default select for companions
                           return (
                             <div key={field.name}>
                               <label className="block font-semibold mb-2 text-[#1c5461]">
                                 {field.label}
                               </label>
-                              <select
-                                value={comp[field.name]}
-                                onChange={(e) =>
+                              <Select
+                                value={comp[field.name as keyof GroupMember]}
+                                onValueChange={(value) =>
                                   handleCompanionChange(
                                     idx,
-                                    field.name,
-                                    e.target.value
+                                    field.name as keyof GroupMember,
+                                    value
                                   )
                                 }
-                                className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                               >
-                                <option value="">Select...</option>
-                                {field.options.map((opt) => (
-                                  <option
-                                    key={
-                                      typeof opt === "object"
-                                        ? opt.value || opt.label
-                                        : opt
-                                    }
-                                    value={
-                                      typeof opt === "object" ? opt.value : opt
-                                    }
-                                  >
-                                    {typeof opt === "object" ? opt.label : opt}
-                                  </option>
-                                ))}
-                              </select>
+                                <SelectTrigger className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]">
+                                  <SelectValue
+                                    placeholder={`Select ${field.label.toLowerCase()}...`}
+                                  />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-40 overflow-y-auto">
+                                  {(field.options ?? []).map((opt) => (
+                                    <SelectItem
+                                      key={
+                                        typeof opt === "object"
+                                          ? opt.value || opt.label
+                                          : opt
+                                      }
+                                      value={
+                                        typeof opt === "object"
+                                          ? opt.value
+                                          : opt
+                                      }
+                                    >
+                                      {typeof opt === "object"
+                                        ? opt.label
+                                        : opt}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </div>
                           );
                         }
@@ -495,7 +738,7 @@ export default function IslandEntryPage() {
                                 onChange={(e) =>
                                   handleCompanionChange(
                                     idx,
-                                    field.name,
+                                    field.name as keyof GroupMember,
                                     e.target.checked
                                   )
                                 }
@@ -507,6 +750,7 @@ export default function IslandEntryPage() {
                             </div>
                           );
                         }
+                        // Default: text/number input for companions
                         return (
                           <div key={field.name}>
                             <label className="block font-semibold mb-2 text-[#1c5461]">
@@ -518,11 +762,11 @@ export default function IslandEntryPage() {
                               onChange={(e) =>
                                 handleCompanionChange(
                                   idx,
-                                  field.name,
+                                  field.name as keyof GroupMember,
                                   e.target.value
                                 )
                               }
-                              className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                              className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
                               placeholder={`Enter ${field.label.toLowerCase()}`}
                             />
                           </div>

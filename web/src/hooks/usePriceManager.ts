@@ -3,7 +3,7 @@ import {
   fetchAllPrices,
   createPrice,
   togglePriceStatus,
-  updatePriceDetails
+  updatePriceDetails,
 } from "@/lib/api/price";
 import { useState } from "react";
 
@@ -33,25 +33,26 @@ export const usePriceManager = () => {
     setLoading(true);
     try {
       const data = await fetchAllPrices();
+      console.log("Fetched prices:", data);
       setPrices(data);
     } finally {
       setLoading(false);
     }
   };
 
-  const addPrice = async (amount: number, is_enabled: boolean, type: string) => {
-  return await createPrice({ amount, is_enabled, type });
-};
+  const addPrice = async (
+    amount: number,
+    is_enabled: boolean,
+    type: string
+  ) => {
+    return await createPrice({ amount, is_enabled, type });
+  };
 
   const updateStatus = async (id: number, is_enabled: boolean) => {
     return await togglePriceStatus(id, is_enabled);
   };
 
-  const editPriceDetails = async (
-    id: number,
-    amount: number,
-    type: string
-  ) => {
+  const editPriceDetails = async (id: number, amount: number, type: string) => {
     return await updatePriceDetails(id, amount, type);
   };
 
@@ -63,6 +64,6 @@ export const usePriceManager = () => {
     getAllPrices,
     addPrice,
     updateStatus,
-    editPriceDetails, 
+    editPriceDetails,
   };
 };

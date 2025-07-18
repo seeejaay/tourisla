@@ -1,5 +1,4 @@
 import countries from "@/app/static/countries.json";
-
 export const visitorRegistrationFields = [
   {
     name: "name",
@@ -30,15 +29,17 @@ export const visitorRegistrationFields = [
   },
   {
     name: "municipality",
-    label: "Municipality",
-    type: "text",
-    placeholder: "Enter your municipality",
+    label: "City / Municipality",
+    type: "select", // changed to dropdown
+    options: [], // will be filled dynamically in your form
+    placeholder: "Select your city or municipality",
   },
   {
     name: "province",
     label: "Province",
-    type: "text",
-    placeholder: "Enter your province",
+    type: "select", // changed to dropdown
+    options: [], // will be filled dynamically in your form
+    placeholder: "Select your province",
   },
   {
     name: "country",

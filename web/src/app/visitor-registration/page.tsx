@@ -3,44 +3,92 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { visitorRegistrationFields } from "@/app/static/visitor-registration/visitor";
-import type { Visitor } from "@/app/static/visitor-registration/visitorSchema";
+import { Visitor } from "@/app/static/visitor-registration/visitorSchema";
+import visitorSchema from "@/app/static/visitor-registration/visitorSchema";
 import { useVisitorRegistration } from "@/hooks/useVisitorRegistration";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/custom/header";
 import { useAuth } from "@/hooks/useAuth";
+import { z } from "zod";
+import { fetchRegions, fetchCities } from "@/lib/api/philippines";
+type FieldValue = string | boolean | number;
 
-const emptyVisitor = () =>
-  Object.fromEntries(
-    visitorRegistrationFields.map((f) => [
-      f.name,
-      f.type === "checkbox" ? false : "",
-    ])
-  ) as Partial<Visitor>;
+function getAge(birthDate: string): string {
+  const dob = new Date(birthDate);
+  const diffMs = Date.now() - dob.getTime();
+  const ageDt = new Date(diffMs);
+  return Math.abs(ageDt.getUTCFullYear() - 1970).toString();
+}
 
-type FieldValue = string | boolean;
+const emptyVisitor = (): Visitor => ({
+  name: "",
+  age: 1,
+  sex: "Male",
+  is_foreign: false,
+  municipality: "",
+  province: "",
+  country: "",
+});
 
-type CreateVisitorResponse = {
-  registration: {
-    unique_code: string;
-  };
-};
+export interface Region {
+  code: string;
+  name: string;
+  regionName: string;
+  islandGroupCode: string;
+  psgc10DigitCode: string;
+}
 
 export default function WalkInRegister() {
-  const [mainVisitor, setMainVisitor] = useState<Partial<Visitor>>(
-    emptyVisitor()
-  );
-  const [companions, setCompanions] = useState<Partial<Visitor>[]>([]);
+  const [regionList, setRegions] = useState<Region[]>([]);
+  const [cityList, setCities] = useState<{
+    [key: string]: { code: string; name: string }[];
+  }>({});
+  const [companions, setCompanions] = useState<Visitor[]>([]);
   const { createVisitor, loading, error } = useVisitorRegistration();
   const router = useRouter();
   const { loggedInUser } = useAuth();
 
+  const [mainVisitor, setMainVisitor] = useState<Visitor>(emptyVisitor());
+  const [formError, setFormError] = useState<string>("");
+
   useEffect(() => {
     async function checkuser() {
-      const user = await loggedInUser(router);
-      if (!user) {
+      const res = await loggedInUser(router);
+      if (!res || !res.data?.user) {
         router.push("/auth/login?redirect=/visitor-registration");
+        return;
       }
+
+      setMainVisitor({
+        name: `${res.data.user.first_name} ${res.data.user.last_name}`,
+        sex: res.data.user.sex === "MALE" ? "Male" : "Female",
+        country: res.data.user.nationality || "",
+        is_foreign: res.data.user.nationality?.toLowerCase() !== "philippines",
+        age: Number(getAge(res.data.user.birth_date)),
+        municipality: "",
+        province: "",
+      });
     }
+    fetchRegions().then((data) => {
+      setRegions(data);
+    });
+    fetchCities().then((data) => {
+      const citiesByRegion: {
+        [key: string]: { code: string; name: string }[];
+      } = {};
+      data.forEach(
+        (city: { name: string; regionCode: string; code: string }) => {
+          if (!citiesByRegion[city.regionCode]) {
+            citiesByRegion[city.regionCode] = [];
+          }
+          citiesByRegion[city.regionCode].push({
+            code: city.code,
+            name: city.name,
+          });
+        }
+      );
+      setCities(citiesByRegion);
+    });
     checkuser();
   }, [loggedInUser, router]);
 
@@ -68,13 +116,39 @@ export default function WalkInRegister() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setFormError("");
     const group = [mainVisitor, ...companions];
-    const response = (await createVisitor(group)) as CreateVisitorResponse;
-    router.push(
-      `/visitor-registration/result?code=${encodeURIComponent(
-        response.registration.unique_code
-      )}`
-    );
+    const groupSchema = z.array(visitorSchema);
+    const result = groupSchema.safeParse(group);
+    if (!result.success) {
+      setFormError(result.error.errors[0].message);
+      return;
+    }
+    try {
+      const response = await createVisitor(group);
+      if (!response || !response.members || response.members.length === 0) {
+        console.log("Registration failed:", response);
+        setFormError("Registration failed. Please try again.");
+        return;
+      }
+      // Use the unique_code from registration
+      const uniqueCode = response.registration?.unique_code ?? "";
+      router.push(
+        `/visitor-registration/result?code=${encodeURIComponent(uniqueCode)}`
+      );
+    } catch (err) {
+      console.error(err);
+      setFormError("Registration failed. Please try again.");
+    }
+  };
+  // Helper: get cities for selected region code
+  const getCitiesForRegionCode = (regionCode: string) => {
+    return cityList[regionCode] || [];
+  };
+
+  // Helper: get region code from region name
+  const getRegionCodeByName = (regionName: string) => {
+    return regionList.find((reg) => reg.name === regionName)?.code || "";
   };
 
   return (
@@ -96,7 +170,6 @@ export default function WalkInRegister() {
                 <h2 className="font-semibold text-lg mb-3 text-[#1c5461]">
                   Main Visitor
                 </h2>
-                {/* Name & Age */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block font-semibold mb-2 text-[#1c5461]">
@@ -104,11 +177,10 @@ export default function WalkInRegister() {
                     </label>
                     <input
                       type="text"
-                      value={mainVisitor.name ?? ""}
-                      onChange={(e) =>
-                        handleInputChange(null, "name", e.target.value)
-                      }
-                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                      value={mainVisitor.name}
+                      disabled
+                      readOnly
+                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f0f0f0]"
                       placeholder="Enter name"
                     />
                   </div>
@@ -118,40 +190,34 @@ export default function WalkInRegister() {
                     </label>
                     <input
                       type="number"
-                      value={mainVisitor.age ?? ""}
-                      onChange={(e) =>
-                        handleInputChange(null, "age", e.target.value)
-                      }
-                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                      value={mainVisitor.age}
+                      readOnly
+                      disabled
+                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f0f0f0]"
                       placeholder="Enter age"
                     />
                   </div>
                 </div>
-                {/* Sex & Foreign */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div>
                     <label className="block font-semibold mb-2 text-[#1c5461]">
                       Sex
                     </label>
-                    <select
-                      value={mainVisitor.sex ?? ""}
-                      onChange={(e) =>
-                        handleInputChange(null, "sex", e.target.value)
-                      }
-                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
-                    >
-                      <option value="">Select...</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                    </select>
+                    <input
+                      type="text"
+                      value={mainVisitor.sex}
+                      readOnly
+                      disabled
+                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f0f0f0]"
+                      placeholder="Sex"
+                    />
                   </div>
-                  <div className="flex  items-center gap-2 md:mt-0">
+                  <div className="flex items-center gap-2 md:mt-0">
                     <input
                       type="checkbox"
-                      checked={!!mainVisitor.is_foreign}
-                      onChange={(e) =>
-                        handleInputChange(null, "is_foreign", e.target.checked)
-                      }
+                      checked={mainVisitor.is_foreign}
+                      readOnly
+                      disabled
                       className="accent-[#3e979f]"
                     />
                     <label className="font-medium text-[#1c5461]">
@@ -159,60 +225,77 @@ export default function WalkInRegister() {
                     </label>
                   </div>
                 </div>
-                {/* Municipality & Province */}
-                {!mainVisitor.is_foreign && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <div>
-                      <label className="block font-semibold mb-2 text-[#1c5461]">
-                        Municipality
-                      </label>
-                      <input
-                        type="text"
-                        value={mainVisitor.municipality ?? ""}
-                        onChange={(e) =>
-                          handleInputChange(
-                            null,
-                            "municipality",
-                            e.target.value
-                          )
-                        }
-                        className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
-                        placeholder="Enter municipality"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-semibold mb-2 text-[#1c5461]">
-                        Province
-                      </label>
-                      <input
-                        type="text"
-                        value={mainVisitor.province ?? ""}
-                        onChange={(e) =>
-                          handleInputChange(null, "province", e.target.value)
-                        }
-                        className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
-                        placeholder="Enter province"
-                      />
-                    </div>
-                  </div>
-                )}
-                {/* Country */}
                 <div>
                   <label className="block font-semibold mb-2 text-[#1c5461]">
                     Country
                   </label>
-                  <select
-                    value={mainVisitor.country ?? ""}
+                  <input
+                    type="text"
+                    value={mainVisitor.country}
                     onChange={(e) =>
-                      handleInputChange(null, "country", e.target.value)
+                      setMainVisitor((prev) => ({
+                        ...prev,
+                        country: e.target.value,
+                      }))
                     }
-                    className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
-                  >
-                    <option value="">Select...</option>
-                    <option value="Philippines">Philippines</option>
-                    <option value="Other">Other</option>
-                  </select>
+                    className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f0f0f0]"
+                    placeholder="Enter country"
+                    readOnly
+                    disabled
+                  />
                 </div>
+                {!mainVisitor.is_foreign && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label className="block font-semibold mb-2 text-[#1c5461]">
+                        Region
+                      </label>
+                      <select
+                        value={mainVisitor.province}
+                        onChange={(e) =>
+                          setMainVisitor((prev) => ({
+                            ...prev,
+                            province: e.target.value,
+                            municipality: "",
+                          }))
+                        }
+                        className="w-full border border-[#3e979f] text-black rounded-lg px-3 py-2 bg-[#f8fcfd]"
+                      >
+                        <option value="">Select region...</option>
+                        {regionList.map((reg) => (
+                          <option key={reg.code} value={reg.name}>
+                            {reg.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block font-semibold mb-2 text-[#1c5461]">
+                        City / Municipality
+                      </label>
+                      <select
+                        value={mainVisitor.municipality}
+                        onChange={(e) =>
+                          setMainVisitor((prev) => ({
+                            ...prev,
+                            municipality: e.target.value,
+                          }))
+                        }
+                        className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
+                        disabled={!mainVisitor.province}
+                      >
+                        <option value="">Select municipality...</option>
+                        {getCitiesForRegionCode(
+                          getRegionCodeByName(mainVisitor.province)
+                        ).map((city) => (
+                          <option key={city.code} value={city.name}>
+                            {city.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
               </div>
               {/* Companions */}
               <div>
@@ -239,11 +322,11 @@ export default function WalkInRegister() {
                         </label>
                         <input
                           type="text"
-                          value={comp.name ?? ""}
+                          value={comp.name}
                           onChange={(e) =>
                             handleInputChange(idx, "name", e.target.value)
                           }
-                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
                           placeholder="Enter name"
                         />
                       </div>
@@ -253,11 +336,16 @@ export default function WalkInRegister() {
                         </label>
                         <input
                           type="number"
-                          value={comp.age ?? ""}
-                          onChange={(e) =>
-                            handleInputChange(idx, "age", e.target.value)
+                          value={comp.age}
+                          onChange={
+                            (e) =>
+                              handleInputChange(
+                                idx,
+                                "age",
+                                Number(e.target.value)
+                              ) // <-- convert to number
                           }
-                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
                           placeholder="Enter age"
                         />
                       </div>
@@ -266,15 +354,16 @@ export default function WalkInRegister() {
                           Sex
                         </label>
                         <select
-                          value={comp.sex ?? ""}
+                          value={comp.sex}
                           onChange={(e) =>
                             handleInputChange(idx, "sex", e.target.value)
                           }
-                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
                         >
                           <option value="">Select...</option>
                           <option value="Male">Male</option>
                           <option value="Female">Female</option>
+                          <option value="Other">Other</option>
                         </select>
                       </div>
                       <div className="flex items-center gap-2 mt-8 md:mt-0">
@@ -288,7 +377,6 @@ export default function WalkInRegister() {
                               e.target.checked
                             )
                           }
-                          className="accent-[#3e979f] scale-125"
                         />
                         <label className="font-semibold text-[#1c5461]">
                           Are you a foreign visitor?
@@ -298,29 +386,10 @@ export default function WalkInRegister() {
                         <>
                           <div>
                             <label className="block font-semibold mb-2 text-[#1c5461]">
-                              Municipality
+                              Region
                             </label>
-                            <input
-                              type="text"
-                              value={comp.municipality ?? ""}
-                              onChange={(e) =>
-                                handleInputChange(
-                                  idx,
-                                  "municipality",
-                                  e.target.value
-                                )
-                              }
-                              className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
-                              placeholder="Enter municipality"
-                            />
-                          </div>
-                          <div>
-                            <label className="block font-semibold mb-2 text-[#1c5461]">
-                              Province
-                            </label>
-                            <input
-                              type="text"
-                              value={comp.province ?? ""}
+                            <select
+                              value={comp.province}
                               onChange={(e) =>
                                 handleInputChange(
                                   idx,
@@ -328,9 +397,41 @@ export default function WalkInRegister() {
                                   e.target.value
                                 )
                               }
-                              className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
-                              placeholder="Enter province"
-                            />
+                              className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
+                            >
+                              <option value="">Select region...</option>
+                              {regionList.map((reg) => (
+                                <option key={reg.code} value={reg.name}>
+                                  {reg.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block font-semibold mb-2 text-[#1c5461]">
+                              City / Municipality
+                            </label>
+                            <select
+                              value={comp.municipality}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  idx,
+                                  "municipality",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
+                              disabled={!comp.province}
+                            >
+                              <option value="">Select municipality...</option>
+                              {getCitiesForRegionCode(
+                                getRegionCodeByName(comp.province)
+                              ).map((city) => (
+                                <option key={city.code} value={city.name}>
+                                  {city.name}
+                                </option>
+                              ))}
+                            </select>
                           </div>
                         </>
                       )}
@@ -339,15 +440,22 @@ export default function WalkInRegister() {
                           Country
                         </label>
                         <select
-                          value={comp.country ?? ""}
+                          value={comp.country}
                           onChange={(e) =>
                             handleInputChange(idx, "country", e.target.value)
                           }
-                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
                         >
-                          <option value="">Select...</option>
-                          <option value="Philippines">Philippines</option>
-                          <option value="Other">Other</option>
+                          <option value="">Select country...</option>
+                          {(
+                            visitorRegistrationFields.find(
+                              (f) => f.name === "country"
+                            )?.options ?? []
+                          ).map((country: { value: string; label: string }) => (
+                            <option key={country.value} value={country.value}>
+                              {country.label}
+                            </option>
+                          ))}
                         </select>
                       </div>
                     </div>
@@ -362,6 +470,7 @@ export default function WalkInRegister() {
                   Add Companion
                 </Button>
               </div>
+              {formError && <div className="text-red-500">{formError}</div>}
               {error && <div className="text-red-500">{error}</div>}
               <Button
                 type="submit"
