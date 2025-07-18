@@ -142,7 +142,14 @@ export default function MapPage() {
   useEffect(() => {
     fetchTouristSpots();
   }, [fetchTouristSpots]);
-
+  const barangayAndMunicipality = Array.from(
+    new Set(
+      touristSpots
+        .map((s) => s.barangay)
+        .concat(touristSpots.map((s) => s.municipality))
+        .filter((b) => b && b !== null && b !== undefined && b !== "")
+    )
+  );
   const filteredSpots = useMemo(() => {
     return touristSpots.filter((spot) => {
       return (
@@ -155,8 +162,27 @@ export default function MapPage() {
 
   const center = bantayanCoords;
 
-  const barangays = Array.from(new Set(touristSpots.map((s) => s.barangay)));
-  const categories = Array.from(new Set(touristSpots.map((s) => s.category)));
+  // const barangays = Array.from(
+  //   new Set(
+  //     touristSpots
+  //       .map((s) => s.barangay)
+  //       .filter((b) => b && b !== null && b !== undefined && b !== "")
+  //   )
+  // );
+  const categories = Array.from(
+    new Set(
+      touristSpots
+        .map((s) => s.category)
+        .filter(
+          (c) =>
+            c &&
+            c !== null &&
+            c !== undefined &&
+            c !== "" &&
+            c.toUpperCase() !== "NULL"
+        )
+    )
+  );
   const types = Array.from(new Set(touristSpots.map((s) => s.type)));
 
   return (
@@ -168,7 +194,7 @@ export default function MapPage() {
             htmlFor="barangay"
             className="text-gray-700 text-sm font-semibold"
           >
-            Barangay
+            Location
           </Label>
           <Select value={barangay} onValueChange={setBarangay}>
             <SelectTrigger
@@ -179,13 +205,11 @@ export default function MapPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__all_barangays__">All Barangays</SelectItem>
-              {barangays
-                .filter((b) => b && b !== "")
-                .map((b) => (
-                  <SelectItem key={b} value={b}>
-                    {b}
-                  </SelectItem>
-                ))}
+              {barangayAndMunicipality.map((b) => (
+                <SelectItem key={b} value={b}>
+                  {b}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -301,10 +325,10 @@ export default function MapPage() {
                         <div className="bg-gray-50 rounded-md p-2 mb-3 border text-xs">
                           <div>
                             <span className="font-semibold text-gray-700">
-                              Barangay:
+                              Barangay / Municipality:
                             </span>{" "}
                             <span className="text-gray-900">
-                              {spot.barangay}
+                              {spot.barangay || spot.municipality}
                             </span>
                           </div>
                           <div>
