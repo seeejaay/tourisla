@@ -35,7 +35,7 @@ export default function Pill({ className }: PillProps) {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const res = await loggedInUser(router);
+      const res = await loggedInUser(router, false);
       if (res && res.data && res.data.user) {
         const u = res.data.user;
         setUser({
