@@ -15,7 +15,8 @@ import { Article } from "@/static/article/useArticleSchema";
 import Carousel from "react-native-reanimated-carousel";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import HeaderWithBack from "@/components/HeaderWithBack";
+import { toTitleCase } from "@/lib/utils/textFormat";
+toTitleCase
 
 const ARTICLES_PER_PAGE = 6;
 
@@ -57,13 +58,9 @@ export default function PublicArticlesScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-    <HeaderWithBack
-      title="Local Culture and History"
-      onBackPress={() => router.back()}
-    />
     <ScrollView
       style={styles.container}
-      contentContainerStyle={{ paddingBottom: 32 }} // adjust padding as needed
+      contentContainerStyle={{ paddingBottom: 100 }} // adjust padding as needed
     >
       <View style={styles.header}>
         <Image
@@ -84,19 +81,26 @@ export default function PublicArticlesScreen() {
           <Text style={styles.sectionTitle}>Featured</Text>
           <Carousel
             loop
+            mode="parallax"
             width={screenWidth}
-            height={300}
+            height={250}
             data={featured}
             scrollAnimationDuration={1000}
             modeConfig={{
-              parallaxScrollingScale: 0.95, // scale down a bit for effect
-              parallaxScrollingOffset: 20,  // reduce this to lessen spacing
-              parallaxAdjacentItemScale: 0.9,
+              parallaxScrollingScale: 0.9,
+              parallaxScrollingOffset: 40,
+              parallaxAdjacentItemScale: 0.85,
             }}
             renderItem={({ item }) => (
               <TouchableOpacity
                 onPress={() => goToArticle(item.id)}
-                style={styles.carouselCard}
+                style={{
+                  width: screenWidth,
+                  borderRadius: 16,
+                  overflow: "hidden",
+                  justifyContent: "flex-end",
+                  height: "100%",
+                }}
               >
                 <Image
                   source={{ uri: getArticleImage(item) }}
@@ -104,8 +108,8 @@ export default function PublicArticlesScreen() {
                 />
                 <View style={styles.carouselOverlay} />
                 <View style={styles.carouselText}>
-                  <Text style={styles.carouselTitle}>{item.title}</Text>
-                  <Text style={styles.carouselAuthor}>By {item.author}</Text>
+                  <Text style={styles.carouselTitle}>{toTitleCase(item.title)}</Text>
+                  <Text style={styles.carouselAuthor}>By {toTitleCase(item.author)}</Text>
                 </View>
               </TouchableOpacity>
             )}
@@ -114,7 +118,7 @@ export default function PublicArticlesScreen() {
       )}
 
       {/* Regular Articles */}
-      <Text style={[styles.sectionTitle, { marginTop: 20 }]}>
+      <Text style={[styles.sectionTitle, { marginBottom: 16 }]}>
         Local Culture and History
       </Text>
       <FlatList
@@ -130,8 +134,8 @@ export default function PublicArticlesScreen() {
               style={styles.cardImage}
             />
             <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.cardAuthor}>By {item.author}</Text>
+              <Text style={styles.cardTitle}>{toTitleCase(item.title)}</Text>
+              <Text style={styles.cardAuthor}>By {toTitleCase(item.author)}</Text>
             </View>
           </TouchableOpacity>
         )}
@@ -168,7 +172,7 @@ export default function PublicArticlesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f1f1f1" },
-  header: { position: "relative", height: 250 },
+  header: { position: "relative", height: 200 },
   headerImage: { width: "100%", height: "100%" },
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -184,7 +188,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     color: "white",
-    fontWeight: "bold",
+    fontWeight: "900",
     textAlign: "center",
   },
   headerSubtitle: {
@@ -195,10 +199,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   sectionTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "900",
     color: "#1c5461",
-    marginVertical: 12,
+    marginTop: 12,
     paddingHorizontal: 16,
   },
   carouselCard: {
@@ -222,39 +226,41 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   carouselTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
+    fontSize: 18,
+    fontWeight: "900",
     color: "white",
-    marginBottom: 6,
   },
   carouselAuthor: {
+    fontSize: 12,
     color: "#e6f7fa",
+    fontWeight: "600",
   },
   card: {
-    margin: 16,
-    backgroundColor: "white",
-    borderRadius: 16,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 12,
     overflow: "hidden",
     borderWidth: 1,
     borderColor: "#e6f7fa",
-    marginBottom: 0, 
   },
   cardImage: {
     width: "100%",
     height: 160,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
   },
   cardContent: {
-    padding: 16,
+    paddingVertical: 8,
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "900",
     color: "#1c5461",
   },
   cardAuthor: {
     color: "#51702c",
-    fontSize: 13,
-    marginTop: 4,
+    fontSize: 11,
+    fontWeight: "600",
   },
   pagination: {
     flexDirection: "row",

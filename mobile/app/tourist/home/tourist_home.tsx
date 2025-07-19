@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -9,14 +9,15 @@ import {
   Linking,
   StyleSheet,
   Platform,
-  SafeAreaView,
+  FlatList,
 } from "react-native";
-import Carousel from "react-native-reanimated-carousel";
-import { Waves, Sun, TreePalm } from "lucide-react-native";
-import { useTripAdvisor } from "@/hooks/useTripAdvisor"; // your mobile hook
+import { Waves, Sun, TreePalm, MapPin } from "lucide-react-native";
+import { useTripAdvisor } from "@/hooks/useTripAdvisor";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-
+import { LinearGradient } from 'expo-linear-gradient';
+import RecommendedHotelsCarousel from "@/components/carouselhome/RecommendedHotelsCarousel";
+import RecommendedTouristSpotsCarousel from "@/components/carouselhome/RecommendedTouristSpotsCarousel";
 
 const { width } = Dimensions.get("window");
 
@@ -32,29 +33,33 @@ const images = [
 const cardData = [
   {
     title: "Sea",
-    description: "Snorkel, dive, and explore vibrant marine life.",
-    icon: <Waves size={18} color="#04807e" />,
+    description: "Experience the thrill of snorkeling, diving, and exploring the vibrant marine life of Bantayan's waters.",
+    icon: <Waves size={18} color="#46b1b8" />,
     cta: "Crystal Clear Waters",
     bgColor: "#bbe1d0",
     textColor: "#04807e",
+    image: require("@/assets/images/nature/sea.jpg"),
   },
   {
     title: "Sun",
-    description: "Bask on beautiful beaches under golden sun.",
-    icon: <Sun size={18} color="#ae5b7d" />,
+    description: "Bask in the golden sun on Bantayan's beautiful beaches, where relaxation meets adventure.",
+    icon: <Sun size={18} color="#fdcb8f" />,
     cta: "Breathtaking Sunsets",
     bgColor: "#ffece5",
     textColor: "#ae5b7d",
+    image: require("@/assets/images/nature/sun.jpg"),
   },
   {
     title: "Sand",
-    description: "Stroll the soft, powdery sands of Bantayan.",
-    icon: <TreePalm size={18} color="#ffece5" />,
+    description: "Feel the soft, powdery sand between your toes as you stroll along Bantayan's stunning beaches.",
+    icon: <TreePalm size={18} color="#d0947a" />,
     cta: "Powdery Shores",
-    bgColor: "#ce5f27",
-    textColor: "#ffece5",
+    bgColor: "#fecfa1",
+    textColor: "#9d9792",
+    image: require("@/assets/images/nature/sand.jpg"),
   },
 ];
+
 
 export default function TouristHomeMobile() {
   const { hotels, loading, error } = useTripAdvisor();
@@ -62,166 +67,152 @@ export default function TouristHomeMobile() {
 
   return (
     <View style={{ flex: 1 }}>
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ paddingBottom: 100 }}
-    >
-
-      {/* Hero Carousel */}
-      <View style={styles.heroContainer}>
-        <Carousel
-          width={width}
-          height={400}
-          loop
-          autoPlay
-          data={images}
-          scrollAnimationDuration={1000}
-          renderItem={({ item }) => (
-            <Image source={item} style={styles.heroImage} />
-          )}
-        />
-        <View style={styles.heroOverlay} />
-        <View style={styles.heroText}>
-          <Text style={styles.heroTitle}>Bantayan Island</Text>
-          <Text style={styles.heroSubtitle}>
-            Discover the hidden gem of the Philippines
-          </Text>
-            <TouchableOpacity
-            style={styles.exploreButton}
-            onPress={() => router.push("/tourist/tourist_spots/tourist_tourist_spots")}
-            >
-            <Sun color="#1c5461" size={16} />
-            <Text style={styles.exploreButtonText}>Explore Tourist Spots</Text>
-            </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* About Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionHeading}>
-          Sea, Sun, and Sand: The Essence of Bantayan
-        </Text>
-        <Text style={styles.sectionDescription}>
-          Turquoise seas, golden sun, and powdery sands await. Experience
-          Bantayan Island’s vibrant culture and warm hospitality.
-        </Text>
-
-        {cardData.map((card, index) => (
-          <View key={index} style={[styles.card, { backgroundColor: card.bgColor }]}>
-            <Text style={[styles.cardTitle, { color: card.textColor }]}>
-              {card.icon} {card.title}
-            </Text>
-            <Text style={styles.cardText}>{card.description}</Text>
-          </View>
-        ))}
-      </View>
-
-      {/* Hotels Section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionHeading}>Recommended Hotels</Text>
-        {loading ? (
-          <Text>Loading hotels...</Text>
-        ) : error ? (
-          <Text style={{ color: "red" }}>{error.message}</Text>
-        ) : (
-          <Carousel
-            width={width * 0.9}
-            height={300}
-            loop
-            autoPlay
-            data={hotels}
-            scrollAnimationDuration={1000}
-            mode="parallax"
-            renderItem={({ item: hotel }) => {
-              const hasImage = !hotel.photosError && hotel.photos?.[0]?.images?.large?.url;
-              const imageUrl = hasImage
-                ? hotel.photos[0].images.large.url
-                : "https://via.placeholder.com/400x300";
-            
-              return (
-                <View style={styles.hotelCard}>
-                  <Image
-                    source={{ uri: imageUrl }}
-                    style={styles.hotelImage}
-                  />
-                  <View style={styles.hotelContent}>
-                    <Text style={styles.hotelName}>{hotel.name}</Text>
-                    <Text style={styles.hotelAddress}>
-                      {hotel.address_obj?.address_string}
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.tripadvisorButton}
-                      onPress={() =>
-                        Linking.openURL(
-                          `https://www.tripadvisor.com.ph/Hotel_Review-d${hotel.location_id}`
-                        )
-                      }
-                    >
-                      <Text style={styles.tripadvisorButtonText}>
-                        View on Tripadvisor
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              );
-            }}
-            
-          />
-        )}
-      </View>
-
-      {/* Gallery (Bento-style) */}
-      <View style={styles.section}>
-        <Text style={styles.sectionHeading}>Island Gallery</Text>
-        <View style={styles.galleryWrapper}>
-          <View style={styles.galleryColumn}>
-            {images.filter((_, i) => i % 2 === 0).map((src, i) => (
-              <Image
-                key={`left-${i}`}
-                source={src}
-                style={[
-                  styles.galleryImage,
-                  { height: [160, 120, 180][i % 3] }, // Alternate heights
-                ]}
-              />
-            ))}
-          </View>
-          <View style={styles.galleryColumn}>
-            {images.filter((_, i) => i % 2 === 1).map((src, i) => (
-              <Image
-                key={`right-${i}`}
-                source={src}
-                style={[
-                  styles.galleryImage,
-                  { height: [120, 180, 160][i % 3] },
-                ]}
-              />
-            ))}
-          </View>
-        </View>
-      </View>
-    </ScrollView>
-    <TouchableOpacity
-        style={styles.weatherFab}
-        onPress={() => router.push('/tourist/weather')}
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: 100 }}
       >
-        <MaterialCommunityIcons
-          name="weather-partly-cloudy"
-          size={24}
-          color="white"
-        />
-      </TouchableOpacity>
+        {/* Hero Carousel */}
+        <View style={styles.heroContainer}>
+      <Image
+        source={require("@/assets/images/hero-carousel/13.jpg")}
+        style={styles.heroImage}
+      />
+      <LinearGradient
+        colors={["transparent", "rgba(241, 241, 241, 0.7)", "#f8fafc"]}
+        locations={[0, 0.6, 1]}
+        style={styles.heroGradient}
+      />
+      <View style={styles.heroText}>
+        <Text style={styles.heroTitle}>Bantayan Island</Text>
+        <Text style={styles.heroSubtitle}>
+          Discover the hidden gem of the Philippines
+        </Text>
+        <TouchableOpacity
+          style={styles.exploreButton}
+          onPress={() =>
+            router.push("/tourist/tourist_spots/tourist_tourist_spots")
+          }
+        >
+          <MapPin color="#fff" size={16} />
+          <Text style={styles.exploreButtonText}>Explore Bantayan</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+
+        {/* About Section */}
+        <View style={styles.section}>
+        <Text style={styles.sectionmainHeading}>
+          <Text style={{ color: "#46b1b8", fontWeight: "900", fontSize: 30 }}>Sea</Text>
+          {", "}
+          <Text style={{ color: "#fdcb8f", fontWeight: "900", fontSize: 30 }}>Sun</Text>
+          {" and "}
+          <Text style={{ color: "#d0947a", fontWeight: "900", fontSize: 30 }}>Sand</Text>
+          {": The Essence of Bantayan"}
+          </Text>
+          <Text style={styles.sectionDescription}>
+            Turquoise seas, golden sun, and powdery sands await. Experience
+            Bantayan Island’s vibrant culture and warm hospitality.
+          </Text>
+
+          {cardData.map((card, index) => (
+            <View
+              key={index}
+              style={[styles.card, { backgroundColor: card.bgColor }]}
+            >
+              <Image source={card.image} style={styles.cardImage} />
+              <View style={styles.cardContent}>
+                <Text style={[styles.cardTitle, { color: card.textColor }]}>
+                  {card.icon} {card.title}
+                </Text>
+                <Text style={[styles.cardText, { color: card.textColor }]}>{card.description}</Text>
+              </View>
+            </View>
+
+          ))}
+        </View>
+
+        <RecommendedTouristSpotsCarousel />
+
+        {/* Hotels Section */}
+        <RecommendedHotelsCarousel />
+
+        {/* Gallery */}
+        <View style={styles.section}>
+          <Text style={styles.sectionHeading}>Island Gallery</Text>
+          <View style={styles.galleryWrapper}>
+            <View style={styles.galleryColumn}>
+              {images
+                .filter((_, i) => i % 2 === 0)
+                .map((src, i) => (
+                  <Image
+                    key={`left-${i}`}
+                    source={src}
+                    style={[
+                      styles.galleryImage,
+                      { height: [160, 120, 180][i % 3] },
+                    ]}
+                  />
+                ))}
+            </View>
+            <View style={styles.galleryColumn}>
+              {images
+                .filter((_, i) => i % 2 === 1)
+                .map((src, i) => (
+                  <Image
+                    key={`right-${i}`}
+                    source={src}
+                    style={[
+                      styles.galleryImage,
+                      { height: [120, 180, 160][i % 3] },
+                    ]}
+                  />
+                ))}
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+
+      <View style={styles.fabStack}>
+        {/* Announcement FAB (on top) */}
+        <TouchableOpacity
+          style={[styles.fabButton, { backgroundColor: "#1fc0a6", marginBottom: 12 }]}
+          onPress={() =>
+            router.push("/tourist/announcements/tourist_announcements")
+          }
+        >
+          <MaterialCommunityIcons name="bullhorn-outline" size={24} color="white" />
+        </TouchableOpacity>
+
+        {/* Weather FAB (below) */}
+        <TouchableOpacity
+          style={[styles.fabButton, { backgroundColor: "#34cfc7" }]}
+          onPress={() => router.push("/tourist/weather")}
+        >
+          <MaterialCommunityIcons name="weather-partly-cloudy" size={24} color="white" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f1f1f1" },
-  heroContainer: { position: "relative", height: 400 },
-  heroImage: { width: "100%", height: "100%", resizeMode: "cover" },
-  heroOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.3)",
+  container: { flex: 1, backgroundColor: "#f8fafc" },
+  heroContainer: {
+    position: "relative",
+    height: 400,
+    overflow: "hidden",
+  },
+  heroImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  heroGradient: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 220, // height of the fade blend
   },
   heroText: {
     position: "absolute",
@@ -231,123 +222,111 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 32,
-    fontWeight: "bold",
-    color: "#fff",
-    textAlign: "center",
+    fontWeight: "900",
+    color: "#1c5461",
   },
   heroSubtitle: {
-    fontSize: 16,
-    color: "#e6f7fa",
-    textAlign: "center",
-    marginVertical: 8,
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#1c5461",
+    marginVertical: 0,
   },
   exploreButton: {
-    backgroundColor: "#e6f7fa",
+    backgroundColor: "#1c8773",
     flexDirection: "row",
-    alignSelf: "center",
+    alignSelf: "flex-start",
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 999,
+    borderRadius: 8,
     marginTop: 10,
   },
   exploreButtonText: {
     marginLeft: 6,
-    color: "#1c5461",
+    color: "#fff",
     fontWeight: "bold",
   },
   section: {
     padding: 16,
   },
+  sectionmainHeading: {
+    fontSize: 30,
+    fontWeight: "900",
+    color: "#1c5461",
+    marginBottom: 8,
+  },
   sectionHeading: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: "900",
     color: "#1c5461",
-    textAlign: "center",
-    marginBottom: 8,
   },
   sectionDescription: {
     fontSize: 14,
-    color: "#444",
-    textAlign: "center",
+    fontWeight: "700",
+    color: "#1c5461",
     marginBottom: 16,
   },
   card: {
+    flexDirection: "row",
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     marginVertical: 8,
+    alignItems: "flex-start", // align top
+    gap: 12, // spacing between image and content
+  },
+  cardImage: {
+    width: 150, // larger image
+    height: 150,
+    borderRadius: 12,
+    resizeMode: "cover",
+  },
+  cardContent: {
+    flex: 1,
+    flexShrink: 1, // allows text to wrap properly
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 28,
+    fontWeight: "900",
+    marginBottom: 4,
+    flexWrap: "wrap",
   },
   cardText: {
-    fontSize: 14,
-    color: "#333",
-    marginTop: 4,
-  },
-  hotelCard: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    marginBottom: 16,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  hotelImage: {
-    width: "100%",
-    height: 180,
-  },
-  hotelContent: {
-    padding: 12,
-  },
-  hotelName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#1c5461",
-  },
-  hotelAddress: {
-    fontSize: 13,
-    color: "#555",
-    marginVertical: 4,
-  },
-  tripadvisorButton: {
-    backgroundColor: "#00aeac",
-    padding: 8,
-    borderRadius: 999,
-    alignSelf: "flex-start",
-    marginTop: 8,
-  },
-  tripadvisorButtonText: {
-    color: "#fff",
-    fontWeight: "600",
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#0f172a",
+    flexWrap: "wrap",
   },
   galleryWrapper: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   galleryColumn: {
-    width: '48%',
+    width: "48%",
   },
   galleryImage: {
-    width: '100%',
+    width: "100%",
     borderRadius: 12,
     marginBottom: 8,
-    resizeMode: 'cover',
+    resizeMode: "cover",
   },
-  weatherFab: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 40 : 105,
+  fabStack: {
+    position: "absolute",
+    bottom: Platform.OS === "ios" ? 40 : 105,
     left: 10,
-    backgroundColor: '#34cfc7',
-    width: 56,
-    height: 56,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 6,
+    alignItems: "flex-start",
     zIndex: 9999,
   },
-  
+  fabButton: {
+    width: 45,
+    height: 45,
+    borderRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOpacity: 0.5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+  },
 });
+
+
