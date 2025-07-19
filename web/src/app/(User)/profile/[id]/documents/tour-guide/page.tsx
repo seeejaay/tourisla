@@ -13,8 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog";
 
 import { Button } from "@/components/ui/button";
@@ -179,11 +177,6 @@ export default function TourGuideDocumentsPage() {
               ) : (
                 <div className="text-center py-8">Loading document...</div>
               ))}
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
 

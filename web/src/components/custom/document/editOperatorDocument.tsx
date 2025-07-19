@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useDocumentManager } from "@/hooks/useDocumentManager";
 import { tourOperatorDocuFields } from "@/app/static/tour-operator/tour-operator";
-
+import { TourOperatorDocumentSchema } from "@/app/static/document/useDocumentManagerSchema";
 type EditOperatorDocumentProps = {
   docuId: string;
   initialData: {
@@ -28,6 +28,7 @@ const EditOperatorDocument: React.FC<EditOperatorDocumentProps> = ({
     // Add more fields if needed
   });
   const [formError, setFormError] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -35,7 +36,32 @@ const EditOperatorDocument: React.FC<EditOperatorDocumentProps> = ({
     const { name, value, type, files } = e.target as HTMLInputElement;
 
     if (type === "file") {
-      setFile(files && files[0] ? files[0] : null);
+      const selectedFile = files && files[0] ? files[0] : null;
+      if (selectedFile) {
+        const allowedTypes = [
+          "image/jpeg",
+          "image/png",
+          "image/jpg",
+          "application/pdf",
+        ];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+
+        if (!allowedTypes.includes(selectedFile.type)) {
+          setFileError("Only PDF and image files (JPG, PNG) are allowed.");
+          setFile(null);
+          return;
+        }
+        if (selectedFile.size > maxSize) {
+          setFileError("File size must not exceed 5MB.");
+          setFile(null);
+          return;
+        }
+        setFileError(null);
+        setFile(selectedFile);
+      } else {
+        setFile(null);
+        setFileError(null);
+      }
     } else {
       setForm((prev) => ({
         ...prev,
@@ -51,6 +77,19 @@ const EditOperatorDocument: React.FC<EditOperatorDocumentProps> = ({
     if (!form.document_type) {
       setFormError("Document type is required.");
       return;
+    }
+
+    // Only validate file if a new one is selected
+    if (file) {
+      const result = TourOperatorDocumentSchema.safeParse({
+        document_type: form.document_type,
+        file_path: file,
+      });
+
+      if (!result.success) {
+        setFormError(result.error.errors[0].message);
+        return;
+      }
     }
 
     // Build FormData
@@ -108,7 +147,12 @@ const EditOperatorDocument: React.FC<EditOperatorDocumentProps> = ({
               />
               {file ? (
                 <div className="text-xs text-gray-500 mt-1">
-                  Selected: {file.name}
+                  Selected:{" "}
+                  {(() => {
+                    const ext = file.name.split(".").pop();
+                    const base = file.name.slice(0, 20);
+                    return base + (ext ? "." + ext : "");
+                  })()}
                 </div>
               ) : initialData.file_path ? (
                 <div className="text-xs text-gray-500 mt-1">
@@ -119,7 +163,13 @@ const EditOperatorDocument: React.FC<EditOperatorDocumentProps> = ({
                     rel="noopener noreferrer"
                     className="underline"
                   >
-                    {initialData.file_path.split("/").pop()}
+                    {(() => {
+                      const fileName =
+                        initialData.file_path.split("/").pop() || "";
+                      const ext = fileName.split(".").pop();
+                      const base = fileName.slice(0, 20);
+                      return base + (ext ? "." + ext : "");
+                    })()}
                   </a>
                 </div>
               ) : null}
@@ -143,14 +193,20 @@ const EditOperatorDocument: React.FC<EditOperatorDocumentProps> = ({
           </div>
         );
       })}
-      {(formError || error) && (
-        <div className="text-red-600 text-sm">{formError || error}</div>
+      {(fileError || formError || error) && (
+        <div className="text-red-600 text-sm">
+          {fileError || formError || error}
+        </div>
       )}
       <div className="flex gap-2 justify-end">
         <button
           type="submit"
-          disabled={loading}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded font-semibold transition"
+          disabled={loading || !!formError || !!fileError}
+          className={
+            loading || formError || fileError
+              ? "bg-gray-300 text-gray-400 px-5 py-2 rounded font-semibold transition cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded font-semibold transition"
+          }
         >
           {loading ? "Saving..." : "Save Changes"}
         </button>
@@ -167,5 +223,4 @@ const EditOperatorDocument: React.FC<EditOperatorDocumentProps> = ({
     </form>
   );
 };
-
 export default EditOperatorDocument;
