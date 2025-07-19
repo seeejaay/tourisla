@@ -11,7 +11,6 @@ import {
   loginSchema,
   resetPasswordSchema,
 } from "@/app/static/authSchema";
-
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 export function useAuth() {
@@ -38,6 +37,7 @@ export function useAuth() {
         setLoading(false);
         return null;
       }
+
       if (router) {
         if (resLogin.user.role === "Admin") {
           router.replace("/admin/dashboard");
@@ -47,6 +47,11 @@ export function useAuth() {
           router.replace("/tourism-officer/dashboard");
         } else if (resLogin.user.role === "Cultural Director") {
           router.replace("/cultural-director/dashboard");
+        } else if (
+          resLogin.user.role === "Tour Guide" ||
+          resLogin.user.role === "Tour Operator"
+        ) {
+          router.replace(`/profile/${resLogin.user.id}`);
         } else {
           router.replace("/");
         }
@@ -106,20 +111,27 @@ export function useAuth() {
   };
 
   const loggedInUser = useCallback(
-    async (router: AppRouterInstance) => {
+    async (
+      router: AppRouterInstance,
+      restrict: boolean = true // default: restrict access
+    ) => {
       setLoading(true);
       setError("");
       try {
+        console.log("Calling currentUser...");
         const resCurrentUser = await currentUser();
 
         if (!resCurrentUser || !resCurrentUser.data.user.role) {
-          router.replace("/");
-          return;
+          if (restrict) {
+            router.replace("/auth/login");
+          }
+          return null;
         }
         console.log("Current User:", resCurrentUser);
         return resCurrentUser;
       } catch (error) {
         setError("An error occurred while fetching the current user." + error);
+        return null;
       } finally {
         setLoading(false);
       }

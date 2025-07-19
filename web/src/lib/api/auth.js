@@ -106,6 +106,5 @@ export const currentUser = async () => {
       "Error fetching current user:",
       err.response?.data || err.message
     );
-    throw err;
   }
 };

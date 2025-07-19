@@ -55,7 +55,7 @@ export default function TourGuideVerificationPage() {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-[#f1f1f1] py-28">
+      <div className="min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] py-28">
         <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-8">
           <h1 className="text-2xl font-bold mb-6 text-[#1c5461] text-center">
             Tour Guide Accreditation Checker
@@ -87,7 +87,7 @@ export default function TourGuideVerificationPage() {
                     className="flex flex-col md:flex-row md:items-center justify-between bg-[#e6f7fa] rounded-xl p-4 border border-[#bde3e7]"
                   >
                     <div>
-                      <span className="inline-block align-middle mr-3">
+                      <span className="inline-block align-middle mr-3 ">
                         <Image
                           src={
                             guide.profile_picture || "/images/maleavatar.png"
@@ -95,7 +95,7 @@ export default function TourGuideVerificationPage() {
                           alt={`${guide.first_name} ${guide.last_name}`}
                           width={64}
                           height={64}
-                          className="rounded-full object-cover border-2 border-[#e6f7fa] bg-white"
+                          className="rounded-full object-cover border-2 border-[#26a2b8] bg-white"
                           style={{ width: 64, height: 64 }}
                         />
                       </span>
