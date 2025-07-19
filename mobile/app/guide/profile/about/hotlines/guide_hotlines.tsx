@@ -183,15 +183,6 @@ export default function TouristHotlines() {
         );
     };
 
-    // Group hotlines by municipality
-    const hotlinesByMunicipality: Record<string, Hotline[]> = {};
-    hotlines.forEach(hotline => {
-        if (!hotlinesByMunicipality[hotline.municipality]) {
-            hotlinesByMunicipality[hotline.municipality] = [];
-        }
-        hotlinesByMunicipality[hotline.municipality].push(hotline);
-    });
-
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
@@ -231,27 +222,19 @@ export default function TouristHotlines() {
                         Contact these emergency numbers for immediate assistance during your stay in Isla Verde.
                     </Text>
                     
-                    {Object.keys(hotlinesByMunicipality).map((municipality) => (
-                        <View key={municipality} style={styles.municipalitySection}>
-                            <Text style={styles.municipalityHeader}>
-                                {formatMunicipality(municipality)}
-                            </Text>
-                            
-                            {hotlinesByMunicipality[municipality].map((hotline) => (
-                                <HotlineCard
-                                    key={hotline.id}
-                                    id={hotline.id}
-                                    type={hotline.type}
-                                    municipality={hotline.municipality}
-                                    contactNumber={hotline.contact_number}
-                                    onCall={() => handleCall(hotline.contact_number)}
-                                    onView={() => router.push({
-                                        pathname: "/guide/profile/about/hotlines/guide_hotline_view",
-                                        params: { id: hotline.id }
-                                    })}
-                                />
-                            ))}
-                        </View>
+                    {hotlines.map((hotline) => (
+                        <HotlineCard
+                            key={hotline.id}
+                            id={hotline.id}
+                            type={hotline.type}
+                            municipality={hotline.municipality}
+                            contactNumber={hotline.contact_number}
+                            onCall={() => handleCall(hotline.contact_number)}
+                            onView={() => router.push({
+                                pathname: "/guide/profile/about/hotlines/guide_hotline_view",
+                                params: { id: hotline.id }
+                            })}
+                        />
                     ))}
                     
                     <View style={styles.footer}>
@@ -312,18 +295,6 @@ const styles = StyleSheet.create({
         color: '#64748b',
         marginBottom: 20,
         lineHeight: 20,
-    },
-    municipalitySection: {
-        marginBottom: 24,
-    },
-    municipalityHeader: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#0f172a',
-        marginBottom: 12,
-        paddingBottom: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e2e8f0',
     },
     card: {
         backgroundColor: '#ffffff',
