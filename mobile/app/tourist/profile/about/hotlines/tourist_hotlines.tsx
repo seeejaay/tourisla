@@ -19,6 +19,9 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useIsFocused } from '@react-navigation/native';
 import { fetchHotlines } from "../../../../../lib/api/hotline";
+import { toTitleCase } from "@/lib/utils/textFormat";
+import SearchBar from "@/components/SearchBar";
+import FilterDropdown from "@/components/FilterDropdown";
 
 interface Hotline {
     id: number;
@@ -33,8 +36,8 @@ interface HotlineCardProps {
     type: string;
     municipality: string;
     contactNumber: string;
+    address?: string;
     onCall: () => void;
-    onView: () => void;
 }
 
 const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 44;
@@ -69,6 +72,19 @@ export default function TouristHotlines() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const scrollY = useRef(new Animated.Value(0)).current;
+    const [search, setSearch] = useState("");
+    const [filterType, setFilterType] = useState("");
+    const filteredHotlines = hotlines.filter((hotline) => {
+        const matchesSearch =
+            hotline.municipality.toLowerCase().includes(search.toLowerCase()) ||
+            hotline.type.toLowerCase().includes(search.toLowerCase()) ||
+            hotline.contact_number.includes(search);
+    
+        const matchesFilter = filterType ? hotline.type === filterType : true;
+    
+        return matchesSearch && matchesFilter;
+    });
+    const hotlineTypes = [...new Set(hotlines.map(h => h.type))];
 
     useEffect(() => {
         if (isFocused) {
@@ -112,20 +128,18 @@ export default function TouristHotlines() {
     });
 
     const HotlineCard = ({
-        id,
         type,
         municipality,
         contactNumber,
+        address,
         onCall,
-        onView,
     }: HotlineCardProps) => {
         const iconName = getHotlineIcon(type);
         const formattedType = type.replace(/_/g, " ");
         const formattedMunicipality = formatMunicipality(municipality);
-        
-        // Get background color based on type
+    
         const getTypeColor = () => {
-            switch(type) {
+            switch (type) {
                 case "MEDICAL":
                     return "#ef4444";
                 case "POLICE":
@@ -140,74 +154,53 @@ export default function TouristHotlines() {
                     return "#6366f1";
             }
         };
-        
+    
         const typeColor = getTypeColor();
-        
+
         return (
-            <TouchableOpacity 
-                style={styles.card}
-                onPress={onView}
-                activeOpacity={0.7}
-            >
-                <View style={styles.cardContent}>
-                    {/* Left side with icon */}
-                    <View style={[styles.iconContainer, { backgroundColor: `${typeColor}20` }]}>
-                        <MaterialCommunityIcons name={iconName} size={24} color={typeColor} />
+            <View style={styles.card}>
+                <View style={styles.iconColumn}>
+                    <View style={{justifyContent: 'center'}}>
+                            <Text style={styles.cardTitle}>{formattedType}</Text>
                     </View>
-                    
-                    {/* Middle content */}
-                    <View style={styles.cardDetails}>
-                        <Text style={styles.cardTitle}>{formattedType}</Text>
-                        
-                        <View style={styles.contactRow}>
-                            <MaterialCommunityIcons name="phone" size={16} color="#64748b" />
-                            <Text style={styles.contactNumber}>{contactNumber}</Text>
+                    <View style={{flexDirection: 'row'}}>
+                        <View style={[styles.iconContainer, { backgroundColor: `${typeColor}20` }]}>
+                            <MaterialCommunityIcons name={iconName} size={22} color={typeColor} />
                         </View>
-                        
-                        <View style={[styles.municipalityBadge, { backgroundColor: typeColor }]}>
-                            <Text style={styles.municipalityText}>{formattedMunicipality}</Text>
-                        </View>
-                    </View>
-                    
-                    {/* Right side with call button */}
-                    <View style={styles.cardActions}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={[styles.iconButton, styles.callButton]}
                             onPress={onCall}
                         >
-                            <MaterialCommunityIcons name="phone" size={18} color="#ffffff" />
+                            <MaterialCommunityIcons name="phone" size={18} color="#fff" />
                         </TouchableOpacity>
                     </View>
                 </View>
-            </TouchableOpacity>
+                <View style={styles.iconRow}>
+                    <View style={styles.cardContent}>
+                        <View style={styles.contactRow}>
+                            <MaterialCommunityIcons name="phone" size={14} color="#64748b" />
+                            <Text style={styles.contactNumber}>{contactNumber}</Text>
+                        </View>
+                        {address && (
+                            <View style={styles.contactRow}>
+                                <MaterialCommunityIcons name="map-marker" size={14} color="#64748b" />
+                                <Text style={styles.addressText}>{toTitleCase(address)}</Text>
+                            </View>
+                        )}
+    
+                        <View style={[styles.municipalityBadge, { backgroundColor: typeColor }]}>
+                            <Text style={styles.municipalityText}>{toTitleCase(formattedMunicipality)}</Text>
+                        </View>
+                    </View>
+                </View>
+            </View>
         );
     };
-
-    // Group hotlines by municipality
-    const hotlinesByMunicipality: Record<string, Hotline[]> = {};
-    hotlines.forEach(hotline => {
-        if (!hotlinesByMunicipality[hotline.municipality]) {
-            hotlinesByMunicipality[hotline.municipality] = [];
-        }
-        hotlinesByMunicipality[hotline.municipality].push(hotline);
-    });
 
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-            
-            {/* Header with gradient background */}
-            <LinearGradient
-                colors={['#0f172a', '#1e293b']}
-                style={styles.header}
-            >
-                <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
-                    <Feather name="arrow-left" size={24} color="#fff" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Emergency Hotlines</Text>
-                <View style={styles.placeholder} />
-            </LinearGradient>
-
+    
             {loading ? (
                 <View style={styles.centered}>
                     <ActivityIndicator size="large" color="#0f172a" />
@@ -217,49 +210,67 @@ export default function TouristHotlines() {
                     <Text style={styles.errorText}>{error}</Text>
                 </View>
             ) : (
-                <Animated.ScrollView
-                    style={styles.scrollView}
-                    contentContainerStyle={styles.scrollContent}
-                    showsVerticalScrollIndicator={false}
-                    onScroll={Animated.event(
-                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                        { useNativeDriver: false }
-                    )}
-                    scrollEventThrottle={16}
-                >
-                    <Text style={styles.sectionDescription}>
-                        Contact these emergency numbers for immediate assistance during your stay in Isla Verde.
-                    </Text>
-                    
-                    {Object.keys(hotlinesByMunicipality).map((municipality) => (
-                        <View key={municipality} style={styles.municipalitySection}>
-                            <Text style={styles.municipalityHeader}>
-                                {formatMunicipality(municipality)}
+                <>
+                    <View>
+                        <Text style={styles.sectionTitle}>Emergency Hotlines</Text>
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: "#3e979f",
+                                paddingVertical: 10,
+                                paddingHorizontal: 20,
+                                marginHorizontal: 16,
+                                alignSelf: 'flex-end',
+                                borderRadius: 8,
+                            }}
+                            onPress={() => router.push("/tourist/profile/about/incident-report")}
+                        >
+                            <Text style={{ color: "#fff", fontWeight: "600", fontSize: 13 }}>
+                                Report Incident
                             </Text>
-                            
-                            {hotlinesByMunicipality[municipality].map((hotline) => (
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.searchFilterRow}>
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                        <SearchBar
+                        value={search}
+                        onChangeText={setSearch}
+                        placeholder="Search by type, municipality or number..."
+                        />
+                    </View>
+                    <FilterDropdown
+                        options={hotlineTypes}
+                        selected={filterType}
+                        onSelect={setFilterType}
+                    />
+                    </View>
+    
+                    <Animated.ScrollView
+                        style={styles.scrollView}
+                        contentContainerStyle={styles.scrollContent}
+                        showsVerticalScrollIndicator={false}
+                        onScroll={Animated.event(
+                            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                            { useNativeDriver: false }
+                        )}
+                        scrollEventThrottle={16}
+                    >
+                        {filteredHotlines.length > 0 ? (
+                            filteredHotlines.map((hotline) => (
                                 <HotlineCard
                                     key={hotline.id}
                                     id={hotline.id}
                                     type={hotline.type}
                                     municipality={hotline.municipality}
                                     contactNumber={hotline.contact_number}
+                                    address={hotline.address}
                                     onCall={() => handleCall(hotline.contact_number)}
-                                    onView={() => router.push({
-                                        pathname: "/tourist/profile/about/hotlines/tourist_hotline_view",
-                                        params: { id: hotline.id }
-                                    })}
                                 />
-                            ))}
-                        </View>
-                    ))}
-                    
-                    <View style={styles.footer}>
-                        <Text style={styles.footerText}>
-                            In case of emergency, please contact the nearest local authority.
-                        </Text>
-                    </View>
-                </Animated.ScrollView>
+                            ))
+                        ) : (
+                            <Text style={styles.noResultsText}>No matching hotlines found.</Text>
+                        )}
+                    </Animated.ScrollView>
+                </>
             )}
         </View>
     );
@@ -281,37 +292,38 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginHorizontal: 20,
     },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingTop: STATUS_BAR_HEIGHT,
-        paddingBottom: 16,
-        paddingHorizontal: 16,
-    },
-    backButton: {
-        padding: 8,
-    },
-    headerTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#fff',
-    },
     placeholder: {
         width: 40,
     },
+    sectionTitle: {
+        paddingTop: 16,
+        fontSize: 22,
+        fontWeight: "900",
+        color: "#1c5461",
+        marginBottom: 6,
+        paddingHorizontal: 16,
+      },
+    searchFilterRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingTop: 16,
+        paddingBottom: 8,
+        backgroundColor: '#f8fafc',
+      },
     scrollView: {
         flex: 1,
     },
     scrollContent: {
-        padding: 16,
-        paddingBottom: 32,
+        paddingHorizontal: 16,
+        paddingBottom: 120,
     },
-    sectionDescription: {
-        fontSize: 14,
-        color: '#64748b',
-        marginBottom: 20,
-        lineHeight: 20,
+    addressText: {
+        fontSize: 13,
+        color: '#475569',
+        marginLeft: 5,
+        flexShrink: 1,
+        flexWrap: 'wrap',
     },
     municipalitySection: {
         marginBottom: 24,
@@ -326,56 +338,69 @@ const styles = StyleSheet.create({
         borderBottomColor: '#e2e8f0',
     },
     card: {
-        backgroundColor: '#ffffff',
-        borderRadius: 12,
-        marginBottom: 12,
+        backgroundColor: '#f8fcfd',
+        borderRadius: 18,
+        marginBottom: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
-        shadowRadius: 3,
-        elevation: 3,
-        overflow: 'hidden',
+        shadowRadius: 2,
+        elevation: 2,
     },
-    cardContent: {
+    iconColumn: {
         flexDirection: 'row',
-        padding: 16,
-        alignItems: 'center',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+    },
+    iconRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
     },
     iconContainer: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 16,
+        marginRight: 10,
+        marginTop: 2,
+    },
+    cardContent: {
+        flex: 1,
+        paddingRight: 8,
     },
     cardDetails: {
         flex: 1,
+        gap: 6,
+        borderWidth: 1,
     },
     cardTitle: {
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: 18,
+        fontWeight: '700',
         color: '#0f172a',
-        marginBottom: 4,
+        marginBottom: 2,
     },
     contactRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 8,
     },
     contactNumber: {
         fontSize: 14,
         color: '#64748b',
-        marginLeft: 6,
+        marginLeft: 5,
     },
     municipalityBadge: {
         alignSelf: 'flex-start',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
         borderRadius: 4,
+        marginTop: 4,
     },
     municipalityText: {
-        fontSize: 12,
+        fontSize: 11,
         color: '#ffffff',
         fontWeight: '500',
     },
@@ -383,24 +408,16 @@ const styles = StyleSheet.create({
         marginLeft: 8,
     },
     iconButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
         justifyContent: 'center',
         alignItems: 'center',
+        marginTop: 2,
     },
     callButton: {
         backgroundColor: '#22c55e',
     },
-    footer: {
-        marginTop: 16,
-        padding: 16,
-        backgroundColor: '#f1f5f9',
-        borderRadius: 8,
-    },
-    footerText: {
-        fontSize: 14,
-        color: '#64748b',
-        textAlign: 'center',
-    },
 });
+
+

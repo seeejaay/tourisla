@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Dimensions,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -21,18 +22,34 @@ export default function TouristRegistrationScreen() {
         Please choose a registration type
       </Text>
 
+      {/* Visitor Registration Button */}
       <TouchableOpacity
-        style={styles.optionButton}
+        style={styles.imageButton}
         onPress={() => router.push("/tourist/regis/visitor_registration/visitor_registration")}
       >
-        <Text style={styles.optionText}>Visitor Registration</Text>
+        <Image
+          source={require("@/assets/images/camp_sawi.webp")} // Replace with actual path
+          style={styles.buttonImage}
+          resizeMode="cover"
+        />
+        <View style={styles.overlay}>
+          <Text style={styles.imageButtonText}>Visitor Registration</Text>
+        </View>
       </TouchableOpacity>
 
+      {/* Island Entry Registration Button */}
       <TouchableOpacity
-        style={styles.optionButton}
+        style={styles.imageButton}
         onPress={() => router.push("/tourist/regis/island_registration/island_registration")}
       >
-        <Text style={styles.optionText}>Island Entry Registration</Text>
+        <Image
+          source={require("@/assets/images/bg_hero.webp")} // Replace with actual path
+          style={styles.buttonImage}
+          resizeMode="cover"
+        />
+        <View style={styles.overlay}>
+          <Text style={styles.imageButtonText}>Island Entry Registration</Text>
+        </View>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -42,40 +59,49 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f9fafb",
-    padding: 20,
+    padding: 0,
     justifyContent: "center",
   },
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: "900",
-    color: "#03312e",
-    marginBottom: 8,
+    color: "#1c5461",
     textAlign: "center",
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#6b7280",
     marginBottom: 24,
     textAlign: "center",
   },
-  optionButton: {
-    backgroundColor: "#24b4ab",
-    paddingVertical: 18,
-    paddingHorizontal: 32,
-    borderRadius: 16,
-    marginBottom: 16,
-    alignItems: "center",
+  imageButton: {
     width: width * 0.9,
+    height: 140,
+    borderRadius: 16,
+    overflow: "hidden",
     alignSelf: "center",
-    shadowColor: "#24b4ab",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 5,
   },
-  optionText: {
-    color: "#ffffff",
-    fontSize: 18,
-    fontWeight: "600",
+  buttonImage: {
+    width: "100%",
+    height: "100%",
+  },
+  overlay: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    backgroundColor: "rgba(0,0,0,0.4)",
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  imageButtonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "700",
   },
 });

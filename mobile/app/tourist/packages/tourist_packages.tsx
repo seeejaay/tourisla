@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator, FlatList, StatusBar, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator, FlatList, StatusBar, Dimensions, Image } from 'react-native';
 import { fetchAllTourPackages } from '@/lib/api/tour-packages';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +13,12 @@ interface TouristPackagesScreenProps {
   headerHeight: number;
 }
 
+interface TourGuide {
+  tourguide_id: number;
+  first_name: string;
+  last_name: string;
+}
+
 interface TourPackage {
   id: number;
   package_name: string;
@@ -23,6 +29,8 @@ interface TourPackage {
   created_at?: string;
   updated_at?: string;
   available_slots?: number; 
+  guide_name?: string; // fallback
+  tour_guides?: TourGuide[];
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -79,10 +87,10 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
       activeOpacity={0.9}
     >
       {item.package_name && (
-        <View style={styles.headerRow}>
+        <View style={styles.nameWrapper}>
           <Text style={styles.packageName}>{toTitleCase(item.package_name)}</Text>
           {item.price !== undefined && (
-            <Text style={styles.price}>₱ {item.price}</Text>
+            <Text style={styles.priceAbsolute}>₱ {item.price}</Text>
           )}
         </View>
       )}
@@ -96,11 +104,23 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
         </View>
       ) : null}
 
+      {(item.tour_guides?.length || item.guide_name) && (
+        <View style={styles.guideRow}>
+          <Ionicons name="person" size={14} color="#3e979f" style={styles.guideIcon} />
+            <Text style={styles.guideText}>
+            {item.tour_guides && item.tour_guides.length > 0
+              ? item.tour_guides.map(g => toTitleCase(`${g.first_name} ${g.last_name}`.trim())).join(', ')
+              : toTitleCase(item.guide_name || '')}
+            </Text>
+        </View>
+      )}
+
       {item.available_slots !== undefined && (
         <View style={styles.slotsContainer}>
-          <Text style={styles.slots}>
+            <Ionicons name="people" size={16} color="#24b4ab" style={{ marginRight: 4 }} />
+            <Text style={styles.slots}>
             {item.available_slots} {item.available_slots === 1 ? 'Slot' : 'Slots'} Available
-          </Text>
+            </Text>
         </View>
       )}
     </TouchableOpacity>
@@ -108,12 +128,19 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      <View style={styles.header}>
+        <Image
+          source={require("@/assets/images/hero-carousel/1.jpg")}
+          style={styles.headerImage}
+          resizeMode="cover"
+        />
+        <View style={styles.overlay} />
+        <View style={styles.headerTextContainer}>
+          <Text style={styles.headerTitle}>Explore Tour Packages</Text>
+          <Text style={styles.headerSubtitle}>Discover our curated tour packages designed to enhance your travel experience.</Text>
+        </View>
+      </View>
       <View style={[styles.container, { paddingTop: headerHeight }]}>
-        <Text style={styles.title}>Explore Tour Packages</Text>
-        <Text style={styles.intro}>
-          Discover our curated tour packages designed to enhance your travel experience.
-        </Text>
         <View style={styles.searchFilterRow}>
           <View style={styles.searchBarWrapper}>
             <SearchBar
@@ -184,23 +211,36 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f8fafc',
   },
   container: {
     flex: 1,
-    backgroundColor: '#f1f1f1',
+    backgroundColor: '#f8fafc',
   },
-  title: {
-    marginHorizontal: 16,
-    fontSize: 25,
-    fontWeight: '900',
-    color: '#002b11',
+  header: { position: "relative", height: 200, marginBottom: 16 },
+  headerImage: { width: "100%", height: "100%" },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
-  intro: {
-    fontSize: 12,
-    color: '#002b11',
-    marginBottom: 6,
-    marginHorizontal: 16,
+  headerTextContainer: {
+    position: "absolute",
+    top: 70,
+    left: 20,
+    right: 20,
+    alignItems: "center",
+  },
+  headerTitle: {
+    fontSize: 28,
+    color: "white",
+    fontWeight: "900",
+    textAlign: "center",
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: "#e6f7fa",
+    marginTop: 5,
+    fontWeight: "600",
+    textAlign: "center",
   },
   searchFilterRow: {
     flexDirection: 'row',
@@ -214,7 +254,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 16,
-    paddingVertical: 20,
     paddingBottom: 100,
   },
   bottomFade: {
@@ -226,7 +265,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   packageCard: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#ddf9ec',
     padding: 16,
     borderRadius: 12,
     width: '100%',
@@ -237,17 +276,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 12,
   },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  nameWrapper: {
+    position: 'relative',
+    paddingRight: 100, // reserve space for price so text doesn’t overflow into it
   },
   packageName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#002b11',
-    flex: 1,
-    marginRight: 12,
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#1c5461',
+    flexShrink: 1,
+  },
+  priceAbsolute: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#3e979f',
   },
   locationRow: {
     flexDirection: 'row',
@@ -257,14 +302,22 @@ const styles = StyleSheet.create({
   locationIcon: {
     marginRight: 4,
   },
-  price: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#002b11',
-  },
   packageLocation: {
-    fontSize: 10,
+    fontSize: 12,
     color: '#737385',
+    fontWeight: '500',
+  },
+  guideRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  guideIcon: {
+    marginRight: 4,
+  },
+  guideText: {
+    fontSize: 12,
+    color: '#3e979f',
     fontWeight: '600',
   },
   slotsContainer: {
@@ -273,7 +326,7 @@ const styles = StyleSheet.create({
   },
   slots: {
     fontSize: 12,
-    color: '#61daaf',
+    color: '#24b4ab',
     fontWeight: '600',
   },
   loadingContainer: {

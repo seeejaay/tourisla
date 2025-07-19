@@ -4,11 +4,7 @@ import { router } from "expo-router";
 import { FontAwesome5 } from "@expo/vector-icons";
 
 const links = [
-  { label: "Announcements", path: "/tourist/announcements/tourist_announcements", icon: "bullhorn" },
-  { label: "Culture", path: "/tourist/culture/tourist_culture", icon: "landmark" },
-  { label: "Tourist Spots", path: "/tourist/tourist_spots/tourist_tourist_spots", icon: "map-marker" },
   { label: "Map", path: "/tourist/map/tourist_map", icon: "map" },
-  { label: "Incident-Report", path: "/tourist/profile/about/incident-report", icon: "flag" },
   { label: "List of Tour Guides", path: "/tourist/guideapplicants/tourguideapplicants", icon: "users" },
 ];
 
