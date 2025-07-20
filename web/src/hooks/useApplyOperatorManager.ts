@@ -4,6 +4,7 @@ import {
   fetchApplicationsForTourOperator,
   approveTourGuideApplication,
   rejectTourGuideApplication,
+  fetchAllApplications,
 } from "@/lib/api/applyTourOperator";
 
 export function useApplyOperatorManager() {
@@ -43,9 +44,9 @@ export function useApplyOperatorManager() {
     setLoading(true);
     setError(null);
     try {
-      const applications = await fetchApplicationsForTourOperator(operatorId);
-      console.log("Fetched applications:", applications);
-      return applications;
+      const application = await fetchApplicationsForTourOperator(operatorId);
+      console.log("Fetched application:", application);
+      return application;
     } catch (error) {
       setError(error + "Unknown error");
       throw error;
@@ -80,12 +81,28 @@ export function useApplyOperatorManager() {
     }
   }, []);
 
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const applications = await fetchAllApplications();
+      console.log("Fetched all applications:", applications);
+      return applications;
+    } catch (error) {
+      setError(error + "Unknown error");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     loading,
     error,
     apply,
     fetchApplications,
     approve,
+    fetchAll,
     reject,
   };
 }

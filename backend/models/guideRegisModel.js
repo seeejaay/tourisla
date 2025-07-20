@@ -65,6 +65,15 @@ const editGuideRegis = async (guideId, guideRegisData) => {
   return result.rows[0];
 };
 
+const editGuideRegisByUserId = async (userId, guideRegisData) => {
+  const { first_name, last_name, mobile_number, email } = guideRegisData;
+  const result = await db.query(
+    "UPDATE tourguide_applicants SET first_name = $1, last_name = $2, mobile_number = $3, email = $4 WHERE user_id = $5 RETURNING *",
+    [first_name, last_name, mobile_number, email, userId]
+  );
+  return result.rows[0];
+};
+
 const deleteGuideRegis = async (guideId) => {
   const result = await db.query(
     "DELETE FROM tourguide_applicants WHERE id = $1 RETURNING *",
@@ -87,10 +96,20 @@ const getGuideRegisById = async (userId) => {
   return result.rows[0];
 };
 
+const getGuideUserIDByGuideId = async (guideId) => {
+  const result = await db.query(
+    "SELECT * FROM tourguide_applicants WHERE id = $1",
+    [guideId]
+  );
+  return result.rows[0];
+};
+
 module.exports = {
   createGuideRegis,
   editGuideRegis,
   deleteGuideRegis,
   getAllGuideRegis,
   getGuideRegisById,
+  getGuideUserIDByGuideId,
+  editGuideRegisByUserId,
 };
