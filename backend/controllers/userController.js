@@ -11,7 +11,7 @@ const {
   getUserByResetToken,
   updatePassword,
 } = require("../models/userModel");
-
+const { editGuideRegisByUserId } = require("../models/guideRegisModel");
 const { sendWelcomeEmail } = require("../utils/email");
 const { sendResetPasswordEmail } = require("../utils/email");
 const createUserController = async (req, res) => {
@@ -154,7 +154,7 @@ const currentUserController = async (req, res) => {
 
 const editUserController = async (req, res) => {
   try {
-    const userId = req.params.userId; // Get userId from URL
+    const userId = req.params.userId;
     const {
       first_name,
       last_name,
@@ -183,9 +183,23 @@ const editUserController = async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, 10);
       updatedFields.password = hashedPassword;
     }
+    const existingUser = await findUserByEmail(email);
+    if (existingUser) {
+      return res.status(409).json({ error: "Email already exists" });
+    }
 
-    // Call your model's editUser with userId and updatedFields
+    // Update user table
     const updatedUser = await editUser(userId, updatedFields);
+
+    // Also update tourguide_applicants table if user is a tour guide
+    if (role === "Tour Guide") {
+      await editGuideRegisByUserId(userId, {
+        first_name: first_name.toUpperCase(),
+        last_name: last_name.toUpperCase(),
+        mobile_number: phone_number,
+        email: email.toUpperCase(),
+      });
+    }
 
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });

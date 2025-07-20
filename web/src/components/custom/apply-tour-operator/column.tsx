@@ -4,6 +4,7 @@ import React from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TourGuideApplication } from "@/app/(User)/profile/[id]/apply-to-tour-operator/page";
 
 export type ApplyTourOperator = {
   id: number;
@@ -15,7 +16,9 @@ export type ApplyTourOperator = {
 };
 
 export function columns(
-  onApply: (operator: ApplyTourOperator) => void
+  handleApply: (operator: ApplyTourOperator) => void,
+  hasAcceptedOperator: boolean,
+  myApplications: TourGuideApplication[]
 ): ColumnDef<ApplyTourOperator>[] {
   return [
     {
@@ -57,11 +60,19 @@ export function columns(
     },
     {
       accessorKey: "actions",
-      header: () => <span className="font-bold">Actions</span>,
+      header: "Actions",
       cell: ({ row }) => {
-        const operator = row.original;
+        const operatorId = row.original.id;
+        const alreadyApplied = myApplications.some(
+          (app) =>
+            String(app.touroperator_id) === String(operatorId) &&
+            app.application_status.toUpperCase().trim() !== "REJECTED"
+        );
         return (
-          <Button variant="outline" onClick={() => onApply(operator)}>
+          <Button
+            onClick={() => handleApply(row.original)}
+            disabled={hasAcceptedOperator || alreadyApplied}
+          >
             Apply
           </Button>
         );

@@ -52,10 +52,18 @@ const rejectTourGuideApplication = async (applicationId) => {
   return result.rows[0];
 };
 
+const getApplications = async (tourguide_id) => {
+  const result = await db.query(
+    "SELECT * FROM tourguide_applications_to_operators WHERE tourguide_id = $1  ORDER BY updated_at DESC",
+    [tourguide_id]
+  );
+  return result.rows;
+};
 module.exports = {
   isTourGuideApproved,
   applyToTourOperator,
   getApplicationsForTourOperator,
   approveTourGuideApplication,
   rejectTourGuideApplication,
+  getApplications,
 };

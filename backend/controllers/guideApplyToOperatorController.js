@@ -5,6 +5,7 @@ const {
   getApplicationsForTourOperator,
   approveTourGuideApplication,
   rejectTourGuideApplication,
+  getApplications,
 } = require("../models/guideApplyToOperatorModel.js");
 const { getOperatorRegisById } = require("../models/operatorRegisModel.js");
 const { getGuideRegisById } = require("../models/guideRegisModel.js");
@@ -103,9 +104,30 @@ const rejectTourGuideApplicationController = async (req, res) => {
   }
 };
 
+const fetchAllApplicationsController = async (req, res) => {
+  try {
+    console.log("Fetching all tour guide applications");
+    const user = req.session.user;
+    if (!user || user.role !== "Tour Guide") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+    const guideRegis = await getGuideRegisById(user.id);
+    if (!guideRegis) {
+      return res.status(404).json({ message: "Tour guide not found" });
+    }
+    const currentGuideId = guideRegis.id;
+    const applications = await getApplications(currentGuideId);
+    res.json(applications);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+};
+
 module.exports = {
   applyToTourOperatorController,
   getApplicationsForTourOperatorController,
   approveTourGuideApplicationController,
   rejectTourGuideApplicationController,
+  fetchAllApplicationsController,
 };

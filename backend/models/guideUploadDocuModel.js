@@ -1,12 +1,12 @@
 const db = require("../db/index.js");
 
 const createGuideUploadDocu = async (guideUploadDocuData) => {
-  const { tourguide_id, document_type, file_path, requirements } =
+  const { tourguide_id, document_type, file_path, requirements, status } =
     guideUploadDocuData;
   console.log("Creating in Model:", guideUploadDocuData);
   const result = await db.query(
-    "INSERT INTO tourguide_documents (tourguide_id, document_type, file_path, uploaded_at, requirements) VALUES ($1, $2, $3, NOW(), $4) RETURNING *",
-    [tourguide_id, document_type, file_path, requirements]
+    "INSERT INTO tourguide_documents (tourguide_id, document_type, file_path, uploaded_at, requirements, status) VALUES ($1, $2, $3, NOW(), $4, $5) RETURNING *",
+    [tourguide_id, document_type, file_path, requirements, status]
   );
   return result.rows[0];
 };
@@ -16,7 +16,7 @@ const editGuideUploadDocu = async (docuId, guideUploadDocuData) => {
   const { document_type, file_path } = guideUploadDocuData;
 
   const result = await db.query(
-    "UPDATE tourguide_documents SET document_type = $1, file_path = $2, uploaded_at = NOW() WHERE id = $3 RETURNING *",
+    "UPDATE tourguide_documents SET document_type = $1, file_path = $2, uploaded_at = NOW(), status = 'PENDING' WHERE id = $3 RETURNING *",
     [document_type, file_path, docuId]
   );
   return result.rows[0];
@@ -32,10 +32,34 @@ const getGuideUploadDocuById = async (docuId) => {
 
 const getGuideUploadByUserId = async (tourGuideId) => {
   const result = await db.query(
-    "SELECT * FROM tourguide_documents WHERE tourguide_id = $1",
+    `SELECT * FROM tourguide_documents 
+     WHERE tourguide_id = $1 
+     ORDER BY 
+       CASE 
+         WHEN status = 'APPROVED' THEN 1
+         WHEN status = 'PENDING' THEN 2
+         WHEN status = 'REJECTED' THEN 3
+         ELSE 4
+       END`,
     [tourGuideId]
   );
   return result.rows;
+};
+
+const approveGuideUploadDocu = async (docuId) => {
+  const result = await db.query(
+    "UPDATE tourguide_documents SET status = 'APPROVED' WHERE id = $1 RETURNING *",
+    [docuId]
+  );
+  return result.rows[0];
+};
+
+const rejectGuideUploadDocu = async (docuId) => {
+  const result = await db.query(
+    "UPDATE tourguide_documents SET status = 'REJECTED' WHERE id = $1 RETURNING *",
+    [docuId]
+  );
+  return result.rows[0];
 };
 
 module.exports = {
@@ -43,6 +67,6 @@ module.exports = {
   editGuideUploadDocu,
   getGuideUploadDocuById,
   getGuideUploadByUserId,
+  approveGuideUploadDocu,
+  rejectGuideUploadDocu,
 };
-
-

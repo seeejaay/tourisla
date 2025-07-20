@@ -3,8 +3,17 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDocumentManager } from "@/hooks/useDocumentManager";
 import { useRouter } from "next/navigation";
-import { FileText, Plus, AlertTriangle, Loader2, Pencil } from "lucide-react";
-
+import {
+  FileText,
+  Plus,
+  AlertTriangle,
+  Loader2,
+  Pencil,
+  Check,
+  X,
+  ChevronRight,
+} from "lucide-react";
+import Image from "next/image";
 import AddGuideDocument from "@/components/custom/document/addGuideDocument";
 import EditGuideDocument from "@/components/custom/document/editGuideDocument";
 import {
@@ -14,14 +23,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type GuideDocument = {
   id: string;
@@ -30,6 +36,7 @@ type GuideDocument = {
   file_path: string;
   requirements: string[];
   uploaded_at: string;
+  status?: "pending" | "approved" | "rejected";
 };
 
 export default function TourGuideDocumentsPage() {
@@ -38,11 +45,12 @@ export default function TourGuideDocumentsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
-
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [documents, setDocuments] = useState<GuideDocument[]>([]);
   const [guideId, setGuideId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("all");
 
   const { loggedInUser } = useAuth();
   const { fetchGuideDocumentsById } = useDocumentManager();
@@ -92,7 +100,6 @@ export default function TourGuideDocumentsPage() {
     }
   };
 
-  // Open dialog for add or edit
   const openAddDialog = () => {
     setDialogMode("add");
     setSelectedDocId(null);
@@ -104,33 +111,329 @@ export default function TourGuideDocumentsPage() {
     setDialogOpen(true);
   };
 
-  // Find the selected document for editing
+  const documentChecklist = [
+    { value: "GOV_ID", label: "Government ID", required: true },
+    { value: "BIRTH_CERT", label: "Birth Certificate", required: true },
+    { value: "NBI_CLEARANCE", label: "NBI Clearance", required: true },
+    { value: "BRGY_CLEARANCE", label: "Barangay Clearance", required: true },
+    { value: "MED_CERT", label: "Medical Certificate", required: true },
+    { value: "RESUME", label: "Resume", required: true },
+    { value: "PASSPORT_PHOTO", label: "Passport", required: false },
+  ];
   const selectedDoc =
     dialogMode === "edit" && selectedDocId
       ? documents.find((d) => d.id === selectedDocId)
       : null;
 
+  // Calculate completion percentage
+  const requiredDocs = documentChecklist.filter((doc) => doc.required);
+  const uploadedRequiredDocs = documents.filter((doc) =>
+    requiredDocs.some((req) => req.value === doc.document_type)
+  ).length;
+  const completionPercentage = Math.round(
+    (uploadedRequiredDocs / requiredDocs.length) * 100
+  );
+
+  // Filter documents based on active tab
+  const filteredDocuments =
+    activeTab === "all"
+      ? documents
+      : documents.filter(
+          (doc) => doc.status?.toLowerCase() === activeTab.toLowerCase()
+        );
   return (
-    <main className="min-h-screen w-full bg-gradient-to-b from-[#e6f7fa] to-white flex flex-col items-center py-12 px-2">
-      <div className="w-full max-w-5xl mx-auto space-y-8">
+    <main className="min-h-screen w-full bg-gray-50 flex flex-col items-center py-8 px-4 sm:px-6">
+      <div className="w-full max-w-6xl mx-auto space-y-6">
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col gap-6">
           <div>
-            <h1 className="text-3xl font-extrabold text-[#1c5461] tracking-tight">
-              My Documents
+            <h1 className="text-3xl font-bold text-[#1c5461] tracking-tight">
+              Document Center
             </h1>
-            <p className="text-[#51702c] mt-2">
-              Manage your tour guide verification documents
+            <p className="text-[#3e979f] mt-2">
+              Upload and manage your tour guide verification documents
             </p>
           </div>
-          <Button
-            className="gap-2 bg-[#3e979f] hover:bg-[#1c5461] text-white"
-            onClick={openAddDialog}
-          >
-            <Plus className="h-4 w-4" />
-            Add Document
-          </Button>
+
+          {/* Progress Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Verification Progress
+                </h2>
+                <p className="text-gray-600 text-sm">
+                  {uploadedRequiredDocs} of {requiredDocs.length} required
+                  documents uploaded
+                </p>
+                <Progress
+                  value={completionPercentage}
+                  className="h-2 w-full sm:w-64"
+                />
+              </div>
+              <Button
+                className="gap-2 bg-[#3e979f] hover:bg-[#2c7a7f] text-white cursor-pointer"
+                onClick={openAddDialog}
+              >
+                <Plus className="h-4 w-4" />
+                Upload Document
+              </Button>
+            </div>
+          </div>
         </div>
+
+        {/* Main Content Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Checklist Panel */}
+          <div className="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-fit">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Document Requirements
+            </h2>
+            <ul className="space-y-3">
+              {documentChecklist.map((doc) => {
+                const uploadedDoc = documents.find(
+                  (d) => d.document_type === doc.value
+                );
+                return (
+                  <li key={doc.value} className="flex items-start gap-3">
+                    <div
+                      className={`mt-0.5 flex-shrink-0 rounded-full p-1 ${
+                        uploadedDoc
+                          ? "bg-green-100 text-green-600"
+                          : "bg-gray-100 text-gray-400"
+                      }`}
+                    >
+                      {uploadedDoc ? (
+                        <Check className="h-4 w-4" />
+                      ) : (
+                        <X className="h-4 w-4" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={`text-sm font-medium ${
+                            uploadedDoc ? "text-gray-900" : "text-gray-600"
+                          }`}
+                        >
+                          {doc.label}
+                        </span>
+                        {doc.required && (
+                          <Badge
+                            variant={uploadedDoc ? "default" : "destructive"}
+                            className={`text-xs w-24 ${
+                              uploadedDoc ? "bg-green-700" : "bg-red-700"
+                            }`}
+                          >
+                            {uploadedDoc ? "Uploaded" : "Required"}
+                          </Badge>
+                        )}
+                      </div>
+                      {uploadedDoc && (
+                        <button
+                          onClick={() => openEditDialog(uploadedDoc.id)}
+                          className="text-xs text-blue-600 hover:text-blue-800 mt-1 flex items-center"
+                        >
+                          View details <ChevronRight className="h-3 w-3 ml-1" />
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          {/* Documents Panel */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Tabs for document filtering */}
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid grid-cols-4 w-full">
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="pending">Pending</TabsTrigger>
+                <TabsTrigger value="approved">Approved</TabsTrigger>
+                <TabsTrigger value="rejected">Rejected</TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            {/* Content based on loading state */}
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-16 space-y-4">
+                <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
+                <p className="text-gray-600">Loading your documents...</p>
+              </div>
+            ) : error ? (
+              <div className="rounded-xl bg-red-50 p-6 text-center border border-red-200">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+                  <AlertTriangle className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="text-lg font-medium text-red-800">
+                  Loading Error
+                </h3>
+                <p className="mt-2 text-red-600">{error}</p>
+                <Button
+                  onClick={() => window.location.reload()}
+                  variant="outline"
+                  className="mt-4 border-red-300 text-red-700 hover:bg-red-50"
+                >
+                  Retry
+                </Button>
+              </div>
+            ) : filteredDocuments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
+                <FileText className="h-12 w-12 text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900">
+                  {activeTab === "all"
+                    ? "No documents uploaded yet"
+                    : `No ${activeTab} documents`}
+                </h3>
+                <p className="mt-1 text-gray-500 mb-6">
+                  {activeTab === "all"
+                    ? "Get started by uploading your first document"
+                    : `You don't have any ${activeTab} documents`}
+                </p>
+                {activeTab === "all" && (
+                  <Button
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={openAddDialog}
+                  >
+                    Upload Document
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredDocuments.map((doc) => {
+                  const docType =
+                    documentChecklist.find((d) => d.value === doc.document_type)
+                      ?.label || doc.document_type;
+                  return (
+                    <Card
+                      key={doc.id}
+                      className="transition-all duration-200 hover:shadow-md py-[21px] border-gray-200 rounded-xl overflow-hidden"
+                    >
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <h3 className="font-semibold text-gray-900 line-clamp-1">
+                            {docType}
+                          </h3>
+                          {doc.status && (
+                            <Badge
+                              variant={
+                                doc.status.toLowerCase() === "approved"
+                                  ? "default"
+                                  : doc.status.toLowerCase() === "rejected"
+                                  ? "destructive"
+                                  : "secondary"
+                              }
+                              className={`text-xs capitalize
+                                ${
+                                  doc.status.toLowerCase() === "approved"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : doc.status.toLowerCase() === "rejected"
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-yellow-100 text-yellow-800"
+                                }`}
+                            >
+                              {doc.status.toLowerCase() === "approved"
+                                ? "Verified"
+                                : doc.status.toLowerCase() === "rejected"
+                                ? "Rejected"
+                                : "Pending"}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          Uploaded:{" "}
+                          {new Date(doc.uploaded_at).toLocaleDateString()}
+                        </p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                          {doc.file_path ? (
+                            <button
+                              type="button"
+                              className="absolute inset-0 w-full h-full focus:outline-none"
+                              onClick={() => setEnlargedImage(doc.file_path)}
+                            >
+                              <Image
+                                src={doc.file_path}
+                                alt={docType}
+                                fill
+                                className="object-cover"
+                              />
+                              <div className="absolute inset-0  bg-opacity-0 hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center">
+                                <span className="bg-[#3e979f] bg-opacity-80 text-xs font-medium px-2 py-1 rounded-md shadow-sm text-white">
+                                  Click to enlarge
+                                </span>
+                              </div>
+                            </button>
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                              No preview available
+                            </div>
+                          )}
+                        </div>
+                        <div className="pt-2 ">
+                          {(doc.status?.toLowerCase() === "pending" ||
+                            doc.status?.toLowerCase() === "rejected") && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openEditDialog(doc.id)}
+                              className="gap-2"
+                            >
+                              <Pencil className="h-4 w-4" />
+                              Edit
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Image Enlarged Modal */}
+        <Dialog
+          open={!!enlargedImage}
+          onOpenChange={() => setEnlargedImage(null)}
+        >
+          <DialogContent className="lg:max-w-[900px] w-full bg-white border-none p-0 rounded-lg">
+            <DialogHeader className="px-6 pt-6">
+              <DialogTitle className="text-lg font-semibold text-gray-900">
+                Document Preview
+              </DialogTitle>
+              <DialogDescription className="text-gray-600">
+                {/* Show document type label below the header */}
+                {enlargedImage && (
+                  <span className="mt-2 block text-sm text-gray-700 font-mono">
+                    {documentChecklist.find(
+                      (doc) =>
+                        doc.value ===
+                        documents.find((d) => d.file_path === enlargedImage)
+                          ?.document_type
+                    )?.label || "Document Preview"}
+                  </span>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            {enlargedImage && (
+              <div className="flex items-center justify-center px-6 pb-6">
+                <Image
+                  src={enlargedImage}
+                  alt="Enlarged Document"
+                  width={1200}
+                  height={900}
+                  className="max-h-[70vh] max-w-full object-contain rounded-lg"
+                />
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Dialog for Add/Edit */}
         <Dialog
@@ -143,12 +446,12 @@ export default function TourGuideDocumentsPage() {
             }
           }}
         >
-          <DialogContent className="sm:max-w-[600px] rounded-lg">
+          <DialogContent className="sm:max-w-[600px] rounded-xl">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-semibold">
+              <DialogTitle className="text-xl font-semibold">
                 {dialogMode === "add" ? "Upload New Document" : "Edit Document"}
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-gray-600">
                 {dialogMode === "add"
                   ? "Submit required documents for verification"
                   : "Update your document information"}
@@ -175,96 +478,12 @@ export default function TourGuideDocumentsPage() {
                   onCancel={() => setDialogOpen(false)}
                 />
               ) : (
-                <div className="text-center py-8">Loading document...</div>
+                <div className="text-center py-8 text-gray-500">
+                  Loading document details...
+                </div>
               ))}
           </DialogContent>
         </Dialog>
-
-        {/* Content Section */}
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 space-y-4">
-            <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
-            <p className="text-gray-600">Loading your documents...</p>
-          </div>
-        ) : error ? (
-          <div className="rounded-xl bg-red-50 p-6 text-center border border-red-100 max-w-md mx-auto">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
-              <AlertTriangle className="h-6 w-6 text-red-600" />
-            </div>
-            <h3 className="text-lg font-medium text-red-800">Loading Error</h3>
-            <p className="mt-2 text-red-600">{error}</p>
-            <Button
-              onClick={() => window.location.reload()}
-              variant="outline"
-              className="mt-4 border-red-300 text-red-700 hover:bg-red-50"
-            >
-              Retry
-            </Button>
-          </div>
-        ) : documents.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 max-w-md mx-auto">
-            <FileText className="h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900">
-              No documents uploaded
-            </h3>
-            <p className="mt-1 text-gray-500 mb-6">
-              Get started by uploading your first document
-            </p>
-            <Button
-              className="bg-[#3e979f] hover:bg-[#1c5461] text-white"
-              onClick={openAddDialog}
-            >
-              Upload Document
-            </Button>
-          </div>
-        ) : (
-          <div className="flex flex-wrap justify-center gap-8 w-full">
-            {documents.map((doc) => (
-              <Card
-                key={doc.id}
-                className="transition-shadow duration-200 w-[300px] bg-white border border-[#e6f7fa] rounded-2xl shadow-md hover:shadow-xl m-2 flex flex-col"
-              >
-                <CardHeader>
-                  <h3 className="font-bold capitalize text-[#1c5461]">
-                    {doc.document_type.replace(/_/g, " ")}
-                  </h3>
-                </CardHeader>
-                <CardContent className="flex-1 flex items-center justify-center">
-                  {doc.file_path ? (
-                    <div className="flex justify-center w-full">
-                      <img
-                        src={doc.file_path}
-                        alt={doc.document_type}
-                        className="object-cover w-full h-48 rounded-lg border border-[#e6f7fa] bg-gray-50"
-                      />
-                    </div>
-                  ) : (
-                    <span className="text-gray-400 italic">
-                      No file uploaded
-                    </span>
-                  )}
-                </CardContent>
-                <CardFooter className="flex justify-between items-center px-4 pb-4">
-                  <span className="text-xs text-gray-500">
-                    {doc.uploaded_at
-                      ? new Date(doc.uploaded_at).toLocaleDateString()
-                      : ""}
-                  </span>
-                  <div className="flex gap-2">
-                    <Button
-                      className="gap-2 border-[#3e979f] text-[#1c5461]"
-                      variant="outline"
-                      onClick={() => openEditDialog(doc.id)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                      Edit
-                    </Button>
-                  </div>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        )}
       </div>
     </main>
   );

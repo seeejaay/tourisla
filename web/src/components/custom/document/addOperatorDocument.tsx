@@ -36,12 +36,15 @@ const AddOperatorDocument: React.FC<AddOperatorDocumentProps> = ({
           "image/jpeg",
           "image/png",
           "image/jpg",
+          "image/webp",
           "application/pdf",
         ];
         const maxSize = 5 * 1024 * 1024; // 5MB
 
         if (!allowedTypes.includes(selectedFile.type)) {
-          setFileError("Only PDF and image files (JPG, PNG) are allowed.");
+          setFileError(
+            "Only PDF and image files (JPG, PNG, WEBP, PDF) are allowed."
+          );
           setFile(null);
           return;
         }

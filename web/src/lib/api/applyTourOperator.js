@@ -69,3 +69,15 @@ export const rejectTourGuideApplication = async (applicationId) => {
     throw error;
   }
 };
+
+export const fetchAllApplications = async () => {
+  try {
+    const response = await axios.get(`${API_URL}applyToOperator/applications`, {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all applications:", error);
+    throw error;
+  }
+};

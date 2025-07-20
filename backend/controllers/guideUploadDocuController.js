@@ -4,12 +4,21 @@ const {
   editGuideUploadDocu,
   getGuideUploadDocuById,
   getGuideUploadByUserId,
+  approveGuideUploadDocu,
+  rejectGuideUploadDocu,
 } = require("../models/guideUploadDocuModel.js");
 
-const { getGuideRegisById } = require("../models/guideRegisModel.js"); // Adjust the path as necessary
+const {
+  getGuideRegisById,
+  getGuideUserIDByGuideId,
+} = require("../models/guideRegisModel.js"); // Adjust the path as necessary
 
 const { s3Client, PutObjectCommand } = require("../utils/s3.js"); // Adjust the path as necessary
 
+const {
+  sendDocumentApproveEmail,
+  sendDocumentRejectEmail,
+} = require("../utils/email.js"); // Adjust the path as necessary
 // from tour guide's end: can upload (create), update, and view their own documents only
 
 const createGuideUploadDocuController = async (req, res) => {
@@ -95,6 +104,7 @@ const createGuideUploadDocuController = async (req, res) => {
       document_type: doc_type,
       file_path,
       requirements: JSON.stringify(newrequirements),
+      status: "PENDING", // Default status when creating a new document
     });
     console.log("Document Created");
     res.json(guideUploadDocu);
@@ -203,9 +213,64 @@ const getGuideUploadByUserIdController = async (req, res) => {
   }
 };
 
+const approveGuideUploadDocuController = async (req, res) => {
+  try {
+    const { docuId } = req.body;
+
+    const approvedDoc = await approveGuideUploadDocu(docuId);
+
+    const guideRegis = await getGuideUserIDByGuideId(approvedDoc.tourguide_id);
+    const guideEmail = guideRegis.email;
+
+    if (!approvedDoc) {
+      return res.status(404).json({ error: "Document not found" });
+    }
+    console.log("Approved Document:", approvedDoc);
+    if (approvedDoc.status === "APPROVED") {
+      await sendDocumentApproveEmail(
+        guideEmail,
+        approvedDoc.document_type,
+        approvedDoc.file_path
+      );
+    }
+
+    res.json(approvedDoc);
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const rejectGuideUploadDocuController = async (req, res) => {
+  try {
+    const { docuId } = req.body;
+    const rejectedDoc = await rejectGuideUploadDocu(docuId);
+    const guideRegis = await getGuideUserIDByGuideId(rejectedDoc.tourguide_id);
+    const guideEmail = guideRegis.email;
+    if (!rejectedDoc) {
+      return res.status(404).json({ error: "Document not found" });
+    }
+    console.log("Rejected Document:", rejectedDoc);
+    if (rejectedDoc.status === "REJECTED") {
+      await sendDocumentRejectEmail(
+        guideEmail,
+        rejectedDoc.document_type,
+        rejectedDoc.file_path
+      );
+    }
+
+    res.json(rejectedDoc);
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   createGuideUploadDocuController,
   editGuideUploadDocuController,
   getGuideUploadDocuByIdController,
   getGuideUploadByUserIdController,
+  approveGuideUploadDocuController,
+  rejectGuideUploadDocuController,
 };
