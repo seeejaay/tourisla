@@ -26,6 +26,7 @@ export default function TourismOfficerLayout({
   const { loggedInUser } = useAuth();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false); // <-- Add this line
 
   useEffect(() => {
     async function fetchUser() {
@@ -44,14 +45,19 @@ export default function TourismOfficerLayout({
   if (role === "tourism officer") {
     navigation = tourismOfficerNavigation();
   } else {
-    // Default navigation for Tourist or others
     navigation = [];
   }
 
   return (
-    <div className="flex">
-      {role === "tourism officer" && <Sidebar navigation={navigation} />}
-      <main className="flex-1">{children}</main>
+    <div className="flex w-full h-screen">
+      {role === "tourism officer" && (
+        <Sidebar
+          navigation={navigation}
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
+        />
+      )}
+      <main className="flex-1 overflow-auto">{children}</main>
     </div>
   );
 }

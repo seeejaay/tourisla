@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useDocumentManager } from "@/hooks/useDocumentManager";
-import { FileText, AlertTriangle, Loader2, Check, X } from "lucide-react";
-import { toast } from "sonner";
+import { useTourGuideManager } from "@/hooks/useTourGuideManager";
+import { FileText, Loader2, Check, X } from "lucide-react";
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Card,
   CardHeader,
@@ -23,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TourGuide } from "@/components/custom/tour-guide/column";
 
 type GuideDocument = {
   id: string;
@@ -49,14 +52,36 @@ export default function TourGuideDocumentsApprovalPage() {
   const guideId = params?.id as string;
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("all");
-
+  const [tourGuide, setTourGuide] = useState<TourGuide | null>(null);
   const { fetchGuideDocumentsById, approveGuideDocument, rejectGuideDocument } =
     useDocumentManager();
   const [documents, setDocuments] = useState<GuideDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const {
+    approveTourGuideApplicant,
+    rejectTourGuideApplicant,
+    fetchTourGuideApplicant,
+  } = useTourGuideManager();
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [message, setMessage] = useState<string>("");
   useEffect(() => {
+    async function fetchTourGuide() {
+      try {
+        const tourGuide = await fetchTourGuideApplicant(guideId);
+        console.log("Fetched Tour Guide:", tourGuide);
+        if (!tourGuide) {
+          setError("Tour guide not found.");
+          return;
+        }
+        setTourGuide(tourGuide);
+      } catch (error) {
+        setError(
+          "Failed to load tour guide: " +
+            (error instanceof Error ? error.message : String(error))
+        );
+      }
+    }
     async function fetchDocs() {
       setLoading(true);
       setError(null);
@@ -76,26 +101,26 @@ export default function TourGuideDocumentsApprovalPage() {
       }
     }
     if (guideId) fetchDocs();
-  }, [guideId, fetchGuideDocumentsById]);
+    if (guideId) fetchTourGuide();
+  }, [guideId, fetchGuideDocumentsById, fetchTourGuideApplicant]);
 
   const handleApprove = async (docId: string) => {
     try {
       const result = await approveGuideDocument(docId);
       if (result) {
-        toast.success("Document approved successfully.");
         setDocuments((prev) =>
           prev.map((doc) =>
             doc.id === docId ? { ...doc, status: "APPROVED" } : doc
           )
         );
       } else {
-        toast.error("Failed to approve document.");
       }
     } catch (error) {
-      toast.error(
-        "Error approving document: " +
+      setError(
+        "Failed to approve document: " +
           (error instanceof Error ? error.message : String(error))
       );
+      console.error("Error approving document:", error);
     }
   };
 
@@ -103,20 +128,64 @@ export default function TourGuideDocumentsApprovalPage() {
     try {
       const result = await rejectGuideDocument(docId);
       if (result) {
-        toast.success("Document rejected successfully.");
         setDocuments((prev) =>
           prev.map((doc) =>
             doc.id === docId ? { ...doc, status: "REJECTED" } : doc
           )
         );
       } else {
-        toast.error("Failed to reject document.");
       }
     } catch (error) {
-      toast.error(
-        "Error rejecting document: " +
+      setError(
+        "Failed to reject document: " +
           (error instanceof Error ? error.message : String(error))
       );
+      console.error("Error rejecting document:", error);
+    }
+  };
+
+  const handleApproveTourGuide = async () => {
+    if (!tourGuide || typeof tourGuide.id !== "string") {
+      return;
+    }
+    try {
+      const result = await approveTourGuideApplicant(
+        Number(guideId),
+        tourGuide.id
+      );
+      setMessage("Tour guide approved successfully.");
+      setAlertOpen(true);
+      console.log("Approve Tour Guide Result:", result);
+      if (result) {
+        // router.push("/tourism-officer/tour-guides");
+      } else {
+      }
+    } catch (error) {
+      setError(
+        "Failed to approve tour guide: " +
+          (error instanceof Error ? error.message : String(error))
+      );
+      console.error("Error approving tour guide:", error);
+    }
+  };
+  const handleRejectTourGuide = async () => {
+    try {
+      const result = await rejectTourGuideApplicant(
+        guideId,
+        tourGuide?.id?.toString() || ""
+      );
+      if (result) {
+        setMessage("Tour guide rejected successfully.");
+        setAlertOpen(true);
+        router.push("/tourism-officer/tour-guides");
+      } else {
+      }
+    } catch (error) {
+      setError(
+        "Failed to reject tour guide: " +
+          (error instanceof Error ? error.message : String(error))
+      );
+      console.error("Error rejecting tour guide:", error);
     }
   };
 
@@ -140,331 +209,403 @@ export default function TourGuideDocumentsApprovalPage() {
   );
 
   return (
-    <main className="min-h-screen w-full bg-gray-50 flex flex-col items-center py-8 px-4 sm:px-6">
-      <div className="w-full max-w-6xl mx-auto space-y-6">
-        {/* Header Section */}
-        <div className="flex flex-col gap-6">
-          <div>
-            <h1 className="text-3xl font-bold text-[#1c5461] tracking-tight">
-              Tour Guide Documents Review
-            </h1>
-            <p className="text-[#3e979f] mt-2">
-              Review and verify documents submitted by this tour guide
-            </p>
-          </div>
-
-          {/* Verification Progress */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Verification Status
-              </h2>
-              <p className="text-gray-600 text-sm">
-                {verifiedDocs} of {requiredDocs.length} required documents
-                verified
+    <>
+      <main className="min-h-screen w-full bg-gray-50 flex flex-col items-center py-8 px-4 sm:px-6">
+        <div className="w-full max-w-6xl mx-auto space-y-6">
+          {/* Header Section */}
+          <div className="flex flex-col gap-6">
+            <div>
+              <h1 className="text-3xl font-bold text-[#1c5461] tracking-tight">
+                Tour Guide
+              </h1>
+              <p className="text-[#3e979f] mt-2">
+                Review and verify documents submitted by this tour guide
               </p>
-              <div className="flex justify-between items-center">
-                <div className="w-1/2 bg-gray-200 rounded-full h-2.5">
-                  <div
-                    className={`bg-black h-2.5 rounded-full  transition-all duration-300`}
-                    style={{ width: `${verificationPercentage}%` }}
-                  ></div>
+            </div>
+
+            {/* Tour Guide Information */}
+            {tourGuide && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col md:flex-row items-center gap-6">
+                {/* Avatar or Placeholder */}
+                <div className="flex-shrink-0 w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
+                  {/* If you have a profile image, replace src below */}
+                  <Image
+                    src={
+                      typeof tourGuide.profile_picture === "string"
+                        ? tourGuide.profile_picture
+                        : tourGuide.profile_picture instanceof File
+                        ? URL.createObjectURL(tourGuide.profile_picture)
+                        : "/images/maleavatar.png"
+                    }
+                    alt={`${tourGuide.first_name} ${tourGuide.last_name}`}
+                    width={96}
+                    height={96}
+                    className="object-contain"
+                  />
                 </div>
-                <Button
-                  onClick={() => router.push(`/tourism-officer/tour-guides`)}
-                  variant="outline"
-                  className="text-gray-600 hover:bg-gray-100 cursor-pointer"
-                >
-                  All Tour Guides
-                </Button>
+                {/* Info */}
+                <div className="flex-1">
+                  <h2 className="text-md lg:text-lg font-semibold text-gray-900 mb-2">
+                    {tourGuide.first_name} {tourGuide.last_name}
+                  </h2>
+                  <div className="flex justify-between gap-2  ">
+                    <div>
+                      <p className="text-gray-600 text-sm lg:text-md">
+                        <span className="font-medium text-gray-800">
+                          Email:
+                        </span>{" "}
+                        {tourGuide.email}
+                      </p>
+                      <p className="text-gray-600 text-sm lg:text-md">
+                        <span className="font-medium text-gray-800">
+                          Phone:
+                        </span>{" "}
+                        {tourGuide.mobile_number}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={handleApproveTourGuide}
+                        className={`bg-green-100 text-green-600 hover:bg-green-200 cursor-pointer
+                      
+                      ${
+                        tourGuide.application_status === "APPROVED"
+                          ? "hidden"
+                          : "block"
+                      }
+                    `}
+                        disabled={verificationPercentage < 100}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        onClick={handleRejectTourGuide}
+                        className={`bg-red-100 text-red-600 hover:bg-red-200 cursor-pointer
+
+                      ${
+                        tourGuide.application_status === "REJECTED"
+                          ? "hidden"
+                          : "block"
+                      }`}
+                      >
+                        {tourGuide.application_status === "PENDING"
+                          ? "Reject"
+                          : "Disable"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Verification Progress */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Verification Status
+                </h2>
+                <p className="text-gray-600 text-sm">
+                  {verifiedDocs} of {requiredDocs.length} required documents
+                  verified
+                </p>
+                <div className="flex justify-between items-center">
+                  <div className="w-1/2 bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className={`bg-black h-2.5 rounded-full  transition-all duration-300`}
+                      style={{ width: `${verificationPercentage}%` }}
+                    ></div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Main Content Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Checklist Panel */}
-          <div className="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-fit">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Document Checklist
-            </h2>
-            <ul className="space-y-3">
-              {documentTypes.map((doc) => {
-                const uploadedDoc = documents.find(
-                  (d) => d.document_type === doc.value
-                );
-                return (
-                  <li key={doc.value} className="flex items-start gap-3">
-                    <div
-                      className={`mt-0.5 flex-shrink-0 rounded-full p-1 ${
-                        uploadedDoc
-                          ? uploadedDoc.status === "APPROVED"
-                            ? "bg-green-100 text-green-600"
-                            : uploadedDoc.status === "REJECTED"
-                            ? "bg-red-100 text-red-600"
-                            : "bg-yellow-100 text-yellow-600"
-                          : "bg-gray-100 text-gray-400"
-                      }`}
-                    >
-                      {uploadedDoc ? (
-                        uploadedDoc.status === "APPROVED" ? (
-                          <Check className="h-4 w-4" />
+          {/* Main Content Area */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Checklist Panel */}
+            <div className="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-fit">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Document Checklist
+              </h2>
+              <ul className="space-y-3">
+                {documentTypes.map((doc) => {
+                  const uploadedDoc = documents.find(
+                    (d) => d.document_type === doc.value
+                  );
+                  return (
+                    <li key={doc.value} className="flex items-start gap-3">
+                      <div
+                        className={`mt-0.5 flex-shrink-0 rounded-full p-1 ${
+                          uploadedDoc
+                            ? uploadedDoc.status === "APPROVED"
+                              ? "bg-green-100 text-green-600"
+                              : uploadedDoc.status === "REJECTED"
+                              ? "bg-red-100 text-red-600"
+                              : "bg-yellow-100 text-yellow-600"
+                            : "bg-gray-100 text-gray-400"
+                        }`}
+                      >
+                        {uploadedDoc ? (
+                          uploadedDoc.status === "APPROVED" ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <X className="h-4 w-4" />
+                          )
                         ) : (
                           <X className="h-4 w-4" />
-                        )
-                      ) : (
-                        <X className="h-4 w-4" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <span
-                          className={`text-sm font-medium ${
-                            uploadedDoc
-                              ? uploadedDoc.status === "APPROVED"
-                                ? "text-gray-900"
-                                : "text-gray-600"
-                              : "text-gray-600"
-                          }`}
-                        >
-                          {doc.label}
-                        </span>
-                        {doc.required && (
-                          <Badge
-                            variant={
-                              uploadedDoc
-                                ? uploadedDoc.status === "APPROVED"
-                                  ? "default"
-                                  : uploadedDoc.status === "REJECTED"
-                                  ? "destructive"
-                                  : "secondary"
-                                : "destructive"
-                            }
-                            className={`text-xs w-24 ${
-                              uploadedDoc
-                                ? uploadedDoc.status === "APPROVED"
-                                  ? "bg-blue-100 text-blue-600"
-                                  : uploadedDoc.status === "REJECTED"
-                                  ? "bg-red-100 text-red-600"
-                                  : "bg-yellow-100 text-yellow-600"
-                                : ""
-                            }`}
-                          >
-                            {uploadedDoc
-                              ? uploadedDoc.status === "APPROVED"
-                                ? "Verified"
-                                : uploadedDoc.status === "REJECTED"
-                                ? "Rejected"
-                                : "Pending"
-                              : "Required"}
-                          </Badge>
                         )}
                       </div>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-
-          {/* Documents Panel */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Tabs for document filtering */}
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-4 w-full">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="pending">Pending</TabsTrigger>
-                <TabsTrigger value="approved">Approved</TabsTrigger>
-                <TabsTrigger value="rejected">Rejected</TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            {/* Content based on loading state */}
-            {loading ? (
-              <div className="flex flex-col items-center justify-center py-16 space-y-4">
-                <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
-                <p className="text-gray-600">Loading documents...</p>
-              </div>
-            ) : error ? (
-              <div className="rounded-xl bg-red-50 p-6 text-center border border-red-200">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
-                  <AlertTriangle className="h-6 w-6 text-red-600" />
-                </div>
-                <h3 className="text-lg font-medium text-red-800">
-                  Loading Error
-                </h3>
-                <p className="mt-2 text-red-600">{error}</p>
-                <Button
-                  onClick={() => window.location.reload()}
-                  variant="outline"
-                  className="mt-4 border-red-300 text-red-700 hover:bg-red-50"
-                >
-                  Retry
-                </Button>
-              </div>
-            ) : filteredDocuments.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
-                <FileText className="h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900">
-                  {activeTab === "all"
-                    ? "No documents uploaded yet"
-                    : `No ${activeTab} documents`}
-                </h3>
-                <p className="mt-1 text-gray-500 mb-6">
-                  {activeTab === "all"
-                    ? "This tour guide hasn't uploaded any documents yet."
-                    : `There are no ${activeTab} documents`}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredDocuments.map((doc) => {
-                  const docType =
-                    documentTypes.find((d) => d.value === doc.document_type)
-                      ?.label || doc.document_type;
-                  return (
-                    <Card
-                      key={doc.id}
-                      className="transition-all duration-200 hover:shadow-md border-gray-200 rounded-xl overflow-hidden"
-                    >
-                      <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-semibold text-gray-900 line-clamp-1">
-                            {docType}
-                          </h3>
-                          {doc.status && (
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={`text-sm font-medium ${
+                              uploadedDoc
+                                ? uploadedDoc.status === "APPROVED"
+                                  ? "text-gray-900"
+                                  : "text-gray-600"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            {doc.label}
+                          </span>
+                          {doc.required && (
                             <Badge
                               variant={
-                                doc.status.toLowerCase() === "approved"
-                                  ? "default"
-                                  : doc.status.toLowerCase() === "rejected"
-                                  ? "destructive"
-                                  : "secondary"
+                                uploadedDoc
+                                  ? uploadedDoc.status === "APPROVED"
+                                    ? "default"
+                                    : uploadedDoc.status === "REJECTED"
+                                    ? "destructive"
+                                    : "secondary"
+                                  : "destructive"
                               }
-                              className={`text-xs capitalize ${
-                                doc.status === "PENDING"
-                                  ? "text-yellow-600 bg-yellow-100"
-                                  : doc.status === "APPROVED"
-                                  ? "text-blue-600 bg-blue-100"
-                                  : "text-red-600 bg-red-100"
+                              className={`text-xs w-24 ${
+                                uploadedDoc
+                                  ? uploadedDoc.status === "APPROVED"
+                                    ? "bg-blue-100 text-blue-600"
+                                    : uploadedDoc.status === "REJECTED"
+                                    ? "bg-red-100 text-red-600"
+                                    : "bg-yellow-100 text-yellow-600"
+                                  : ""
                               }`}
                             >
-                              {doc.status.toLowerCase() === "pending"
-                                ? "Pending"
-                                : doc.status.toLowerCase() === "approved"
-                                ? "Verified"
-                                : "Rejected"}
+                              {uploadedDoc
+                                ? uploadedDoc.status === "APPROVED"
+                                  ? "Verified"
+                                  : uploadedDoc.status === "REJECTED"
+                                  ? "Rejected"
+                                  : "Pending"
+                                : "Required"}
                             </Badge>
                           )}
                         </div>
-                        {doc.uploaded_at && (
-                          <p className="text-xs text-gray-500">
-                            Uploaded:{" "}
-                            {new Date(doc.uploaded_at).toLocaleDateString()}
-                          </p>
-                        )}
-                      </CardHeader>
-                      <CardContent>
-                        <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-                          {doc.file_path ? (
-                            <button
-                              type="button"
-                              className="absolute inset-0 w-full h-full focus:outline-none"
-                              onClick={() =>
-                                doc.file_path && setEnlargedImage(doc.file_path)
-                              }
-                            >
-                              <Image
-                                src={doc.file_path!}
-                                alt={docType}
-                                fill
-                                className="object-cover"
-                              />
-                              <div className="absolute inset-0  hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center">
-                                <span className="bg-[#3e979f] bg-opacity-80 text-xs font-medium px-2 py-1 rounded-md shadow-sm text-white">
-                                  Click to enlarge
-                                </span>
-                              </div>
-                            </button>
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                              No preview available
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                      <CardFooter className="flex justify-between items-center px-4 pb-4">
-                        {doc.status === "PENDING" ? (
-                          <>
-                            <Button
-                              variant="outline"
-                              className="text-green-600 border-green-300 hover:bg-green-50"
-                              onClick={() => handleApprove(doc.id)}
-                            >
-                              Approve
-                            </Button>
-                            <Button
-                              variant="outline"
-                              className="text-red-600 border-red-300 hover:bg-red-50"
-                              onClick={() => handleReject(doc.id)}
-                            >
-                              Reject
-                            </Button>
-                          </>
-                        ) : (
-                          <div className="w-full text-center text-sm text-gray-500">
-                            {doc.status === "APPROVED"
-                              ? "This document has been approved"
-                              : "This document has been rejected"}
-                          </div>
-                        )}
-                      </CardFooter>
-                    </Card>
+                      </div>
+                    </li>
                   );
                 })}
-              </div>
-            )}
-          </div>
-        </div>
+              </ul>
+            </div>
 
-        {/* Image Enlarged Modal */}
-        <Dialog
-          open={!!enlargedImage}
-          onOpenChange={() => setEnlargedImage(null)}
-        >
-          <DialogContent className="lg:max-w-[900px] w-full bg-white border-none p-0 rounded-lg">
-            <DialogHeader className="px-6 pt-6">
-              <DialogTitle className="text-lg font-semibold text-gray-900">
-                Document Preview
-              </DialogTitle>
-              <DialogDescription className="text-gray-600">
-                {enlargedImage && (
-                  <span className="mt-2 block text-sm text-gray-700">
-                    {documentTypes.find(
-                      (doc) =>
-                        doc.value ===
-                        documents.find((d) => d.file_path === enlargedImage)
-                          ?.document_type
-                    )?.label || "Document Preview"}
-                  </span>
-                )}
-              </DialogDescription>
-            </DialogHeader>
-            {enlargedImage && (
-              <div className="flex items-center justify-center px-6 pb-6">
-                <Image
-                  src={enlargedImage}
-                  alt="Enlarged Document"
-                  width={1200}
-                  height={900}
-                  className="max-h-[70vh] max-w-full object-contain rounded-lg"
-                />
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-      </div>
-    </main>
+            {/* Documents Panel */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Tabs for document filtering */}
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid grid-cols-4 w-full">
+                  <TabsTrigger value="all">All</TabsTrigger>
+                  <TabsTrigger value="pending">Pending</TabsTrigger>
+                  <TabsTrigger value="approved">Approved</TabsTrigger>
+                  <TabsTrigger value="rejected">Rejected</TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              {/* Content based on loading state */}
+              {loading ? (
+                <div className="flex flex-col items-center justify-center py-16 space-y-4">
+                  <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
+                  <p className="text-gray-600">Loading documents...</p>
+                </div>
+              ) : error || filteredDocuments.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
+                  <FileText className="h-12 w-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900">
+                    {activeTab === "all"
+                      ? "No documents uploaded yet"
+                      : `No ${activeTab} documents`}
+                  </h3>
+                  <p className="mt-1 text-gray-500 mb-6">
+                    {activeTab === "all"
+                      ? "This tour guide hasn't uploaded any documents yet."
+                      : `There are no ${activeTab} documents`}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {filteredDocuments.map((doc) => {
+                    const docType =
+                      documentTypes.find((d) => d.value === doc.document_type)
+                        ?.label || doc.document_type;
+                    return (
+                      <Card
+                        key={doc.id}
+                        className="transition-all duration-200 hover:shadow-md border-gray-200 rounded-xl overflow-hidden"
+                      >
+                        <CardHeader>
+                          <div className="flex justify-between items-start">
+                            <h3 className="font-semibold text-gray-900 line-clamp-1">
+                              {docType}
+                            </h3>
+                            {doc.status && (
+                              <Badge
+                                variant={
+                                  doc.status.toLowerCase() === "approved"
+                                    ? "default"
+                                    : doc.status.toLowerCase() === "rejected"
+                                    ? "destructive"
+                                    : "secondary"
+                                }
+                                className={`text-xs capitalize ${
+                                  doc.status === "PENDING"
+                                    ? "text-yellow-600 bg-yellow-100"
+                                    : doc.status === "APPROVED"
+                                    ? "text-blue-600 bg-blue-100"
+                                    : "text-red-600 bg-red-100"
+                                }`}
+                              >
+                                {doc.status.toLowerCase() === "pending"
+                                  ? "Pending"
+                                  : doc.status.toLowerCase() === "approved"
+                                  ? "Verified"
+                                  : "Rejected"}
+                              </Badge>
+                            )}
+                          </div>
+                          {doc.uploaded_at && (
+                            <p className="text-xs text-gray-500">
+                              Uploaded:{" "}
+                              {new Date(doc.uploaded_at).toLocaleDateString()}
+                            </p>
+                          )}
+                        </CardHeader>
+                        <CardContent>
+                          <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                            {doc.file_path ? (
+                              <button
+                                type="button"
+                                className="absolute inset-0 w-full h-full focus:outline-none"
+                                onClick={() =>
+                                  doc.file_path &&
+                                  setEnlargedImage(doc.file_path)
+                                }
+                              >
+                                <Image
+                                  src={doc.file_path!}
+                                  alt={docType}
+                                  fill
+                                  className="object-cover"
+                                />
+                                <div className="absolute inset-0  hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center">
+                                  <span className="bg-[#3e979f] bg-opacity-80 text-xs font-medium px-2 py-1 rounded-md shadow-sm text-white">
+                                    Click to enlarge
+                                  </span>
+                                </div>
+                              </button>
+                            ) : (
+                              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                                No preview available
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                        <CardFooter className="flex justify-between items-center ">
+                          {doc.status === "PENDING" ? (
+                            <>
+                              <Button
+                                variant="outline"
+                                className="text-green-600 border-green-300 hover:bg-green-50"
+                                onClick={() => handleApprove(doc.id)}
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="text-red-600 border-red-300 hover:bg-red-50"
+                                onClick={() => handleReject(doc.id)}
+                              >
+                                Reject
+                              </Button>
+                            </>
+                          ) : (
+                            ""
+                          )}
+                        </CardFooter>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Image Enlarged Modal */}
+          <Dialog
+            open={!!enlargedImage}
+            onOpenChange={() => setEnlargedImage(null)}
+          >
+            <DialogContent className="lg:max-w-[900px] w-full bg-white border-none p-0 rounded-lg">
+              <DialogHeader className="px-6 pt-6">
+                <DialogTitle className="text-lg font-semibold text-gray-900">
+                  Document Preview
+                </DialogTitle>
+                <DialogDescription className="text-gray-600">
+                  {enlargedImage && (
+                    <span className="mt-2 block text-sm text-gray-700">
+                      {documentTypes.find(
+                        (doc) =>
+                          doc.value ===
+                          documents.find((d) => d.file_path === enlargedImage)
+                            ?.document_type
+                      )?.label || "Document Preview"}
+                    </span>
+                  )}
+                </DialogDescription>
+              </DialogHeader>
+              {enlargedImage && (
+                <div className="flex items-center justify-center px-6 pb-6">
+                  <Image
+                    src={enlargedImage}
+                    alt="Enlarged Document"
+                    width={1200}
+                    height={900}
+                    className="max-h-[70vh] max-w-full object-contain rounded-lg"
+                  />
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        </div>
+      </main>
+
+      <Alert
+        className={`fixed inset-0 z-50 flex items-center justify-center w-full h-full
+          ${alertOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        style={{ background: alertOpen ? "rgba(0,0,0,0.15)" : "transparent" }}
+      >
+        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
+          <AlertTitle className="text-lg font-semibold text-gray-900">
+            {error ? "Error" : "Success"}
+          </AlertTitle>
+          <AlertDescription className="text-gray-600">
+            {error || message || "Operation completed successfully."}
+          </AlertDescription>
+          <Button
+            variant="outline"
+            className="mt-2 cursor-pointer"
+            onClick={() => setAlertOpen(false)}
+          >
+            Close
+          </Button>
+        </div>
+      </Alert>
+    </>
   );
 }

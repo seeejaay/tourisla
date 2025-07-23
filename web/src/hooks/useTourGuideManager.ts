@@ -194,11 +194,11 @@ export const useTourGuideManager = () => {
   );
   // Approve a tour guide applicant
   const approveTourGuideApplicant = useCallback(
-    async (id: number): Promise<TourGuide | null> => {
+    async (id: number, guideUserId: string): Promise<TourGuide | null> => {
       setLoading(true);
       setError("");
       try {
-        const response = await apiApproveTourGuideApplicant(id);
+        const response = await apiApproveTourGuideApplicant(id, guideUserId);
         if (response.error) {
           setError(response.error);
           return response;
@@ -218,11 +218,11 @@ export const useTourGuideManager = () => {
   );
   // Reject a tour guide applicant
   const rejectTourGuideApplicant = useCallback(
-    async (id: string): Promise<TourGuide | null> => {
+    async (id: string, guideUserId: string): Promise<TourGuide | null> => {
       setLoading(true);
       setError("");
       try {
-        const response = await apiRejectTourGuideApplicant(id);
+        const response = await apiRejectTourGuideApplicant(id, guideUserId);
         if (response.error) {
           setError(response.error);
           return null;
