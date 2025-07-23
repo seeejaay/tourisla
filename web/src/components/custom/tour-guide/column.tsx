@@ -2,16 +2,8 @@
 
 import React from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 export type TourGuide = {
   id?: number;
@@ -28,9 +20,7 @@ export type TourGuide = {
 };
 export function columns(
   setDialogTourGuide: (guide: TourGuide | null) => void,
-  onViewDocuments: (guide: TourGuide) => void,
-  onApprove: (guide: TourGuide) => void,
-  onReject: (guide: TourGuide) => void
+  onViewDocuments: (guide: TourGuide) => void
 ): ColumnDef<TourGuide>[] {
   return [
     {
@@ -71,10 +61,18 @@ export function columns(
       accessorKey: "application_status",
       header: () => <span className="font-bold">Application Status</span>,
       cell: ({ row }) => {
-        const status = row.original.application_status || "Pending";
+        const status = row.original.application_status || "PENDING";
+        const statusClass =
+          status === "APPROVED"
+            ? "text-green-600 bg-green-100"
+            : status === "REJECTED"
+            ? "text-red-600 bg-red-100"
+            : "text-yellow-600 bg-yellow-100";
         return (
-          <span className="capitalize">
-            {status === "approved" ? "Approved" : status}
+          <span className={` ${statusClass} p-2 rounded-full`}>
+            {status
+              .toLowerCase()
+              .replace(/\b\w/g, (char) => char.toUpperCase())}
           </span>
         );
       },
@@ -85,33 +83,14 @@ export function columns(
       cell: ({ row }) => {
         const guide = row.original;
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="p-0 w-8 h-8">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setDialogTourGuide(guide)}>
-                View
-              </DropdownMenuItem>
-
-              <DropdownMenuItem onClick={() => onViewDocuments(guide)}>
-                View Documents
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onApprove(guide)}>
-                Approve
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onReject(guide)}
-                className="text-red-500"
-              >
-                Reject
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-2">
+            <a
+              onClick={() => onViewDocuments(guide)}
+              className="text-blue-600 rounded-sm hover:underline text-center cursor-pointer font-semibold"
+            >
+              View
+            </a>
+          </div>
         );
       },
     },

@@ -6,7 +6,7 @@ import DataTable from "@/components/custom/data-table";
 import { useTourGuideManager } from "@/hooks/useTourGuideManager";
 import { useRouter } from "next/navigation";
 import ViewTourGuide from "@/components/custom/tour-guide/viewTourGuide";
-
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -20,13 +20,9 @@ export default function TourGuideListPage() {
   const [dialogTourGuide, setDialogTourGuide] = useState<TourGuide | null>(
     null
   );
-
-  const {
-    fetchAllTourGuideApplicants,
-    fetchTourGuideApplicant,
-    approveTourGuideApplicant,
-    rejectTourGuideApplicant,
-  } = useTourGuideManager();
+  const [activeTab, setActiveTab] = useState("all");
+  const { fetchAllTourGuideApplicants, fetchTourGuideApplicant } =
+    useTourGuideManager();
   const router = useRouter();
 
   useEffect(() => {
@@ -66,47 +62,12 @@ export default function TourGuideListPage() {
     router.push(`tour-guides/${guide.user_id}/documents`);
   };
 
-  const handleApprove = async (guide: TourGuide | null) => {
-    if (!guide || !guide.id) return;
-    await approveTourGuideApplicant(guide.id);
-    const guides = await fetchAllTourGuideApplicants();
-    setData(
-      (guides as TourGuide[]).map((g) => ({
-        id: g.id ? Number(g.id) : undefined,
-        first_name: g.first_name,
-        last_name: g.last_name,
-        birth_date: g.birth_date,
-        sex: g.sex,
-        mobile_number: g.mobile_number,
-        email: g.email,
-        reason_for_applying: g.reason_for_applying,
-        profile_picture: g.profile_picture,
-        application_status: g.application_status ?? "pending",
-        user_id: g.user_id ? Number(g.user_id) : undefined,
-      }))
-    );
-  };
-
-  const handleReject = async (guide: TourGuide | null) => {
-    if (!guide || !guide.id) return;
-    await rejectTourGuideApplicant(guide.id.toString());
-    const guides = await fetchAllTourGuideApplicants();
-    setData(
-      (guides as TourGuide[]).map((g) => ({
-        id: g.id ? Number(g.id) : undefined,
-        first_name: g.first_name,
-        last_name: g.last_name,
-        birth_date: g.birth_date,
-        sex: g.sex,
-        mobile_number: g.mobile_number,
-        email: g.email,
-        reason_for_applying: g.reason_for_applying,
-        profile_picture: g.profile_picture,
-        application_status: g.application_status ?? "pending",
-        user_id: g.user_id ? Number(g.user_id) : undefined,
-      }))
-    );
-  };
+  const filteredData =
+    activeTab === "all"
+      ? data
+      : data.filter(
+          (guide) => guide.application_status === activeTab.toUpperCase()
+        );
 
   return (
     <main className="flex flex-col items-center min-h-screen w-full bg-gradient-to-br from-[#e6f7fa] via-white to-[#b6e0e4] px-2 py-8">
@@ -119,19 +80,28 @@ export default function TourGuideListPage() {
             Review, approve, or reject tour guide applications.
           </p>
         </div>
-        <div className="w-full flex flex-col items-center">
-          <div className="max-w-4xl w-full mx-auto bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-4 md:p-8">
-            <DataTable<TourGuide, unknown>
-              columns={columns(
-                handleViewTourGuide,
-                handleViewDocuments,
-                handleApprove,
-                handleReject
-              )}
-              data={data}
-              searchPlaceholder="Search by name..."
-              searchColumn="first_name"
-            />
+        <div className="w-full max-w-4xl bg-white rounded-2xl shadow-md border border-[#e6f7fa] p-4 md:p-8">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full mb-4"
+          >
+            <TabsList className="grid grid-cols-4 w-full">
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="pending">Pending</TabsTrigger>
+              <TabsTrigger value="approved">Approved</TabsTrigger>
+              <TabsTrigger value="rejected">Rejected</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <div className="w-full flex flex-col items-center">
+            <div className="max-w-4xl w-full mx-auto p-4 md:p-8">
+              <DataTable<TourGuide, unknown>
+                columns={columns(handleViewTourGuide, handleViewDocuments)}
+                data={filteredData}
+                searchPlaceholder="Search by name..."
+                searchColumn="first_name"
+              />
+            </div>
           </div>
         </div>
       </div>

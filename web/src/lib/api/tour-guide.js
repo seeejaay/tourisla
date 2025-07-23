@@ -160,11 +160,11 @@ export const fetchOneTourGuideApplicant = async (applicantId) => {
   }
 };
 
-export const approveTourGuideApplicant = async (applicantId) => {
+export const approveTourGuideApplicant = async (applicantId, guideUserId) => {
   try {
     const response = await axios.put(
       `${API_URL}guideApplicants/${applicantId}/approve`,
-      {},
+      { guideUserId },
       {
         withCredentials: true,
       }
@@ -183,11 +183,11 @@ export const approveTourGuideApplicant = async (applicantId) => {
     throw error;
   }
 };
-export const rejectTourGuideApplicant = async (applicantId) => {
+export const rejectTourGuideApplicant = async (applicantId, guideUserId) => {
   try {
     const response = await axios.put(
       `${API_URL}guideApplicants/${applicantId}/reject`,
-      {},
+      { guideUserId },
       {
         withCredentials: true,
       }
