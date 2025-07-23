@@ -304,12 +304,13 @@ const styles = StyleSheet.create({
     color: '#64c5a5',
   },
   displayName: {
-    fontSize: 28,
+    fontSize: 25,
     fontWeight: '900',
     color: '#1c5461',
+    marginBottom: -2,
   },
   displayRole: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '600',
     color: '#1c5461',
   },

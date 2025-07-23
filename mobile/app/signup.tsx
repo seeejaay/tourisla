@@ -219,7 +219,7 @@ export default function SignUpScreen() {
             <CheckBox
               value={form.terms}
               onValueChange={(val) => handleChange("terms", val)}
-              color={form.terms ? "#47d8d3" : undefined}
+              color={form.terms ? "#7eccb6" : undefined}
             />
             <Text
               style={styles.checkboxLabel}
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: "900",
     textAlign: "center",
-    color: "#005582",
+    color: "#1c5461",
     marginBottom: 24,
   },
   nameRow: {
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     width: "48%",
   },
   input: {
-    borderColor: "#97ebdb",
+    borderColor: "#7eccb6",
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     color: "#005582",
   },
   pickerWrapper: {
-    borderColor: "#97ebdb",
+    borderColor: "#7eccb6",
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 16,
@@ -290,14 +290,14 @@ const styles = StyleSheet.create({
   },
   picker: {
     height: 50,
-    color: "#005582",
+    color: "#0eb28d",
   },
   passwordContainer: {
     position: "relative",
     marginBottom: 16,
   },
   passwordInput: {
-    borderColor: "#97ebdb",
+    borderColor: "#7eccb6",
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,
@@ -317,12 +317,12 @@ const styles = StyleSheet.create({
   },
   checkboxLabel: {
     marginLeft: 8,
-    color: "#0086ad",
+    color: "#1c5461",
     fontSize: 14,
     fontWeight: "500",
   },
   signupButton: {
-    backgroundColor: "#00c2c7",
+    backgroundColor: "#7eccb6",
     padding: 15,
     borderRadius: 8,
     marginTop: 10,
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
   },
   loginRedirectText: {
     textAlign: "center",
-    color: "#005582",
+    color: "#1c5461",
     fontSize: 14,
     fontWeight: "500",
   },
