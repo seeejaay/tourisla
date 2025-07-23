@@ -4,7 +4,6 @@ import TouristHomeScreen from "./home/tourist_home";
 import PublicArticlesScreen from "./culture/tourist_culture";
 import TouristRegistrationScreen from "./regis/tourist_regis";
 import TouristHotlines from "./profile/about/hotlines/tourist_hotlines";
-import TouristActivityScreen from "./activity/tourist_activity";
 import TouristPackagesScreen from "./packages/tourist_packages";
 import MoreScreen from "./more/MoreScreen";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
@@ -55,9 +54,6 @@ function CustomTabBar({ state, descriptors, navigation }) {
             case "Registration":
               iconName = isFocused ? "clipboard" : "clipboard-outline";
               IconComponent = Ionicons;
-              break;
-            case "Activity":
-              iconName = isFocused ? "pulse" : "pulse-outline";
               break;
             case "Packages":
               iconName = isFocused ? "calendar-clear" : "calendar-clear-outline";
@@ -161,15 +157,6 @@ export default function TouristDashboard() {
               </View>
             )}
           </Tab.Screen>
-          <Tab.Screen name="Activity" options={{ tabBarLabel: "Activity" }}>
-            {() => (
-              <View style={{ flex: 1 }}>
-                <DashboardHeader />
-                <TouristActivityScreen />
-              </View>
-            )}
-          </Tab.Screen>
-
           <Tab.Screen name="Packages">
             {() => (
               <View style={{ flex: 1 }}>
