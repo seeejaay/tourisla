@@ -154,3 +154,47 @@ export const getOperatorDocumentsByUserId = async (userId) => {
     throw error;
   }
 };
+
+export const approveTourGuideDocument = async (documentId) => {
+  try {
+    const response = await axios.put(
+      `${API_URL}guideUploadDocu/approve`,
+      { docuId: documentId },
+      { withCredentials: true }
+    );
+
+    if (response.status !== 200) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Approving Tour Guide Document: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const rejectTourGuideDocument = async (documentId) => {
+  try {
+    const response = await axios.put(
+      `${API_URL}guideUploadDocu/reject`,
+      { docuId: documentId },
+      { withCredentials: true }
+    );
+
+    if (response.status !== 200) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Rejecting Tour Guide Document: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
