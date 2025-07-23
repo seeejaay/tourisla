@@ -90,7 +90,10 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
         <View style={styles.nameWrapper}>
           <Text style={styles.packageName}>{toTitleCase(item.package_name)}</Text>
           {item.price !== undefined && (
-            <Text style={styles.priceAbsolute}>₱ {item.price}</Text>
+            <View style={styles.priceWrapper}>
+              <View style={styles.pointyCorner} />
+              <Text style={styles.priceText}>₱ {item.price}</Text>
+            </View>
           )}
         </View>
       )}
@@ -265,7 +268,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   packageCard: {
-    backgroundColor: '#ddf9ec',
+    backgroundColor: '#fff',
     padding: 16,
     borderRadius: 12,
     width: '100%',
@@ -281,18 +284,39 @@ const styles = StyleSheet.create({
     paddingRight: 100, // reserve space for price so text doesn’t overflow into it
   },
   packageName: {
+    width: '80%',
     fontSize: 18,
     fontWeight: '900',
     color: '#1c5461',
     flexShrink: 1,
   },
-  priceAbsolute: {
+  priceWrapper: {
     position: 'absolute',
     top: 0,
     right: 0,
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#3e979f',
+    flexDirection: 'row',
+    alignItems: 'center',
+    overflow: 'visible',
+  },
+  
+  pointyCorner: {
+    width: 0,
+    height: 0,
+    borderTopWidth: 30,
+    borderLeftWidth: 30,
+    borderTopColor: '#60dd8e', // Price badge background color
+    borderLeftColor: 'transparent',
+  },
+  
+  priceText: {
+    backgroundColor: '#60dd8e',
+    color: 'white',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    fontSize: 14,
+    fontWeight: '900',
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
   },
   locationRow: {
     flexDirection: 'row',

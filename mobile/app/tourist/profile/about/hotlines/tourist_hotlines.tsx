@@ -341,13 +341,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#f8fcfd',
         borderRadius: 18,
         marginBottom: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 16,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
+        shadowOffset: { width: 1, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 2,
-        elevation: 2,
+        elevation: 1,
     },
     iconColumn: {
         flexDirection: 'row',
@@ -379,8 +379,8 @@ const styles = StyleSheet.create({
     },
     cardTitle: {
         fontSize: 18,
-        fontWeight: '700',
-        color: '#0f172a',
+        fontWeight: '900',
+        color: '#1c5461',
         marginBottom: 2,
     },
     contactRow: {
