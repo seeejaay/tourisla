@@ -136,12 +136,17 @@ export default function TouristProfile() {
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
       >
-        <Animated.View style={styles.header}>
-          <Text style={styles.headerTitle}>Profile</Text>
-          <TouchableOpacity onPress={handleSettings} style={styles.menuButton}>
-            <Feather name="menu" size={24} color="#0f172a" />
-          </TouchableOpacity>
-        </Animated.View>
+      <Animated.View style={styles.header}>
+      <View style={styles.headerLeft}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Feather name="arrow-left" size={24} color="#545454" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Profile</Text>
+      </View>
+        <TouchableOpacity onPress={handleSettings} style={styles.menuButton}>
+          <Feather name="menu" size={24} color="#0f172a" />
+        </TouchableOpacity>
+      </Animated.View>
       </LinearGradient>
 
       <Animated.ScrollView
@@ -205,9 +210,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: STATUS_BAR_HEIGHT,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     zIndex: 50,
-    borderWidth: 1,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerGradient: {
     position: 'absolute',
@@ -217,10 +225,19 @@ const styles = StyleSheet.create({
     height: 60 + STATUS_BAR_HEIGHT,
     zIndex: 40,
   },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(230, 247, 250,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '900',
-    color: '#0f172a',
+    color: '#1c5461',
     letterSpacing: 0.5,
   },
   menuButton: {
