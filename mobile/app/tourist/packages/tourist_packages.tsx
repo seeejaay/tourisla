@@ -39,7 +39,7 @@ const CARD_WIDTH = SCREEN_WIDTH - CARD_GAP * 2;
 
 const ITEMS_PER_PAGE = 10; // Customize as needed
 
-export default function TouristPackagesScreen({ headerHeight }: TouristPackagesScreenProps) {
+export default function TouristPackagesScreen() {
   const [packages, setPackages] = useState<TourPackage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -143,7 +143,7 @@ export default function TouristPackagesScreen({ headerHeight }: TouristPackagesS
           <Text style={styles.headerSubtitle}>Discover our curated tour packages designed to enhance your travel experience.</Text>
         </View>
       </View>
-      <View style={[styles.container, { paddingTop: headerHeight }]}>
+      <View style={[styles.container]}>
         <View style={styles.searchFilterRow}>
           <View style={styles.searchBarWrapper}>
             <SearchBar
