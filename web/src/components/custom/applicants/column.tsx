@@ -27,7 +27,8 @@ export type Applicant = {
 export function columns(
   onApprove: (applicant: Applicant) => void,
   onReject: (applicant: Applicant) => void,
-  onViewDocuments: (applicant: Applicant) => void
+  onViewDocuments: (applicant: Applicant) => void,
+  tab: "pending" | "approved" | "rejected"
 ): ColumnDef<Applicant>[] {
   return [
     {
@@ -77,9 +78,24 @@ export function columns(
     {
       accessorKey: "application_status",
       header: () => <span className="font-bold">Status</span>,
-      cell: ({ row }) => (
-        <span className="capitalize">{row.original.application_status}</span>
-      ),
+      cell: ({ row }) => {
+        const status = row.original.application_status.toUpperCase();
+        const color =
+          status === "PENDING"
+            ? "bg-yellow-100 text-yellow-800"
+            : status === "APPROVED"
+            ? "bg-green-100 text-green-800"
+            : status === "REJECTED"
+            ? "bg-red-100 text-red-800"
+            : "bg-gray-200 text-gray-800";
+        return (
+          <span
+            className={`capitalize px-3 py-1 rounded-full text-xs font-semibold ${color}`}
+          >
+            {status.toLowerCase()}
+          </span>
+        );
+      },
     },
     {
       accessorKey: "actions",
@@ -97,18 +113,22 @@ export function columns(
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => onApprove(applicant)}
-                className="cursor-pointer"
-              >
-                Approve
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onReject(applicant)}
-                className="cursor-pointer text-red-600"
-              >
-                Reject
-              </DropdownMenuItem>
+              {tab === "pending" && (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => onApprove(applicant)}
+                    className="cursor-pointer"
+                  >
+                    Approve
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onReject(applicant)}
+                    className="cursor-pointer text-red-600"
+                  >
+                    Reject
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuItem
                 onClick={() => onViewDocuments(applicant)}
                 className="cursor-pointer"

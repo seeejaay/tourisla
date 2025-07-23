@@ -6,7 +6,7 @@ app.set("trust proxy", 1);
 
 const session = require("express-session");
 const pgSession = require("connect-pg-simple")(session);
-const { getPresignedUrl } = require("../utils/s3.js");
+
 const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
 const { allowedRoles } = require("../middleware/middleware.js");
@@ -101,6 +101,8 @@ const {
   editGuideUploadDocuController,
   getGuideUploadDocuByIdController,
   getGuideUploadByUserIdController,
+  approveGuideUploadDocuController,
+  rejectGuideUploadDocuController,
 } = require("../controllers/guideUploadDocuController.js");
 
 const {
@@ -136,6 +138,7 @@ const {
   getApplicationsForTourOperatorController,
   approveTourGuideApplicationController,
   rejectTourGuideApplicationController,
+  fetchAllApplicationsController,
 } = require("../controllers/guideApplyToOperatorController.js");
 
 const {
@@ -447,7 +450,7 @@ app.delete(
 app.get("/api/v1/guideRegis", viewGuideRegisController);
 app.get(
   "/api/v1/guideRegis/:guideId",
-  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin"]),
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin", "Tour Guide"]),
   viewGuideRegisByIdController
 );
 
@@ -459,11 +462,22 @@ app.post(
   createGuideUploadDocuController
 );
 app.put(
+  "/api/v1/guideUploadDocu/approve",
+  allowedRoles(["Tourism Officer"]),
+  approveGuideUploadDocuController
+);
+app.put(
+  "/api/v1/guideUploadDocu/reject",
+  allowedRoles(["Tourism Officer"]),
+  rejectGuideUploadDocuController
+);
+app.put(
   "/api/v1/guideUploadDocu/:docuId",
   upload.single("document"),
   authenticateTourGuide,
   editGuideUploadDocuController
 );
+
 app.get(
   "/api/v1/guideUploadDocu/doc/:docuId",
   allowedRoles(["Tourism Staff", "Tourism Officer", "Admin", "Tour Guide"]),
@@ -594,11 +608,19 @@ app.post(
   allowedRoles(["Tour Guide"]),
   applyToTourOperatorController
 );
+
+app.get(
+  "/api/v1/applyToOperator/applications",
+  allowedRoles(["Tour Guide"]),
+  fetchAllApplicationsController
+);
+
 app.get(
   "/api/v1/applications/:operatorId",
   authenticateTourOperator,
   getApplicationsForTourOperatorController
 );
+
 app.put(
   "/api/v1/applications/:applicationId/approve",
   authenticateTourOperator,

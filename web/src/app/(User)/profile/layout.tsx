@@ -8,6 +8,7 @@ import operatorNavigation from "@/app/static/navigation/operator-navigation";
 import touristNavigation from "@/app/static/navigation/tourist-navigation";
 
 import { useAuth } from "@/hooks/useAuth";
+import { useTourGuideManager } from "@/hooks/useTourGuideManager";
 import React from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -19,41 +20,61 @@ type User = {
   email: string;
   role: string;
 };
-
+type TourGuideApplicant = {
+  email: string;
+  first_name: string;
+  last_name: string;
+  birth_date: string;
+  sex: "MALE" | "FEMALE";
+  mobile_number: string;
+  reason_for_applying: string;
+  id?: number;
+  profile_picture?: File;
+  application_status?: "pending" | "approved" | "rejected"; // <-- Add this line
+};
 export default function ProfileLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const { loggedInUser } = useAuth();
+  const { fetchTourGuideApplicant } = useTourGuideManager();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [guideStatus, setGuideStatus] = useState<string>("pending");
   const [isCollapsed, setIsCollapsed] = useState(true);
+
   useEffect(() => {
-    async function fetchUser() {
+    async function fetchUserAndGuide() {
       const res = await loggedInUser(router);
       setUser(res?.data?.user);
+
+      // Only fetch tour guide status if user is a tour guide
+      if (res?.data?.user?.role?.toLowerCase() === "tour guide") {
+        const guide: TourGuideApplicant | null = await fetchTourGuideApplicant(
+          res.data.user.user_id
+        );
+        if (guide?.application_status)
+          setGuideStatus(guide.application_status.toLowerCase());
+      }
     }
-    fetchUser();
-  }, [loggedInUser, router]);
+    fetchUserAndGuide();
+  }, [loggedInUser, fetchTourGuideApplicant, router]);
 
   if (!user) return <div>Loading...</div>;
 
   const role = user.role.toLowerCase();
-  console.log("User Role:", role);
-
   let navigation: NavItem[] = [];
 
   if (role === "admin") {
     navigation = adminNavigation;
   } else if (role === "tour guide") {
-    navigation = tourGuideNavigation(user.user_id);
+    navigation = tourGuideNavigation(user.user_id, guideStatus);
   } else if (role === "tour operator") {
     navigation = operatorNavigation(user.user_id);
   } else if (role === "tourist") {
     navigation = touristNavigation(user.user_id);
   } else {
-    // Default navigation for Tourist or others
     navigation = [];
   }
 

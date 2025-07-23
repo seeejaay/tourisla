@@ -2,14 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
-import {
-  Loader2,
-  AlertTriangle,
-  MapPin,
-  Calendar,
-  Users,
-  Clock,
-} from "lucide-react";
+import { Loader2, MapPin, Calendar, Users, Clock } from "lucide-react";
 import { useParams } from "next/navigation";
 
 type TourPackage = {
@@ -81,15 +74,7 @@ export default function AssignedTourPackagesPage() {
             <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
             <p className="text-gray-600">Loading assigned tour packages...</p>
           </div>
-        ) : error ? (
-          <div className="rounded-xl bg-red-50 p-6 text-center border border-red-100 max-w-md mx-auto">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
-              <AlertTriangle className="h-6 w-6 text-red-600" />
-            </div>
-            <h3 className="text-lg font-medium text-red-800">Loading Error</h3>
-            <p className="mt-2 text-red-600">{error}</p>
-          </div>
-        ) : packages.length === 0 ? (
+        ) : packages.length === 0 || error ? (
           <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 max-w-md mx-auto">
             <h3 className="text-lg font-medium text-gray-900">
               No assigned tour packages found

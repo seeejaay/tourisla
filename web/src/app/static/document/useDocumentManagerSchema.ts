@@ -39,18 +39,10 @@ const TourOperatorDocumentSchema = z.object({
     "DTI_OR_SEC",
     "BIR_CERTIFICATE",
     "PROOF_OF_OFFICE",
-    "OFFICE_PHOTOS",
     "BRGY_CLEARANCE",
     "DOLE_REGISTRATION",
-    "EMPLOYEE_LIST",
     "MANAGER_RESUME_ID",
     "MANAGER_PROOF_OF_EXPERIENCE",
-    "TOUR_PACKAGES_LIST",
-    "PARTNER_ESTABLISHMENTS",
-    "VOUCHER_SAMPLE",
-    "CLIENT_FEEDBACK_FORM",
-    "AFFIDAVIT_OF_UNDERTAKING",
-    "ECC_OR_CNC",
   ]),
   file_path: z
     .instanceof(File, {

@@ -36,7 +36,7 @@ const Sidebar = ({ navigation }: SidebarProps) => {
   return (
     <aside
       aria-label="Sidebar"
-      className={`bg-gradient-to-b h-screen bg-white 
+      className={`bg-gradient-to-b min-h-screen bg-white relative border
     text-[#1c5461]  flex flex-col transition-all duration-300 ease-in-out z-50 overflow-y-auto
     ${isCollapsed ? "w-20" : "w-64"}  md:flex`}
     >
@@ -108,13 +108,13 @@ const Sidebar = ({ navigation }: SidebarProps) => {
       </div>
 
       {/* Sidebar Footer */}
-      <div className="border-t border-[#e6f7fa] p-6 bg-white/95">
+      <div className="border-t border-[#e6f7fa] p-6 bg-white/95 w-full absolute bottom-0 left-0">
         <button
           onClick={handleLogout}
           className={`flex items-center w-full p-3 rounded-md border border-red-500 cursor-pointer
-            hover:bg-red-500 active:bg-[#f8d56b]/20 text-[#c0392b]
-            hover:text-[#f1f1f1] transition-all duration-200 
-            ${isCollapsed ? "justify-center" : "px-4"}`}
+      hover:bg-red-500 active:bg-[#f8d56b]/20 text-[#c0392b]
+      hover:text-[#f1f1f1] transition-all duration-200 
+      ${isCollapsed ? "justify-center" : "px-4"}`}
         >
           <LogOut className="w-5 h-5 flex-shrink-0" />
           {!isCollapsed && (
