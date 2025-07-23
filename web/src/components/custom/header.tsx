@@ -9,6 +9,7 @@ import { navigation } from "@/app/static/navigation";
 import { Menu, X, Megaphone } from "lucide-react";
 import Pill from "@/components/custom/pill";
 import WeatherWidget from "@/components/custom/weather";
+import { useAuth } from "@/hooks/useAuth"; // adjust path if needed
 
 import {
   DropdownMenu,
@@ -22,15 +23,29 @@ export default function Header() {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const [scrolled, setScrolled] = useState(false);
+  const scrolled = false; // You can implement scroll detection if needed
+  const { loggedInUser } = useAuth();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    async function checkAuth() {
+      const res = await loggedInUser(router, false);
+
+      // Example: Only allow admins
+      if (res.data.user.role.toLowerCase() === "admin") {
+        router.replace("/admin/dashboard"); // or your desired page
+      } else if (res.data.user.role.toLowerCase() === "tourism officer") {
+        router.replace("/tourism-officer/dashboard"); // or your desired page
+      } else if (
+        res.data.user.role.toLowerCase() === "tour guide" ||
+        res.data.user.role.toLowerCase() === "tour operator"
+      ) {
+        router.replace(`/profile/${res.data.user.id}`); // or your desired page
+      } else {
+        router.replace("/"); // redirect to home if not admin or tourism officer
+      }
+    }
+    checkAuth();
+  }, [loggedInUser, router]);
 
   return (
     <>

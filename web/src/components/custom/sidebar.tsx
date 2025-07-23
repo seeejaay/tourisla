@@ -36,9 +36,8 @@ const Sidebar = ({ navigation }: SidebarProps) => {
   return (
     <aside
       aria-label="Sidebar"
-      className={`bg-gradient-to-b min-h-screen bg-white relative border
-    text-[#1c5461]  flex flex-col transition-all duration-300 ease-in-out z-50 overflow-y-auto
-    ${isCollapsed ? "w-20" : "w-64"}  md:flex`}
+      className={`bg-gradient-to-b bg-white border text-[#1c5461] flex flex-col transition-all duration-300 ease-in-out z-50
+    ${isCollapsed ? "w-20" : "w-64"} h-screen  `}
     >
       {/* Sidebar Header */}
       <div className="p-6 flex items-center justify-between border-b border-[#e6f7fa] bg-white/95">
@@ -65,7 +64,7 @@ const Sidebar = ({ navigation }: SidebarProps) => {
       </div>
 
       {/* Sidebar Body */}
-      <div className="flex-grow overflow-y-auto py-6 bg-transparent overflow-hidden">
+      <div className="flex-grow overflow-y-auto overflow-x-hidden py-6 bg-transparent">
         <ul className="space-y-2 px-3">
           {navigation.map((item) => (
             <li key={item.name} className="group relative">
@@ -108,7 +107,7 @@ const Sidebar = ({ navigation }: SidebarProps) => {
       </div>
 
       {/* Sidebar Footer */}
-      <div className="border-t border-[#e6f7fa] p-6 bg-white/95 w-full absolute bottom-0 left-0">
+      <div className="border-t border-[#e6f7fa] p-6 bg-white/95 w-full">
         <button
           onClick={handleLogout}
           className={`flex items-center w-full p-3 rounded-md border border-red-500 cursor-pointer
