@@ -151,8 +151,109 @@ const sendIslandEntryEmail = async (email, uniqueCode, qrCodeUrl) => {
   }
 };
 
+async function sendDocumentApproveEmail(email, documentName, documentImage) {
+  try {
+    const result = await resend.emails.send({
+      from: "Tourisla <tourisla@tourisla.space>",
+      to: email,
+      subject: "Document Approved",
+      html: `
+      <html>
+      <body style="font-family: Arial, sans-serif; background: #f8f9fa; margin:0; padding:0;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background: #f8f9fa; padding: 40px 0;">
+          <tr>
+            <td align="center">
+              <table width="480" cellpadding="0" cellspacing="0" style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 32px;">
+                <tr>
+                  <td align="center" style="padding-bottom: 24px;">
+                    <h1 style="color: #2a7ae4; margin: 0 0 8px 0; font-size: 28px;">Document Approved</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="color: #333; font-size: 16px; line-height: 1.6; padding-bottom: 24px;">
+                    <p style="margin: 0 0 16px 0;">Congratulations! Your document has been approved.</p>
+                    <p style="margin: 0;">Document Name:</p>
+                    <p style="font-weight: bold; font-size: 20px;">${documentName}</p>
+                    <img src="${documentImage}" alt="Document Image" class="my-4 w-40 h-40" style="width:160px; height:160px;" />
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 32px; color: #888; font-size: 12px;" align="center">
+                    &copy; ${new Date().getFullYear()} Tourisla. All rights reserved.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+      `,
+    });
+    console.log("Document approval email sent successfully:", result);
+  } catch (error) {
+    console.error("Error sending document approval email:", error);
+  }
+}
+
+async function sendDocumentRejectEmail(email, documentName, documentImage) {
+  try {
+    const result = await resend.emails.send({
+      from: "Tourisla <tourisla@tourisla.space>",
+      to: email,
+      subject: "Document Rejected",
+      html: `
+      <html>
+      <body style="font-family: Arial, sans-serif; background: #f8f9fa; margin:0; padding:0;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background: #f8f9fa; padding: 40px 0;">
+          <tr>
+            <td align="center">
+              <table width="480" cellpadding="0" cellspacing="0" style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 32px;">
+                <tr>
+                  <td align="center" style="padding-bottom: 24px;">
+                    <h1 style="color: #e74c3c; margin: 0 0 8px 0; font-size: 28px;">Document Rejected</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="color: #333; font-size: 16px; line-height: 1.6; padding-bottom: 24px;">
+                    <p style="margin: 0 0 16px 0;">We regret to inform you that your document has been rejected.</p>
+                    <p style="margin: 0;">Document Name:</p>
+                    <p style="font-weight: bold; font-size: 20px;">${documentName}</p>
+                    <img src="${documentImage}" alt="Document Image" class="my-4 w-40 h-40" style="width:160px; height:160px;" />
+                  </td>
+                </tr>
+                <tr>
+                  <td style="color: #333; font-size: 15px; line-height: 1.6; padding-bottom: 24px;">
+                    <strong>Possible reasons for rejection:</strong>
+                    <ul style="margin: 8px 0 0 18px; padding: 0; color: #e74c3c;">
+                      <li>Please check the expiration of your document.</li>
+                      <li>Document image is too blur or low quality, please re-upload a clearer copy.</li>
+                    </ul>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 32px; color: #888; font-size: 12px;" align="center">
+                    &copy; ${new Date().getFullYear()} Tourisla. All rights reserved.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+      `,
+    });
+    console.log("Document rejection email sent successfully:", result);
+  } catch (error) {
+    console.error("Error sending document rejection email:", error);
+  }
+}
+
 module.exports = {
   sendWelcomeEmail,
   sendResetPasswordEmail,
   sendIslandEntryEmail,
+  sendDocumentApproveEmail,
+  sendDocumentRejectEmail,
 };
