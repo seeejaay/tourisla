@@ -30,7 +30,9 @@ const viewTourGuideApplicantDetailsController = async (req, res) => {
     const guide_applicant = await getTourGuideApplicantById(applicantId);
 
     if (!guide_applicant) {
-      return res.status(404).json({ message: "Tour guide applicant not found" });
+      return res
+        .status(404)
+        .json({ message: "Tour guide applicant not found" });
     }
 
     res.json(guide_applicant);
@@ -42,11 +44,13 @@ const viewTourGuideApplicantDetailsController = async (req, res) => {
 
 const approveTourGuideApplicantController = async (req, res) => {
   try {
-    const { applicantId } = req.params;
-    const updatedApplicant = await approveTourGuideApplicantById(applicantId);
+    const { guideUserId } = req.body;
+    const updatedApplicant = await approveTourGuideApplicantById(guideUserId);
 
     if (!updatedApplicant) {
-      return res.status(404).json({ message: "Tour guide applicant not found" });
+      return res
+        .status(404)
+        .json({ message: "Tour guide applicant not found" });
     }
 
     res.json({ message: "Tour guide applicant approved" });
@@ -58,11 +62,13 @@ const approveTourGuideApplicantController = async (req, res) => {
 
 const rejectTourGuideApplicantController = async (req, res) => {
   try {
-    const { applicantId } = req.params;
-    const updatedApplicant = await rejectTourGuideApplicantById(applicantId);
+    const { guideUserId } = req.body;
+    const updatedApplicant = await rejectTourGuideApplicantById(guideUserId);
 
     if (!updatedApplicant) {
-      return res.status(404).json({ message: "Tour guide applicant not found" });
+      return res
+        .status(404)
+        .json({ message: "Tour guide applicant not found" });
     }
 
     res.json({ message: "Tour guide applicant rejected" });
@@ -89,7 +95,9 @@ const viewTourOperatorApplicantDetailsController = async (req, res) => {
     const operator_applicant = await getTourOperatorApplicantById(applicantId);
 
     if (!operator_applicant) {
-      return res.status(404).json({ message: "Tour operator applicant not found" });
+      return res
+        .status(404)
+        .json({ message: "Tour operator applicant not found" });
     }
 
     res.json(operator_applicant);
@@ -102,10 +110,13 @@ const viewTourOperatorApplicantDetailsController = async (req, res) => {
 const approveTourOperatorApplicantController = async (req, res) => {
   try {
     const { applicantId } = req.params;
-    const updatedApplicant = await approveTourOperatorApplicantById(applicantId);
+    const updatedApplicant =
+      await approveTourOperatorApplicantById(applicantId);
 
     if (!updatedApplicant) {
-      return res.status(404).json({ message: "Tour operator applicant not found" });
+      return res
+        .status(404)
+        .json({ message: "Tour operator applicant not found" });
     }
 
     res.json({ message: "Tour operator applicant approved" });
@@ -121,7 +132,9 @@ const rejectTourOperatorApplicantController = async (req, res) => {
     const updatedApplicant = await rejectTourOperatorApplicantById(applicantId);
 
     if (!updatedApplicant) {
-      return res.status(404).json({ message: "Tour operator applicant not found" });
+      return res
+        .status(404)
+        .json({ message: "Tour operator applicant not found" });
     }
 
     res.json({ message: "Tour operator applicant rejected" });
@@ -158,7 +171,7 @@ const getGuideFeedbacksForOperatorController = async (req, res) => {
       `SELECT tourguide_id FROM tourguide_applications_to_operators WHERE touroperator_id = $1 AND application_status = 'APPROVED'`,
       [operatorId]
     );
-    const guideIds = guideRows.rows.map(r => r.tourguide_id);
+    const guideIds = guideRows.rows.map((r) => r.tourguide_id);
     if (guideIds.length === 0) return res.json({});
 
     // 2. Get all feedback_groups for these guides with type 'GUIDE'
@@ -168,8 +181,9 @@ const getGuideFeedbacksForOperatorController = async (req, res) => {
     );
     // 3. Group feedbacks by guide_id
     const grouped = {};
-    feedbackRows.rows.forEach(fb => {
-      if (!grouped[fb.feedback_for_user_id]) grouped[fb.feedback_for_user_id] = [];
+    feedbackRows.rows.forEach((fb) => {
+      if (!grouped[fb.feedback_for_user_id])
+        grouped[fb.feedback_for_user_id] = [];
       grouped[fb.feedback_for_user_id].push(fb);
     });
     res.json(grouped);
