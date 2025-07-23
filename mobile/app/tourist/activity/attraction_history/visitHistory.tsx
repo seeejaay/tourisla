@@ -13,7 +13,6 @@ import { fetchMySpotFeedbacks } from '@/lib/api/feedback';
 import { ViewCard } from '@/components/attraction-history/viewCard';
 import { DetailsModal } from '@/components/attraction-history/detailsModal';
 import { FeedbackModal } from '@/components/attraction-history/FeedbackModal';
-import HeaderWithBack from '@/components/HeaderWithBack';
 import SearchBar from '@/components/SearchBar';
 import FilterDropdown from '@/components/FilterDropdown'; 
 
@@ -97,10 +96,7 @@ export default function VisitHistoryScreen() {
 
   return (
     <View style={styles.container}>
-      <HeaderWithBack title="Visit History" backgroundColor="transparent" />
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.title}>Attraction Visit History</Text>
-
         {/* ✅ Search + Filter */}
         <View style={styles.filterRow}>
           <View style={{ flex: 1, marginRight: 4 }}>
@@ -164,12 +160,11 @@ export default function VisitHistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#f8fafc',
   },
   scroll: {
     flexGrow: 1,
-    padding: 16,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#f8fafc',
   },
   center: {
     flex: 1,
@@ -177,12 +172,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 24,
     backgroundColor: '#f8fafc',
-  },
-  title: {
-    fontSize: 25,
-    fontWeight: '900',
-    color: '#002b11',
-    marginBottom: 12,
   },
   label: {
     fontSize: 16,

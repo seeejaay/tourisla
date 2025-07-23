@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#0f172a',
+    color: '#1c5461',
   },
   dropdownContent: {
     marginTop: 12,
@@ -136,20 +136,20 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#0f172a',
+    fontWeight: '700',
+    color: '#8f8b87',
     marginTop: 2,
   },
   editButton: {
     marginTop: 20,
     paddingVertical: 10,
     borderRadius: 8,
-    backgroundColor: '#e0f2fe',
+    backgroundColor: '#c9f9de',
     alignItems: 'center',
   },
   editButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#0284c7',
+    color: '#248f98',
   },
 });

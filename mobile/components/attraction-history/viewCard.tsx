@@ -71,11 +71,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 8,
     padding: 16,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 6,
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
@@ -87,18 +82,18 @@ const styles = StyleSheet.create({
   spotName: {
     fontSize: 17,
     fontWeight: '800',
-    color: '#0f172a',
+    color: '#1c5461',
     marginBottom: 2,
   },
   boldText: {
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#1c5461',
     fontSize: 12,
     marginTop: 2,
   },
   subText: {
     fontSize: 11,
-    color: '#475569',
+    color: '#1c5461',
     marginTop: 2,
   },
   mono: {

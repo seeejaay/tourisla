@@ -25,7 +25,7 @@ interface QRResult {
   unique_code?: string;
 }
 
-export default function TouristActivityScreen({ headerHeight }: TouristPackagesScreenProps) {
+export default function TouristActivityScreen() {
   const { loggedInUser } = useAuth();
   const { getQRCodebyUserId, loading, error } = useVisitorRegistration();
 
@@ -95,26 +95,10 @@ export default function TouristActivityScreen({ headerHeight }: TouristPackagesS
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-      <Text style={styles.headertitle}>Activity Page</Text>  
-      <View style={styles.sectionbig}>
-      <Text style={styles.sectiontitle}>Visitor Registration</Text>  
-      <TouchableOpacity
-        style={styles.visitButton}
-        onPress={() => {
-          router.push('/tourist/activity/attraction_history/visitHistory');
-        }}
-      >
-        <View style={styles.visitButtonContent}>
-          <Text style={styles.visitButtonText}>View Visit History</Text>
-          <Feather name="arrow-right" size={14} color="#9d9d9d" style={{ marginLeft: 6 }} />
-        </View>
-      </TouchableOpacity>
-
-
+    <ScrollView contentContainerStyle={styles.scrollContent}>
+      <Text style={styles.title}>Current Registration</Text>
         {result.qr_code_url ? (
           <View style={styles.section}>
-            <Text style={styles.title}>Your Current Registration</Text>
             <Text style={styles.label}>Show this QR code at the entrance:</Text>
             <View style={styles.qrBox}>
               <Image
@@ -135,7 +119,7 @@ export default function TouristActivityScreen({ headerHeight }: TouristPackagesS
         )}
 
         {result.unique_code && (
-          <View style={styles.section}>
+          <View style={{marginTop: 8}}>
             <Text style={styles.label}>Unique Code:</Text>
             <View style={styles.codeRow}>
               <Text style={styles.code}>{result.unique_code}</Text>
@@ -148,35 +132,12 @@ export default function TouristActivityScreen({ headerHeight }: TouristPackagesS
             </View>
           </View>
         )}
-      </View>
-
-      <View style={styles.sectionbig}>
-        <Text style={styles.sectiontitle}>Booking History</Text>
-          <TouchableOpacity
-            style={styles.visitButton}
-            onPress={() => {
-              router.push('/tourist/activity/booking_history/visitHistory');
-            }}
-          >
-            <View style={styles.visitButtonContent}>
-              <Text style={styles.visitButtonText}>View Visit History</Text>
-              <Feather name="arrow-right" size={14} color="#9d9d9d" style={{ marginLeft: 6 }} />
-            </View>
-          </TouchableOpacity>
-      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f1f1f1',
-  },
   scrollContent: {
-    padding: 16,
-    paddingTop: 110,
-    paddingBottom: 120,
   },
   center: {
     flex: 1,
@@ -184,28 +145,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     backgroundColor: '#f9fafb',
-  },
-  headertitle: {
-    fontSize: 25,
-    fontWeight: '900',
-    color: '#002b11',
-    marginBottom: 16,
-  },
-  sectionbig: {
-    padding: 16,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    elevation: 8,
-    shadowColor: '#f4f1de',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    marginBottom: 8,
-  },
-  sectiontitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1c8773',
   },
   visitButtonContent: {
     flexDirection: 'row',
@@ -219,16 +158,15 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 16,
     marginBottom: 16,
-    alignSelf: 'center',
   },
   title: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#002b11',
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#1c5461',
+    marginBottom: 16,
   },
   section: {
     paddingHorizontal: 16,
-    marginTop: 10,
     paddingVertical: 8,
     borderWidth: 1,
     borderRadius: 12,
@@ -247,6 +185,7 @@ const styles = StyleSheet.create({
   },
   code: {
     fontSize: 15,
+    fontWeight: '800',
     fontFamily: 'monospace',
     backgroundColor: '#fff',
     paddingHorizontal: 12,
@@ -254,18 +193,18 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderColor: '#cbd5e1',
     borderWidth: 1,
-    color: '#1e293b',
+    color: '#59767e',
     flex: 1,
   },
   copyButton: {
-    backgroundColor: '#2eb1ab',
+    backgroundColor: '#c7fbe2',
     paddingVertical: 8,
     paddingHorizontal: 12,
     marginLeft: 10,
     borderRadius: 6,
   },
   copyText: {
-    color: '#ffffff',
+    color: '#1c8773',
     fontSize: 13,
     fontWeight: '600',
   },
@@ -282,7 +221,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   viewButton: {
-    backgroundColor: '#2eb1ab',
+    backgroundColor: '#c7fbe2',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -292,32 +231,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     marginTop: 10,
-  },
-  historyButton: {
-    marginTop: 12,
-    backgroundColor: '#2eb1ab',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 20,
-    alignSelf: 'center',
-    width: '100%',
-    maxWidth: 420,
-  },
-  historyButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  visitButton: {
-    paddingTop: 8,
-    alignSelf: 'flex-end',
-    borderRadius: 6,
-  },
-  visitButtonText: {
-    color: '#9d9d9d',
-    fontSize: 12,
-    fontWeight: '500',
-    fontStyle: 'italic',
   },
 });
