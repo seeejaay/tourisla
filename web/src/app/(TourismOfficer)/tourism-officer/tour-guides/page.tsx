@@ -80,17 +80,37 @@ export default function TourGuideListPage() {
             Review, approve, or reject tour guide applications.
           </p>
         </div>
-        <div className="w-full max-w-4xl bg-white rounded-2xl shadow-md border border-[#e6f7fa] p-4 md:p-8">
+        <div className="w-full max-w-4xl bg-white rounded-2xl shadow-md border border-[#e6f7fa] p-4  md:p-8">
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
-            className="w-full mb-4"
+            className="w-full "
           >
             <TabsList className="grid grid-cols-4 w-full">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="pending">Pending</TabsTrigger>
-              <TabsTrigger value="approved">Approved</TabsTrigger>
-              <TabsTrigger value="rejected">Rejected</TabsTrigger>
+              <TabsTrigger
+                value="all"
+                className="text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] focus:bg-[#e6f7fa] focus:text-[#3e979f]"
+              >
+                All
+              </TabsTrigger>
+              <TabsTrigger
+                value="pending"
+                className="text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] focus:bg-[#e6f7fa] focus:text-[#3e979f]"
+              >
+                Pending
+              </TabsTrigger>
+              <TabsTrigger
+                value="approved"
+                className="text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] focus:bg-[#e6f7fa] focus:text-[#3e979f]"
+              >
+                Approved
+              </TabsTrigger>
+              <TabsTrigger
+                value="rejected"
+                className="text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] focus:bg-[#e6f7fa] focus:text-[#3e979f]"
+              >
+                Rejected
+              </TabsTrigger>
             </TabsList>
           </Tabs>
           <div className="w-full flex flex-col items-center">

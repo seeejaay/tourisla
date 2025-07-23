@@ -4,7 +4,7 @@ import React from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
+import { Badge } from "@/components/ui/badge";
 export type TourGuide = {
   id?: number;
   first_name: string;
@@ -59,7 +59,7 @@ export function columns(
     },
     {
       accessorKey: "application_status",
-      header: () => <span className="font-bold">Application Status</span>,
+      header: () => <span className="font-bold w-24 flex">Status</span>,
       cell: ({ row }) => {
         const status = row.original.application_status || "PENDING";
         const statusClass =
@@ -69,10 +69,15 @@ export function columns(
             ? "text-red-600 bg-red-100"
             : "text-yellow-600 bg-yellow-100";
         return (
-          <span className={` ${statusClass} p-2 rounded-full`}>
-            {status
-              .toLowerCase()
-              .replace(/\b\w/g, (char) => char.toUpperCase())}
+          <span className="w-full flex justify-start">
+            <Badge
+              className={`rounded-full w-1/2   text-sm ${statusClass}`}
+              variant={"default"}
+            >
+              {status
+                .toLowerCase()
+                .replace(/\b\w/g, (char) => char.toUpperCase())}
+            </Badge>
           </span>
         );
       },

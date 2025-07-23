@@ -309,9 +309,9 @@ export default function TourGuideDocumentsApprovalPage() {
                   verified
                 </p>
                 <div className="flex justify-between items-center">
-                  <div className="w-1/2 bg-gray-200 rounded-full h-2.5">
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
                     <div
-                      className={`bg-black h-2.5 rounded-full  transition-all duration-300`}
+                      className={`bg-[#3e979f] h-2.5 rounded-full  transition-all duration-300`}
                       style={{ width: `${verificationPercentage}%` }}
                     ></div>
                   </div>
