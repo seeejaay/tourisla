@@ -46,7 +46,7 @@ export default function RoleSelectionScreen() {
             onPress={() => setSelectedRole(role.title)}
           >
             <View style={styles.iconContainer}>
-              <FontAwesome5 name={role.icon} size={30} color="#005582" />
+              <FontAwesome5 name={role.icon} size={30} color="#657e8d" />
             </View>
             <View style={styles.roleTextContainer}>
               <Text style={styles.roleTitle}>{role.title}</Text>
@@ -85,13 +85,12 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '900',
     textAlign: 'center',
-    color: '#005582',
-    marginBottom: 8,
+    color: '#1c5461',
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
-    color: '#0086ad',
+    color: '#1c5461',
     marginBottom: 40,
   },
   rolesContainer: {
@@ -103,7 +102,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#97ebdb',
+    borderColor: '#7eccb6',
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -117,7 +116,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
-    backgroundColor: '#97ebdb',
+    backgroundColor: '#7eccb6',
     borderRadius: 25,
   },
   roleTextContainer: {
@@ -126,7 +125,7 @@ const styles = StyleSheet.create({
   roleTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#005582',
+    color: '#1c5461',
     marginBottom: 4,
   },
   roleDescription: {
@@ -134,14 +133,14 @@ const styles = StyleSheet.create({
     color: '#0086ad',
   },
   continueButton: {
-    backgroundColor: '#00c2c7',
+    backgroundColor: '#7eccb6',
     padding: 16,
     borderRadius: 10,
     alignItems: 'center',
     marginBottom: 20,
   },
   disabledButton: {
-    backgroundColor: '#b0e7e8',
+    backgroundColor: '#aedbd3',
   },
   continueButtonText: {
     color: '#fff',
@@ -150,7 +149,7 @@ const styles = StyleSheet.create({
   },
   loginRedirectText: {
     textAlign: 'center',
-    color: '#005582',
+    color: '#1c5461',
     fontSize: 14,
     fontWeight: '600',
   },

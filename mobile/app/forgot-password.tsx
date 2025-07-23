@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "900",
-    color: "#005582",
+    color: "#1c5461",
     marginBottom: 4,
   },
   subtitle: {
@@ -130,12 +130,12 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#0086ad",
+    color: "#1c5461",
     marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#97ebdb",
+    borderColor: "#7eccb6",
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   button: {
-    backgroundColor: "#00c2c7",
+    backgroundColor: "#7eccb6",
     paddingVertical: 14,
     marginBottom: 24,
     borderRadius: 10,
