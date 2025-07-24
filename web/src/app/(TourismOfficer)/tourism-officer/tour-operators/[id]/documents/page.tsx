@@ -240,21 +240,6 @@ export default function TourOperatorDocumentsPage() {
             {/* Operator Information */}
             {operator && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col md:flex-row items-center gap-6">
-                {/* Avatar or Placeholder */}
-                <div className="flex-shrink-0 w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
-                  <Image
-                    src={
-                      typeof operator.profile_picture === "string" &&
-                      operator.profile_picture
-                        ? operator.profile_picture
-                        : "/images/companyavatar.png"
-                    }
-                    alt={operator.operator_name || "Operator"}
-                    width={96}
-                    height={96}
-                    className="object-contain"
-                  />
-                </div>
                 {/* Info */}
                 <div className="flex-1">
                   <h2 className="text-md lg:text-lg font-semibold text-gray-900 mb-2">
