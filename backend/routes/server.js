@@ -118,6 +118,8 @@ const {
   editOperatorUploadDocuController,
   getOperatorUploadDocuByIdController,
   getOperatorUploadByUserIdController,
+  approveOperatorUploadDocuController,
+  rejectOperatorUploadDocuController,
 } = require("../controllers/operatorUploadDocuController.js");
 
 const {
@@ -537,6 +539,19 @@ app.post(
   authenticateTourOperator,
   createOperatorUploadDocuController
 );
+
+app.put(
+  "/api/v1/operatorUploadDocu/approve",
+  allowedRoles(["Tourism Officer"]),
+  approveOperatorUploadDocuController
+);
+
+app.put(
+  "/api/v1/operatorUploadDocu/reject",
+  allowedRoles(["Tourism Officer"]),
+  rejectOperatorUploadDocuController
+);
+
 app.put(
   "/api/v1/operatorUploadDocu/:documentId",
   upload.single("document"),

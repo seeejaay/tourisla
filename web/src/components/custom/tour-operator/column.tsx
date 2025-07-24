@@ -2,16 +2,10 @@
 
 import React from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+
 // Adjust this type to match your TourOperator model
 export type TourOperator = {
   id: number;
@@ -25,9 +19,7 @@ export type TourOperator = {
 
 export function columns(
   setDialogTourOperator: (operator: TourOperator | null) => void,
-  onViewDocuments: (operator: TourOperator) => void,
-  onApprove: (operator: TourOperator) => void,
-  onReject: (operator: TourOperator) => void
+  onViewDocuments: (operator: TourOperator) => void
 ): ColumnDef<TourOperator>[] {
   return [
     {
@@ -64,12 +56,26 @@ export function columns(
     },
     {
       accessorKey: "application_status",
-      header: () => <span className="font-bold">Application Status</span>,
+      header: () => <span className="font-bold w-24 flex">Status</span>,
       cell: ({ row }) => {
-        const status = row.original.application_status || "Pending";
+        const status =
+          row.original.application_status.toUpperCase() || "PENDING";
+        const statusClass =
+          status === "APPROVED"
+            ? "text-green-600 bg-green-100"
+            : status === "REJECTED"
+            ? "text-red-600 bg-red-100"
+            : "text-yellow-600 bg-yellow-100";
         return (
-          <span className="capitalize">
-            {status === "approved" ? "Approved" : status}
+          <span className="w-full flex justify-start">
+            <Badge
+              className={`rounded-full w-1/2   text-sm ${statusClass}`}
+              variant={"default"}
+            >
+              {status
+                .toLowerCase()
+                .replace(/\b\w/g, (char) => char.toUpperCase())}
+            </Badge>
           </span>
         );
       },
@@ -79,34 +85,16 @@ export function columns(
       accessorKey: "actions",
       header: () => <span className="font-bold">Actions</span>,
       cell: ({ row }) => {
-        const operator = row.original;
+        const guide = row.original;
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="p-0 w-8 h-8">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setDialogTourOperator(operator)}>
-                View
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onViewDocuments(operator)}>
-                View Documents
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onApprove(operator)}>
-                Approve
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onReject(operator)}
-                className="text-red-500"
-              >
-                Reject
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-2">
+            <a
+              onClick={() => onViewDocuments(guide)}
+              className="text-blue-600 rounded-sm hover:underline text-center cursor-pointer font-semibold"
+            >
+              View
+            </a>
+          </div>
         );
       },
     },

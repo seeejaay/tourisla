@@ -7,12 +7,6 @@ import { useTourGuideManager } from "@/hooks/useTourGuideManager";
 import { FileText, Loader2, Check, X } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -27,6 +21,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TourGuide } from "@/components/custom/tour-guide/column";
 
+import { DocumentCard } from "@/components/custom/document/documentCard";
+
 type GuideDocument = {
   id: string;
   document_type: string;
@@ -35,7 +31,12 @@ type GuideDocument = {
   status?: "PENDING" | "APPROVED" | "REJECTED";
   tourguide_id?: string;
 };
-
+const statusOptions = [
+  { value: "", label: "All" },
+  { value: "PENDING", label: "Pending" },
+  { value: "APPROVED", label: "Approved" },
+  { value: "REJECTED", label: "Rejected" },
+];
 const documentTypes = [
   { value: "GOV_ID", label: "Government ID", required: true },
   { value: "BIRTH_CERT", label: "Birth Certificate", required: true },
@@ -51,7 +52,7 @@ export default function TourGuideDocumentsApprovalPage() {
   const router = useRouter();
   const guideId = params?.id as string;
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("All");
   const [tourGuide, setTourGuide] = useState<TourGuide | null>(null);
   const { fetchGuideDocumentsById, approveGuideDocument, rejectGuideDocument } =
     useDocumentManager();
@@ -113,7 +114,6 @@ export default function TourGuideDocumentsApprovalPage() {
             doc.id === docId ? { ...doc, status: "APPROVED" } : doc
           )
         );
-      } else {
       }
     } catch (error) {
       setError(
@@ -133,7 +133,6 @@ export default function TourGuideDocumentsApprovalPage() {
             doc.id === docId ? { ...doc, status: "REJECTED" } : doc
           )
         );
-      } else {
       }
     } catch (error) {
       setError(
@@ -158,7 +157,6 @@ export default function TourGuideDocumentsApprovalPage() {
       console.log("Approve Tour Guide Result:", result);
       if (result) {
         // router.push("/tourism-officer/tour-guides");
-      } else {
       }
     } catch (error) {
       setError(
@@ -178,7 +176,6 @@ export default function TourGuideDocumentsApprovalPage() {
         setMessage("Tour guide rejected successfully.");
         setAlertOpen(true);
         router.push("/tourism-officer/tour-guides");
-      } else {
       }
     } catch (error) {
       setError(
@@ -191,7 +188,7 @@ export default function TourGuideDocumentsApprovalPage() {
 
   // Filter documents based on active tab
   const filteredDocuments =
-    activeTab === "all"
+    activeTab === "All"
       ? documents
       : documents.filter(
           (doc) => doc.status?.toLowerCase() === activeTab.toLowerCase()
@@ -409,12 +406,21 @@ export default function TourGuideDocumentsApprovalPage() {
             {/* Documents Panel */}
             <div className="lg:col-span-2 space-y-6">
               {/* Tabs for document filtering */}
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid grid-cols-4 w-full">
-                  <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="pending">Pending</TabsTrigger>
-                  <TabsTrigger value="approved">Approved</TabsTrigger>
-                  <TabsTrigger value="rejected">Rejected</TabsTrigger>
+              <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="w-full"
+              >
+                <TabsList className="grid grid-cols-4 gap-1 w-full bg-neutral-200/60 ">
+                  {statusOptions.map((status) => (
+                    <TabsTrigger
+                      key={status.value}
+                      value={status.label}
+                      className="text-[#3e979f]  hover:bg-white hover:text-[#3e979f] focus:bg-[#e6f7fa] focus:text-[#3e979f] cursor-pointer"
+                    >
+                      {status.label}
+                    </TabsTrigger>
+                  ))}
                 </TabsList>
               </Tabs>
 
@@ -445,100 +451,14 @@ export default function TourGuideDocumentsApprovalPage() {
                       documentTypes.find((d) => d.value === doc.document_type)
                         ?.label || doc.document_type;
                     return (
-                      <Card
+                      <DocumentCard
                         key={doc.id}
-                        className="transition-all duration-200 hover:shadow-md border-gray-200 rounded-xl overflow-hidden"
-                      >
-                        <CardHeader>
-                          <div className="flex justify-between items-start">
-                            <h3 className="font-semibold text-gray-900 line-clamp-1">
-                              {docType}
-                            </h3>
-                            {doc.status && (
-                              <Badge
-                                variant={
-                                  doc.status.toLowerCase() === "approved"
-                                    ? "default"
-                                    : doc.status.toLowerCase() === "rejected"
-                                    ? "destructive"
-                                    : "secondary"
-                                }
-                                className={`text-xs capitalize ${
-                                  doc.status === "PENDING"
-                                    ? "text-yellow-600 bg-yellow-100"
-                                    : doc.status === "APPROVED"
-                                    ? "text-blue-600 bg-blue-100"
-                                    : "text-red-600 bg-red-100"
-                                }`}
-                              >
-                                {doc.status.toLowerCase() === "pending"
-                                  ? "Pending"
-                                  : doc.status.toLowerCase() === "approved"
-                                  ? "Verified"
-                                  : "Rejected"}
-                              </Badge>
-                            )}
-                          </div>
-                          {doc.uploaded_at && (
-                            <p className="text-xs text-gray-500">
-                              Uploaded:{" "}
-                              {new Date(doc.uploaded_at).toLocaleDateString()}
-                            </p>
-                          )}
-                        </CardHeader>
-                        <CardContent>
-                          <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-                            {doc.file_path ? (
-                              <button
-                                type="button"
-                                className="absolute inset-0 w-full h-full focus:outline-none"
-                                onClick={() =>
-                                  doc.file_path &&
-                                  setEnlargedImage(doc.file_path)
-                                }
-                              >
-                                <Image
-                                  src={doc.file_path!}
-                                  alt={docType}
-                                  fill
-                                  className="object-cover"
-                                />
-                                <div className="absolute inset-0  hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center">
-                                  <span className="bg-[#3e979f] bg-opacity-80 text-xs font-medium px-2 py-1 rounded-md shadow-sm text-white">
-                                    Click to enlarge
-                                  </span>
-                                </div>
-                              </button>
-                            ) : (
-                              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                                No preview available
-                              </div>
-                            )}
-                          </div>
-                        </CardContent>
-                        <CardFooter className="flex justify-between items-center ">
-                          {doc.status === "PENDING" ? (
-                            <>
-                              <Button
-                                variant="outline"
-                                className="text-green-600 border-green-300 hover:bg-green-50"
-                                onClick={() => handleApprove(doc.id)}
-                              >
-                                Approve
-                              </Button>
-                              <Button
-                                variant="outline"
-                                className="text-red-600 border-red-300 hover:bg-red-50"
-                                onClick={() => handleReject(doc.id)}
-                              >
-                                Reject
-                              </Button>
-                            </>
-                          ) : (
-                            ""
-                          )}
-                        </CardFooter>
-                      </Card>
+                        docType={docType}
+                        doc={doc}
+                        onEnlarge={setEnlargedImage}
+                        onApprove={handleApprove}
+                        onReject={handleReject}
+                      />
                     );
                   })}
                 </div>

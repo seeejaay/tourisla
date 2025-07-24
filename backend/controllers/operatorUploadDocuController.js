@@ -4,6 +4,8 @@ const {
   editOperatorUpload,
   getOperatorUploadById,
   getOperatorUploadByUserId,
+  approveOperatorUpload,
+  rejectOperatorUpload,
 } = require("../models/operatorUploadDocuModel.js");
 
 const { getOperatorRegisById } = require("../models/operatorRegisModel.js"); // Adjust the path as necessary
@@ -183,9 +185,42 @@ const getOperatorUploadByUserIdController = async (req, res) => {
   }
 };
 
+const approveOperatorUploadDocuController = async (req, res) => {
+  try {
+    const { docuId } = req.body;
+    const operatorUploadDocu = await approveOperatorUpload(docuId);
+
+    if (!operatorUploadDocu) {
+      return res.status(404).json({ error: "Document not found." });
+    }
+
+    res.json(operatorUploadDocu);
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ error: "Internal server error." });
+  }
+};
+
+const rejectOperatorUploadDocuController = async (req, res) => {
+  try {
+    const { docuId } = req.body;
+    const operatorUploadDocu = await rejectOperatorUpload(docuId);
+
+    if (!operatorUploadDocu) {
+      return res.status(404).json({ error: "Document not found." });
+    }
+
+    res.json(operatorUploadDocu);
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ error: "Internal server error." });
+  }
+};
 module.exports = {
   createOperatorUploadDocuController,
   editOperatorUploadDocuController,
   getOperatorUploadDocuByIdController,
   getOperatorUploadByUserIdController,
+  approveOperatorUploadDocuController,
+  rejectOperatorUploadDocuController,
 };
