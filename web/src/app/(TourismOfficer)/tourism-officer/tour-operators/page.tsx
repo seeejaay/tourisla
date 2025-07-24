@@ -9,7 +9,7 @@ import DataTable from "@/components/custom/data-table";
 import { useTourOperatorManager } from "@/hooks/useTourOperatorManager";
 import { useRouter } from "next/navigation";
 import ViewTourOperator from "@/components/custom/tour-operator/viewTourOperator";
-
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -18,13 +18,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+const statusTabs = [
+  { value: "all", label: "All" },
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Approved" },
+  { value: "rejected", label: "Rejected" },
+];
+
 export default function TourOperatorListPage() {
   const [data, setData] = useState<TourOperator[]>([]);
   const [dialogTourOperator, setDialogTourOperator] =
     useState<TourOperator | null>(null);
+  const [activeTab, setActiveTab] = useState("all");
 
-  const { fetchApplicants, fetchApplicant, approveApplicant, rejectApplicant } =
-    useTourOperatorManager();
+  const { fetchApplicants, fetchApplicant } = useTourOperatorManager();
   const router = useRouter();
 
   useEffect(() => {
@@ -73,39 +80,45 @@ export default function TourOperatorListPage() {
     router.push(`tour-operators/${operator.user_id}/documents`);
   };
 
-  // Handler for approving a tour operator
-  const handleApprove = async (operator: TourOperator) => {
-    await approveApplicant(operator.id);
-    const operators = await fetchApplicants();
-    setData(
-      (operators || []).map((op) => ({
-        id: op.id,
-        operator_name: op.operator_name,
-        email: op.email,
-        mobile_number: op.mobile_number,
-        office_address: op.office_address,
-        application_status: (op.application_status || "pending").toLowerCase(),
-        user_id: Number(op.user_id ?? op.id ?? 0),
-      })) as TourOperator[]
-    );
-  };
+  // // Handler for approving a tour operator
+  // const handleApprove = async (operator: TourOperator) => {
+  //   await approveApplicant(operator.id);
+  //   const operators = await fetchApplicants();
+  //   setData(
+  //     (operators || []).map((op) => ({
+  //       id: op.id,
+  //       operator_name: op.operator_name,
+  //       email: op.email,
+  //       mobile_number: op.mobile_number,
+  //       office_address: op.office_address,
+  //       application_status: (op.application_status || "pending").toLowerCase(),
+  //       user_id: Number(op.user_id ?? op.id ?? 0),
+  //     })) as TourOperator[]
+  //   );
+  // };
 
-  // Handler for rejecting a tour operator
-  const handleReject = async (operator: TourOperator) => {
-    await rejectApplicant(operator.id);
-    const operators = await fetchApplicants();
-    setData(
-      (operators || []).map((op) => ({
-        id: op.id,
-        operator_name: op.operator_name,
-        email: op.email,
-        mobile_number: op.mobile_number,
-        office_address: op.office_address,
-        application_status: (op.application_status || "pending").toLowerCase(),
-        user_id: Number(op.user_id ?? op.id ?? 0),
-      })) as TourOperator[]
-    );
-  };
+  // // Handler for rejecting a tour operator
+  // const handleReject = async (operator: TourOperator) => {
+  //   await rejectApplicant(operator.id);
+  //   const operators = await fetchApplicants();
+  //   setData(
+  //     (operators || []).map((op) => ({
+  //       id: op.id,
+  //       operator_name: op.operator_name,
+  //       email: op.email,
+  //       mobile_number: op.mobile_number,
+  //       office_address: op.office_address,
+  //       application_status: (op.application_status || "pending").toLowerCase(),
+  //       user_id: Number(op.user_id ?? op.id ?? 0),
+  //     })) as TourOperator[]
+  //   );
+  // };
+
+  // Filter data based on active tab
+  const filteredData =
+    activeTab === "all"
+      ? data
+      : data.filter((op) => op.application_status === activeTab);
 
   return (
     <main className="flex flex-col items-center min-h-screen w-full bg-gradient-to-br from-[#e6f7fa] via-white to-[#b6e0e4] px-2 py-8">
@@ -120,14 +133,31 @@ export default function TourOperatorListPage() {
         </div>
         <div className="w-full flex flex-col items-center">
           <div className="max-w-4xl w-full mx-auto bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-4 md:p-8">
+            {/* Tabs for filtering */}
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full mb-4"
+            >
+              <TabsList className="grid grid-cols-4 w-full">
+                {statusTabs.map((tab) => (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className={`text-[#1c5461] hover:bg-[#e6f7fa] cursor-pointer hover:text-[#3e979f] focus:bg-[#e6f7fa] focus:text-[#3e979f] ${
+                      activeTab === tab.value
+                        ? "bg-white text-[#3e979f] font-bold shadow"
+                        : ""
+                    }`}
+                  >
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
             <DataTable<TourOperator, unknown>
-              columns={columns(
-                handleViewTourOperator,
-                handleViewDocuments,
-                handleApprove,
-                handleReject
-              )}
-              data={data}
+              columns={columns(handleViewTourOperator, handleViewDocuments)}
+              data={filteredData}
               searchPlaceholder="Search by name..."
               searchColumn="operator_name"
             />

@@ -10,6 +10,8 @@ import {
   getOperatorDocumentsByUserId,
   approveTourGuideDocument,
   rejectTourGuideDocument,
+  approveTourOperatorDocument,
+  rejectTourOperatorDocument,
 } from "@/lib/api/document";
 
 type GuideDocument = {
@@ -223,6 +225,36 @@ export const useDocumentManager = () => {
     }
   }, []);
 
+  const approveOperatorDocument = useCallback(async (docuId: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await approveTourOperatorDocument(docuId);
+      console.log("Operator document approved:", response);
+      return response;
+    } catch (error) {
+      setError(error + "Unknown error");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const rejectOperatorDocument = useCallback(async (docuId: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await rejectTourOperatorDocument(docuId);
+      console.log("Operator document rejected:", response);
+      return response;
+    } catch (error) {
+      setError(error + "Unknown error");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     loading,
     error,
@@ -238,5 +270,7 @@ export const useDocumentManager = () => {
     fetchOperatorDocumentsById,
     approveGuideDocument,
     rejectGuideDocument,
+    approveOperatorDocument,
+    rejectOperatorDocument,
   };
 };

@@ -198,3 +198,47 @@ export const rejectTourGuideDocument = async (documentId) => {
     throw error;
   }
 };
+
+export const approveTourOperatorDocument = async (docuId) => {
+  try {
+    const response = await axios.put(
+      `${API_URL}operatorUploadDocu/approve`,
+      { docuId },
+      { withCredentials: true }
+    );
+
+    if (response.status !== 200) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Approving Tour Operator Document: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const rejectTourOperatorDocument = async (docuId) => {
+  try {
+    const response = await axios.put(
+      `${API_URL}operatorUploadDocu/reject`,
+      { docuId },
+      { withCredentials: true }
+    );
+
+    if (response.status !== 200) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Rejecting Tour Operator Document: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};

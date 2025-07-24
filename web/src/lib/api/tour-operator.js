@@ -242,7 +242,9 @@ export const approveTourOperatorApplicant = async (applicantId) => {
   try {
     const response = await axios.put(
       `${API_URL}operatorApplicants/${applicantId}/approve`,
-      {},
+      {
+        applicantId,
+      },
       {
         withCredentials: true,
       }
@@ -264,7 +266,9 @@ export const rejectTourOperatorApplicant = async (applicantId) => {
   try {
     const response = await axios.put(
       `${API_URL}operatorApplicants/${applicantId}/reject`,
-      {},
+      {
+        applicantId,
+      },
       {
         withCredentials: true,
       }

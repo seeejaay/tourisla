@@ -109,7 +109,7 @@ const viewTourOperatorApplicantDetailsController = async (req, res) => {
 
 const approveTourOperatorApplicantController = async (req, res) => {
   try {
-    const { applicantId } = req.params;
+    const { applicantId } = req.body;
     const updatedApplicant =
       await approveTourOperatorApplicantById(applicantId);
 
@@ -128,7 +128,7 @@ const approveTourOperatorApplicantController = async (req, res) => {
 
 const rejectTourOperatorApplicantController = async (req, res) => {
   try {
-    const { applicantId } = req.params;
+    const { applicantId } = req.body;
     const updatedApplicant = await rejectTourOperatorApplicantById(applicantId);
 
     if (!updatedApplicant) {
