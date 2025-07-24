@@ -9,6 +9,7 @@ import touristNavigation from "@/app/static/navigation/tourist-navigation";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useTourGuideManager } from "@/hooks/useTourGuideManager";
+import { useTourOperatorManager } from "@/hooks/useTourOperatorManager";
 import React from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -39,9 +40,11 @@ export default function ProfileLayout({
 }) {
   const { loggedInUser } = useAuth();
   const { fetchTourGuideApplicant } = useTourGuideManager();
+  const { fetchApplicant } = useTourOperatorManager();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [guideStatus, setGuideStatus] = useState<string>("pending");
+  const [operatorStatus, setOperatorStatus] = useState<string>("pending");
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   useEffect(() => {
@@ -57,9 +60,16 @@ export default function ProfileLayout({
         if (guide?.application_status)
           setGuideStatus(guide.application_status.toLowerCase());
       }
+      // Only fetch tour operator status if user is a tour operator
+      else if (res?.data?.user?.role?.toLowerCase() === "tour operator") {
+        const operator = await fetchApplicant(res.data.user.user_id);
+        if (operator?.application_status)
+          setOperatorStatus(operator.application_status.toLowerCase());
+      }
     }
+
     fetchUserAndGuide();
-  }, [loggedInUser, fetchTourGuideApplicant, router]);
+  }, [loggedInUser, fetchTourGuideApplicant, router, fetchApplicant]);
 
   if (!user) return <div>Loading...</div>;
 
@@ -71,7 +81,7 @@ export default function ProfileLayout({
   } else if (role === "tour guide") {
     navigation = tourGuideNavigation(user.user_id, guideStatus);
   } else if (role === "tour operator") {
-    navigation = operatorNavigation(user.user_id);
+    navigation = operatorNavigation(user.user_id, operatorStatus);
   } else if (role === "tourist") {
     navigation = touristNavigation(user.user_id);
   } else {

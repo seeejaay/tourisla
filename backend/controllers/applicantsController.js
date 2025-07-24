@@ -12,7 +12,7 @@ const {
 const db = require("../db/index.js");
 
 // from admin side: manually verify tour guide and tour operator applicants
-
+const { sendApprovalEmail, sendRejectionEmail } = require("../utils/email.js");
 // Tour Guide Applicants
 const viewTourGuideApplicantsController = async (req, res) => {
   try {
@@ -53,7 +53,11 @@ const approveTourGuideApplicantController = async (req, res) => {
         .json({ message: "Tour guide applicant not found" });
     }
 
-    res.json({ message: "Tour guide applicant approved" });
+    sendApprovalEmail(
+      updatedApplicant.email,
+      updatedApplicant.first_name + " " + updatedApplicant.last_name
+    );
+    res.json(updatedApplicant);
   } catch (err) {
     console.log(err.message);
     res.send(err.message);
@@ -70,6 +74,11 @@ const rejectTourGuideApplicantController = async (req, res) => {
         .status(404)
         .json({ message: "Tour guide applicant not found" });
     }
+
+    sendRejectionEmail(
+      updatedApplicant.email,
+      updatedApplicant.first_name + " " + updatedApplicant.last_name
+    );
 
     res.json({ message: "Tour guide applicant rejected" });
   } catch (err) {
@@ -112,14 +121,22 @@ const approveTourOperatorApplicantController = async (req, res) => {
     const { applicantId } = req.body;
     const updatedApplicant =
       await approveTourOperatorApplicantById(applicantId);
+    console.log("Updated Applicant:", updatedApplicant);
 
     if (!updatedApplicant) {
       return res
         .status(404)
         .json({ message: "Tour operator applicant not found" });
     }
+    sendApprovalEmail(
+      updatedApplicant.email,
+      updatedApplicant.operator_name +
+        " (" +
+        updatedApplicant.representative_name +
+        ")"
+    );
 
-    res.json({ message: "Tour operator applicant approved" });
+    res.json(updatedApplicant);
   } catch (err) {
     console.log(err.message);
     res.send(err.message);
@@ -136,6 +153,11 @@ const rejectTourOperatorApplicantController = async (req, res) => {
         .status(404)
         .json({ message: "Tour operator applicant not found" });
     }
+
+    sendRejectionEmail(
+      updatedApplicant.email,
+      updatedApplicant.first_name + " " + updatedApplicant.last_name
+    );
 
     res.json({ message: "Tour operator applicant rejected" });
   } catch (err) {
