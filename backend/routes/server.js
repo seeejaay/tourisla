@@ -527,7 +527,7 @@ app.get(
     "Tourism Officer",
     "Admin",
     "Tour Guide",
-    " Tour Operator",
+    "Tour Operator",
   ]),
   viewOperatorRegisByIdController
 );
@@ -589,12 +589,12 @@ app.put(
 );
 app.get(
   "/api/v1/operatorApplicants",
-  authenticateAdmin,
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin", "Tour Operator"]),
   viewTourOperatorApplicantsController
 );
 app.get(
   "/api/v1/operatorApplicants/:applicantId",
-  authenticateAdmin,
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin", "Tour Operator"]),
   viewTourOperatorApplicantDetailsController
 );
 app.put(

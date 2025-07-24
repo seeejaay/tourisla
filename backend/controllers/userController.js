@@ -12,6 +12,7 @@ const {
   updatePassword,
 } = require("../models/userModel");
 const { editGuideRegisByUserId } = require("../models/guideRegisModel");
+const { editOperatorRegisByUserId } = require("../models/operatorRegisModel");
 const { sendWelcomeEmail } = require("../utils/email");
 const { sendResetPasswordEmail } = require("../utils/email");
 const createUserController = async (req, res) => {
@@ -198,6 +199,15 @@ const editUserController = async (req, res) => {
         last_name: last_name.toUpperCase(),
         mobile_number: phone_number,
         email: email.toUpperCase(),
+      });
+    } else if (role === "Tour Operator") {
+      // If the user is a tour operator, you might want to update the operator registration as well
+      // Assuming you have a similar function for operator registration
+      await editOperatorRegisByUserId(userId, {
+        representative_name:
+          first_name.toUpperCase() + " " + last_name.toUpperCase(),
+        email: email.toUpperCase(),
+        mobile_number: phone_number,
       });
     }
 
