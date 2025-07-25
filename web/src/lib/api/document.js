@@ -137,11 +137,16 @@ export const getOperatorDocumentById = async (docuId) => {
   }
 };
 
-export const getOperatorDocumentsByUserId = async (userId) => {
+export const getOperatorDocumentsByUserId = async (userId, sessionCookie) => {
   try {
     const response = await axios.get(
       `${API_URL}operatorUploadDocu/user/${userId}`,
-      { withCredentials: true }
+      {
+        withCredentials: true,
+        headers: {
+          Cookie: `connect.sid=${sessionCookie}`,
+        },
+      }
     );
     if (response.status !== 200) {
       throw new Error(
@@ -154,7 +159,6 @@ export const getOperatorDocumentsByUserId = async (userId) => {
     throw error;
   }
 };
-
 export const approveTourGuideDocument = async (documentId) => {
   try {
     const response = await axios.put(

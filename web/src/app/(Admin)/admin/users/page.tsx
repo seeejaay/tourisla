@@ -7,7 +7,7 @@ import {
 import DataTable from "@/components/custom/data-table";
 import SignUp from "@/components/custom/signup";
 import { useEffect, useState } from "react";
-import { fetchUsers, editUser } from "@/lib/api/users";
+import { fetchUsers, editUserStatus } from "@/lib/api/users";
 import { currentUser } from "@/lib/api/auth";
 import { useRouter } from "next/navigation";
 import {
@@ -20,14 +20,13 @@ import {
 
 import ViewUser from "@/components/custom/users/viewUser";
 import EditUser from "@/components/custom/users/editUser";
-
 export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [dialogUser, setDialogUser] = useState<User | null>(null);
   const [editDialogUser, setEditDialogUser] = useState<User | null>(null);
-
+  // const [deleteDialogUser, setDeleteDialogUser] = useState<User | null>(null);
   useEffect(() => {
     async function getCurrentUserAndUsers() {
       try {
@@ -112,10 +111,20 @@ export default function Users() {
                 <EditUser
                   user={editDialogUser}
                   onSave={async (updatedUser) => {
-                    await editUser(updatedUser);
+                    await editUserStatus(
+                      updatedUser.user_id,
+                      updatedUser.status,
+                      updatedUser.role
+                    );
                     setUsers((prev) =>
                       prev.map((u) =>
-                        u.user_id === updatedUser.user_id ? updatedUser : u
+                        u.user_id === updatedUser.user_id
+                          ? {
+                              ...u,
+                              status: updatedUser.status,
+                              role: updatedUser.role,
+                            }
+                          : u
                       )
                     );
                     setEditDialogUser(null);
@@ -126,6 +135,8 @@ export default function Users() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Delete Dialog */}
       </main>
     </>
   );

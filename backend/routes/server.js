@@ -61,6 +61,7 @@ const {
   viewUserController,
   forgotPasswordController,
   resetPasswordController,
+  editUserStatusController,
 } = require("../controllers/userController.js");
 const {
   authenticateUser,
@@ -141,6 +142,7 @@ const {
   approveTourGuideApplicationController,
   rejectTourGuideApplicationController,
   fetchAllApplicationsController,
+  fetchGuideApplicationController,
 } = require("../controllers/guideApplyToOperatorController.js");
 
 const {
@@ -368,6 +370,7 @@ app.get(
   viewUserController
 );
 app.put("/api/v1/users/:userId", authenticateUser, editUserController);
+app.patch("/api/v1/users/status", authenticateUser, editUserStatusController);
 app.patch("/api/v1/users/:userId", authenticateUser, deleteUserController);
 
 // Route for announcements
@@ -452,7 +455,13 @@ app.delete(
 app.get("/api/v1/guideRegis", viewGuideRegisController);
 app.get(
   "/api/v1/guideRegis/:guideId",
-  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin", "Tour Guide"]),
+  allowedRoles([
+    "Tourism Staff",
+    "Tourism Officer",
+    "Admin",
+    "Tour Guide",
+    "Tour Operator",
+  ]),
   viewGuideRegisByIdController
 );
 
@@ -626,8 +635,13 @@ app.post(
 
 app.get(
   "/api/v1/applyToOperator/applications",
-  allowedRoles(["Tour Guide"]),
+  allowedRoles(["Tour Guide", "Tour Operator"]),
   fetchAllApplicationsController
+);
+app.get(
+  "/api/v1/applyToOperator/applications/:applicationId",
+  allowedRoles(["Tour Guide", "Tour Operator"]),
+  fetchGuideApplicationController
 );
 
 app.get(

@@ -37,10 +37,35 @@ const getApplicationsForTourOperator = async (touroperator_id) => {
 };
 
 const approveTourGuideApplication = async (applicationId) => {
+  // First, get the application row
+  const appResult = await db.query(
+    "SELECT tourguide_id FROM tourguide_applications_to_operators WHERE id = $1",
+    [applicationId]
+  );
+  const application = appResult.rows[0];
+  if (!application) return null;
+
+  // Check if already approved elsewhere
+  const checkResult = await db.query(
+    "SELECT * FROM tourguide_applications_to_operators WHERE tourguide_id = $1 AND application_status = 'APPROVED'",
+    [application.tourguide_id]
+  );
+  if (checkResult.rows.length > 0) {
+    return { error: "Tour guide already approved by another operator." };
+  }
+
+  // Approve this application
   const result = await db.query(
     "UPDATE tourguide_applications_to_operators SET application_status = 'APPROVED', updated_at = NOW() WHERE id = $1 RETURNING *",
     [applicationId]
   );
+
+  // Mark all other applications as EXPIRED
+  await db.query(
+    "UPDATE tourguide_applications_to_operators SET application_status = 'EXPIRED', updated_at = NOW() WHERE tourguide_id = $1 AND id != $2 AND application_status != 'APPROVED'",
+    [application.tourguide_id, applicationId]
+  );
+
   return result.rows[0];
 };
 
@@ -59,6 +84,18 @@ const getApplications = async (tourguide_id) => {
   );
   return result.rows;
 };
+
+const getApplicationForGuideAndOperator = async (
+  tourguide_id,
+  touroperator_id
+) => {
+  const result = await db.query(
+    "SELECT * FROM tourguide_applications_to_operators WHERE tourguide_id = $1 AND touroperator_id = $2 ORDER BY updated_at DESC LIMIT 1",
+    [tourguide_id, touroperator_id]
+  );
+  return result.rows[0] || null;
+};
+
 module.exports = {
   isTourGuideApproved,
   applyToTourOperator,
@@ -66,4 +103,5 @@ module.exports = {
   approveTourGuideApplication,
   rejectTourGuideApplication,
   getApplications,
+  getApplicationForGuideAndOperator,
 };

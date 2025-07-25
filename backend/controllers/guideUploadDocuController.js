@@ -189,7 +189,9 @@ const getGuideUploadDocuByIdController = async (req, res) => {
 const getGuideUploadByUserIdController = async (req, res) => {
   try {
     const currentUserId = req.params.userId;
+    console.log("Current User ID:", currentUserId);
     const guideReg = await getGuideRegisById(currentUserId);
+    console.log("Guide Registration:", guideReg);
     if (!guideReg) {
       return res
         .status(404)

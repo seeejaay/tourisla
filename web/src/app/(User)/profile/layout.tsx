@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type User = {
+  id: string;
   user_id: string;
   first_name: string;
   last_name: string;
@@ -55,14 +56,14 @@ export default function ProfileLayout({
       // Only fetch tour guide status if user is a tour guide
       if (res?.data?.user?.role?.toLowerCase() === "tour guide") {
         const guide: TourGuideApplicant | null = await fetchTourGuideApplicant(
-          res.data.user.user_id
+          res.data.user.id
         );
         if (guide?.application_status)
           setGuideStatus(guide.application_status.toLowerCase());
       }
       // Only fetch tour operator status if user is a tour operator
       else if (res?.data?.user?.role?.toLowerCase() === "tour operator") {
-        const operator = await fetchApplicant(res.data.user.user_id);
+        const operator = await fetchApplicant(res.data.user.id);
         if (operator?.application_status)
           setOperatorStatus(operator.application_status.toLowerCase());
       }
@@ -79,9 +80,9 @@ export default function ProfileLayout({
   if (role === "admin") {
     navigation = adminNavigation;
   } else if (role === "tour guide") {
-    navigation = tourGuideNavigation(user.user_id, guideStatus);
+    navigation = tourGuideNavigation(user.id, guideStatus);
   } else if (role === "tour operator") {
-    navigation = operatorNavigation(user.user_id, operatorStatus);
+    navigation = operatorNavigation(user.id, operatorStatus);
   } else if (role === "tourist") {
     navigation = touristNavigation(user.user_id);
   } else {

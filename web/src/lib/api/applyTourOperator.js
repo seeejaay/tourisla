@@ -81,3 +81,17 @@ export const fetchAllApplications = async () => {
     throw error;
   }
 };
+
+export const fetchGuideApplication = async (tourguide_id, touroperator_id) => {
+  try {
+    const response = await axios.get(
+      `${API_URL}applyToOperator/applications/${tourguide_id}?touroperator_id=${touroperator_id}`,
+      { withCredentials: true }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching guide application:", error);
+    throw error;
+  }
+};

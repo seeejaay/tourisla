@@ -6,6 +6,7 @@ const {
   approveTourGuideApplication,
   rejectTourGuideApplication,
   getApplications,
+  getApplicationForGuideAndOperator,
 } = require("../models/guideApplyToOperatorModel.js");
 const { getOperatorRegisById } = require("../models/operatorRegisModel.js");
 const { getGuideRegisById } = require("../models/guideRegisModel.js");
@@ -82,7 +83,9 @@ const approveTourGuideApplicationController = async (req, res) => {
     if (!updated)
       return res.status(404).json({ message: "Application not found" });
 
-    res.json({ message: "Application approved" });
+    if (updated.error) return res.status(400).json({ message: updated.error });
+
+    res.json({ message: "Application approved", application: updated });
   } catch (err) {
     console.log(err.message);
     res.send(err.message);
@@ -92,6 +95,7 @@ const approveTourGuideApplicationController = async (req, res) => {
 const rejectTourGuideApplicationController = async (req, res) => {
   try {
     const { applicationId } = req.params;
+    console.log("Rejecting application with ID:", applicationId);
     const updated = await rejectTourGuideApplication(applicationId);
 
     if (!updated)
@@ -124,10 +128,60 @@ const fetchAllApplicationsController = async (req, res) => {
   }
 };
 
+const fetchGuideApplicationsController = async (req, res) => {
+  try {
+    const user = req.session.user;
+    if (!user || user.role !== "Tour Guide") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+    const guideRegis = await getGuideRegisById(user.id);
+    if (!guideRegis) {
+      return res.status(404).json({ message: "Tour guide not found" });
+    }
+    const currentGuideId = guideRegis.id;
+    const applications = await getApplications(currentGuideId);
+    res.json(applications);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+};
+
+const fetchGuideApplicationController = async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+    const { touroperator_id } = req.query;
+
+    // Use applicationId (which may be tourguide_id) and touroperator_id to fetch the application
+    const guideRegis = await getGuideRegisById(applicationId);
+    const operatorRegis = await getOperatorRegisById(touroperator_id);
+    if (!guideRegis) {
+      return res.status(404).json({ message: "Tour guide not found" });
+    }
+    if (!operatorRegis) {
+      return res.status(404).json({ message: "Tour operator not found" });
+    }
+
+    const application = await getApplicationForGuideAndOperator(
+      guideRegis.id,
+      operatorRegis.id
+    );
+    if (!application) {
+      return res.status(404).json({ message: "No application found" });
+    }
+    res.json(application);
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).send(err.message);
+  }
+};
+
 module.exports = {
   applyToTourOperatorController,
   getApplicationsForTourOperatorController,
   approveTourGuideApplicationController,
   rejectTourGuideApplicationController,
   fetchAllApplicationsController,
+  fetchGuideApplicationsController,
+  fetchGuideApplicationController,
 };

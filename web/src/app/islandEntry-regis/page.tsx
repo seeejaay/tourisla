@@ -48,7 +48,7 @@ export interface User {
   email: string;
   phone_number: string;
   role?: string;
-  birth_date: string;
+  birthDate: string;
   nationality: string;
   sex: string;
 }
@@ -89,7 +89,7 @@ export default function IslandEntryPage() {
           last_name,
           email,
           phone_number,
-          birth_date,
+          birthDate,
           nationality,
           sex,
         } = response.data.user;
@@ -98,7 +98,7 @@ export default function IslandEntryPage() {
           last_name,
           email,
           phone_number,
-          birth_date,
+          birthDate,
           nationality,
           sex,
         } as User);
@@ -500,9 +500,9 @@ export default function IslandEntryPage() {
                                   "w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f0f0f0] cursor-not-allowed",
                               }
                             : {})}
-                          {...(field.name === "age" && user && user.birth_date
+                          {...(field.name === "age" && user && user.birthDate
                             ? {
-                                value: getExactAge(user.birth_date),
+                                value: getExactAge(user.birthDate),
                                 readOnly: true,
                                 disabled: true,
                                 className:
