@@ -52,10 +52,11 @@ export default function ApplyTourOperatorPage() {
     setError(null);
     try {
       const user = await loggedInUser(router);
-      const guideUserId = user.data.user.user_id?.toString();
+      const guideUserId = user.data.user.id?.toString();
       setCurrentGuideId(guideUserId);
 
       const allApplications = await fetchAll();
+      // Filter applications for this user
       const filteredApplications = Array.isArray(allApplications)
         ? allApplications.filter(
             (app) => String(app.user_id) === String(guideUserId)
@@ -99,7 +100,7 @@ export default function ApplyTourOperatorPage() {
       setError(null);
       try {
         const user = await loggedInUser(router);
-        const guideUserId = user.data.user.user_id?.toString();
+        const guideUserId = user.data.user.id?.toString();
         setCurrentGuideId(guideUserId);
 
         const allApplications = await fetchAll();

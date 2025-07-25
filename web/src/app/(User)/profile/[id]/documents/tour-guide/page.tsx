@@ -61,7 +61,7 @@ export default function TourGuideDocumentsPage() {
       setError(null);
       try {
         const res = await loggedInUser(router);
-        const userId = res.data.user.user_id;
+        const userId = res.data.user.id;
         if (!userId) throw new Error("No tour guide ID found.");
         setGuideId(userId);
 

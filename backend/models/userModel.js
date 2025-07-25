@@ -64,6 +64,14 @@ const editUser = async (userId, userData) => {
   return result.rows[0];
 };
 
+const editUserStatus = async (userId, status, role) => {
+  const result = await db.query(
+    "UPDATE users SET status = $1, role = $2 WHERE user_id = $3 RETURNING *",
+    [status, role, userId]
+  );
+  return result.rows[0];
+};
+
 const deleteUser = async (id) => {
   const result = await db.query(
     "UPDATE users SET deleted_at = NOW(), status =$1 WHERE user_id = $2",
@@ -121,6 +129,7 @@ module.exports = {
   findUserByEmail,
   createUser,
   editUser,
+  editUserStatus,
   deleteUser,
   statusCheck,
   loginDate,

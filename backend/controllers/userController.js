@@ -10,6 +10,7 @@ const {
   findUserByEmail,
   getUserByResetToken,
   updatePassword,
+  editUserStatus,
 } = require("../models/userModel");
 const { editGuideRegisByUserId } = require("../models/guideRegisModel");
 const { editOperatorRegisByUserId } = require("../models/operatorRegisModel");
@@ -127,6 +128,9 @@ const createUserController = async (req, res) => {
 
 const currentUserController = async (req, res) => {
   try {
+    console.log("Session cookie:", req.headers.cookie);
+    console.log("Session object:", req.session);
+    console.log("Session user:", req.session.user);
     if (!req.session.user) {
       return res.status(401).json({ error: "Unauthorized" });
     }
@@ -145,7 +149,7 @@ const currentUserController = async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      data: { user },
+      data: { user: req.session.user },
     });
   } catch (error) {
     console.error("Error fetching current user:", error);
@@ -220,6 +224,25 @@ const editUserController = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating user:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const editUserStatusController = async (req, res) => {
+  try {
+    const { userId, status, role } = req.body; // Assuming userId and status are passed in the request body
+    if (!status) {
+      return res.status(400).json({ error: "Status is required" });
+    }
+    const updatedUser = await editUserStatus(userId, status, role);
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json({
+      status: "success",
+    });
+  } catch (error) {
+    console.error("Error updating user status:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -325,4 +348,5 @@ module.exports = {
   viewUserController,
   forgotPasswordController,
   resetPasswordController,
+  editUserStatusController,
 };

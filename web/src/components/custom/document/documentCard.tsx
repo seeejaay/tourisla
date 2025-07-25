@@ -28,8 +28,8 @@ type OperatorDocument = {
 interface DocumentCardProps {
   doc: GuideDocument | OperatorDocument;
   docType: string;
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
+  onApprove?: (id: string) => void;
+  onReject?: (id: string) => void;
   onEnlarge: (filePath: string) => void;
 }
 
@@ -82,7 +82,9 @@ export function DocumentCard({
                 src={doc.file_path!}
                 alt={docType}
                 fill
-                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 400px"
+                priority
+                className="object-cover "
               />
               <div className="absolute inset-0  hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center cursor-pointer">
                 <span className="bg-[#3e979f] bg-opacity-80 text-xs font-medium px-2 py-1 rounded-md shadow-sm text-white">
@@ -103,14 +105,14 @@ export function DocumentCard({
             <Button
               variant="outline"
               className="text-green-600 border-green-300 hover:bg-green-50"
-              onClick={() => onApprove(String(doc.id))}
+              onClick={() => onApprove && onApprove(String(doc.id))}
             >
               Approve
             </Button>
             <Button
               variant="outline"
               className="text-red-600 border-red-300 hover:bg-red-50"
-              onClick={() => onReject(String(doc.id))}
+              onClick={() => onReject && onReject(String(doc.id))}
             >
               Reject
             </Button>
