@@ -59,6 +59,7 @@ const rejectOperatorUpload = async (docuId) => {
   return result.rows[0];
 };
 
+//hi
 module.exports = {
   createOperatorUpload,
   editOperatorUpload,
