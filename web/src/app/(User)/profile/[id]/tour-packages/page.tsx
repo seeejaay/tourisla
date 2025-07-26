@@ -6,7 +6,20 @@ import AddTourPackage from "@/components/custom/tour-package/addTourPackage";
 import EditTourPackage from "@/components/custom/tour-package/editTourPackage";
 import DeleteTourPackage from "@/components/custom/tour-package/deleteTourPackage";
 
-import { Loader2, AlertTriangle, Plus, Pencil } from "lucide-react";
+import {
+  BadgeCheck,
+  BadgeX,
+  AlertTriangle,
+  Plus,
+  Pencil,
+  Search,
+  Calendar,
+  MapPin,
+  Clock,
+  Users,
+  Tag,
+  Copy,
+} from "lucide-react";
 import { useParams } from "next/navigation";
 import {
   Dialog,
@@ -21,11 +34,18 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { format } from "date-fns";
 
 type AssignedGuide = {
   tourguide_id: number;
   first_name: string;
   last_name: string;
+  profile_picture?: string;
 };
 
 type TourPackage = {
@@ -46,21 +66,25 @@ type TourPackage = {
   cancellation_days: number;
   cancellation_note: string;
   is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  tourguide_id: number | null;
   assigned_guides: AssignedGuide[];
+  package_image?: string;
 };
 
 export default function TourPackagesPage() {
   const { fetchAll, loading, error } = useTourPackageManager();
   const [packages, setPackages] = useState<TourPackage[]>([]);
+  const [filteredPackages, setFilteredPackages] = useState<TourPackage[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingPackage, setEditingPackage] = useState<TourPackage | null>(
     null
   );
   const params = useParams();
+  const [duplicateData, setDuplicateData] =
+    useState<Partial<TourPackage> | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
 
   // Ensure id is always a string
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -69,16 +93,43 @@ export default function TourPackagesPage() {
   const loadPackages = useCallback(async () => {
     if (!id) return;
     const data = await fetchAll();
-    setPackages(Array.isArray(data) ? data : []);
+    const packagesData = Array.isArray(data) ? data : [];
+    setPackages(packagesData);
+    setFilteredPackages(packagesData);
   }, [fetchAll, id]);
 
   useEffect(() => {
     loadPackages();
   }, [loadPackages]);
 
+  // Filter packages based on search term and active tab
+  useEffect(() => {
+    let result = packages;
+
+    // Apply search filter
+    if (searchTerm) {
+      result = result.filter(
+        (pkg) =>
+          pkg.package_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          pkg.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          pkg.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply tab filter
+    if (activeTab === "active") {
+      result = result.filter((pkg) => pkg.is_active);
+    } else if (activeTab === "inactive") {
+      result = result.filter((pkg) => !pkg.is_active);
+    }
+
+    setFilteredPackages(result);
+  }, [searchTerm, activeTab, packages]);
+
   // Handle create success
   const handleCreateSuccess = async () => {
     setDialogOpen(false);
+    setShowAdd(false);
     await loadPackages();
   };
 
@@ -88,53 +139,129 @@ export default function TourPackagesPage() {
     setEditingPackage(null);
     await loadPackages();
   };
+  const handleDuplicate = (pkg: TourPackage) => {
+    // Helper to format date to mm/dd/yyyy
+
+    setDuplicateData({
+      ...pkg,
+      date_start: "", // Leave blank for user to pick new date
+      date_end: "",
+      assigned_guides: [],
+      // Split inclusions/exclusions for dropdowns
+      selectedInclusions: pkg.inclusions
+        ? pkg.inclusions.split(",").map((i) => i.trim())
+        : [],
+      selectedExclusions: pkg.exclusions
+        ? pkg.exclusions.split(",").map((i) => i.trim())
+        : [],
+      // Optionally, if you want to prefill with formatted old dates:
+      // date_start: formatDate(pkg.date_start),
+      // date_end: formatDate(pkg.date_end),
+    });
+    setShowAdd(true);
+  };
+
+  // Render
+
+  const toSentenceCase = (str: string[]) => {
+    return str
+      .map((s) => s.trim())
+      .map((s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
+      .join(", ");
+  };
+  const toTitleCase = (str: string) => {
+    return str
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
 
   if (!id) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#e6f7fa] to-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
         <p className="text-gray-600">Invalid tour operator ID.</p>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen w-full bg-gradient-to-b from-[#e6f7fa] to-white flex flex-col items-center py-12 px-2">
-      <div className="w-full max-w-6xl mx-auto space-y-8">
+    <main className="min-h-screen w-full bg-gray-50 flex flex-col items-center py-8 px-4 sm:px-6 lg:px-8">
+      <Dialog open={showAdd} onOpenChange={setShowAdd}>
+        <DialogContent className="sm:max-w-[700px] lg:max-w-4xl overflow-y-auto max-h-[90vh] rounded-lg">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold">
+              Duplicate Tour Package
+            </DialogTitle>
+          </DialogHeader>
+          <AddTourPackage
+            onSuccess={handleCreateSuccess}
+            onCancel={() => setShowAdd(false)}
+            initialData={duplicateData}
+          />
+        </DialogContent>
+      </Dialog>
+      <div className="w-full max-w-7xl mx-auto space-y-6">
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col gap-6">
           <div>
-            <h1 className="text-3xl font-extrabold text-[#1c5461] tracking-tight">
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
               Tour Packages
             </h1>
-            <p className="text-[#51702c] mt-2">
-              View and manage your tour packages.
+            <p className="text-gray-600 mt-2">
+              Manage and organize your tour offerings
             </p>
           </div>
-          <Button className="gap-2" onClick={() => setDialogOpen(true)}>
-            <Plus className="h-4 w-4" />
-            Create Tour Package
-          </Button>
+
+          {/* Search and Filter Bar */}
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="relative w-full sm:w-96">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search packages..."
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            <Button className="gap-2" onClick={() => setDialogOpen(true)}>
+              <Plus className="h-4 w-4" />
+              New Package
+            </Button>
+          </div>
+
+          {/* Tabs for filtering */}
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <TabsList className="grid w-full md:w-fit grid-cols-3">
+              <TabsTrigger value="all">All Packages</TabsTrigger>
+              <TabsTrigger value="active">Active</TabsTrigger>
+              <TabsTrigger value="inactive">Inactive</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         {/* Dialog for Creating Tour Package */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-[600px] lg:max-w-3xl overflow-y-auto max-h-[80vh] rounded-lg">
+          <DialogContent className="sm:max-w-[700px] lg:max-w-4xl overflow-y-auto max-h-[90vh] rounded-lg">
             <DialogHeader>
               <DialogTitle className="text-2xl font-semibold">
-                Create Tour Package
+                Create New Tour Package
               </DialogTitle>
             </DialogHeader>
             <AddTourPackage
               onSuccess={handleCreateSuccess}
               onCancel={() => setDialogOpen(false)}
-              operatorId={id}
             />
           </DialogContent>
         </Dialog>
 
         {/* Dialog for Editing Tour Package */}
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-          <DialogContent className="sm:max-w-[600px] lg:max-w-3xl overflow-y-auto max-h-[80vh] rounded-lg">
+          <DialogContent className="sm:max-w-[700px] lg:max-w-4xl overflow-y-auto max-h-[90vh] rounded-lg">
             <DialogHeader>
               <DialogTitle className="text-2xl font-semibold">
                 Edit Tour Package
@@ -155,9 +282,24 @@ export default function TourPackagesPage() {
 
         {/* Content Section */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 space-y-4">
-            <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
-            <p className="text-gray-600">Loading tour packages...</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <Skeleton className="h-48 w-full" />
+                <CardHeader>
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-full mt-2" />
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-4 w-2/3" />
+                </CardContent>
+                <CardFooter>
+                  <Skeleton className="h-10 w-24" />
+                </CardFooter>
+              </Card>
+            ))}
           </div>
         ) : error ? (
           <div className="rounded-xl bg-red-50 p-6 text-center border border-red-100 max-w-md mx-auto">
@@ -174,86 +316,163 @@ export default function TourPackagesPage() {
               Retry
             </Button>
           </div>
-        ) : packages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 max-w-md mx-auto">
+        ) : filteredPackages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-xl bg-white max-w-md mx-auto">
             <h3 className="text-lg font-medium text-gray-900">
-              No tour packages found
+              {searchTerm
+                ? "No matching packages found"
+                : "No tour packages yet"}
             </h3>
             <p className="mt-1 text-gray-500 mb-6">
-              Get started by creating your first tour package.
+              {searchTerm
+                ? "Try a different search term"
+                : "Create your first tour package to get started"}
             </p>
             <Button onClick={() => setDialogOpen(true)}>
               Create Tour Package
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full">
-            {packages.map((pkg) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredPackages.map((pkg) => (
               <Card
                 key={pkg.id}
-                className="hover:shadow-lg transition-shadow duration-200 bg-white border border-[#e6f7fa] rounded-2xl shadow-md flex flex-col"
+                className="hover:shadow-lg transition-shadow duration-200 bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col h-full"
               >
-                <CardHeader>
-                  <h3 className="font-semibold capitalize text-lg text-[#1c5461]">
-                    {pkg.package_name}
-                  </h3>
+                <CardHeader className="">
+                  <div className="flex flex-row items-center justify-between w-full">
+                    <h3 className="font-semibold text-xl text-gray-900">
+                      {pkg.package_name}
+                    </h3>
+                    <Badge
+                      variant={pkg.is_active ? "default" : "secondary"}
+                      className={`${
+                        pkg.is_active
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      } px-3 py-1 rounded-full text-sm font-medium`}
+                    >
+                      {pkg.is_active ? "Active" : "Inactive"}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                    <MapPin className="h-4 w-4" />
+                    <span>{pkg.location}</span>
+                  </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-gray-700 mb-2 line-clamp-3">
-                    {pkg.description}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    <span className="font-semibold">Location:</span>{" "}
-                    {pkg.location}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    <span className="font-semibold">Price:</span> ₱{pkg.price}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    <span className="font-semibold">Duration:</span>{" "}
-                    {pkg.duration_days} days
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    <span className="font-semibold">Slots:</span>{" "}
-                    {pkg.available_slots}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    <span className="font-semibold">Tour Guide:</span>
-                    {pkg.assigned_guides.length === 0
-                      ? " None"
-                      : pkg.assigned_guides.map((g, i) => (
-                          <span key={g.tourguide_id}>
-                            {i > 0 && ", "}
-                            {g.first_name} {g.last_name}
-                          </span>
-                        ))}
+
+                <CardContent className="flex-grow">
+                  <p className="text-gray-600 mb-4 line-clamp-3">
+                    {toTitleCase(pkg.description)}
+                  </p>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Tag className="h-4 w-4 text-blue-500" />
+                        <span className="font-medium">₱{pkg.price}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Clock className="h-4 w-4 text-blue-500" />
+                        <span>{pkg.duration_days} days</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Users className="h-4 w-4 text-blue-500" />
+                        <span>{pkg.available_slots} slots</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="h-4 w-4 text-blue-500" />
+                      <span>
+                        {format(new Date(pkg.date_start), "MMM d, yyyy")} -{" "}
+                        {format(new Date(pkg.date_end), "MMM d, yyyy")}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col items-start gap-2 text-sm bg-green-100 text-green-800 p-3 rounded-md min-h-16 ">
+                      <div className="flex items-center gap-2">
+                        <BadgeCheck className="h-6 w-6 text-green-500" />
+                        <span className="font-semibold">Inclusions</span>
+                      </div>
+                      <div className="overflow-y-scroll max-h-24">
+                        <ul className="list-disc pl-5">
+                          {pkg.inclusions.split(",").map((inc, idx) => (
+                            <li key={idx}>{toSentenceCase([inc])}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-start gap-2 text-sm bg-red-100 text-red-800 p-3 rounded-md  min-h-16">
+                      <div className="flex items-center gap-2">
+                        <BadgeX className="h-6 w-6 text-red-500" />
+                        <span className=" font-semibold">Exclusions</span>
+                      </div>
+                      <div className="overflow-y-scoll  max-h-24">
+                        <ul className="list-disc pl-5">
+                          {pkg.exclusions.split(",").map((exc, idx) => (
+                            <li key={idx}>{toSentenceCase([exc])}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {pkg.assigned_guides.length > 0 && (
+                      <div className="mt-4">
+                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                          Assigned Guides
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {pkg.assigned_guides.map((guide) => (
+                            <div
+                              key={guide.tourguide_id}
+                              className="flex items-center gap-2"
+                            >
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={guide.profile_picture} />
+                                <AvatarFallback>
+                                  {guide.first_name.charAt(0)}
+                                  {guide.last_name.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm">
+                                {guide.first_name} {guide.last_name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
-                <CardFooter className="flex items-center justify-between gap-2">
+
+                <CardFooter className="flex items-center justify-between gap-2 border-t pt-4">
                   <span className="text-xs text-gray-500">
-                    {/* Format dates to traditional format */}
-                    {new Date(pkg.date_start).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}{" "}
-                    -{" "}
-                    {new Date(pkg.date_end).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
+                    Updated: <br />
+                    {format(new Date(pkg.updated_at), "MMM d, yyyy")}
                   </span>
                   <div className="flex gap-2">
                     <Button
-                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDuplicate(pkg)}
+                      className="cursor-pointer flex items-center gap-2"
+                      title="Duplicate this package"
+                    >
+                      <Copy className="w-4 h-4" />
+                      Duplicate
+                    </Button>
+                    <Button
                       variant="outline"
                       onClick={() => {
                         setEditingPackage(pkg);
                         setEditDialogOpen(true);
                       }}
                     >
-                      <Pencil className="w-4 h-4 mr-1" />
+                      <Pencil className="w-4 h-4 " />
                       Edit
                     </Button>
                     <DeleteTourPackage id={pkg.id} onDeleted={loadPackages} />

@@ -651,8 +651,7 @@ app.get(
 );
 
 app.put(
-  "/api/v1/applications/:applicationId/approve",
-  authenticateTourOperator,
+  "/api/v1/applications/:applicationId/approve/:touroperatorId",
   approveTourGuideApplicationController
 );
 app.put(

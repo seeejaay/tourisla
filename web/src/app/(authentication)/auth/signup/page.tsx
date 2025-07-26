@@ -54,6 +54,7 @@ const baseSignupSchema = z.object({
   nationality: z.string(),
   terms: z.boolean(),
   status: z.literal("Active"),
+  sex: z.enum(["MALE", "FEMALE"]).optional().or(z.literal("")),
   birth_date: z.string().refine((val) => {
     if (!val) return false;
     const date = new Date(val);
@@ -70,7 +71,6 @@ const baseSignupSchema = z.object({
 });
 
 const extendedSignupSchema = baseSignupSchema.extend({
-  sex: z.enum(["MALE", "FEMALE"]).optional().or(z.literal("")),
   reason_for_applying: z
     .string()
     .regex(/^[\w\s.,!?]+$/, {
@@ -232,6 +232,7 @@ export default function SignUp() {
         nationality: data.nationality,
         terms: data.terms,
         birth_date: data.birth_date,
+        sex: data.sex,
       };
 
       const response = await registerUser(userPayload, captchaToken);
@@ -529,6 +530,34 @@ export default function SignUp() {
                         </FormItem>
                       )}
                     />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="sex"
+                        render={({ field }) => (
+                          <FormItem className="w-full flex flex-col">
+                            <FormLabel className="text-[#1c5461] text-sm font-semibold">
+                              Sex *
+                            </FormLabel>
+                            <FormControl>
+                              <Select
+                                value={field.value || ""}
+                                onValueChange={field.onChange}
+                              >
+                                <SelectTrigger className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white">
+                                  <SelectValue placeholder="Select sex" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="MALE">Male</SelectItem>
+                                  <SelectItem value="FEMALE">Female</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
 
                   {/* Password Fields */}
@@ -623,36 +652,6 @@ export default function SignUp() {
                   {/* Tour Guide Specific Fields */}
                   {role === "Tour Guide" && (
                     <>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="sex"
-                          render={({ field }) => (
-                            <FormItem className="w-full flex flex-col">
-                              <FormLabel className="text-[#1c5461] text-sm font-semibold">
-                                Sex *
-                              </FormLabel>
-                              <FormControl>
-                                <Select
-                                  value={field.value || ""}
-                                  onValueChange={field.onChange}
-                                >
-                                  <SelectTrigger className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white">
-                                    <SelectValue placeholder="Select sex" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="MALE">Male</SelectItem>
-                                    <SelectItem value="FEMALE">
-                                      Female
-                                    </SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
                       <div className="grid grid-cols-1 gap-4">
                         <div>
                           <label className="block text-sm font-semibold text-[#1c5461] mb-1">

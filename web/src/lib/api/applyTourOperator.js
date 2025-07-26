@@ -41,10 +41,13 @@ export const fetchApplicationsForTourOperator = async (operatorId) => {
 };
 
 // Approve a tour guide's application to a tour operator
-export const approveTourGuideApplication = async (applicationId) => {
+export const approveTourGuideApplication = async (
+  applicationId,
+  touroperatorId
+) => {
   try {
     const response = await axios.put(
-      `${API_URL}applications/${applicationId}/approve`,
+      `${API_URL}applications/${applicationId}/approve/${touroperatorId}`,
       {},
       { withCredentials: true }
     );

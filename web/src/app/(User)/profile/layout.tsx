@@ -90,15 +90,13 @@ export default function ProfileLayout({
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen w-full">
       <Sidebar
         navigation={navigation}
         isCollapsed={isCollapsed}
         setIsCollapsed={setIsCollapsed}
       />
-      <main className="flex-1 min-w-0 transition-all duration-300">
-        {children}
-      </main>
+      <main className="flex-1 overflow-auto">{children}</main>
     </div>
   );
 }

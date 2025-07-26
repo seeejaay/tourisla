@@ -37,7 +37,7 @@ const tourPackageSchema = z.object({
     .string()
     .min(5, { message: "Inclusions are required." })
     .max(300, { message: "Inclusions must be less than 300 characters." })
-    .regex(/^[a-zA-Z0-9\s,.'-]+$/, {
+    .regex(/^[a-zA-Z0-9\s,.'\-()/↔]+$/, {
       message:
         "Inclusions can only contain letters, numbers, spaces, and common punctuation.",
     }),

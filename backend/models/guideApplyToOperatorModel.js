@@ -36,12 +36,13 @@ const getApplicationsForTourOperator = async (touroperator_id) => {
   return result.rows;
 };
 
-const approveTourGuideApplication = async (applicationId) => {
+const approveTourGuideApplication = async (applicationId, operator_Id) => {
   // First, get the application row
   const appResult = await db.query(
-    "SELECT tourguide_id FROM tourguide_applications_to_operators WHERE id = $1",
-    [applicationId]
+    "SELECT tourguide_id FROM tourguide_applications_to_operators WHERE user_id = $1 AND touroperator_id = $2",
+    [applicationId, operator_Id]
   );
+  console.log("Application result:", appResult.rows);
   const application = appResult.rows[0];
   if (!application) return null;
 
@@ -50,22 +51,23 @@ const approveTourGuideApplication = async (applicationId) => {
     "SELECT * FROM tourguide_applications_to_operators WHERE tourguide_id = $1 AND application_status = 'APPROVED'",
     [application.tourguide_id]
   );
+  console.log("Check result for existing approval:", checkResult.rows);
   if (checkResult.rows.length > 0) {
     return { error: "Tour guide already approved by another operator." };
   }
 
   // Approve this application
   const result = await db.query(
-    "UPDATE tourguide_applications_to_operators SET application_status = 'APPROVED', updated_at = NOW() WHERE id = $1 RETURNING *",
-    [applicationId]
+    "UPDATE tourguide_applications_to_operators SET application_status = 'APPROVED', updated_at = NOW() WHERE user_id = $1 AND touroperator_id = $2 RETURNING *",
+    [applicationId, operator_Id]
   );
 
   // Mark all other applications as EXPIRED
   await db.query(
-    "UPDATE tourguide_applications_to_operators SET application_status = 'EXPIRED', updated_at = NOW() WHERE tourguide_id = $1 AND id != $2 AND application_status != 'APPROVED'",
-    [application.tourguide_id, applicationId]
+    "UPDATE tourguide_applications_to_operators SET application_status = 'EXPIRED', updated_at = NOW() WHERE user_id = $1 AND touroperator_id != $2 AND application_status != 'APPROVED'",
+    [applicationId, operator_Id]
   );
-
+  console.log("Updated application:", result.rows[0]);
   return result.rows[0];
 };
 

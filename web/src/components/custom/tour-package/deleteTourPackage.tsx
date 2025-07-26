@@ -1,7 +1,14 @@
 import React, { useState } from "react";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
 import { Button } from "@/components/ui/button";
-
+import { Trash2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 interface DeleteTourPackageProps {
   id: number | string;
   onDeleted?: () => void;
@@ -24,18 +31,45 @@ export default function DeleteTourPackage({
   };
 
   return (
-    <div>
+    <>
       <Button
-        variant={confirm ? "destructive" : "outline"}
-        onClick={handleDelete}
+        variant="destructive"
+        onClick={() => setConfirm(true)}
         disabled={loading}
+        className="cursor-pointer"
       >
-        {loading ? "Deleting..." : confirm ? "Confirm Delete" : "Delete"}
+        <Trash2 />
+        Delete
       </Button>
-      {confirm && (
-        <span className="ml-2 text-sm text-red-600">Are you sure?</span>
-      )}
-      {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
-    </div>
+      <Dialog open={confirm} onOpenChange={setConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this tour package?
+            </DialogDescription>
+          </DialogHeader>
+          {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
+          <div className="flex justify-end gap-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setConfirm(false)}
+              disabled={loading}
+              className="cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={loading}
+              className="cursor-pointer hover:bg-red-700"
+            >
+              {loading ? "Deleting..." : "Delete"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

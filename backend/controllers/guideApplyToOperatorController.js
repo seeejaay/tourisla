@@ -77,8 +77,23 @@ const getApplicationsForTourOperatorController = async (req, res) => {
 
 const approveTourGuideApplicationController = async (req, res) => {
   try {
-    const { applicationId } = req.params;
-    const updated = await approveTourGuideApplication(applicationId);
+    const { applicationId, touroperatorId } = req.params;
+    console.log(
+      "Approving application with ID:",
+      applicationId,
+      "by operator:",
+      touroperatorId
+    );
+
+    const operatorRegis = await getOperatorRegisById(touroperatorId);
+    if (!operatorRegis) {
+      return res.status(404).json({ message: "Tour operator not found" });
+    }
+
+    const updated = await approveTourGuideApplication(
+      applicationId,
+      operatorRegis.id
+    );
 
     if (!updated)
       return res.status(404).json({ message: "Application not found" });
