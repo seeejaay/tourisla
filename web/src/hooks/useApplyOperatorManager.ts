@@ -52,18 +52,21 @@ export function useApplyOperatorManager() {
     }
   }, []);
 
-  const approve = useCallback(async (applicationId: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      return await approveTourGuideApplication(applicationId);
-    } catch (error) {
-      setError(error + "Unknown error");
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const approve = useCallback(
+    async (applicationId: string, touroperatorId: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        return await approveTourGuideApplication(applicationId, touroperatorId);
+      } catch (error) {
+        setError(error + "Unknown error");
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   const reject = useCallback(async (applicationId: string) => {
     setLoading(true);

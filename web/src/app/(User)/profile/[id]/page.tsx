@@ -293,13 +293,17 @@ export default function ProfilePage() {
                   Edit Profile
                 </button>
                 {user.role && user.role.toLowerCase() === "tour guide" && (
-                  <button
+                  <a
                     className="px-6 py-2 rounded-lg bg-[#51702c] text-white font-semibold shadow hover:bg-[#3e979f] transition"
                     onClick={async () => {
                       try {
                         const response = await authorizeCalendar();
                         if (response && response.authUrl) {
-                          window.location.href = response.authUrl;
+                          window.open(
+                            response.authUrl,
+                            "_blank",
+                            "noopener,noreferrer"
+                          );
                         } else {
                           alert("Failed to get Google authorization URL.");
                         }
@@ -307,10 +311,11 @@ export default function ProfilePage() {
                         alert("Failed to authorize Google Calendar." + err);
                       }
                     }}
-                    type="button"
+                    href="#"
+                    rel="noopener noreferrer"
                   >
                     Authorize Google Calendar
-                  </button>
+                  </a>
                 )}
               </>
             )}

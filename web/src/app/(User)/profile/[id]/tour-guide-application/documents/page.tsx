@@ -142,15 +142,19 @@ export default function TourGuideDocumentsApprovalPage() {
     fetchGuideApplication,
   ]);
 
+  const toSentenceCase = (str: string) => {
+    if (!str) return "";
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+
   const handleApproveTourGuide = async () => {
-    if (!tourGuide || typeof tourGuide.id !== "string") {
-      return;
-    }
     try {
-      const result = await approve(guideId);
+      console.log("Approving tour guide with ID:", guideId);
+      const result = await approve(guideId, operatorId);
       setMessage("Tour guide approved successfully.");
       setAlertOpen(true);
       if (result) {
+        router.back();
         // router.push("/tourism-officer/tour-guides");
       }
     } catch (error) {
@@ -167,7 +171,7 @@ export default function TourGuideDocumentsApprovalPage() {
       if (result) {
         setMessage("Tour guide rejected successfully.");
         setAlertOpen(true);
-        router.push("/tourism-officer/tour-guides");
+        router.back();
       }
     } catch (error) {
       setError(
@@ -282,6 +286,18 @@ export default function TourGuideDocumentsApprovalPage() {
                 </div>
               </div>
             )}
+            <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">
+                Reason for Application
+              </h2>
+              <p>
+                {toSentenceCase(
+                  guideApplicant?.reason_for_applying
+                    ? guideApplicant.reason_for_applying
+                    : ""
+                )}
+              </p>
+            </div>
 
             {/* Verification Progress */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
