@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { TouristSpot } from "@/app/static/tourist-spot/useTouristSpotManagerSchema";
-
+import Image from "next/image";
 export default function EditTouristSpot({
   touristSpot,
   onSuccess,
@@ -271,10 +271,12 @@ export default function EditTouristSpot({
                       key={idx}
                       className="relative aspect-square w-32 h-20 rounded-md overflow-hidden border border-gray-200"
                     >
-                      <img
+                      <Image
                         src={image.image_url.replace(/\s/g, "")}
                         alt={`Tourist Spot Image ${idx + 1}`}
                         className="object-cover w-full h-full"
+                        width={128}
+                        height={80}
                       />
                     </div>
                   ))}

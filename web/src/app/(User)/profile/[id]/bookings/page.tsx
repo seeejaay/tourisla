@@ -74,7 +74,6 @@ export default function Bookings() {
   } = useBookingsByOperator();
   const { updateStatus } = useUpdateBookingStatus();
   const { complete } = useCompleteBooking();
-  const [updatingId, setUpdatingId] = useState<string | number | null>(null);
   const [completingId, setCompletingId] = useState<string | number | null>(
     null
   );
@@ -107,9 +106,7 @@ export default function Bookings() {
 
   const handleStatusUpdate = useCallback(
     async (bookingId: string | number, status: string) => {
-      setUpdatingId(bookingId);
       await updateStatus(bookingId, status);
-      setUpdatingId(null);
       fetchByOperator(id ?? "");
     },
     [updateStatus, fetchByOperator, id]
