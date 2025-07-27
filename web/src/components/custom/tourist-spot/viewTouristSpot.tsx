@@ -1,7 +1,7 @@
 import { TouristSpot } from "@/app/static/tourist-spot/useTouristSpotManagerSchema";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-
+import Image from "next/image";
 export default function ViewTouristSpot({
   touristSpot,
 }: {
@@ -195,7 +195,9 @@ export default function ViewTouristSpot({
                   key={index}
                   className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-white"
                 >
-                  <img
+                  <Image
+                    width={300}
+                    height={200}
                     src={image.image_url.replace(/\s/g, "")}
                     alt={`Tourist Spot Image ${index + 1}`}
                     className="object-cover w-full h-full"
