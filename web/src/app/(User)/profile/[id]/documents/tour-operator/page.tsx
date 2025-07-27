@@ -16,7 +16,6 @@ import {
   Pencil,
   Check,
   X,
-  ChevronRight,
 } from "lucide-react";
 
 // Lazy load icons to reduce initial bundle size
@@ -295,9 +294,9 @@ export default function TourOperatorDocumentsPage() {
                     >
                       <Suspense fallback={<IconFallback />}>
                         {uploadedDoc ? (
-                          <Check className="h-4 w-4" />
+                          <Check className="h-4 w-4 md:h-3 md:w-3" />
                         ) : (
-                          <X className="h-4 w-4" />
+                          <X className="h-4 w-4 md:h-3 md:w-3" />
                         )}
                       </Suspense>
                     </div>
@@ -312,11 +311,11 @@ export default function TourOperatorDocumentsPage() {
                         </span>
                         {doc.required && (
                           <Suspense
-                            fallback={<Skeleton className="w-24 h-5 rounded" />}
+                            fallback={<Skeleton className="w-20 h-5 rounded" />}
                           >
                             <Badge
                               variant={uploadedDoc ? "default" : "destructive"}
-                              className={`text-xs w-24 ${
+                              className={`text-xs max-w-20 ${
                                 uploadedDoc ? "bg-green-700" : "bg-red-700"
                               }`}
                             >
@@ -325,17 +324,6 @@ export default function TourOperatorDocumentsPage() {
                           </Suspense>
                         )}
                       </div>
-                      {uploadedDoc && (
-                        <button
-                          onClick={() => openEditDialog(uploadedDoc.id)}
-                          className="text-xs text-blue-600 hover:text-blue-800 mt-1 flex items-center"
-                        >
-                          View details
-                          <Suspense fallback={<IconFallback />}>
-                            <ChevronRight className="h-3 w-3 ml-1" />
-                          </Suspense>
-                        </button>
-                      )}
                     </div>
                   </li>
                 );

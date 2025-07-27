@@ -120,9 +120,16 @@ const getFilteredBookingsByTourist = async (touristId, timeFilter) => {
 
 const getBookingsByTourOperatorId = async (operatorId) => {
   const result = await db.query(
-    `SELECT b.*, tp.package_name AS package_name, tp.touroperator_id
+    `SELECT b.*, 
+            tp.package_name AS package_name, 
+            tp.touroperator_id,
+            tp.location,
+            u.first_name, 
+            u.last_name, 
+            u.email
      FROM bookings b
      JOIN tour_packages tp ON b.tour_package_id = tp.id
+     JOIN users u ON b.tourist_id = u.user_id
      WHERE tp.touroperator_id = $1
      ORDER BY b.scheduled_date DESC`,
     [operatorId]

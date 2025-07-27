@@ -45,7 +45,7 @@ const tourPackageSchema = z.object({
     .string()
     .min(5, { message: "Exclusions are required." })
     .max(300, { message: "Exclusions must be less than 300 characters." })
-    .regex(/^[a-zA-Z0-9\s,.'-]+$/, {
+    .regex(/^[a-zA-Z0-9\s,.'\-()/↔]+$/, {
       message:
         "Exclusions can only contain letters, numbers, spaces, and common punctuation.",
     }),
