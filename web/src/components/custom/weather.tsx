@@ -24,7 +24,12 @@ export default function WeatherWidget() {
         <span className="text-red-500">Weather data not available.</span>
       </div>
     );
-
+  function fixImageUrl(url: string) {
+    if (url.startsWith("//")) {
+      return "https:" + url;
+    }
+    return url;
+  }
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -43,7 +48,7 @@ export default function WeatherWidget() {
           <Image
             width={50}
             height={50}
-            src={weather.current.condition.icon}
+            src={fixImageUrl(weather.current.condition.icon)}
             alt="weather icon"
             className="w-10 h-10 sm:w-12 sm:h-12 mb-2"
           />
