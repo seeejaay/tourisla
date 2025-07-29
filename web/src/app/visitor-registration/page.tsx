@@ -54,6 +54,7 @@ export default function WalkInRegister() {
   useEffect(() => {
     async function checkuser() {
       const res = await loggedInUser(router);
+
       if (!res || !res.data?.user) {
         router.push("/auth/login?redirect=/visitor-registration");
         return;
@@ -64,7 +65,7 @@ export default function WalkInRegister() {
         sex: res.data.user.sex === "MALE" ? "Male" : "Female",
         country: res.data.user.nationality || "",
         is_foreign: res.data.user.nationality?.toLowerCase() !== "philippines",
-        age: Number(getAge(res.data.user.birth_date)),
+        age: Number(getAge(res.data.user.birthDate)),
         municipality: "",
         province: "",
       });

@@ -24,7 +24,6 @@ export const fetchTourOperatorApplicants = async () => {
 // Fetch one operator applicant by ID
 export const fetchTourOperatorApplicant = async (operatorId) => {
   try {
-    console.log("Fetching Tour Operator Applicant with ID:", operatorId);
     const response = await axios.get(`${API_URL}operatorRegis/${operatorId}`, {
       withCredentials: true,
     });
@@ -44,7 +43,6 @@ export const fetchTourOperatorApplicant = async (operatorId) => {
 // Create operator applicant (with file upload support)
 export const createTourOperatorApplicant = async (operatorData) => {
   try {
-    console.log("Creating Tour Operator Applicant with data:", operatorData);
     const response = await axios.post(`${API_URL}operatorRegis`, operatorData, {
       headers: {
         "Content-Type": "application/json",
@@ -242,7 +240,9 @@ export const approveTourOperatorApplicant = async (applicantId) => {
   try {
     const response = await axios.put(
       `${API_URL}operatorApplicants/${applicantId}/approve`,
-      {},
+      {
+        applicantId,
+      },
       {
         withCredentials: true,
       }
@@ -264,7 +264,9 @@ export const rejectTourOperatorApplicant = async (applicantId) => {
   try {
     const response = await axios.put(
       `${API_URL}operatorApplicants/${applicantId}/reject`,
-      {},
+      {
+        applicantId,
+      },
       {
         withCredentials: true,
       }

@@ -250,10 +250,140 @@ async function sendDocumentRejectEmail(email, documentName, documentImage) {
   }
 }
 
+const sendApprovalEmail = async (email, name) => {
+  try {
+    const result = await resend.emails.send({
+      from: "Tourisla <tourisla@tourisla.space>",
+      to: email,
+      subject: "Your Application Has Been Approved",
+      html: `
+      <html>
+      <body style="font-family: Arial, sans-serif; background: #f8f9fa; margin:0; padding:0;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background: #f8f9fa; padding: 40px 0;">
+          <tr>
+            <td align="center">
+              <table width="480" cellpadding="0" cellspacing="0" style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 32px;">
+                <tr>
+                  <td align="center" style="padding-bottom: 24px;">
+                    <h1 style="color: #2a7ae4; margin: 0 0 8px 0; font-size: 28px;">Application Approved</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="color: #333; font-size: 16px; line-height: 1.6; padding-bottom: 24px;">
+                    <p style="margin: 0;">Dear ${name},</p>
+                    <p style="margin: 16px 0;">Congratulations! Your application has been approved.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 32px; color: #888; font-size: 12px;" align="center">
+                    &copy; ${new Date().getFullYear()} Tourisla. All rights reserved.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+      `,
+    });
+  } catch (error) {
+    console.error("Error sending approval email:", error);
+  }
+};
+
+const sendRejectionEmail = async (email, name) => {
+  try {
+    const result = await resend.emails.send({
+      from: "Tourisla <tourisla@tourisla.space>",
+      to: email,
+      subject: "Your Application Has Been Rejected",
+      html: `
+      <html>
+      <body style="font-family: Arial, sans-serif; background: #f8f9fa; margin:0; padding:0;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:
+  #f8f9fa; padding: 40px 0;">
+            <tr>
+              <td align="center">
+                <table width="480" cellpadding="0" cellspacing="0" style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 32px;">
+                  <tr>
+                    <td align="center" style="padding-bottom: 24px;">
+                      <h1 style="color: #e74c3c; margin: 0 0 8px 0; font-size: 28px;">Application Rejected</h1>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="color: #333; font-size: 16px; line-height: 1.6; padding-bottom: 24px;">
+                      <p style="margin: 0;">Dear ${name},</p>
+                      <p style="margin: 16px 0;">We regret to inform you that your application has been rejected or your verified status has been revoked.</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding-top: 32px; color: #888; font-size: 12px;" align="center">
+                      &copy; ${new Date().getFullYear()} Tourisla. All rights reserved.
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>
+      `,
+    });
+  } catch (error) {
+    console.error("Error sending rejection email:", error);
+  }
+};
+
+const sendIncidentEmail = async (email, incidentDetails) => {
+  try {
+    const result = await resend.emails.send({
+      from: "Tourisla <tourisla@tourisla.space>",
+      to: email,
+      subject: incidentDetails.subject || "Incident Report",
+      html: `
+        <html>
+          <body style="font-family: Arial, sans-serif; background: #f8f9fa; margin:0; padding:0;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background: #f8f9fa; padding: 40px 0;">
+              <tr>
+                <td align="center">
+                  <table width="480" cellpadding="0" cellspacing="0" style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 32px;">
+                    <tr>
+                      <td align="center" style="padding-bottom: 24px;">
+                        <h1 style="color: #2a7ae4; margin: 0 0 8px 0; font-size: 28px;">${incidentDetails.subject || "Incident Report"}</h1>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="color: #333; font-size: 16px; line-height: 1.6; padding-bottom: 24px;">
+                        <p style="margin: 0;">${incidentDetails.text || "Your incident report status has been updated."}</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding-top: 32px; color: #888; font-size: 12px;" align="center">
+                        &copy; ${new Date().getFullYear()} Tourisla. All rights reserved.
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+        </html>
+      `,
+    });
+    console.log("Incident email sent successfully:", result);
+  } catch (error) {
+    console.error("Error sending incident email:", error);
+  }
+};
+
 module.exports = {
   sendWelcomeEmail,
   sendResetPasswordEmail,
   sendIslandEntryEmail,
   sendDocumentApproveEmail,
   sendDocumentRejectEmail,
+  sendApprovalEmail,
+  sendRejectionEmail,
+  sendIncidentEmail,
 };

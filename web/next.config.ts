@@ -22,6 +22,11 @@ const nextConfig: NextConfig = {
         hostname: "tourislabuckets.s3.ap-southeast-1.amazonaws.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "cdn.weatherapi.com",
+        pathname: "/**",
+      },
     ],
   },
 };

@@ -32,7 +32,8 @@ export function useAuth() {
     }
     try {
       const resLogin = await login({ email, password });
-      if (resLogin?.error) {
+
+      if (resLogin.error) {
         setError(resLogin.error); // <-- Show backend error
         setLoading(false);
         return null;
@@ -57,6 +58,7 @@ export function useAuth() {
         }
       }
       setLoading(false);
+
       return resLogin;
     } catch (err) {
       setError("An error occurred during login: " + err);
@@ -118,19 +120,17 @@ export function useAuth() {
       setLoading(true);
       setError("");
       try {
-        console.log("Calling currentUser...");
         const resCurrentUser = await currentUser();
-
         if (!resCurrentUser || !resCurrentUser.data.user.role) {
           if (restrict) {
             router.replace("/auth/login");
           }
           return null;
         }
-        console.log("Current User:", resCurrentUser);
         return resCurrentUser;
       } catch (error) {
         setError("An error occurred while fetching the current user." + error);
+        console.error("Error fetching current user:", error);
         return null;
       } finally {
         setLoading(false);

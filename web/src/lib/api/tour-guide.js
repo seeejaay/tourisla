@@ -31,7 +31,6 @@ export const fetchTourGuideApplicant = async (guideId) => {
     if (response.status !== 200) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
     }
-    console.log("Fetched Tour Guide Applicant: ", response.data);
     return response.data;
   } catch (error) {
     console.error(

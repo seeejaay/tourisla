@@ -10,6 +10,8 @@ import {
   getOperatorDocumentsByUserId,
   approveTourGuideDocument,
   rejectTourGuideDocument,
+  approveTourOperatorDocument,
+  rejectTourOperatorDocument,
 } from "@/lib/api/document";
 
 type GuideDocument = {
@@ -42,10 +44,9 @@ export const useDocumentManager = () => {
       setLoading(true);
       setError(null);
       try {
-        console.log("Creating document for guide");
         const doc = await uploadGuideDocument(guideId, formData);
         setGuideDocument(doc);
-        console.log("Document created:", doc);
+
         return doc;
       } catch (error: unknown) {
         if (error instanceof Error) {
@@ -66,7 +67,6 @@ export const useDocumentManager = () => {
     async (docuId: string, documentData: FormData) => {
       setLoading(true);
       setError(null);
-      console.log("Sending document data for edit:", docuId, documentData);
       try {
         const doc = await apiEditGuideDocument(docuId, documentData);
         setGuideDocument(doc);
@@ -83,7 +83,6 @@ export const useDocumentManager = () => {
 
   // Guide: Fetch by ID
   const fetchGuideDocument = useCallback(async (docuId: string) => {
-    console.log("Fetching guide document by ID:", docuId);
     setLoading(true);
     setError(null);
     try {
@@ -102,10 +101,8 @@ export const useDocumentManager = () => {
     setLoading(true);
     setError(null);
     try {
-      console.log("Fetching guide documents by user ID:", guideId);
       const docs = await getGuideDocumentsByUserId(guideId);
       setGuideDocument(docs);
-      console.log("Fetched guide documents:", docs);
       return docs;
     } catch (error) {
       setError(error + "Unknown error");
@@ -120,10 +117,8 @@ export const useDocumentManager = () => {
       setLoading(true);
       setError(null);
       try {
-        console.log("Creating document for operator");
         const doc = await uploadOperatorDocument(operatorId, formData);
         // setOperatorDocument(doc); // Uncomment if you want to store operator document
-        console.log("Operator document created:", doc);
         return doc;
       } catch (error: unknown) {
         if (error instanceof Error) {
@@ -143,11 +138,6 @@ export const useDocumentManager = () => {
     async (docuId: string, documentData: FormData) => {
       setLoading(true);
       setError(null);
-      console.log(
-        "Sending operator document data for edit:",
-        docuId,
-        documentData
-      );
       try {
         const doc = await editOperatorUploadDocu(docuId, documentData);
         // setOperatorDocument(doc); // Uncomment if you want to store operator document
@@ -163,7 +153,6 @@ export const useDocumentManager = () => {
   );
 
   const fetchOperatorDocument = useCallback(async (docuId: string) => {
-    console.log("Fetching operator document by ID:", docuId);
     setLoading(true);
     setError(null);
     try {
@@ -198,7 +187,6 @@ export const useDocumentManager = () => {
     setError(null);
     try {
       const response = await approveTourGuideDocument(docuId);
-      console.log("Document approved:", response);
       return response;
     } catch (error) {
       setError(error + "Unknown error");
@@ -213,7 +201,34 @@ export const useDocumentManager = () => {
     setError(null);
     try {
       const response = await rejectTourGuideDocument(docuId);
-      console.log("Document rejected:", response);
+      return response;
+    } catch (error) {
+      setError(error + "Unknown error");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const approveOperatorDocument = useCallback(async (docuId: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await approveTourOperatorDocument(docuId);
+      return response;
+    } catch (error) {
+      setError(error + "Unknown error");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const rejectOperatorDocument = useCallback(async (docuId: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await rejectTourOperatorDocument(docuId);
       return response;
     } catch (error) {
       setError(error + "Unknown error");
@@ -238,5 +253,7 @@ export const useDocumentManager = () => {
     fetchOperatorDocumentsById,
     approveGuideDocument,
     rejectGuideDocument,
+    approveOperatorDocument,
+    rejectOperatorDocument,
   };
 };

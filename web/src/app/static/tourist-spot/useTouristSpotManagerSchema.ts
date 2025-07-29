@@ -1,26 +1,30 @@
 import { z } from "zod";
 import barangays from "@/app/static/barangay.json";
+// Tourist Spot Schema for form validation
 const touristSpotSchema = z.object({
   id: z.number().optional(),
   name: z
     .string()
     .min(3, { message: "Name is required." })
     .max(100, { message: "Name must be less than 100 characters." })
-    .regex(/^[a-zA-Z0-9\s,.'-]+$/, {
+    .regex(/^[a-zA-Z\s,.'-]+$/, {
       message:
-        "Name can only contain letters, numbers, spaces, commas, periods, apostrophes, and hyphens.",
+        "Name can only contain letters, spaces, commas, periods, apostrophes, and hyphens.",
     }),
-  type: z.enum([
-    "ADVENTURE",
-    "BEACH",
-    "CAMPING",
-    "CULTURAL",
-    "HISTORICAL",
-    "NATURAL",
-    "RECREATIONAL",
-    "RELIGIOUS",
-    "OTHERS",
-  ]),
+  type: z.enum(
+    [
+      "ADVENTURE",
+      "BEACH",
+      "CAMPING",
+      "CULTURAL",
+      "HISTORICAL",
+      "NATURAL",
+      "RECREATIONAL",
+      "RELIGIOUS",
+      "OTHERS",
+    ],
+    { message: "Please select a valid type of tourist spot." }
+  ),
   description: z
     .string()
     .min(10, { message: "Description is required." })
@@ -44,8 +48,7 @@ const touristSpotSchema = z.object({
   location: z
     .string()
     .min(5, { message: "Location is required." })
-    .max(255, { message: "Location must be less than 255 characters." }) // URLs can be longer
-    .regex(/^(https?:\/\/)?[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/, {
+    .regex(/^(https?:\/\/)?\S+$/, {
       message: "Please enter a valid location or URL.",
     }),
   opening_time: z
@@ -115,12 +118,15 @@ const touristSpotSchema = z.object({
   images: z
     .union([
       z
-        .instanceof(File)
-        .refine((file) => file.size <= 5 * 1024 * 1024, {
-          message: "Image must be less than 5MB.",
+        .object({
+          type: z.string(),
+          size: z.number(),
         })
         .refine((file) => file.type.startsWith("image/"), {
           message: "File must be an image.",
+        })
+        .refine((file) => file.size <= 5 * 1024 * 1024, {
+          message: "Image must be less than 5MB.",
         }),
       z.array(
         z.object({

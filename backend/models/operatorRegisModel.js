@@ -51,6 +51,16 @@ const editOperatorRegis = async (operatorId, operatorRegisData) => {
   return result.rows[0];
 };
 
+const editOperatorRegisByUserId = async (userId, operatorRegisData) => {
+  const { representative_name, email, mobile_number } = operatorRegisData;
+
+  const result = await db.query(
+    "UPDATE touroperator_applicants SET representative_name = $1, email = $2, mobile_number = $3 WHERE user_id = $4 RETURNING *",
+    [representative_name, email, mobile_number, userId]
+  );
+  return result.rows[0];
+};
+
 const deleteOperatorRegis = async (operatorId) => {
   const result = await db.query(
     "DELETE FROM touroperator_applicants WHERE id = $1 RETURNING *",
@@ -81,6 +91,14 @@ const getOperatorRegisByOperatorId = async (operatorId) => {
   return result.rows[0];
 };
 
+const getOperatorRegisByUserId = async (operatorId) => {
+  const result = await db.query(
+    "SELECT * FROM touroperator_applicants WHERE id = $1",
+    [operatorId]
+  );
+  return result.rows[0];
+};
+
 module.exports = {
   createOperatorRegis,
   editOperatorRegis,
@@ -88,4 +106,6 @@ module.exports = {
   getAllOperatorRegis,
   getOperatorRegisById,
   getOperatorRegisByOperatorId,
+  getOperatorRegisByUserId,
+  editOperatorRegisByUserId,
 };

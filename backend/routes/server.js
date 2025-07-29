@@ -61,6 +61,7 @@ const {
   viewUserController,
   forgotPasswordController,
   resetPasswordController,
+  editUserStatusController,
 } = require("../controllers/userController.js");
 const {
   authenticateUser,
@@ -118,6 +119,8 @@ const {
   editOperatorUploadDocuController,
   getOperatorUploadDocuByIdController,
   getOperatorUploadByUserIdController,
+  approveOperatorUploadDocuController,
+  rejectOperatorUploadDocuController,
 } = require("../controllers/operatorUploadDocuController.js");
 
 const {
@@ -139,6 +142,7 @@ const {
   approveTourGuideApplicationController,
   rejectTourGuideApplicationController,
   fetchAllApplicationsController,
+  fetchGuideApplicationController,
 } = require("../controllers/guideApplyToOperatorController.js");
 
 const {
@@ -366,6 +370,7 @@ app.get(
   viewUserController
 );
 app.put("/api/v1/users/:userId", authenticateUser, editUserController);
+app.patch("/api/v1/users/status", authenticateUser, editUserStatusController);
 app.patch("/api/v1/users/:userId", authenticateUser, deleteUserController);
 
 // Route for announcements
@@ -450,7 +455,13 @@ app.delete(
 app.get("/api/v1/guideRegis", viewGuideRegisController);
 app.get(
   "/api/v1/guideRegis/:guideId",
-  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin", "Tour Guide"]),
+  allowedRoles([
+    "Tourism Staff",
+    "Tourism Officer",
+    "Admin",
+    "Tour Guide",
+    "Tour Operator",
+  ]),
   viewGuideRegisByIdController
 );
 
@@ -525,7 +536,7 @@ app.get(
     "Tourism Officer",
     "Admin",
     "Tour Guide",
-    " Tour Operator",
+    "Tour Operator",
   ]),
   viewOperatorRegisByIdController
 );
@@ -537,6 +548,19 @@ app.post(
   authenticateTourOperator,
   createOperatorUploadDocuController
 );
+
+app.put(
+  "/api/v1/operatorUploadDocu/approve",
+  allowedRoles(["Tourism Officer"]),
+  approveOperatorUploadDocuController
+);
+
+app.put(
+  "/api/v1/operatorUploadDocu/reject",
+  allowedRoles(["Tourism Officer"]),
+  rejectOperatorUploadDocuController
+);
+
 app.put(
   "/api/v1/operatorUploadDocu/:documentId",
   upload.single("document"),
@@ -574,12 +598,12 @@ app.put(
 );
 app.get(
   "/api/v1/operatorApplicants",
-  authenticateAdmin,
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin", "Tour Operator"]),
   viewTourOperatorApplicantsController
 );
 app.get(
   "/api/v1/operatorApplicants/:applicantId",
-  authenticateAdmin,
+  allowedRoles(["Tourism Staff", "Tourism Officer", "Admin", "Tour Operator"]),
   viewTourOperatorApplicantDetailsController
 );
 app.put(
@@ -611,8 +635,13 @@ app.post(
 
 app.get(
   "/api/v1/applyToOperator/applications",
-  allowedRoles(["Tour Guide"]),
+  allowedRoles(["Tour Guide", "Tour Operator"]),
   fetchAllApplicationsController
+);
+app.get(
+  "/api/v1/applyToOperator/applications/:applicationId",
+  allowedRoles(["Tour Guide", "Tour Operator"]),
+  fetchGuideApplicationController
 );
 
 app.get(
@@ -622,8 +651,7 @@ app.get(
 );
 
 app.put(
-  "/api/v1/applications/:applicationId/approve",
-  authenticateTourOperator,
+  "/api/v1/applications/:applicationId/approve/:touroperatorId",
   approveTourGuideApplicationController
 );
 app.put(

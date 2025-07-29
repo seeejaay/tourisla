@@ -62,16 +62,18 @@ export function columns(
       accessorKey: "actions",
       header: "Actions",
       cell: ({ row }) => {
-        const operatorId = row.original.id;
+        const operator = row.original;
         const alreadyApplied = myApplications.some(
           (app) =>
-            String(app.touroperator_id) === String(operatorId) &&
-            app.application_status.toUpperCase().trim() !== "REJECTED"
+            String(app.touroperator_id) === String(operator.id) &&
+            app.application_status.toUpperCase() !== "REJECTED"
         );
+
         return (
           <Button
-            onClick={() => handleApply(row.original)}
+            onClick={() => handleApply(operator)}
             disabled={hasAcceptedOperator || alreadyApplied}
+            variant="default"
           >
             Apply
           </Button>

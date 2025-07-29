@@ -6,15 +6,25 @@ import {
   fetchUsers,
   editUser,
   deleteUser,
+  editUserStatus as editUserStatusApi,
 } from "@/lib/api/users";
 
 import { signupSchema } from "@/app/static/userManagerSchema";
-
+type User = {
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number?: string;
+  role?: string;
+  status?: string;
+  // add other fields as needed
+};
 export function useUserManager() {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [users, setUsers] = useState<string>("");
-  const [selectedUser, setSelectedUser] = useState<string>("");
+  const [users, setUsers] = useState<User[]>([]);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   // Fetch all users and update users state
   const viewAllUsers = useCallback(async () => {
@@ -97,6 +107,26 @@ export function useUserManager() {
     }
   }, []);
 
+  const editUserStatus = async (userId: string, status: string) => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await editUserStatusApi(userId, status);
+      // Update the users state after changing status
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.user_id === userId ? { ...user, status } : user
+        )
+      );
+      return response;
+    } catch (error) {
+      setError("An error occurred while updating user status. " + error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     registerUser,
     updateUser,
@@ -107,5 +137,6 @@ export function useUserManager() {
     selectedUser,
     error,
     loading,
+    editUserStatus,
   };
 }

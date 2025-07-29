@@ -5,7 +5,9 @@ const {
   getIncidentReportsByUser,
   updateIncidentStatus,
 } = require("../models/incidentRepModel");
-const { s3Client, PutObjectCommand } = require("../utils/s3.js");
+const { findUserById } = require("../models/userModel");
+const { sendIncidentEmail } = require("../utils/email");
+const { s3Client, PutObjectCommand } = require("../utils/s3");
 
 const createIncidentReportController = async (req, res) => {
   try {
@@ -57,6 +59,20 @@ const createIncidentReportController = async (req, res) => {
       description,
       photo_url,
     });
+    if (!newReport) {
+      return res
+        .status(500)
+        .json({ error: "Failed to create incident report" });
+    }
+
+    // Send email to user when report is received
+    const user = await findUserById(submitted_by);
+    if (user && user.email) {
+      await sendIncidentEmail(user.email, {
+        subject: "Incident Report Received",
+        text: `Your incident report has been received and is being processed.`,
+      });
+    }
 
     res.status(201).json({
       message: "Incident report submitted",
@@ -92,7 +108,7 @@ const viewIncidentReportByUserController = async (req, res) => {
 const updateIncidentStatusController = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, actionTaken } = req.body;
 
     const validStatuses = ["RECEIVED", "RESOLVED", "ARCHIVED"];
     if (!validStatuses.includes(status)) {
@@ -100,8 +116,24 @@ const updateIncidentStatusController = async (req, res) => {
     }
 
     const updated = await updateIncidentStatus(id, status);
+    console.log("Updated report:", updated);
+
     if (!updated) {
       return res.status(404).json({ error: "Incident report not found" });
+    }
+
+    const user = await findUserById(updated.submitted_by);
+    console.log("User found:", user);
+    if (status === "RECEIVED") {
+      await sendIncidentEmail(user.email, {
+        subject: "Incident Report Received",
+        text: `Your incident report has been received and is being processed.`,
+      });
+    } else if (status === "RESOLVED") {
+      await sendIncidentEmail(user.email, {
+        subject: "Incident Report Resolved",
+        text: `Your incident report has been resolved. Action taken: ${actionTaken}.`,
+      });
     }
 
     res.status(200).json({

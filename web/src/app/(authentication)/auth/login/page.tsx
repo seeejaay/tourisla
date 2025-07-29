@@ -17,7 +17,9 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (!(await loginUser(email, password, router))) {
+      const isValid = await loginUser(email, password, router);
+      console.log("Login successful:", isValid);
+      if (!isValid) {
         setError("Invalid email or password");
         return;
       }

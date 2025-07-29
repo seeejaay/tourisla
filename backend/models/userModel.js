@@ -9,7 +9,7 @@ const createUser = async (userData) => {
     phone_number,
     role,
     nationality,
-    status = "Active",
+    status = "Unverified",
     birth_date,
     sex,
   } = userData;
@@ -60,6 +60,14 @@ const editUser = async (userId, userData) => {
   const result = await db.query(
     `UPDATE users SET ${fields.join(", ")} WHERE user_id = $${idx} RETURNING *`,
     values
+  );
+  return result.rows[0];
+};
+
+const editUserStatus = async (userId, status, role) => {
+  const result = await db.query(
+    "UPDATE users SET status = $1, role = $2 WHERE user_id = $3 RETURNING *",
+    [status, role, userId]
   );
   return result.rows[0];
 };
@@ -116,15 +124,25 @@ const updatePassword = async (userId, newPassword) => {
   return result.rows[0];
 };
 
+const verifyUser = async (token) => {
+  const result = await db.query(
+    "UPDATE users SET status = 'Active' WHERE verify_token = $1 RETURNING *",
+    [token]
+  );
+  return result.rows[0];
+};
+
 module.exports = {
   findUserById,
   findUserByEmail,
   createUser,
   editUser,
+  editUserStatus,
   deleteUser,
   statusCheck,
   loginDate,
   setResetPasswordToken,
   getUserByResetToken,
   updatePassword,
+  verifyUser,
 };

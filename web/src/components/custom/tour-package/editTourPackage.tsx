@@ -5,6 +5,19 @@ import { useTourPackageManager } from "@/hooks/useTourPackageManager";
 import { useTourGuideManager } from "@/hooks/useTourGuideManager";
 import { TourPackage } from "@/app/static/tour-packages/tour-packageSchema";
 import { useParams } from "next/navigation";
+import {
+  inclusions,
+  exclusions,
+} from "@/app/static/tour-packages/inclusions_exclusions";
+import {
+  Command,
+  CommandGroup,
+  CommandList,
+  CommandItem,
+} from "@/components/ui/command";
+import { Command as CommandPrimitive } from "cmdk";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
 
 export default function EditTourPackage({
   tourPackage,
@@ -15,11 +28,24 @@ export default function EditTourPackage({
   onSuccess: () => void;
   onCancel: () => void;
 }) {
-  const { edit, loading, error } = useTourPackageManager();
+  const { edit, loading, error, fetchAll } = useTourPackageManager();
   const { fetchAllTourGuideApplicants } = useTourGuideManager();
   const params = useParams();
   const touroperator_id = Array.isArray(params.id) ? params.id[0] : params.id;
-
+  const [selectedInclusions, setSelectedInclusions] = useState<string[]>(
+    tourPackage.inclusions
+      ? tourPackage.inclusions.split(",").map((i) => i.trim())
+      : []
+  );
+  const [selectedExclusions, setSelectedExclusions] = useState<string[]>(
+    tourPackage.exclusions
+      ? tourPackage.exclusions.split(",").map((i) => i.trim())
+      : []
+  );
+  const [openInclusions, setOpenInclusions] = useState(false);
+  const [openExclusions, setOpenExclusions] = useState(false);
+  const [inclusionsSearch, setInclusionsSearch] = useState("");
+  const [exclusionsSearch, setExclusionsSearch] = useState("");
   type TourGuide = {
     id: string;
     first_name: string;
@@ -35,29 +61,9 @@ export default function EditTourPackage({
     updated_at: string;
     user_id: string;
   };
-  const fixTime = (time: string) => (time.length > 5 ? time.slice(0, 5) : time);
-  const handleGuideChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
-    setSelectedGuides(selected);
-  };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]:
-        name === "price" ||
-        name === "duration_days" ||
-        name === "available_slots" ||
-        name === "cancellation_days"
-          ? Number(value)
-          : name === "start_time" || name === "end_time"
-          ? fixTime(value)
-          : value,
-    }));
-  };
+  const fixTime = (time: string) => (time.length > 5 ? time.slice(0, 5) : time);
+
   const [guides, setGuides] = useState<TourGuide[]>([]);
   const [selectedGuides, setSelectedGuides] = useState<string[]>(
     tourPackage.assigned_guides
@@ -66,6 +72,29 @@ export default function EditTourPackage({
         )
       : []
   );
+  const [form, setForm] = useState<Partial<TourPackage>>({
+    ...tourPackage,
+    id: tourPackage.id,
+    price:
+      typeof tourPackage.price === "number"
+        ? tourPackage.price
+        : Number(tourPackage.price),
+    start_time: fixTime(tourPackage.start_time || "09:00"),
+    end_time: fixTime(tourPackage.end_time || "17:00"),
+    cancellation_note: tourPackage.cancellation_note || "",
+  });
+  const [formError, setFormError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const [packages, setPackages] = useState<TourPackage[]>([]);
+
+  // Fetch all packages for overlap checking
+  useEffect(() => {
+    async function loadPackages() {
+      const data = await fetchAll();
+      setPackages(Array.isArray(data) ? data : []);
+    }
+    loadPackages();
+  }, [fetchAll]);
 
   useEffect(() => {
     async function loadGuides() {
@@ -109,19 +138,6 @@ export default function EditTourPackage({
     loadGuides();
   }, [fetchAllTourGuideApplicants, touroperator_id]);
 
-  const [form, setForm] = useState<Partial<TourPackage>>({
-    ...tourPackage,
-    id: tourPackage.id,
-    price:
-      typeof tourPackage.price === "number"
-        ? tourPackage.price
-        : Number(tourPackage.price),
-    start_time: fixTime(tourPackage.start_time || "09:00"),
-    end_time: fixTime(tourPackage.end_time || "17:00"),
-    cancellation_note: tourPackage.cancellation_note || "",
-  });
-  const [formError, setFormError] = useState<string | null>(null);
-
   // Auto-compute duration_days based on start and end date
   useEffect(() => {
     if (form.date_start && form.date_end) {
@@ -141,18 +157,73 @@ export default function EditTourPackage({
     }
   }, [form.date_start, form.date_end]);
 
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]:
+        name === "price" ||
+        name === "duration_days" ||
+        name === "available_slots" ||
+        name === "cancellation_days"
+          ? Number(value)
+          : name === "start_time" || name === "end_time"
+          ? fixTime(value)
+          : value,
+    }));
+  };
+
+  // Helper: check if two date ranges overlap
+  function isDateOverlap(
+    startA: string,
+    endA: string,
+    startB: string,
+    endB: string
+  ) {
+    if (!startA || !endA || !startB || !endB) return false;
+    return (
+      new Date(startA) <= new Date(endB) && new Date(endA) >= new Date(startB)
+    );
+  }
+
+  // Helper: check if a guide is assigned to any overlapping package (excluding current)
+  function isGuideUnavailableForDates(
+    guideId: string,
+    start: string,
+    end: string,
+    packages: TourPackage[],
+    editingId: number
+  ) {
+    return packages.some(
+      (pkg) =>
+        pkg.id !== editingId &&
+        pkg.assigned_guides.some((g) => String(g.tourguide_id) === guideId) &&
+        isDateOverlap(start, end, pkg.date_start, pkg.date_end)
+    );
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+
+    // Prepare the data object
+    const dataToSubmit = {
+      ...form,
+      touroperator_id,
+      assigned_guides: selectedGuides,
+      inclusions: selectedInclusions.join(", "),
+      exclusions: selectedExclusions.join(", "),
+      date_start: form.date_start ? form.date_start.split("T")[0] : "",
+      date_end: form.date_end ? form.date_end.split("T")[0] : "",
+    };
+
+    // Log the data before submitting
+    console.log("Submitting tour package data:", dataToSubmit);
+
     try {
-      await edit(
-        tourPackage.id, // first argument: id
-        {
-          ...form,
-          touroperator_id,
-          assigned_guides: selectedGuides,
-        } // second argument: data
-      );
+      await edit(tourPackage.id, dataToSubmit);
       onSuccess();
     } catch (err) {
       setFormError((err as Error)?.message || "Failed to update tour package.");
@@ -254,31 +325,175 @@ export default function EditTourPackage({
           </div>
           {/* Inclusions & Exclusions */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Inclusions Dropdown */}
             <div>
               <label className="block font-semibold mb-2 text-[#1c5461]">
                 Inclusions
               </label>
-              <input
-                name="inclusions"
-                value={form.inclusions}
-                onChange={handleChange}
-                className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
-                placeholder="What's included in the package"
-                required
-              />
+              <Command className="overflow-visible">
+                <div className="rounded-md border border-[#3e979f] px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-[#3e979f] focus-within:ring-offset-2 bg-[#f8fcfd] min-h-[42px]">
+                  <div className="flex flex-wrap gap-1">
+                    {selectedInclusions.map((item) => (
+                      <Badge
+                        key={item}
+                        variant="secondary"
+                        className="select-none mr-1 flex items-center"
+                        tabIndex={-1}
+                      >
+                        {item}
+                        <button
+                          type="button"
+                          className="ml-2 p-0 bg-transparent border-none cursor-pointer"
+                          tabIndex={0}
+                          aria-label={`Remove ${item}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedInclusions(
+                              selectedInclusions.filter((i) => i !== item)
+                            );
+                          }}
+                        >
+                          <X className="size-3 text-muted-foreground hover:text-foreground" />
+                        </button>
+                      </Badge>
+                    ))}
+                    <CommandPrimitive.Input
+                      value={inclusionsSearch}
+                      onValueChange={setInclusionsSearch}
+                      onBlur={() => setOpenInclusions(false)}
+                      onFocus={() => setOpenInclusions(true)}
+                      placeholder="Search inclusions..."
+                      className="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+                    />
+                  </div>
+                </div>
+                <div className="relative mt-2">
+                  <CommandList>
+                    {openInclusions &&
+                      !!inclusions.filter(
+                        (i) =>
+                          !selectedInclusions.includes(i) &&
+                          i
+                            .toLowerCase()
+                            .includes(inclusionsSearch.toLowerCase())
+                      ).length && (
+                        <div className="absolute top-0 z-10 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none max-h-48 overflow-auto">
+                          <CommandGroup>
+                            {inclusions
+                              .filter(
+                                (i) =>
+                                  !selectedInclusions.includes(i) &&
+                                  i
+                                    .toLowerCase()
+                                    .includes(inclusionsSearch.toLowerCase())
+                              )
+                              .map((i) => (
+                                <CommandItem
+                                  key={i}
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onSelect={() => {
+                                    setSelectedInclusions([
+                                      ...selectedInclusions,
+                                      i,
+                                    ]);
+                                    setInclusionsSearch(""); // clear search after select
+                                  }}
+                                  className="cursor-pointer"
+                                >
+                                  {i}
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </div>
+                      )}
+                  </CommandList>
+                </div>
+              </Command>
             </div>
+            {/* Exclusions Dropdown */}
             <div>
               <label className="block font-semibold mb-2 text-[#1c5461]">
                 Exclusions
               </label>
-              <input
-                name="exclusions"
-                value={form.exclusions}
-                onChange={handleChange}
-                className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
-                placeholder="What's not included in the package"
-                required
-              />
+              <Command className="overflow-visible">
+                <div className="rounded-md border border-[#3e979f] px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-[#3e979f] focus-within:ring-offset-2 bg-[#f8fcfd] min-h-[42px]">
+                  <div className="flex flex-wrap gap-1">
+                    {selectedExclusions.map((item) => (
+                      <Badge
+                        key={item}
+                        variant="secondary"
+                        className="select-none mr-1 flex items-center"
+                        tabIndex={-1}
+                      >
+                        {item}
+                        <button
+                          type="button"
+                          className="ml-2 p-0 bg-transparent border-none cursor-pointer"
+                          tabIndex={0}
+                          aria-label={`Remove ${item}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedExclusions(
+                              selectedExclusions.filter((i) => i !== item)
+                            );
+                          }}
+                        >
+                          <X className="size-3 text-muted-foreground hover:text-foreground" />
+                        </button>
+                      </Badge>
+                    ))}
+                    <CommandPrimitive.Input
+                      value={exclusionsSearch}
+                      onValueChange={setExclusionsSearch}
+                      onBlur={() => setOpenExclusions(false)}
+                      onFocus={() => setOpenExclusions(true)}
+                      placeholder="Search exclusions..."
+                      className="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+                    />
+                  </div>
+                </div>
+                <div className="relative mt-2">
+                  <CommandList>
+                    {openExclusions &&
+                      !!exclusions.filter(
+                        (i) =>
+                          !selectedExclusions.includes(i) &&
+                          i
+                            .toLowerCase()
+                            .includes(exclusionsSearch.toLowerCase())
+                      ).length && (
+                        <div className="absolute top-0 z-10 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none max-h-48 overflow-auto">
+                          <CommandGroup>
+                            {exclusions
+                              .filter(
+                                (i) =>
+                                  !selectedExclusions.includes(i) &&
+                                  i
+                                    .toLowerCase()
+                                    .includes(exclusionsSearch.toLowerCase())
+                              )
+                              .map((i) => (
+                                <CommandItem
+                                  key={i}
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onSelect={() => {
+                                    setSelectedExclusions([
+                                      ...selectedExclusions,
+                                      i,
+                                    ]);
+                                    setExclusionsSearch(""); // clear search after select
+                                  }}
+                                  className="cursor-pointer"
+                                >
+                                  {i}
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </div>
+                      )}
+                  </CommandList>
+                </div>
+              </Command>
             </div>
           </div>
           {/* Dates & Guides */}
@@ -313,21 +528,96 @@ export default function EditTourPackage({
               <label className="block font-semibold mb-2 text-[#1c5461]">
                 Assign Tour Guides
               </label>
-              <select
-                multiple
-                value={selectedGuides}
-                onChange={handleGuideChange}
-                className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd] min-h-[42px]"
-              >
-                {guides.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.first_name} {g.last_name}
-                  </option>
-                ))}
-              </select>
-              <div className="text-xs text-gray-500 mt-1">
-                Hold Ctrl/Cmd to select multiple guides
-              </div>
+              <Command className="overflow-visible">
+                <div className="rounded-md border border-[#3e979f] px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-[#3e979f] focus-within:ring-offset-2 bg-[#f8fcfd] min-h-[42px]">
+                  <div className="flex flex-wrap gap-1">
+                    {selectedGuides.map((id) => {
+                      const guide = guides.find((g) => g.id === id);
+                      if (!guide) return null;
+                      return (
+                        <Badge
+                          key={id}
+                          variant="secondary"
+                          className="select-none mr-1 flex items-center"
+                          tabIndex={-1}
+                        >
+                          {guide.first_name} {guide.last_name}
+                          <button
+                            type="button"
+                            className="ml-2 p-0 bg-transparent border-none cursor-pointer"
+                            tabIndex={0}
+                            aria-label={`Remove ${guide.first_name} ${guide.last_name}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedGuides(
+                                selectedGuides.filter((gid) => gid !== id)
+                              );
+                            }}
+                          >
+                            <X className="size-3 text-muted-foreground hover:text-foreground" />
+                          </button>
+                        </Badge>
+                      );
+                    })}
+                    <CommandPrimitive.Input
+                      value={""}
+                      onValueChange={() => {}}
+                      onBlur={() => setOpen(false)}
+                      onFocus={() => setOpen(true)}
+                      placeholder="Select guides..."
+                      className="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+                    />
+                  </div>
+                </div>
+                <div className="relative mt-2">
+                  <CommandList>
+                    {open &&
+                      !!guides.filter(
+                        (g) =>
+                          !selectedGuides.includes(g.id) &&
+                          !isGuideUnavailableForDates(
+                            g.id,
+                            form.date_start!,
+                            form.date_end!,
+                            packages,
+                            tourPackage.id
+                          )
+                      ).length && (
+                        <div className="absolute top-0 z-10 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none">
+                          <CommandGroup className="h-full overflow-auto">
+                            {guides
+                              .filter(
+                                (g) =>
+                                  !selectedGuides.includes(g.id) &&
+                                  !isGuideUnavailableForDates(
+                                    g.id,
+                                    form.date_start!,
+                                    form.date_end!,
+                                    packages,
+                                    tourPackage.id
+                                  )
+                              )
+                              .map((g) => (
+                                <CommandItem
+                                  key={g.id}
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onSelect={() => {
+                                    setSelectedGuides([
+                                      ...selectedGuides,
+                                      g.id,
+                                    ]);
+                                  }}
+                                  className="cursor-pointer"
+                                >
+                                  {g.first_name} {g.last_name}
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </div>
+                      )}
+                  </CommandList>
+                </div>
+              </Command>
             </div>
           </div>
           {/* Times */}

@@ -10,8 +10,10 @@ const {
   findUserByEmail,
   getUserByResetToken,
   updatePassword,
+  editUserStatus,
 } = require("../models/userModel");
 const { editGuideRegisByUserId } = require("../models/guideRegisModel");
+const { editOperatorRegisByUserId } = require("../models/operatorRegisModel");
 const { sendWelcomeEmail } = require("../utils/email");
 const { sendResetPasswordEmail } = require("../utils/email");
 const createUserController = async (req, res) => {
@@ -28,7 +30,7 @@ const createUserController = async (req, res) => {
       sex,
     } = req.body;
     console.log(req.body);
-    console.log("Creating user with email:", birth_date);
+    console.log("Creating user with email:", email);
     const formatedFirstName = first_name.toUpperCase();
     const formatedLastName = last_name.toUpperCase();
     const formatedEmail = email.toUpperCase();
@@ -126,6 +128,9 @@ const createUserController = async (req, res) => {
 
 const currentUserController = async (req, res) => {
   try {
+    console.log("Session cookie:", req.headers.cookie);
+    console.log("Session object:", req.session);
+    console.log("Session user:", req.session.user);
     if (!req.session.user) {
       return res.status(401).json({ error: "Unauthorized" });
     }
@@ -144,7 +149,7 @@ const currentUserController = async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      data: { user },
+      data: { user: req.session.user },
     });
   } catch (error) {
     console.error("Error fetching current user:", error);
@@ -199,6 +204,15 @@ const editUserController = async (req, res) => {
         mobile_number: phone_number,
         email: email.toUpperCase(),
       });
+    } else if (role === "Tour Operator") {
+      // If the user is a tour operator, you might want to update the operator registration as well
+      // Assuming you have a similar function for operator registration
+      await editOperatorRegisByUserId(userId, {
+        representative_name:
+          first_name.toUpperCase() + " " + last_name.toUpperCase(),
+        email: email.toUpperCase(),
+        mobile_number: phone_number,
+      });
     }
 
     if (!updatedUser) {
@@ -210,6 +224,25 @@ const editUserController = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating user:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const editUserStatusController = async (req, res) => {
+  try {
+    const { userId, status, role } = req.body; // Assuming userId and status are passed in the request body
+    if (!status) {
+      return res.status(400).json({ error: "Status is required" });
+    }
+    const updatedUser = await editUserStatus(userId, status, role);
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json({
+      status: "success",
+    });
+  } catch (error) {
+    console.error("Error updating user status:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -315,4 +348,5 @@ module.exports = {
   viewUserController,
   forgotPasswordController,
   resetPasswordController,
+  editUserStatusController,
 };
