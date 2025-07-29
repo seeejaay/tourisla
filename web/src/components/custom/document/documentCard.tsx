@@ -7,6 +7,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type GuideDocument = {
   id: string;
@@ -40,6 +43,21 @@ export function DocumentCard({
   onReject,
   onEnlarge,
 }: DocumentCardProps) {
+  const { loggedInUser } = useAuth();
+  const router = useRouter();
+  const [userRole, setUserRole] = useState<string | null>(null);
+  useEffect(() => {
+    async function fetchUser() {
+      const user = await loggedInUser(router, false);
+      if (!user) {
+        router.push("/auth/login");
+      } else {
+        setUserRole(user.role);
+      }
+    }
+    fetchUser();
+  }, [loggedInUser, router]);
+
   return (
     <Card className="transtion-all duration-200 hover:shadow-md border-gray-200 rounded-xl overlow-hidden">
       <CardHeader className="flex justify-between items-start">
@@ -100,7 +118,7 @@ export function DocumentCard({
         </div>
       </CardContent>
       <CardFooter className="flex justify-between items-center ">
-        {doc.status === "PENDING" ? (
+        {doc.status === "PENDING" && userRole === "Tourism Officer" ? (
           <>
             <Button
               variant="outline"
