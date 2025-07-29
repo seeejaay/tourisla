@@ -52,7 +52,7 @@ export function DocumentCard({
       if (!user) {
         router.push("/auth/login");
       } else {
-        setUserRole(user.role);
+        setUserRole(user.data.user.role);
       }
     }
     fetchUser();
