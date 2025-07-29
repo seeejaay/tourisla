@@ -14,6 +14,7 @@ import {
 import { useIslandEntryManager } from '@/hooks/useIslandEntryManager';
 import { getIslandEntryMembers, markIslandEntryPaid, manualIslandEntryCheckIn  } from '@/lib/api/islandEntry';
 import { StatusBar } from 'expo-status-bar';
+import { toTitleCase } from '@/lib/utils/textFormat';
 
 export default function IslandEntryCheckInScreen() {
   const [code, setCode] = useState('');
@@ -21,6 +22,8 @@ export default function IslandEntryCheckInScreen() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+
+  const [expandedMembers, setExpandedMembers] = useState({});
 
   useEffect(() => {
     if (success || error) {
@@ -70,9 +73,11 @@ export default function IslandEntryCheckInScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="auto" />
-      <ScrollView contentContainerStyle={styles.scroll}>
+    <View style={{ flex: 1 }}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: 120 }}
+      >
         <Text style={styles.header}>Island Entry Lookup</Text>
 
         <View style={styles.formRow}>
@@ -94,16 +99,87 @@ export default function IslandEntryCheckInScreen() {
 
         {result && (
           <View style={styles.resultBox}>
+            <Text style={styles.receiptTitle}>ISLAND ENTRY CODE: {result.registration.unique_code} </Text>
+
+            <View style={styles.divider} />
+
+            <View style={styles.resultBox}>
             <Image
               source={{ uri: result.registration.qr_code_url }}
               style={styles.qrImage}
+              resizeMode="contain"
             />
-            <Text style={styles.label}>Code: {result.registration.unique_code}</Text>
-            <Text style={styles.label}>Date: {new Date(result.registration.registration_date).toLocaleString()}</Text>
-            <Text style={styles.label}>Payment: {result.registration.payment_method}</Text>
-            <Text style={styles.label}>Status: {result.registration.status}</Text>
-            <Text style={styles.label}>Total Fee: ₱{Number(result.registration.total_fee).toLocaleString()}</Text>
+          </View>
 
+          <View style={styles.divider} />
+
+          <View style={styles.resultBox, {paddingHorizontal: 0, paddingVertical: 16}}>
+            <View style={styles.detailRow}>
+              <Text style={styles.receiptLabel}>Unique Code:</Text>
+              <Text style={styles.receiptValue}>{result.registration.unique_code}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.receiptLabel}>Date:</Text>
+              <Text style={styles.receiptValue}>
+                {new Date(result.registration.registration_date).toLocaleString()}
+              </Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.receiptLabel}>Payment Method:</Text>
+              <Text style={styles.receiptValue}>{toTitleCase(result.registration.payment_method)}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.receiptLabel}>Status:</Text>
+              <Text style={styles.receiptValue}>{toTitleCase(result.registration.status)}</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.receiptLabel}>Total Fee:</Text>
+              <Text style={styles.receiptValue}>₱{Number(result.registration.total_fee).toLocaleString()}</Text>
+            </View>
+          </View>
+
+          <View style={styles.divider} />
+
+            <Text style={[styles.receiptLabel, { fontWeight: '600', fontSize: 16, marginTop: 12 }]}> 
+              Group Members
+            </Text>
+
+            {result.members.map((m, idx) => (
+              <Pressable
+                key={m.id}
+                onPress={() =>
+                  setExpandedMembers((prev) => ({
+                    ...prev,
+                    [m.id]: !prev[m.id],
+                  }))
+                }
+                style={styles.memberBox}
+              >
+                <View style={styles.memberHeader}>
+                  <Text style={styles.label, { fontWeight: '700', color: '#42837b', fontSize: 12 }}>
+                    {idx + 1}. {m.name}
+                  </Text>
+                  <Text style={styles.label}>{expandedMembers[m.id] ? '▲' : '▼'}</Text>
+                </View>
+
+                {expandedMembers[m.id] && (
+                  <>
+                    <View style={styles.divider, {marginVertical: 12, backgroundColor: '#CBD5E1', height: 1}} />
+                    <Text style={styles.subLabel}>Age: {m.age} y/o</Text>
+                    <Text style={styles.subLabel}>Sex: {m.sex}</Text>
+                    <Text style={styles.subLabel}>
+                      From: {m.municipality}, {m.province}, {m.country}
+                    </Text>
+                    <Text style={styles.subLabel}>Foreign: {m.is_foreign ? 'Yes' : 'No'}</Text>
+                  </>
+                )}
+              </Pressable>
+
+            ))}
             {result.registration.status !== "PAID" && (
               <Pressable style={styles.payButton} onPress={handleMarkAsPaid}>
                 <Text style={styles.buttonText}>Mark as Paid</Text>
@@ -111,37 +187,29 @@ export default function IslandEntryCheckInScreen() {
             )}
 
             <Pressable
-              style={[styles.checkinButton, result.registration.status !== "PAID" && styles.disabled]}
+              style={[
+                styles.checkinButton,
+                result.registration.status !== "PAID" && styles.disabled,
+              ]}
               onPress={handleCheckIn}
               disabled={result.registration.status !== "PAID"}
             >
               <Text style={styles.buttonText}>Check In</Text>
             </Pressable>
-
-            <Text style={[styles.header, { marginTop: 24 }]}>Group Members</Text>
-            {result.members.map((m, idx) => (
-              <View key={m.id} style={styles.memberBox}>
-                <Text style={styles.label}>{idx + 1}. {m.name}, {m.age} y/o, {m.sex}</Text>
-                <Text style={styles.subLabel}>From: {m.municipality}, {m.province}, {m.country}</Text>
-                <Text style={styles.subLabel}>Foreign: {m.is_foreign ? "Yes" : "No"}</Text>
-              </View>
-            ))}
-          </View>
-        )}
+        </View>
+      )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F0FDF4' },
-  scroll: { padding: 20, paddingTop: 40 },
+  container: { flex: 1, backgroundColor: '#f8fafc', padding: 16 },
   header: {
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: '900',
-    color: '#064E3B',
-    textAlign: 'center',
-    marginBottom: 20,
+    color: '#036e55',
+    marginBottom: 4,
   },
   formRow: { flexDirection: 'row', gap: 10, marginBottom: 20 },
   input: {
@@ -153,7 +221,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   button: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#74cbab',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 10,
@@ -174,6 +242,13 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   buttonText: { color: '#FFF', fontWeight: '600', textAlign: 'center' },
+  resultRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 16,
+  },
   resultBox: {
     backgroundColor: '#DCFCE7',
     borderRadius: 12,
@@ -183,21 +258,59 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowRadius: 4,
   },
-  label: { fontSize: 14, color: '#374151', marginBottom: 4 },
-  subLabel: { fontSize: 13, color: '#6B7280', marginBottom: 2 },
+  resultContent: {
+    flex: 1,
+    paddingRight: 8,
+  },
+  receiptTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#036e55',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#CBD5E1',
+  },
+  receiptLabel: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '700',
+  },
+  receiptValue: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#6B7280',
+    flex: 1,
+    textAlign: 'right',
+  },
+  label: { fontSize: 14, color: '#6B7280' },
+  subLabel: { fontSize: 12, color: '#6B7280', marginBottom: 2,  marginLeft: 12, fontWeight: '700' },
   qrImage: {
-    height: 100,
-    width: 100,
-    borderRadius: 10,
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 8,
     backgroundColor: '#FFF',
-    marginBottom: 10,
-    alignSelf: 'center',
+    alignSelf: 'flex-start',
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 2,
   },
   memberBox: {
     backgroundColor: '#ECFDF5',
     borderRadius: 8,
     padding: 10,
-    marginTop: 10,
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: '#D1FAE5',
+  },
+  memberHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   successText: { color: 'green', textAlign: 'center', marginBottom: 10 },
   errorText: { color: 'red', textAlign: 'center', marginBottom: 10 },

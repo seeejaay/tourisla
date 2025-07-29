@@ -78,10 +78,6 @@ export default function IncidentReportScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <HeaderWithBack
-        backgroundColor="#f1f1f1"
-        textColor="#03312e"
-      />
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <Text style={styles.heading}>Incident Report Form</Text>
       <Text style={{ marginHorizontal: 16, color: "#475569", fontSize: 14, marginBottom: 20 }}>
@@ -267,7 +263,7 @@ const styles = StyleSheet.create({
   scrollViewContent: {
     paddingBottom: 40,
   },
-  heading: { fontSize: 25, fontWeight: "900", marginBottom: 4, color: "#1c5461", marginHorizontal: 16, marginTop: 20 },
+  heading: { fontSize: 25, fontWeight: "900", marginBottom: 4, color: "#1c5461", marginHorizontal: 16, marginTop: 16 },
   field: { marginBottom: 16, marginHorizontal: 16 },
   label: { marginBottom: 6, fontSize: 14, color: "#475569" },
   input: {

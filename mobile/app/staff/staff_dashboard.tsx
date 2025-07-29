@@ -1,11 +1,10 @@
+import DashboardHeader from "@/components/DashboardHeader/tourist";
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import StaffHomeScreen from './home/staff_home';
-import StaffMapScreen from './map/staff_map';
-import StaffAnnouncementsScreen from './announcements/staff_announcements';
+import StaffCheckInScreen from "./visitor/StaffCheckInScreen";
 import IncidentReportScreen from '../staff/profile/about/incident-report';
 import MoreScreen from './more/MoreScreen';
 import StaffQRScan from './visitor/staff_qr_scan';
-import StaffProfile from './profile/staff_profile';
 
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { StyleSheet, View, Platform, TouchableOpacity, Image, Text, StatusBar, Dimensions } from 'react-native';
@@ -19,111 +18,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Tab = createBottomTabNavigator();
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-
-function ProfileHeader() {
-  const insets = useSafeAreaInsets();
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        setLoading(true);
-  
-        const storedUser = await AsyncStorage.getItem("userData");
-  
-        if (!storedUser) {
-          throw new Error("No stored user found");
-        }
-  
-        const userData = JSON.parse(storedUser);
-  
-        if (!userData || !userData.role) {
-          throw new Error("Invalid user data");
-        }
-  
-        setCurrentUser(userData);
-      } catch (error) {
-        console.warn("User not found or session invalid:", error.message);
-        await AsyncStorage.clear();
-        router.replace("/login");
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    fetchCurrentUser();
-  }, []);
-  
-  const formatRole = (role) => {
-    if (!role) return 'User';
-    if (role === 'Admin' || role === 'admin') return 'Administrator';
-    if (role === 'Tourist' || role === 'tourist') return 'Tourist';
-    if (role === 'tour_guide') return 'Tour Guide';
-    if (role === 'tour_operator') return 'Tour Operator';
-    
-    return role.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
-  };
-  
-  return (
-    <View style={styles.profileHeader}>
-      {/* Status bar placeholder */}
-      
-      {/* Header with gradient background */}
-      <LinearGradient
-        colors={['#014b55', '#014e65']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 3 }}
-        style={styles.headerContainer}
-      >
-        {/* Left side - User profile */}
-        <TouchableOpacity 
-          style={styles.profileSection}
-          onPress={() => router.push('/staff/profile/staff_profile')}
-          activeOpacity={0.7}
-        >
-          {/* Avatar */}
-          <View style={styles.avatarContainer}>
-            {currentUser?.avatar ? (
-              <Image source={{ uri: currentUser.avatar }} style={styles.avatar} />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Text style={styles.avatarInitial}>
-                  {currentUser?.first_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
-                </Text>
-              </View>
-            )}
-          </View>
-          
-          {/* User info */}
-          <View style={styles.userInfo}>
-            {loading ? (
-              <Text style={styles.userName}>Loading...</Text>
-            ) : (
-              <>
-                <Text style={styles.userName} numberOfLines={1}>
-                  {currentUser ? 
-                    `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim() || currentUser.email 
-                    : 'Unknown User'}
-                </Text>
-                <Text style={styles.userRole}>
-                  {currentUser && currentUser.role ? formatRole(currentUser.role) : 'User'}
-                </Text>
-              </>
-            )}
-          </View>
-          
-          <Ionicons name="chevron-forward" size={16} color="rgba(255, 255, 255, 0.5)" />
-        </TouchableOpacity>
-      </LinearGradient>
-      
-      {/* Bottom shadow effect */}
-      <View style={styles.headerBottomShadow} />
-    </View>
-  );
-}
 
 function CustomTabBar({ state, descriptors, navigation }) {
   const insets = useSafeAreaInsets();
@@ -143,7 +37,6 @@ function CustomTabBar({ state, descriptors, navigation }) {
       <View style={styles.tabButtonsContainer}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
-          const label = options.tabBarLabel || options.title || route.name;
           const isFocused = state.index === index;
           
           let iconName;
@@ -158,6 +51,9 @@ function CustomTabBar({ state, descriptors, navigation }) {
           } else if (route.name === 'QRScan') {
             iconName = isFocused ? "qrcode" : "qrcode";
             IconComponent = FontAwesome5; // Use FontAwesome5 for QR code
+          } else if (route.name === 'Island Entry Check-In') {
+            iconName = isFocused ? "checkmark-circle" : "checkmark-circle-outline";
+            IconComponent = Ionicons; // Use Ionicons for check-in
           } else if (route.name === 'More') {
             iconName = isFocused ? "ellipsis-horizontal" : "ellipsis-horizontal-outline";
           } else if (route.name === 'Incident Report') {
@@ -228,7 +124,6 @@ export default function StaffDashboard() {
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
-      <ProfileHeader />
       
       <View style={styles.tabNavigatorContainer}>
       <Tab.Navigator
@@ -238,35 +133,50 @@ export default function StaffDashboard() {
           headerShown: false,
         }}
       >
-        <Tab.Screen 
-          name="Home"
-          options={{ tabBarLabel: 'Home' }}
-        >
-          {() => <StaffHomeScreen headerHeight={headerHeight} />}
+        <Tab.Screen name="Home" options={{ tabBarLabel: 'Home' }}>
+          {() => (
+              <View style={{ flex: 1 }}>
+                <DashboardHeader />
+                <StaffHomeScreen />
+              </View>
+            )}
         </Tab.Screen>
-        <Tab.Screen 
-          name="Incident Report"
-          options={{ tabBarLabel: 'QR Incident Report' }}
-        >
-          {() => <IncidentReportScreen headerHeight={headerHeight} />}
+        <Tab.Screen name="Island Entry Check-In" options={{ tabBarLabel: 'Entry Check-In' }} >
+          {() => (
+              <View style={{ flex: 1 }}>
+                <DashboardHeader />
+                <StaffCheckInScreen />
+              </View>
+            )}
         </Tab.Screen>
-        <Tab.Screen 
-          name="QRScan"
-          options={{ tabBarLabel: 'QR Scan' }}
-        >
-          {() => <StaffQRScan headerHeight={headerHeight} />}
+        <Tab.Screen name="Incident Report" options={{ tabBarLabel: 'QR Incident Report' }}>
+          {() => (
+              <View style={{ flex: 1 }}>
+                <DashboardHeader />
+                <IncidentReportScreen />
+              </View>
+            )}
         </Tab.Screen>
-        <Tab.Screen
-          name="More"
-          options={{ tabBarLabel: 'More' }}
-        >
-          {() => <MoreScreen headerHeight={headerHeight} />}
+        <Tab.Screen name="QRScan" options={{ tabBarLabel: 'QR Scan' }}>
+          {() => (
+              <View style={{ flex: 1 }}>
+                <DashboardHeader />
+                <StaffQRScan />
+              </View>
+            )}
+        </Tab.Screen>
+        <Tab.Screen name="More" options={{ tabBarLabel: 'More' }}>
+          {() => (
+              <View style={{ flex: 1 }}>
+                <DashboardHeader />
+                <MoreScreen />
+              </View>
+            )}
         </Tab.Screen>
       </Tab.Navigator>
       </View>
-      
       {/* Bottom fade effect */}
-      <LinearGradient
+        <LinearGradient
           colors={['transparent', '#fff']} // Fade into dark background
           style={styles.bottomFade}
           pointerEvents="none"
@@ -279,13 +189,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
-  },
-  profileHeader: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 100,
   },
   statusBarPlaceholder: {
     width: '100%',
@@ -301,12 +204,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-  },
-  profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 8,
   },
   avatarContainer: {
     width: 40,
