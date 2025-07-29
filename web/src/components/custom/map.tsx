@@ -18,10 +18,25 @@ import { Loader2 } from "lucide-react";
 import Image from "next/image";
 // Helper to extract coordinates from a Google Maps URL
 function extractLatLng(url: string): { lat: number; lng: number } | null {
-  const match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-  if (match) {
-    return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+  // Try to extract from !3dLAT!4dLNG — the actual pin
+  const pinMatch = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+  if (pinMatch) {
+    return {
+      lat: parseFloat(pinMatch[1]),
+      lng: parseFloat(pinMatch[2]),
+    };
   }
+
+  // Fallback: extract from @lat,lng — map center
+  const centerMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (centerMatch) {
+    return {
+      lat: parseFloat(centerMatch[1]),
+      lng: parseFloat(centerMatch[2]),
+    };
+  }
+
+  // Neither found
   return null;
 }
 
@@ -153,7 +168,9 @@ export default function MapPage() {
   const filteredSpots = useMemo(() => {
     return touristSpots.filter((spot) => {
       return (
-        (barangay === "__all_barangays__" || spot.barangay === barangay) &&
+        (barangay === "__all_barangays__" ||
+          spot.barangay === barangay ||
+          spot.municipality === barangay) &&
         (category === "__all_categories__" || spot.category === category) &&
         (type === "__all_types__" || spot.type === type)
       );
@@ -308,7 +325,13 @@ export default function MapPage() {
                     <InfoWindow onCloseClick={() => setSelectedSpotId(null)}>
                       <div className="min-w-[240px]">
                         <Image
-                          src={spot.images[0].image_url}
+                          src={
+                            spot.images &&
+                            spot.images.length > 0 &&
+                            spot.images[0].image_url
+                              ? spot.images[0].image_url
+                              : "/images/placeholder_hotel.jpg"
+                          }
                           alt={spot.name}
                           width={240}
                           height={120}
