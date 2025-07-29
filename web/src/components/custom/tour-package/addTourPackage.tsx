@@ -72,6 +72,8 @@ export default function AddTourPackage({
     loadPackages();
   }, [fetchAll]);
   useEffect(() => {
+    if (Object.keys(initialData).length === 0) return; // Only run if duplicating
+
     if (initialData.selectedInclusions) {
       setSelectedInclusions(initialData.selectedInclusions);
     } else if (initialData.inclusions) {
@@ -86,7 +88,6 @@ export default function AddTourPackage({
         initialData.exclusions.split(",").map((i) => i.trim())
       );
     }
-    // Optionally reset guides if you want
     setSelectedGuides(initialData.assigned_guides || []);
     setForm({
       package_name: "",
