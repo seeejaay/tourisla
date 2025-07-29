@@ -106,7 +106,7 @@ export default function AddTourPackage({
       touroperator_id: touroperator_id,
       ...initialData,
     });
-  }, [initialData]);
+  }, [initialData, touroperator_id]);
   useEffect(() => {
     async function loadGuides() {
       const allGuides = await fetchAllTourGuideApplicants();
