@@ -45,6 +45,12 @@ export default function AnnouncementsPage() {
         <ul className="space-y-10">
           {announcements && announcements.length > 0
             ? announcements
+                .filter((a) => {
+                  const posted = new Date(a.date_posted).getTime();
+                  const sixMonthsAgo =
+                    Date.now() - 6 * 30 * 24 * 60 * 60 * 1000;
+                  return posted >= sixMonthsAgo;
+                })
                 .slice()
                 .sort(
                   (a, b) =>
