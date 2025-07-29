@@ -9,7 +9,7 @@ const createUser = async (userData) => {
     phone_number,
     role,
     nationality,
-    status = "Active",
+    status = "Unverified",
     birth_date,
     sex,
   } = userData;
@@ -124,6 +124,14 @@ const updatePassword = async (userId, newPassword) => {
   return result.rows[0];
 };
 
+const verifyUser = async (token) => {
+  const result = await db.query(
+    "UPDATE users SET status = 'Active' WHERE verify_token = $1 RETURNING *",
+    [token]
+  );
+  return result.rows[0];
+};
+
 module.exports = {
   findUserById,
   findUserByEmail,
@@ -136,4 +144,5 @@ module.exports = {
   setResetPasswordToken,
   getUserByResetToken,
   updatePassword,
+  verifyUser,
 };
