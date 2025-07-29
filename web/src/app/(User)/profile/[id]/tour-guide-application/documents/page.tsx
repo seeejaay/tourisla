@@ -460,8 +460,6 @@ export default function TourGuideDocumentsApprovalPage() {
                         docType={docType}
                         doc={doc}
                         onEnlarge={setEnlargedImage}
-                        onApprove={handleApproveTourGuide}
-                        onReject={handleRejectTourGuide}
                       />
                     );
                   })}
