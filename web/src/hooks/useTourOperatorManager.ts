@@ -28,7 +28,6 @@ export const useTourOperatorManager = () => {
     try {
       const applicants = await apifetchApplicants();
       setOperatorApplicants(applicants);
-      console.log("Fetched tour operator applicants:", applicants);
       return applicants;
     } catch (err) {
       setError("Failed to fetch tour operator applicants.");
@@ -43,10 +42,8 @@ export const useTourOperatorManager = () => {
     async (id: number): Promise<TourOperator | null> => {
       setLoading(true);
       setError("");
-      console.log("Fetching tour operator applicant with ID:", id);
       try {
         const applicant = await apifetchApplicant(id);
-        console.log("Fetched tour operator applicants:", applicant);
         return applicant;
       } catch (err) {
         setError("Failed to fetch tour operator applicant.");
@@ -94,7 +91,6 @@ export const useTourOperatorManager = () => {
       try {
         const newApplicant = await apicreateApplicant(data);
         setOperatorApplicants((prev) => [...prev, newApplicant]);
-        console.log("New applicant created:", newApplicant);
         return newApplicant;
       } catch (err) {
         setError("Failed to create tour operator applicant.");

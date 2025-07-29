@@ -19,7 +19,7 @@ export const login = async (userData) => {
         `Failed to login. Server responded with status: ${response.status}`
       );
     }
-
+    console.log("Login Successful:", response.data); // Log the API response
     return response.data; // Return response data
   } catch (error) {
     console.error("Error during login:", error.response?.data || error.message);
@@ -91,20 +91,12 @@ export const resetPassword = async (token, password) => {
   }
 };
 
-export const currentUser = async () => {
-  try {
-    const response = await axios.get(`${API_URL}user`, {
-      withCredentials: true,
-    });
-    if (response.status !== 200) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return response.data;
-  } catch (err) {
-    console.error(
-      "Error fetching current user:",
-      err.response?.data || err.message
-    );
-  }
+export const currentUser = async (sessionCookie) => {
+  const response = await fetch(`${API_URL}user`, {
+    headers: {
+      Cookie: `connect.sid=${sessionCookie}`,
+    },
+    credentials: "include",
+  });
+  return response.json();
 };

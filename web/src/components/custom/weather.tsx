@@ -7,7 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Cloud, Loader2 } from "lucide-react";
 import { useWeather } from "@/hooks/useWeather";
-
+import Image from "next/image";
 export default function WeatherWidget() {
   const { weather, loading, error } = useWeather("Bantayan");
 
@@ -24,7 +24,12 @@ export default function WeatherWidget() {
         <span className="text-red-500">Weather data not available.</span>
       </div>
     );
-
+  function fixImageUrl(url: string) {
+    if (url.startsWith("//")) {
+      return "https:" + url;
+    }
+    return url;
+  }
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -40,8 +45,10 @@ export default function WeatherWidget() {
           <h3 className="text-base sm:text-lg font-semibold text-[#1c5461] mb-2 text-center">
             Weather in {weather.location.name}
           </h3>
-          <img
-            src={weather.current.condition.icon}
+          <Image
+            width={50}
+            height={50}
+            src={fixImageUrl(weather.current.condition.icon)}
             alt="weather icon"
             className="w-10 h-10 sm:w-12 sm:h-12 mb-2"
           />

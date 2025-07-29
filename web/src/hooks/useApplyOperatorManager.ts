@@ -5,6 +5,7 @@ import {
   approveTourGuideApplication,
   rejectTourGuideApplication,
   fetchAllApplications,
+  fetchGuideApplication as fetchGuideApplicationById,
 } from "@/lib/api/applyTourOperator";
 
 export function useApplyOperatorManager() {
@@ -20,15 +21,11 @@ export function useApplyOperatorManager() {
       setLoading(true);
       setError(null);
       try {
-        console.log(
-          `Applying to tour operator: ${touroperator_id} by tour guide: ${tourguide_id}`
-        );
         const result = await applyToTourOperator(
           tourguide_id,
           touroperator_id,
           reason_for_applying
         );
-        console.log("Application result:", result);
         return result;
       } catch (error) {
         setError(error + "Unknown error");
@@ -45,7 +42,7 @@ export function useApplyOperatorManager() {
     setError(null);
     try {
       const application = await fetchApplicationsForTourOperator(operatorId);
-      console.log("Fetched application:", application);
+
       return application;
     } catch (error) {
       setError(error + "Unknown error");
@@ -55,18 +52,21 @@ export function useApplyOperatorManager() {
     }
   }, []);
 
-  const approve = useCallback(async (applicationId: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      return await approveTourGuideApplication(applicationId);
-    } catch (error) {
-      setError(error + "Unknown error");
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const approve = useCallback(
+    async (applicationId: string, touroperatorId: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        return await approveTourGuideApplication(applicationId, touroperatorId);
+      } catch (error) {
+        setError(error + "Unknown error");
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   const reject = useCallback(async (applicationId: string) => {
     setLoading(true);
@@ -86,7 +86,7 @@ export function useApplyOperatorManager() {
     setError(null);
     try {
       const applications = await fetchAllApplications();
-      console.log("Fetched all applications:", applications);
+
       return applications;
     } catch (error) {
       setError(error + "Unknown error");
@@ -96,6 +96,27 @@ export function useApplyOperatorManager() {
     }
   }, []);
 
+  const fetchGuideApplication = useCallback(
+    async (tourguide_id: string, touroperator_id: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const application = await fetchGuideApplicationById(
+          tourguide_id,
+          touroperator_id
+        );
+
+        return application;
+      } catch (error) {
+        setError(error + "Unknown error");
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   return {
     loading,
     error,
@@ -104,5 +125,6 @@ export function useApplyOperatorManager() {
     approve,
     fetchAll,
     reject,
+    fetchGuideApplication,
   };
 }

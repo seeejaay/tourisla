@@ -21,7 +21,7 @@ export type Applicant = {
   mobile_number: string;
   reason_for_applying: string;
   application_status: string;
-  user_id: string; // Assuming this is the ID of the applicant
+  user_id: string;
 };
 
 export function columns(
@@ -30,7 +30,7 @@ export function columns(
   onViewDocuments: (applicant: Applicant) => void,
   tab: "pending" | "approved" | "rejected"
 ): ColumnDef<Applicant>[] {
-  return [
+  const baseColumns: ColumnDef<Applicant>[] = [
     {
       accessorKey: "first_name",
       header: ({ column }) => (
@@ -97,48 +97,52 @@ export function columns(
         );
       },
     },
-    {
-      accessorKey: "actions",
-      header: () => <span className="font-bold">Actions</span>,
-      cell: ({ row }) => {
-        const applicant = row.original;
-
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="p-0 w-8 h-8">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {tab === "pending" && (
-                <>
-                  <DropdownMenuItem
-                    onClick={() => onApprove(applicant)}
-                    className="cursor-pointer"
-                  >
-                    Approve
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => onReject(applicant)}
-                    className="cursor-pointer text-red-600"
-                  >
-                    Reject
-                  </DropdownMenuItem>
-                </>
-              )}
-              <DropdownMenuItem
-                onClick={() => onViewDocuments(applicant)}
-                className="cursor-pointer"
-              >
-                View Documents
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
   ];
+
+  const actionsColumn: ColumnDef<Applicant> = {
+    accessorKey: "actions",
+    header: () => <span className="font-bold">Actions</span>,
+    cell: ({ row }) => {
+      const applicant = row.original;
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="p-0 w-8 h-8">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {tab === "pending" && (
+              <>
+                <DropdownMenuItem
+                  onClick={() => onApprove(applicant)}
+                  className="cursor-pointer"
+                >
+                  Approve
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => onReject(applicant)}
+                  className="cursor-pointer text-red-600"
+                >
+                  Reject
+                </DropdownMenuItem>
+              </>
+            )}
+            <DropdownMenuItem
+              onClick={() => onViewDocuments(applicant)}
+              className="cursor-pointer"
+            >
+              View Documents
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
+  };
+
+  // Only include actions column if not rejected
+  return tab === "rejected" ? baseColumns : [...baseColumns, actionsColumn];
 }

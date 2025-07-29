@@ -137,11 +137,16 @@ export const getOperatorDocumentById = async (docuId) => {
   }
 };
 
-export const getOperatorDocumentsByUserId = async (userId) => {
+export const getOperatorDocumentsByUserId = async (userId, sessionCookie) => {
   try {
     const response = await axios.get(
       `${API_URL}operatorUploadDocu/user/${userId}`,
-      { withCredentials: true }
+      {
+        withCredentials: true,
+        headers: {
+          Cookie: `connect.sid=${sessionCookie}`,
+        },
+      }
     );
     if (response.status !== 200) {
       throw new Error(
@@ -154,7 +159,6 @@ export const getOperatorDocumentsByUserId = async (userId) => {
     throw error;
   }
 };
-
 export const approveTourGuideDocument = async (documentId) => {
   try {
     const response = await axios.put(
@@ -193,6 +197,50 @@ export const rejectTourGuideDocument = async (documentId) => {
   } catch (error) {
     console.error(
       "Error Rejecting Tour Guide Document: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const approveTourOperatorDocument = async (docuId) => {
+  try {
+    const response = await axios.put(
+      `${API_URL}operatorUploadDocu/approve`,
+      { docuId },
+      { withCredentials: true }
+    );
+
+    if (response.status !== 200) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Approving Tour Operator Document: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const rejectTourOperatorDocument = async (docuId) => {
+  try {
+    const response = await axios.put(
+      `${API_URL}operatorUploadDocu/reject`,
+      { docuId },
+      { withCredentials: true }
+    );
+
+    if (response.status !== 200) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Rejecting Tour Operator Document: ",
       error.response?.data || error.message
     );
     throw error;

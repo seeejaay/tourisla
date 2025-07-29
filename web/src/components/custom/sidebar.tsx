@@ -48,6 +48,7 @@ const Sidebar = ({ navigation }: SidebarProps) => {
             width={150}
             height={150}
             className="h-20 w-auto"
+            priority
           />
         )}
         <button

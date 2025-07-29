@@ -38,6 +38,29 @@ export interface Booking {
   tour_operator_name?: string;
   tour_guides?: { first_name: string; last_name: string }[];
 }
+
+export interface BookingFetch {
+  id: number;
+  tour_package_id: number;
+  tourist_id: number;
+  scheduled_date: string;
+  number_of_guests: number;
+  total_price: number;
+  notes?: string;
+  proof_of_payment?: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  // Joined from tour_packages
+  package_name: string;
+  touroperator_id: number;
+  location: string;
+  // Joined from users
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
 // Hook for creating a booking
 export function useCreateBooking() {
   const [loading, setLoading] = useState(false);
@@ -260,7 +283,7 @@ export function useCancelBooking() {
 // }
 
 export function useBookingsByOperator() {
-  const [data, setData] = useState<Booking[]>([]);
+  const [data, setData] = useState<BookingFetch[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

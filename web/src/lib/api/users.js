@@ -97,3 +97,27 @@ export const deleteUser = async (userId) => {
     throw error;
   }
 };
+
+export const editUserStatus = async (userId, status, role) => {
+  try {
+    const response = await axios.patch(
+      `${API_URL}users/status`,
+      { userId, status, role },
+      {
+        withCredentials: true,
+      }
+    );
+    if (response.status !== 200) {
+      throw new Error(
+        `Failed to update user status. Server responded with status: ${response.status}`
+      );
+    }
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error updating user status:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};

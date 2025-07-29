@@ -41,10 +41,13 @@ export const fetchApplicationsForTourOperator = async (operatorId) => {
 };
 
 // Approve a tour guide's application to a tour operator
-export const approveTourGuideApplication = async (applicationId) => {
+export const approveTourGuideApplication = async (
+  applicationId,
+  touroperatorId
+) => {
   try {
     const response = await axios.put(
-      `${API_URL}applications/${applicationId}/approve`,
+      `${API_URL}applications/${applicationId}/approve/${touroperatorId}`,
       {},
       { withCredentials: true }
     );
@@ -78,6 +81,20 @@ export const fetchAllApplications = async () => {
     return response.data;
   } catch (error) {
     console.error("Error fetching all applications:", error);
+    throw error;
+  }
+};
+
+export const fetchGuideApplication = async (tourguide_id, touroperator_id) => {
+  try {
+    const response = await axios.get(
+      `${API_URL}applyToOperator/applications/${tourguide_id}?touroperator_id=${touroperator_id}`,
+      { withCredentials: true }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching guide application:", error);
     throw error;
   }
 };

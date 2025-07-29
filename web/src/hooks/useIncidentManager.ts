@@ -56,13 +56,15 @@ export function useIncidentManager() {
 
   const changeStatus = async (
     id: number,
-    status: "RECEIVED" | "RESOLVED" | "ARCHIVED"
+    status: "RECEIVED" | "RESOLVED" | "ARCHIVED",
+    actionTaken?: string
   ): Promise<IncidentReport> => {
     try {
       setLoading(true);
       const updated: { report: IncidentReport } = await updateIncidentStatus(
         id,
-        status
+        status,
+        actionTaken
       );
       setReports((prev) =>
         prev.map((r) =>
