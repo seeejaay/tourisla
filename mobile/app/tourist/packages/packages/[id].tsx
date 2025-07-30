@@ -6,6 +6,11 @@ import { fetchTourPackage } from "@/lib/api/tour-packages";
 import HeaderWithBack from "@/components/HeaderWithBack";
 import { toTitleCase } from "@/lib/utils/textFormat";
 
+interface TourGuide {
+  first_name: string;
+  last_name: string;
+}
+
 interface TourPackage {
   id: number;
   package_name?: string;
@@ -22,6 +27,7 @@ interface TourPackage {
   end_time?: string;
   created_at?: string;
   updated_at?: string;
+  tour_guides?: TourGuide[];
 }
 
 const sharedPackageGroupStyle = {
@@ -186,12 +192,18 @@ export default function TourPackageDetailsScreen() {
             </View>
           )}
 
-          <TouchableOpacity
-            style={styles.bookButton}
-            onPress={() => router.push(`/tourist/packages/${pkg.id}/book`)}
-          >
-            <Text style={styles.bookButtonText}>Next</Text>
-          </TouchableOpacity>
+          {pkg.available_slots && pkg.available_slots > 0 ? (
+            <TouchableOpacity
+              style={styles.bookButton}
+              onPress={() => router.push(`/tourist/packages/${pkg.id}/book`)}
+            >
+              <Text style={styles.bookButtonText}>Next</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={[styles.bookButton, { backgroundColor: "#94a3b8" }]}>
+              <Text style={styles.bookButtonText}>Fully Booked</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

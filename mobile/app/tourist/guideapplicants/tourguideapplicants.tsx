@@ -64,12 +64,7 @@ export default function TourGuideApplicantsPage() {
     const statusStyle = getStatusStyle(item.application_status);
   
     return (
-      <TouchableOpacity
-        onPress={() =>
-          router.push(`/admin/tour_guide_applicant_view?id=${item.id}`)
-        }
-        style={styles.card}
-      >
+      <View style={styles.card}>
         <View style={{ position: "relative" }}>
           <View
             style={[
@@ -84,7 +79,9 @@ export default function TourGuideApplicantsPage() {
   
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
             <Image
-              source={{ uri: item.profile_picture || "https://via.placeholder.com/50" }}
+              source={{
+                uri: item.profile_picture || "https://via.placeholder.com/50",
+              }}
               style={{ width: 50, height: 50, borderRadius: 25 }}
             />
             <View>
@@ -95,7 +92,7 @@ export default function TourGuideApplicantsPage() {
             </View>
           </View>
         </View>
-      </TouchableOpacity>
+      </View>
     );
   };
   
