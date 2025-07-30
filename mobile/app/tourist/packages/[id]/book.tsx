@@ -9,14 +9,10 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  Platform,
   Image,
 } from "react-native";
-import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
-import { useRouter } from "expo-router";
-import { useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useOperatorQrManager } from "@/hooks/useOperatorQr";
 import { useCreateBooking } from "@/hooks/useBookingManager";
 import { useTourPackageManager } from "@/hooks/useTourPackagesManager";
@@ -25,34 +21,20 @@ import { bookingFields } from "@/static/booking/booking";
 import HeaderWithBack from "@/components/HeaderWithBack";
 import InputSpinner from "@/components/InputSpinner";
 
-
-  export default function BookScreen() {
+export default function BookScreen() {
   interface Booking {
     id: number;
     scheduled_date: string;
     status: string;
   }
 
-  const [bookings, setBookings] = useState<Booking[]>([]);
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { id: packageId } = useLocalSearchParams();
 
-  // Hooks
   const { fetchOne: fetchTourPackage } = useTourPackageManager();
-  const {
-    fetchQr,
-    loading: qrLoading,
-    error: qrError,
-  } = useOperatorQrManager();
-  const {
-    create,
-    loading: bookingLoading,
-    error: bookingError,
-  } = useCreateBooking();
+  const { fetchQr, loading: qrLoading, error: qrError } = useOperatorQrManager();
+  const { create, loading: bookingLoading, error: bookingError } = useCreateBooking();
 
-  // State
   const [tourPackage, setTourPackage] = useState<any>(null);
   const [qrData, setQrData] = useState<any>(null);
   const [form, setForm] = useState<Record<string, any>>({
@@ -65,6 +47,7 @@ import InputSpinner from "@/components/InputSpinner";
   const [formError, setFormError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Fetch package & QR
   useEffect(() => {
     async function fetchPackageAndQr() {
       const pkg = await fetchTourPackage(
@@ -76,7 +59,6 @@ import InputSpinner from "@/components/InputSpinner";
           ...prev,
           total_price: Number(pkg.price) * (prev.number_of_guests || 1),
         }));
-        // Use correct property for operator ID
         const operatorId = pkg.touroperator_id || pkg.tour_operator_id;
         if (operatorId) {
           try {
@@ -89,10 +71,9 @@ import InputSpinner from "@/components/InputSpinner";
       }
     }
     fetchPackageAndQr();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [packageId, fetchTourPackage, fetchQr]);
 
-  // Dynamically update total_price when number_of_guests changes
+  // Update price dynamically
   useEffect(() => {
     if (tourPackage) {
       setForm((prev) => ({
@@ -102,27 +83,27 @@ import InputSpinner from "@/components/InputSpinner";
     }
   }, [form.number_of_guests, tourPackage]);
 
-  // Handle form input
   const pickProofOfPayment = async () => {
     const result = await DocumentPicker.getDocumentAsync({
       type: "*/*",
       copyToCacheDirectory: true,
     });
-
     if (result.canceled) return;
-
     setForm((prev) => ({
       ...prev,
       proof_of_payment: result.assets ? result.assets[0] : null,
     }));
   };
 
-  // Handle booking submit
   const handleSubmit = async () => {
     setFormError(null);
-    console.log("Submitting booking with form data:", form);
 
-    // Zod validation
+    // Check available slots
+    if (form.number_of_guests > (tourPackage?.available_slots || 0)) {
+      setFormError("Number of guests exceeds available slots.");
+      return;
+    }
+
     const result = BookingSchemaMobile.safeParse(form);
     if (!result.success) {
       const errorMessages = Object.values(result.error.flatten().fieldErrors)
@@ -130,16 +111,15 @@ import InputSpinner from "@/components/InputSpinner";
         .filter(Boolean)
         .join("\n");
       setFormError(errorMessages || "Invalid input.");
-      console.error("Validation errors:", errorMessages);
-      return;
-    }
-    if (!qrData) {
-      setFormError("Payment QR code not available.");
-      console.error("Payment QR code not available.");
       return;
     }
 
-    // Always use FormData for this endpoint
+    if (!qrData) {
+      setFormError("Payment QR code not available.");
+      return;
+    }
+
+    // Prepare FormData
     const formData = new FormData();
     formData.append("scheduled_date", String(tourPackage.date_start));
     formData.append("number_of_guests", String(form.number_of_guests));
@@ -155,30 +135,16 @@ import InputSpinner from "@/components/InputSpinner";
       form.proof_of_payment.name
     ) {
       formData.append("proof_of_payment", {
-        uri: form.proof_of_payment.uri, // from DocumentPicker
+        uri: form.proof_of_payment.uri,
         name: form.proof_of_payment.name || "proof.jpg",
         type: form.proof_of_payment.mimeType || "image/jpeg",
       });
     } else {
       setFormError("Proof of payment is required and must be a valid file.");
-      console.error(
-        "Invalid or missing proof_of_payment:",
-        form.proof_of_payment
-      );
       return;
     }
 
     try {
-      // Set session cookie before making the booking request
-      const sessionValue = await AsyncStorage.getItem("session");
-      if (sessionValue) {
-        await Cookies.set(
-          "https://tourisla-production.up.railway.app",
-          "session",
-          sessionValue
-        );
-      }
-
       await create(formData);
       alert("Booking successful!");
       router.replace({
@@ -188,49 +154,28 @@ import InputSpinner from "@/components/InputSpinner";
       router.dismiss(2);
     } catch (err) {
       setFormError("Booking failed. Please try again.");
-      console.error("Booking failed:", err);
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <HeaderWithBack
-        title="Package Details"
-        backgroundColor="#transparent"
-        textColor="#002b11"
-      />
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <HeaderWithBack title="Package Details" backgroundColor="#transparent" textColor="#002b11" />
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         {bookingLoading ? (
-          <ActivityIndicator
-            size="large"
-            color="#0ea5e9"
-            style={{ marginTop: 32 }}
-          />
-        ) : error ? (
-          <Text style={styles.errorText}>{error}</Text>
+          <ActivityIndicator size="large" color="#0ea5e9" style={{ marginTop: 32 }} />
         ) : (
           <>
             {formError && <Text style={styles.errorText}>{formError}</Text>}
 
-            <Text style={styles.heading}>
-              Book: {tourPackage?.package_name}
-            </Text>
+            <Text style={styles.heading}>Book: {tourPackage?.package_name}</Text>
 
             {bookingFields.map((field) => {
-              // Custom UI for proof_of_payment
               if (field.name === "proof_of_payment") {
                 return (
                   <View key={field.name}>
                     <Text style={styles.labelWithSpacing}>{field.label || "Proof of Payment"}:</Text>
-                    <TouchableOpacity
-                      style={styles.uploadButton}
-                      onPress={pickProofOfPayment}
-                    >
-                      <Text
-                        style={styles.uploadButtonText}
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                      >
+                    <TouchableOpacity style={styles.uploadButton} onPress={pickProofOfPayment}>
+                      <Text style={styles.uploadButtonText}>
                         {form.proof_of_payment?.name
                           ? `Choose File: ${form.proof_of_payment.name}`
                           : "Choose File"}
@@ -240,25 +185,30 @@ import InputSpinner from "@/components/InputSpinner";
                 );
               }
 
-              // Custom UI for number_of_guests
               if (field.name === "number_of_guests") {
                 return (
-                  <InputSpinner
-                    key={field.name}
-                    label={field.label || "Number of Guests"}
-                    value={form.number_of_guests}
-                    onChange={(newVal) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        number_of_guests: newVal,
-                      }))
-                    }
-                    min={1}
-                  />
+                  <View key={field.name}>
+                    <InputSpinner
+                      label={field.label || "Number of Guests"}
+                      value={form.number_of_guests}
+                      onChange={(newVal) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          number_of_guests: newVal,
+                        }))
+                      }
+                      min={1}
+                      max={tourPackage?.available_slots || 1}
+                    />
+                    {tourPackage?.available_slots && (
+                      <Text style={styles.helperText}>
+                        Max guests allowed: {tourPackage.available_slots}
+                      </Text>
+                    )}
+                  </View>
                 );
               }
 
-              // Custom UI for scheduled_date (readonly)
               if (field.name === "scheduled_date") {
                 return (
                   <View key={field.name}>
@@ -267,9 +217,7 @@ import InputSpinner from "@/components/InputSpinner";
                       style={styles.input}
                       value={
                         tourPackage?.date_start
-                          ? new Date(tourPackage.date_start)
-                              .toISOString()
-                              .split("T")[0]
+                          ? new Date(tourPackage.date_start).toISOString().split("T")[0]
                           : ""
                       }
                       editable={false}
@@ -290,10 +238,8 @@ import InputSpinner from "@/components/InputSpinner";
                   </View>
                 );
               }
-              // Default input for other fields
             })}
 
-            {/* Payment Section */}
             <Text style={styles.label}>Pay via QR Code</Text>
             {qrLoading ? (
               <Text style={styles.helperText}>Loading QR code...</Text>
@@ -332,28 +278,14 @@ import InputSpinner from "@/components/InputSpinner";
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-  },
-  heading: {
-    fontSize: 24,
-    fontWeight: "900",
-    color: "#002b11",
-    marginVertical: 8,
-  },
-  bookingCard: {
-    backgroundColor: "#f1f5f9",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
+  scrollContent: { paddingHorizontal: 16, paddingBottom: 24 },
+  heading: { fontSize: 24, fontWeight: "900", color: "#002b11", marginVertical: 8 },
   errorText: { color: "#ef4444", marginVertical: 8 },
   labelWithSpacing: {
     fontSize: 12,
     fontWeight: "500",
     color: "#7b7b7b",
-    marginBottom: 8, // <- more spacing than the default label
+    marginBottom: 8,
   },
   input: {
     padding: 10,
@@ -369,58 +301,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 6,
     marginBottom: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
   },
-  uploadButtonText: {
-    color: "#7b7b7b",
-    fontWeight: "500",
-    paddingVertical: 5,
-    flex: 1,
-    flexShrink: 1,
-    numberOfLines: 1,
-  },
-  fileSelectedText: { fontSize: 12, color: "#475569", marginBottom: 8 },
+  uploadButtonText: { color: "#7b7b7b", fontWeight: "500", flex: 1 },
+  helperText: { fontSize: 14, color: "#64748b", marginBottom: 8 },
   bookButton: {
     backgroundColor: "#61daaf",
     paddingVertical: 12,
-    paddingHorizontal: 24,
     borderRadius: 8,
     alignSelf: "center",
     marginTop: 16,
-    minWidth: 120,
     width: "100%",
   },
-  bookButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  textPrice: {
-    marginBottom: 8,
-    fontWeight: "700",
-    alignSelf: "flex-end",
-    color: "#00a63e",
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#7b7b7b",
-    marginBottom: 4,
-  },
-  helperText: {
-    fontSize: 14,
-    color: "#64748b",
-    marginBottom: 8,
-  },
-  qrImage: {
-    width: 160,
-    height: 160,
-    borderWidth: 2,
-    borderColor: "#bfdbfe",
-    borderRadius: 8,
-    marginBottom: 8,
-  },
+  bookButtonText: { color: "#fff", fontSize: 16, fontWeight: "600", textAlign: "center" },
+  textPrice: { marginBottom: 8, fontWeight: "700", alignSelf: "flex-end", color: "#00a63e" },
+  qrImage: { width: 160, height: 160, borderWidth: 2, borderColor: "#bfdbfe", borderRadius: 8 },
 });

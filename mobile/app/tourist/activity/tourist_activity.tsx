@@ -37,10 +37,12 @@ export default function TouristActivityScreen() {
     const fetchUser = async () => {
       try {
         const userData = await loggedInUser();
-        if (!isMounted || !userData?.data?.user?.user_id) return;
-        const id = userData.data.user.user_id;
+        console.log('Logged-in user data:', userData);
+        if (!isMounted || !userData?.data?.user?.id) return;
+        const id = userData.data.user.id;
         console.log('user_id:', id);
         setUserId(id);
+        console.log('User ID set:', id);
       } catch (err) {
         console.error('Error fetching logged-in user:', err);
       }
@@ -52,8 +54,10 @@ export default function TouristActivityScreen() {
   }, [loggedInUser]);
 
   useEffect(() => {
-    getQRCodebyUserId().then(setResult);
-  }, [getQRCodebyUserId]);
+    if (userId) {
+      getQRCodebyUserId(userId).then(setResult);
+    }
+  }, [userId, getQRCodebyUserId]);
   console.log('QRResult:', userId, result);
 
   const copyToClipboard = async (text: string) => {
