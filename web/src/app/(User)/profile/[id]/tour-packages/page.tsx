@@ -126,6 +126,10 @@ export default function TourPackagesPage() {
       result = result.filter(
         (pkg) => pkg.is_active && new Date(pkg.date_end) >= today // Not completed
       );
+    } else if (activeTab === "inactive") {
+      result = result.filter(
+        (pkg) => !pkg.is_active && new Date(pkg.date_end) >= today // Not completed
+      );
     } else if (activeTab === "complete") {
       result = result.filter(
         (pkg) => new Date(pkg.date_end) < today // Completed
@@ -245,9 +249,10 @@ export default function TourPackagesPage() {
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="grid w-full md:w-fit grid-cols-3">
+            <TabsList className="grid w-full md:w-fit grid-cols-4">
               <TabsTrigger value="all">All Packages</TabsTrigger>
               <TabsTrigger value="active">Active</TabsTrigger>
+              <TabsTrigger value="inactive">Inactive</TabsTrigger>
               <TabsTrigger value="complete">Completed</TabsTrigger>
             </TabsList>
           </Tabs>
