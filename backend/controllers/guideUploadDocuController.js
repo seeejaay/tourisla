@@ -23,15 +23,12 @@ const {
 
 const createGuideUploadDocuController = async (req, res) => {
   try {
-    console.log("req.file:", req.file);
-    console.log("req.body:", req.body);
-    console.log("req.params:", req.params);
     // Get the userId from session or params
     const userId = req.params.guideId; // or req.params.guideId if you use the URL param
 
     // Await the DB call to get the guide registration
     const guideReg = await getGuideRegisById(userId);
-    console.log("Guide ID:", guideReg);
+
     if (!guideReg) {
       return res
         .status(404)
@@ -47,7 +44,7 @@ const createGuideUploadDocuController = async (req, res) => {
     }
 
     const doc_type = document_type.toUpperCase();
-    const newrequirements = requirements.map((req) => req.toUpperCase());
+    // const newrequirements = requirements.map((req) => req.toUpperCase());
 
     const allowedTypes = [
       "GOV_ID",
@@ -64,24 +61,24 @@ const createGuideUploadDocuController = async (req, res) => {
     }
 
     // all 5 requirements should be checked
-    const requiredFlags = [
-      "FILIPINO_CITIZEN",
-      "FIT",
-      "FLUENT",
-      "TRAINING_CERTIFIED",
-      "NO_CRIMINAL_RECORD",
-    ];
+    // const requiredFlags = [
+    //   "FILIPINO_CITIZEN",
+    //   "FIT",
+    //   "FLUENT",
+    //   "TRAINING_CERTIFIED",
+    //   "NO_CRIMINAL_RECORD",
+    // ];
 
-    const isComplete = requiredFlags.every((flag) =>
-      newrequirements.includes(flag)
-    );
+    // const isComplete = requiredFlags.every((flag) =>
+    //   newrequirements.includes(flag)
+    // );
 
-    if (!isComplete) {
-      return res
-        .status(400)
-        .json({ error: "All qualifications must be checked." });
-    }
-    console.log("Uploading Document");
+    // if (!isComplete) {
+    //   return res
+    //     .status(400)
+    //     .json({ error: "All qualifications must be checked." });
+    // }
+    // console.log("Uploading Document");
     // Handle file upload for the tour guide's document
     let file_path = null;
     if (req.file) {
@@ -103,10 +100,10 @@ const createGuideUploadDocuController = async (req, res) => {
       tourguide_id: tourguide_id,
       document_type: doc_type,
       file_path,
-      requirements: JSON.stringify(newrequirements),
+      // requirements: JSON.stringify(newrequirements),
       status: "PENDING", // Default status when creating a new document
     });
-    console.log("Document Created");
+    // console.log("Document Created");
     res.json(guideUploadDocu);
   } catch (err) {
     console.log(err.message);
@@ -117,8 +114,8 @@ const editGuideUploadDocuController = async (req, res) => {
   try {
     const { docuId } = req.params;
     let { document_type } = req.body;
-    console.log(req.body);
-    const newDocument_type = document_type.toUpperCase();
+    // console.log(req.body);
+    // const newDocument_type = document_type.toUpperCase();
 
     const allowedTypes = [
       "GOV_ID",
@@ -189,9 +186,9 @@ const getGuideUploadDocuByIdController = async (req, res) => {
 const getGuideUploadByUserIdController = async (req, res) => {
   try {
     const currentUserId = req.params.userId;
-    console.log("Current User ID:", currentUserId);
+    // console.log("Current User ID:", currentUserId);
     const guideReg = await getGuideRegisById(currentUserId);
-    console.log("Guide Registration:", guideReg);
+    // console.log("Guide Registration:", guideReg);
     if (!guideReg) {
       return res
         .status(404)
@@ -227,7 +224,7 @@ const approveGuideUploadDocuController = async (req, res) => {
     if (!approvedDoc) {
       return res.status(404).json({ error: "Document not found" });
     }
-    console.log("Approved Document:", approvedDoc);
+    // console.log("Approved Document:", approvedDoc);
     if (approvedDoc.status === "APPROVED") {
       await sendDocumentApproveEmail(
         guideEmail,
@@ -252,7 +249,7 @@ const rejectGuideUploadDocuController = async (req, res) => {
     if (!rejectedDoc) {
       return res.status(404).json({ error: "Document not found" });
     }
-    console.log("Rejected Document:", rejectedDoc);
+    // console.log("Rejected Document:", rejectedDoc);
     if (rejectedDoc.status === "REJECTED") {
       await sendDocumentRejectEmail(
         guideEmail,

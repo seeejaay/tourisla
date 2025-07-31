@@ -8,7 +8,7 @@ const TourGuideDocumentSchema = z.object({
     "NBI_CLEARANCE",
     "BRGY_CLEARANCE",
     "MED_CERT",
-    "PASSPORT PHOTO",
+    "PASSPORT_PHOTO",
     "RESUME",
   ]),
   file_path: z

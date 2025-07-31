@@ -149,7 +149,7 @@ export function DataTable<TData, TValue>({
                         column.toggleVisibility(!!value)
                       }
                     >
-                      {column.id}
+                      {column.id.replace(/_/g, " ")}
                     </DropdownMenuCheckboxItem>
                   );
                 })}
@@ -169,7 +169,7 @@ export function DataTable<TData, TValue>({
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      className="text-xs sm:text-sm font-semibold text-zinc-700 px-4 py-2 bg-zinc-50 uppercase tracking-wide"
+                      className="text-xs sm:text-sm font-semibold text-zinc-700 py-2 bg-zinc-50"
                     >
                       {header.isPlaceholder
                         ? null

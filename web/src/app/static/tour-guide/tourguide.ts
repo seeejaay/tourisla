@@ -75,17 +75,17 @@ export const tourGuideDocuFields = [
     type: "file",
     placeholder: "Upload your document here",
   },
-  {
-    name: "requirements",
-    label: "Requirements",
-    type: "checkbox",
-    placeholder: "Select all that apply",
-    options: [
-      { value: "FILIPINO_CITIZEN", label: "Filipino Citizen" },
-      { value: "FIT", label: "Fit to Work" },
-      { value: "FLUENT", label: "Fluent" },
-      { value: "TRAINING_CERTIFIED", label: "Training Certified" },
-      { value: "NO_CRIMINAL_RECORD", label: "No Criminal ecord" },
-    ],
-  },
+  // {
+  //   name: "requirements",
+  //   label: "Requirements",
+  //   type: "checkbox",
+  //   placeholder: "Select all that apply",
+  //   options: [
+  //     { value: "FILIPINO_CITIZEN", label: "Filipino Citizen" },
+  //     { value: "FIT", label: "Fit to Work" },
+  //     { value: "FLUENT", label: "Fluent" },
+  //     { value: "TRAINING_CERTIFIED", label: "Training Certified" },
+  //     { value: "NO_CRIMINAL_RECORD", label: "No Criminal ecord" },
+  //   ],
+  // },
 ];

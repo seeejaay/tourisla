@@ -76,8 +76,8 @@ export default function IslandEntryLogsPage() {
               <DataTable
                 columns={islandEntryColumns()}
                 data={islandEntries}
-                searchPlaceholder="Search by code or name..."
-                searchColumn={["unique_code", "full_name"]}
+                searchPlaceholder="Search by name or status..."
+                searchColumn={["status", "full_name"]}
               />
             </div>
           </div>

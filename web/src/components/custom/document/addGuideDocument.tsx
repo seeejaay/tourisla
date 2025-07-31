@@ -20,7 +20,7 @@ const AddGuideDocument: React.FC<AddGuideDocumentProps> = ({
   const [file, setFile] = useState<File | null>(null);
   const [form, setForm] = useState({
     document_type: "",
-    requirements: [] as string[],
+    // requirements: [] as string[],
   });
   const [formError, setFormError] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -28,7 +28,7 @@ const AddGuideDocument: React.FC<AddGuideDocumentProps> = ({
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value, type, checked, files } = e.target as HTMLInputElement;
+    const { name, value, type, files } = e.target as HTMLInputElement;
 
     if (type === "file") {
       const selectedFile = files && files[0] ? files[0] : null;
@@ -60,17 +60,18 @@ const AddGuideDocument: React.FC<AddGuideDocumentProps> = ({
         setFile(null);
         setFileError(null);
       }
-    } else if (type === "checkbox") {
-      setForm((prev) => {
-        const reqs = new Set(prev.requirements);
-        if (checked) {
-          reqs.add(value);
-        } else {
-          reqs.delete(value);
-        }
-        return { ...prev, requirements: Array.from(reqs) };
-      });
     } else {
+      // } elze if (type === "checkbox") {
+      //   setForm((prev) => {
+      //     const reqs = new Set(prev.requirements);
+      //     if (checked) {
+      //       reqs.add(value);
+      //     } else {
+      //       reqs.delete(value);
+      //     }
+      //     return { ...prev, requirements: Array.from(reqs) };
+      //   });
+      // } else {
       setForm((prev) => ({
         ...prev,
         [name]: value,
@@ -106,7 +107,7 @@ const AddGuideDocument: React.FC<AddGuideDocumentProps> = ({
     const formData = new FormData();
     formData.append("document", file);
     formData.append("document_type", form.document_type);
-    form.requirements.forEach((req) => formData.append("requirements", req));
+    // form.requirements.forEach((req) => formData.append("requirements", req));
 
     try {
       const uploadResult = await createGuideDocument(guideId, formData);
@@ -179,33 +180,33 @@ const AddGuideDocument: React.FC<AddGuideDocumentProps> = ({
               </div>
             );
           }
-          if (field.type === "checkbox") {
-            return (
-              <div key={field.name}>
-                <label className="block mb-1 font-semibold text-[#3e979f]">
-                  {field.label}
-                </label>
-                <div className="flex flex-wrap gap-3">
-                  {field.options?.map((opt) => (
-                    <label
-                      key={opt.value}
-                      className="flex items-center gap-2 text-[#17414a] bg-[#f8fcfd] px-2 py-1 rounded"
-                    >
-                      <input
-                        type="checkbox"
-                        name={field.name}
-                        value={opt.value}
-                        checked={form.requirements.includes(opt.value)}
-                        onChange={handleChange}
-                        className="accent-[#3e979f]"
-                      />
-                      {opt.label}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            );
-          }
+          // if (field.type === "checkbox") {
+          //   return (
+          //     <div key={field.name}>
+          //       <label className="block mb-1 font-semibold text-[#3e979f]">
+          //         {field.label}
+          //       </label>
+          //       <div className="flex flex-wrap gap-3">
+          //         {field.options?.map((opt) => (
+          //           <label
+          //             key={opt.value}
+          //             className="flex items-center gap-2 text-[#17414a] bg-[#f8fcfd] px-2 py-1 rounded"
+          //           >
+          //             <input
+          //               type="checkbox"
+          //               name={field.name}
+          //               value={opt.value}
+          //               checked={form.requirements.includes(opt.value)}
+          //               onChange={handleChange}
+          //               className="accent-[#3e979f]"
+          //             />
+          //             {opt.label}
+          //           </label>
+          //         ))}
+          //       </div>
+          //     </div>
+          //   );
+          // }
           // Default: text/email/textarea
           return (
             <div key={field.name}>
