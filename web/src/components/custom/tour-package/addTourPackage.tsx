@@ -177,7 +177,7 @@ export default function AddTourPackage({
 
     if (startDate < minStartDate) {
       setFormError("Start date must be at least 8 days from today.");
-    } else if (endDate <= startDate) {
+    } else if (endDate < startDate) {
       setFormError("End date must be at least 1 day after the start date.");
     } else {
       setFormError(null);
@@ -440,8 +440,24 @@ export default function AddTourPackage({
                     onValueChange={setInclusionsSearch}
                     onBlur={() => setOpenInclusions(false)}
                     onFocus={() => setOpenInclusions(true)}
-                    placeholder="Search inclusions..."
+                    placeholder="Search or add inclusion..."
                     className="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+                    // Add this onKeyDown handler:
+                    onKeyDown={(e) => {
+                      if (
+                        e.key === "Enter" &&
+                        inclusionsSearch.trim() &&
+                        !selectedInclusions.includes(inclusionsSearch.trim())
+                      ) {
+                        setSelectedInclusions([
+                          ...selectedInclusions,
+                          inclusionsSearch.trim(),
+                        ]);
+                        setInclusionsSearch("");
+                        setOpenInclusions(false);
+                        e.preventDefault();
+                      }
+                    }}
                   />
                 </div>
               </div>
@@ -532,6 +548,21 @@ export default function AddTourPackage({
                     onFocus={() => setOpenExclusions(true)}
                     placeholder="Search exclusions..."
                     className="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+                    onKeyDown={(e) => {
+                      if (
+                        e.key === "Enter" &&
+                        exclusionsSearch.trim() &&
+                        !selectedExclusions.includes(exclusionsSearch.trim())
+                      ) {
+                        setSelectedExclusions([
+                          ...selectedExclusions,
+                          exclusionsSearch.trim(),
+                        ]);
+                        setExclusionsSearch("");
+                        setOpenExclusions(false);
+                        e.preventDefault();
+                      }
+                    }}
                   />
                 </div>
               </div>
@@ -757,8 +788,8 @@ export default function AddTourPackage({
           <div className="flex gap-2 justify-end pt-2">
             <Button
               type="submit"
-              disabled={loading}
-              className="bg-[#3e979f] hover:bg-[#1c5461] text-white font-semibold px-6 py-2 rounded-lg shadow cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed w-1/4"
+              disabled={loading || formError !== null}
+              className="bg-[#3e979f] hover:bg-[#1c5461] text-white font-semibold px-6 py-2 rounded-lg shadow cursor-pointer w-1/4"
             >
               {loading ? "Creating..." : "Create"}
             </Button>

@@ -7,6 +7,7 @@ import {
   fetchTourPackage,
   fetchAllTourPackages as apiFetchAllTourPackages,
   fetchTourPackagesByGuide as apiFetchTourPackagesByGuide,
+  updateTourPackageStatus as apiUpdateTourPackageStatus,
 } from "@/lib/api/tour-packages";
 import tourPackageSchema, {
   TourPackage,
@@ -170,6 +171,30 @@ export const useTourPackageManager = () => {
     []
   );
 
+  const updateTourPackageStatus = useCallback(
+    async (
+      id: number | string,
+      is_active: boolean
+    ): Promise<TourPackage | null> => {
+      setLoading(true);
+      setError("");
+      try {
+        const updatedPackage = await apiUpdateTourPackageStatus(id, is_active);
+        setTourPackages((prev) =>
+          prev.map((pkg) => (pkg.id === id ? updatedPackage : pkg))
+        );
+        return updatedPackage;
+      } catch (err) {
+        setError("Failed to update tour package status.");
+        console.error(err);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   return {
     tourPackages,
     loading,
@@ -182,5 +207,6 @@ export const useTourPackageManager = () => {
     setTourPackages, // Exposed for manual updates if needed
     fetchAllTourPackages,
     fetchTourPackagesByGuide, // Exposed for fetching all tour packages
+    updateTourPackageStatus,
   };
 };

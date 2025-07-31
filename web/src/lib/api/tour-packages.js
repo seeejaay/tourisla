@@ -159,3 +159,30 @@ export const fetchTourPackagesByGuide = async (tourguideId) => {
     throw error;
   }
 };
+
+export const updateTourPackageStatus = async (packageId, isActive) => {
+  try {
+    console.log("Updating Status of Tour Package");
+
+    const response = await axios.patch(
+      `${API_URL}tour-packages/${packageId}/status`,
+      {
+        is_active: isActive,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+
+    if (response.status < 200 || response.status >= 300) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Updating Tour Package Status: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
 // import { useTourGuideManager } from "@/hooks/useTourGuideManager";
+import { useBookingsByPackage } from "@/hooks/useBookingManager";
 import { useApplyOperatorManager } from "@/hooks/useApplyOperatorManager";
 import { TourPackage } from "@/app/static/tour-packages/tour-packageSchema";
 import { useParams } from "next/navigation";
@@ -31,6 +32,11 @@ export default function EditTourPackage({
 }) {
   const { edit, loading, error, fetchAll } = useTourPackageManager();
   // const { fetchAllTourGuideApplicants } = useTourGuideManager();
+  const {
+    data: bookings,
+    fetchByPackage,
+    loading: bookingsLoading,
+  } = useBookingsByPackage();
   const { fetchApplications } = useApplyOperatorManager(); //
   const params = useParams();
   const touroperator_id = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -89,6 +95,13 @@ export default function EditTourPackage({
   const [open, setOpen] = useState(false);
   const [packages, setPackages] = useState<TourPackage[]>([]);
 
+  //fetch all bookings for this package
+  useEffect(() => {
+    if (tourPackage.id) {
+      fetchByPackage(tourPackage.id);
+    }
+  }, [tourPackage.id, fetchByPackage]);
+  const hasBookings = bookings && bookings.length > 0;
   // Fetch all packages for overlap checking
   useEffect(() => {
     async function loadPackages() {
@@ -147,6 +160,28 @@ export default function EditTourPackage({
     }
   }, [form.date_start, form.date_end]);
 
+  // Validate date inputs
+  useEffect(() => {
+    if (!form.date_start || !form.date_end) {
+      setFormError(null);
+      return;
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const minStartDate = new Date(today);
+    minStartDate.setDate(today.getDate() + 8);
+
+    const startDate = new Date(form.date_start);
+    const endDate = new Date(form.date_end);
+
+    if (startDate < minStartDate) {
+      setFormError("Start date must be at least 8 days from today.");
+    } else if (endDate < startDate) {
+      setFormError("End date must be at least 1 day after the start date.");
+    } else {
+      setFormError(null);
+    }
+  }, [form.date_start, form.date_end]);
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -221,6 +256,28 @@ export default function EditTourPackage({
   return (
     <main className="w-full">
       <div className="p-8 space-y-8">
+        <div
+          className={`w-full flex items-center justify-center ${
+            // Hide only if the error is a date error and there are bookings
+            (!formError && !error) ||
+            (hasBookings && formError?.toLowerCase().includes("date"))
+              ? "hidden"
+              : ""
+          }`}
+        >
+          <div className="bg-red-100 text-red-600 rounded-lg flex items-center justify-between w-1/2 border border-red-500 p-4">
+            {formError && (
+              <p className="text-red-500 text-sm text-center w-full">
+                {formError}
+              </p>
+            )}
+            {error && (
+              <p className="text-red-500 text-sm  text-center w-full">
+                {error}
+              </p>
+            )}
+          </div>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Package Name & Location */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -279,6 +336,7 @@ export default function EditTourPackage({
                 className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                 min={0}
                 required
+                disabled={hasBookings}
               />
             </div>
             <div>
@@ -352,6 +410,19 @@ export default function EditTourPackage({
                       onFocus={() => setOpenInclusions(true)}
                       placeholder="Search inclusions..."
                       className="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+                      onKeyDown={(e) => {
+                        if (
+                          e.key === "Enter" &&
+                          inclusionsSearch.trim() &&
+                          !selectedInclusions.includes(inclusionsSearch.trim())
+                        ) {
+                          setSelectedInclusions([
+                            ...selectedInclusions,
+                            inclusionsSearch.trim(),
+                          ]);
+                          setInclusionsSearch(""); // clear search after select
+                        }
+                      }}
                     />
                   </div>
                 </div>
@@ -437,6 +508,19 @@ export default function EditTourPackage({
                       onFocus={() => setOpenExclusions(true)}
                       placeholder="Search exclusions..."
                       className="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+                      onKeyDown={(e) => {
+                        if (
+                          e.key === "Enter" &&
+                          exclusionsSearch.trim() &&
+                          !selectedExclusions.includes(exclusionsSearch.trim())
+                        ) {
+                          setSelectedExclusions([
+                            ...selectedExclusions,
+                            exclusionsSearch.trim(),
+                          ]);
+                          setExclusionsSearch(""); // clear search after select
+                        }
+                      }}
                     />
                   </div>
                 </div>
@@ -497,6 +581,7 @@ export default function EditTourPackage({
                 onChange={handleChange}
                 className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                 required
+                disabled={hasBookings}
               />
             </div>
             <div>
@@ -510,6 +595,7 @@ export default function EditTourPackage({
                 onChange={handleChange}
                 className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                 required
+                disabled={hasBookings}
               />
             </div>
             <div>
@@ -621,6 +707,7 @@ export default function EditTourPackage({
                 onChange={handleChange}
                 className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                 required
+                disabled={hasBookings}
               />
             </div>
             <div>
@@ -634,6 +721,7 @@ export default function EditTourPackage({
                 onChange={handleChange}
                 className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                 required
+                disabled={hasBookings}
               />
             </div>
           </div>
@@ -667,9 +755,7 @@ export default function EditTourPackage({
               />
             </div>
           </div>
-          {/* Error messages */}
-          {formError && <div className="text-red-500 text-sm">{formError}</div>}
-          {error && <div className="text-red-500 text-sm">{error}</div>}
+
           {/* Actions */}
           <div className="flex gap-2 justify-end pt-2">
             <button

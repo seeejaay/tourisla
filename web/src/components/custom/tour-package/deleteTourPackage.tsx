@@ -12,11 +12,13 @@ import {
 interface DeleteTourPackageProps {
   id: number | string;
   onDeleted?: () => void;
+  disabled?: boolean;
 }
 
 export default function DeleteTourPackage({
   id,
   onDeleted,
+  disabled = false,
 }: DeleteTourPackageProps) {
   const { remove, loading, error } = useTourPackageManager();
   const [confirm, setConfirm] = useState(false);
@@ -35,7 +37,7 @@ export default function DeleteTourPackage({
       <Button
         variant="destructive"
         onClick={() => setConfirm(true)}
-        disabled={loading}
+        disabled={loading || disabled}
         className="cursor-pointer"
       >
         <Trash2 />
