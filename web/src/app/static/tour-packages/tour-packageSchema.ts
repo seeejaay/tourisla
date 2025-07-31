@@ -92,6 +92,7 @@ const tourPackageSchema = z.object({
       message: "Cancellation policy must be less than 500 characters.",
     })
     .optional(),
+  assigned_guides: z.array(z.string()).optional(),
 });
 
 export type TourPackage = z.infer<typeof tourPackageSchema>;

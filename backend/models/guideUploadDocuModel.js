@@ -53,10 +53,18 @@ const approveGuideUploadDocu = async (docuId) => {
   return result.rows[0];
 };
 
-const rejectGuideUploadDocu = async (docuId) => {
+const rejectGuideUploadDocu = async (docuId, reason) => {
   const result = await db.query(
-    "UPDATE tourguide_documents SET status = 'REJECTED' WHERE id = $1 RETURNING *",
-    [docuId]
+    "UPDATE tourguide_documents SET status = 'REJECTED', note = $2 WHERE id = $1 RETURNING *",
+    [docuId, reason]
+  );
+  return result.rows[0];
+};
+
+const revokeGuideUploadDocu = async (docuId, reason) => {
+  const result = await db.query(
+    "UPDATE tourguide_documents SET status = 'REVOKED', note= $2 WHERE id = $1 RETURNING *",
+    [docuId, reason]
   );
   return result.rows[0];
 };
@@ -68,4 +76,5 @@ module.exports = {
   getGuideUploadByUserId,
   approveGuideUploadDocu,
   rejectGuideUploadDocu,
+  revokeGuideUploadDocu,
 };

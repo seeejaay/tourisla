@@ -28,7 +28,7 @@ type GuideDocument = {
   document_type: string;
   file_path?: string;
   uploaded_at?: string;
-  status?: "PENDING" | "APPROVED" | "REJECTED";
+  status?: "PENDING" | "APPROVED" | "REJECTED" | "REVOKED";
   tourguide_id?: string;
 };
 const statusOptions = [
@@ -36,6 +36,7 @@ const statusOptions = [
   { value: "PENDING", label: "Pending" },
   { value: "APPROVED", label: "Approved" },
   { value: "REJECTED", label: "Rejected" },
+  { value: "REVOKED", label: "Revoked" },
 ];
 const documentTypes = [
   { value: "GOV_ID", label: "Government ID", required: true },
@@ -54,8 +55,12 @@ export default function TourGuideDocumentsApprovalPage() {
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("All");
   const [tourGuide, setTourGuide] = useState<TourGuide | null>(null);
-  const { fetchGuideDocumentsById, approveGuideDocument, rejectGuideDocument } =
-    useDocumentManager();
+  const {
+    fetchGuideDocumentsById,
+    approveGuideDocument,
+    rejectGuideDocument,
+    revokeTourGuideDocument,
+  } = useDocumentManager();
   const [documents, setDocuments] = useState<GuideDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -124,13 +129,15 @@ export default function TourGuideDocumentsApprovalPage() {
     }
   };
 
-  const handleReject = async (docId: string) => {
+  const handleReject = async (docId: string, rejectionReason: string) => {
     try {
-      const result = await rejectGuideDocument(docId);
+      const result = await rejectGuideDocument(docId, rejectionReason);
       if (result) {
         setDocuments((prev) =>
           prev.map((doc) =>
-            doc.id === docId ? { ...doc, status: "REJECTED" } : doc
+            doc.id === docId
+              ? { ...doc, status: "REJECTED", note: rejectionReason }
+              : doc
           )
         );
       }
@@ -140,6 +147,25 @@ export default function TourGuideDocumentsApprovalPage() {
           (error instanceof Error ? error.message : String(error))
       );
       console.error("Error rejecting document:", error);
+    }
+  };
+
+  const handleRevoke = async (docId: string, revocationReason: string) => {
+    try {
+      const result = await revokeTourGuideDocument(docId, revocationReason);
+      if (result) {
+        setDocuments((prev) =>
+          prev.map((doc) =>
+            doc.id === docId ? { ...doc, status: "REVOKED" } : doc
+          )
+        );
+      }
+    } catch (error) {
+      setError(
+        "Failed to revoke document: " +
+          (error instanceof Error ? error.message : String(error))
+      );
+      console.error("Error revoking document:", error);
     }
   };
 
@@ -195,12 +221,19 @@ export default function TourGuideDocumentsApprovalPage() {
         );
 
   // Calculate verification progress
-  const requiredDocs = documentTypes.filter((doc) => doc.required);
-  const verifiedDocs = documents.filter(
-    (doc) =>
-      doc.status === "APPROVED" &&
-      requiredDocs.some((req) => req.value === doc.document_type)
-  ).length;
+  const requiredDocTypes = new Set(
+    documentTypes.filter((doc) => doc.required).map((doc) => doc.value)
+  );
+  const verifiedDocTypes = new Set(
+    documents
+      .filter(
+        (doc) =>
+          doc.status === "APPROVED" && requiredDocTypes.has(doc.document_type)
+      )
+      .map((doc) => doc.document_type)
+  );
+  const requiredDocs = Array.from(requiredDocTypes);
+  const verifiedDocs = verifiedDocTypes.size;
   const verificationPercentage = Math.round(
     (verifiedDocs / requiredDocs.length) * 100
   );
@@ -338,6 +371,8 @@ export default function TourGuideDocumentsApprovalPage() {
                               ? "bg-green-100 text-green-600"
                               : uploadedDoc.status === "REJECTED"
                               ? "bg-red-100 text-red-600"
+                              : uploadedDoc.status === "REVOKED"
+                              ? "bg-gray-100 text-gray-600"
                               : "bg-yellow-100 text-yellow-600"
                             : "bg-gray-100 text-gray-400"
                         }`}
@@ -382,6 +417,8 @@ export default function TourGuideDocumentsApprovalPage() {
                                     ? "bg-blue-100 text-blue-600"
                                     : uploadedDoc.status === "REJECTED"
                                     ? "bg-red-100 text-red-600"
+                                    : uploadedDoc.status === "REVOKED"
+                                    ? "bg-gray-100 text-gray-600"
                                     : "bg-yellow-100 text-yellow-600"
                                   : ""
                               }`}
@@ -391,6 +428,8 @@ export default function TourGuideDocumentsApprovalPage() {
                                   ? "Verified"
                                   : uploadedDoc.status === "REJECTED"
                                   ? "Rejected"
+                                  : uploadedDoc.status === "REVOKED"
+                                  ? "Revoked"
                                   : "Pending"
                                 : "Required"}
                             </Badge>
@@ -411,7 +450,7 @@ export default function TourGuideDocumentsApprovalPage() {
                 onValueChange={setActiveTab}
                 className="w-full"
               >
-                <TabsList className="grid grid-cols-4 gap-1 w-full bg-neutral-200/60 ">
+                <TabsList className="grid grid-cols-5 gap-1 w-full bg-neutral-200/60 ">
                   {statusOptions.map((status) => (
                     <TabsTrigger
                       key={status.value}
@@ -458,6 +497,7 @@ export default function TourGuideDocumentsApprovalPage() {
                         onEnlarge={setEnlargedImage}
                         onApprove={handleApprove}
                         onReject={handleReject}
+                        onRevoke={handleRevoke}
                       />
                     );
                   })}

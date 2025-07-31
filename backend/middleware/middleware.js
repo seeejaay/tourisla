@@ -1,6 +1,6 @@
 // Middleware to check if the user is authenticated
 const authenticateUser = (req, res, next) => {
-  console.log("Session:", req.session);
+  // console.log("Session:", req.session);
   if (!req.session || !req.session.user) {
     return res.status(401).json({ error: "Unauthorized: Please log in" });
   }
@@ -75,7 +75,7 @@ const authenticateTourOperator = (req, res, next) => {
 
 const allowedRoles = (roles) => {
   return (req, res, next) => {
-    console.log("Session in allowedRoles:", req.session);
+    // console.log("Session in allowedRoles:", req.session);
     if (!req.session || !req.session.user) {
       console.log("401: No session or user");
       return res.status(401).json({ error: "Unauthorized: Please log in" });

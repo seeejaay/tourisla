@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
-import { useTourGuideManager } from "@/hooks/useTourGuideManager";
+// import { useTourGuideManager } from "@/hooks/useTourGuideManager";
+import { useApplyOperatorManager } from "@/hooks/useApplyOperatorManager";
 import { TourPackage } from "@/app/static/tour-packages/tour-packageSchema";
 import { useParams } from "next/navigation";
 import {
@@ -29,7 +30,8 @@ export default function EditTourPackage({
   onCancel: () => void;
 }) {
   const { edit, loading, error, fetchAll } = useTourPackageManager();
-  const { fetchAllTourGuideApplicants } = useTourGuideManager();
+  // const { fetchAllTourGuideApplicants } = useTourGuideManager();
+  const { fetchApplications } = useApplyOperatorManager(); //
   const params = useParams();
   const touroperator_id = Array.isArray(params.id) ? params.id[0] : params.id;
   const [selectedInclusions, setSelectedInclusions] = useState<string[]>(
@@ -98,45 +100,33 @@ export default function EditTourPackage({
 
   useEffect(() => {
     async function loadGuides() {
-      const allGuides = await fetchAllTourGuideApplicants();
-      if (!allGuides) {
+      const applications = await fetchApplications(touroperator_id);
+      if (!applications) {
         setGuides([]);
         return;
       }
       setGuides(
-        allGuides
-          .map((g: Record<string, unknown>) => ({
-            id: g.id !== undefined ? String(g.id) : "",
-            first_name: typeof g.first_name === "string" ? g.first_name : "",
-            last_name: typeof g.last_name === "string" ? g.last_name : "",
-            application_status:
-              typeof g.application_status === "string"
-                ? g.application_status
-                : "",
-            birth_date: typeof g.birth_date === "string" ? g.birth_date : "",
-            created_at: typeof g.created_at === "string" ? g.created_at : "",
-            email: typeof g.email === "string" ? g.email : "",
-            mobile_number:
-              typeof g.mobile_number === "string" ? g.mobile_number : "",
-            profile_picture:
-              typeof g.profile_picture === "string" ? g.profile_picture : "",
-            reason_for_applying:
-              typeof g.reason_for_applying === "string"
-                ? g.reason_for_applying
-                : "",
-            sex: typeof g.sex === "string" ? g.sex : "",
-            updated_at: typeof g.updated_at === "string" ? g.updated_at : "",
-            user_id: typeof g.user_id === "string" ? g.user_id : "",
+        applications
+          .filter((app: any) => app.application_status === "APPROVED")
+          .map((app: any) => ({
+            id: String(app.tourguide_id),
+            first_name: app.first_name,
+            last_name: app.last_name,
+            application_status: app.application_status,
+            birth_date: app.birth_date,
+            created_at: app.created_at,
+            email: app.email,
+            mobile_number: app.mobile_number,
+            profile_picture: app.profile_picture,
+            reason_for_applying: app.reason_for_applying,
+            sex: app.sex,
+            updated_at: app.updated_at,
+            user_id: app.user_id,
           }))
-          .filter(
-            (g) =>
-              g.application_status.toUpperCase() === "APPROVED" &&
-              g.user_id !== touroperator_id
-          )
       );
     }
     loadGuides();
-  }, [fetchAllTourGuideApplicants, touroperator_id]);
+  }, [fetchApplications, touroperator_id]);
 
   // Auto-compute duration_days based on start and end date
   useEffect(() => {
@@ -208,18 +198,16 @@ export default function EditTourPackage({
     e.preventDefault();
     setFormError(null);
 
-    // Prepare the data object
     const dataToSubmit = {
       ...form,
       touroperator_id,
-      assigned_guides: selectedGuides,
+      assigned_guides: selectedGuides, // <-- should always be present
       inclusions: selectedInclusions.join(", "),
       exclusions: selectedExclusions.join(", "),
       date_start: form.date_start ? form.date_start.split("T")[0] : "",
       date_end: form.date_end ? form.date_end.split("T")[0] : "",
     };
 
-    // Log the data before submitting
     console.log("Submitting tour package data:", dataToSubmit);
 
     try {

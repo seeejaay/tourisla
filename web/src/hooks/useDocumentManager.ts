@@ -10,6 +10,7 @@ import {
   getOperatorDocumentsByUserId,
   approveTourGuideDocument,
   rejectTourGuideDocument,
+  revokeTourGuideDocument as revokeTourGuideDocumentapi,
   approveTourOperatorDocument,
   rejectTourOperatorDocument,
 } from "@/lib/api/document";
@@ -196,19 +197,39 @@ export const useDocumentManager = () => {
     }
   }, []);
 
-  const rejectGuideDocument = useCallback(async (docuId: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await rejectTourGuideDocument(docuId);
-      return response;
-    } catch (error) {
-      setError(error + "Unknown error");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const rejectGuideDocument = useCallback(
+    async (docuId: string, reason: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await rejectTourGuideDocument(docuId, reason);
+        return response;
+      } catch (error) {
+        setError(error + "Unknown error");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const revokeTourGuideDocument = useCallback(
+    async (docuId: string, reason: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await revokeTourGuideDocumentapi(docuId, reason);
+        return response;
+      } catch (error) {
+        setError(error + "Unknown error");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   const approveOperatorDocument = useCallback(async (docuId: string) => {
     setLoading(true);
@@ -253,6 +274,7 @@ export const useDocumentManager = () => {
     fetchOperatorDocumentsById,
     approveGuideDocument,
     rejectGuideDocument,
+    revokeTourGuideDocument,
     approveOperatorDocument,
     rejectOperatorDocument,
   };
