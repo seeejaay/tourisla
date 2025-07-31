@@ -70,7 +70,7 @@ export function useCreateBooking() {
     setLoading(true);
     setError(null);
     try {
-      console.log("Creating booking with data:", bookingData);
+      console.log("Creating booking");
       const result = await createBooking(bookingData);
       return result;
     } catch (err) {
@@ -137,7 +137,7 @@ export function useBookingsByTourist() {
 
 // Hook for fetching bookings by package
 export function useBookingsByPackage() {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -146,7 +146,7 @@ export function useBookingsByPackage() {
     setError(null);
     try {
       const result = await getBookingsByPackage(packageId);
-      console.log("Fetched bookings by package:", result);
+      console.log("Fetched bookings by package");
       setData(result);
       return result;
     } catch (err) {
@@ -171,7 +171,7 @@ export function useBookingById() {
     setError(null);
     try {
       const result = await getBookingById(bookingId);
-      console.log("Fetched booking by ID:", result);
+      console.log("Fetched booking");
       setData(result);
       return result;
     } catch (err) {
@@ -292,7 +292,7 @@ export function useBookingsByOperator() {
     setError(null);
     try {
       const result = await apigetBookingsByOperator(operatorId);
-      console.log("Fetched bookings by operator:", result);
+      console.log("Fetched bookings by operator");
       setData(result);
       return result;
     } catch (err) {
