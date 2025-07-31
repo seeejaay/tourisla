@@ -32,11 +32,7 @@ export default function EditTourPackage({
 }) {
   const { edit, loading, error, fetchAll } = useTourPackageManager();
   // const { fetchAllTourGuideApplicants } = useTourGuideManager();
-  const {
-    data: bookings,
-    fetchByPackage,
-    loading: bookingsLoading,
-  } = useBookingsByPackage();
+  const { data: bookings, fetchByPackage } = useBookingsByPackage();
   const { fetchApplications } = useApplyOperatorManager(); //
   const params = useParams();
   const touroperator_id = Array.isArray(params.id) ? params.id[0] : params.id;
