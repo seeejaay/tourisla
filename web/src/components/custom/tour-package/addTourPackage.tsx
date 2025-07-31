@@ -121,8 +121,8 @@ export default function AddTourPackage({
       // Filter only approved applications and map to guide info
       setGuides(
         applications
-          .filter((app: any) => app.application_status === "APPROVED")
-          .map((app: any) => ({
+          .filter((app) => app.application_status === "APPROVED")
+          .map((app) => ({
             id: String(app.tourguide_id),
             first_name: app.first_name,
             last_name: app.last_name,
