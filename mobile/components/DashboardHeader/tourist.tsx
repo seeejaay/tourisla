@@ -56,7 +56,15 @@ export default function DashboardHeader() {
       >
         <TouchableOpacity
           style={styles.profileSection}
-          onPress={() => router.push("/tourist/profile/tourist_profile")}
+          onPress={() => {
+            const role = currentUser?.role?.toLowerCase();
+            console.log("Current User Role:", role);
+            if (role === "tourism staff") {
+              router.push("/staff/profile/staff_profile");
+            } else {
+              router.push("/tourist/profile/tourist_profile");
+            }
+          }}
           activeOpacity={0.7}
         >
           <View style={styles.avatarContainer}>

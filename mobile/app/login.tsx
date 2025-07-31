@@ -68,14 +68,16 @@ export default function LoginScreen() {
         password: trimmedPassword,
       })) as { token: string; user: any };
       console.log("Login response:", JSON.stringify(res));
+      // Check if response is valid
 
       // Make sure we're getting the correct role
       if (!res || !res.user) {
         setError("Invalid login response");
         return;
       }
+      console.log("User data from login:", res.user);
 
-      const { role } = res.user;
+      const role = res.user;
       console.log("User role from login:", role);
 
       if (!role) {
@@ -84,9 +86,17 @@ export default function LoginScreen() {
       }
 
       // Store the exact role as returned by the API
-      await AsyncStorage.setItem("userData", JSON.stringify(res.user));
+      await AsyncStorage.setItem(
+        "userData",
+        JSON.stringify({
+          role: res.user, // ← still just the string
+          first_name: "", // ← optional fallback if needed
+          last_name: "",
+          email: trimmedEmail,
+        })
+      );
       console.log("User data stored in AsyncStorage:", res.user);
-      await AsyncStorage.setItem("role", role);
+      await AsyncStorage.setItem("role", res.user);
 
       // Use the role directly from the response
       switch (role) {
