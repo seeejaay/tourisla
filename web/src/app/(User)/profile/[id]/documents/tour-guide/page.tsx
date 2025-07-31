@@ -12,6 +12,7 @@ import {
   Check,
   X,
   ChevronRight,
+  UploadCloud,
 } from "lucide-react";
 import Image from "next/image";
 import AddGuideDocument from "@/components/custom/document/addGuideDocument";
@@ -36,14 +37,17 @@ type GuideDocument = {
   file_path: string;
   requirements: string[];
   uploaded_at: string;
-  status?: "pending" | "approved" | "rejected";
+  status?: "pending" | "approved" | "rejected" | "revoked";
+  note?: string;
 };
 
 export default function TourGuideDocumentsPage() {
   const router = useRouter();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
+  const [dialogMode, setDialogMode] = useState<
+    "add" | "edit" | "reason" | null
+  >(null);
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [documents, setDocuments] = useState<GuideDocument[]>([]);
@@ -110,7 +114,18 @@ export default function TourGuideDocumentsPage() {
     setSelectedDocId(docId);
     setDialogOpen(true);
   };
-
+  const openReasonDialog = (docId: string) => {
+    setDialogMode("reason");
+    setSelectedDocId(docId);
+    setDialogOpen(true);
+  };
+  const statusOptions = [
+    { value: "all", label: "All" },
+    { value: "pending", label: "Pending" },
+    { value: "approved", label: "Approved" },
+    { value: "rejected", label: "Rejected" },
+    { value: "revoked", label: "Revoked" },
+  ];
   const documentChecklist = [
     { value: "GOV_ID", label: "Government ID", required: true },
     { value: "BIRTH_CERT", label: "Birth Certificate", required: true },
@@ -125,13 +140,19 @@ export default function TourGuideDocumentsPage() {
       ? documents.find((d) => d.id === selectedDocId)
       : null;
 
-  // Calculate completion percentage
   const requiredDocs = documentChecklist.filter((doc) => doc.required);
-  const uploadedRequiredDocs = documents.filter((doc) =>
-    requiredDocs.some((req) => req.value === doc.document_type)
-  ).length;
+
+  // Get unique uploaded required document types
+  const uploadedRequiredDocTypes = new Set(
+    documents
+      .filter((doc) =>
+        requiredDocs.some((req) => req.value === doc.document_type)
+      )
+      .map((doc) => doc.document_type)
+  );
+
   const completionPercentage = Math.round(
-    (uploadedRequiredDocs / requiredDocs.length) * 100
+    (uploadedRequiredDocTypes.size / requiredDocs.length) * 100
   );
 
   // Filter documents based on active tab
@@ -163,8 +184,8 @@ export default function TourGuideDocumentsPage() {
                   Verification Progress
                 </h2>
                 <p className="text-gray-600 text-sm">
-                  {uploadedRequiredDocs} of {requiredDocs.length} required
-                  documents uploaded
+                  {uploadedRequiredDocTypes.size} of {requiredDocs.length}{" "}
+                  required documents uploaded
                 </p>
                 <Progress
                   value={completionPercentage}
@@ -199,12 +220,25 @@ export default function TourGuideDocumentsPage() {
                     <div
                       className={`mt-0.5 flex-shrink-0 rounded-full p-1 ${
                         uploadedDoc
-                          ? "bg-green-100 text-green-600"
+                          ? uploadedDoc.status?.toLowerCase() === "approved"
+                            ? "bg-blue-100 text-blue-600"
+                            : uploadedDoc.status?.toLowerCase() ===
+                                "rejected" ||
+                              uploadedDoc.status?.toLowerCase() === "revoked"
+                            ? "bg-red-100 text-red-600"
+                            : "bg-green-100 text-green-600"
                           : "bg-gray-100 text-gray-400"
                       }`}
                     >
                       {uploadedDoc ? (
-                        <Check className="h-4 w-4" />
+                        uploadedDoc.status?.toLowerCase() === "approved" ? (
+                          <Check className="h-4 w-4" />
+                        ) : uploadedDoc.status?.toLowerCase() === "rejected" ||
+                          uploadedDoc.status?.toLowerCase() === "revoked" ? (
+                          <X className="h-4 w-4 text-red-600" />
+                        ) : (
+                          <UploadCloud className="h-4 w-4" />
+                        )
                       ) : (
                         <X className="h-4 w-4" />
                       )}
@@ -220,19 +254,56 @@ export default function TourGuideDocumentsPage() {
                         </span>
                         {doc.required && (
                           <Badge
-                            variant={uploadedDoc ? "default" : "destructive"}
-                            className={`text-xs w-24 ${
-                              uploadedDoc ? "bg-green-700" : "bg-red-700"
-                            }`}
+                            variant={
+                              uploadedDoc
+                                ? uploadedDoc.status?.toLowerCase() ===
+                                  "approved"
+                                  ? "default"
+                                  : uploadedDoc.status?.toLowerCase() ===
+                                      "rejected" ||
+                                    uploadedDoc.status?.toLowerCase() ===
+                                      "revoked"
+                                  ? "destructive"
+                                  : "secondary"
+                                : "destructive"
+                            }
+                            className={`text-xs w-24
+                            ${
+                              uploadedDoc
+                                ? uploadedDoc.status?.toLowerCase() ===
+                                  "approved"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : uploadedDoc.status?.toLowerCase() ===
+                                    "rejected"
+                                  ? "bg-red-100 text-red-800"
+                                  : uploadedDoc.status?.toLowerCase() ===
+                                    "revoked"
+                                  ? "bg-gray-100 text-gray-600"
+                                  : "bg-green-700 text-white"
+                                : "bg-red-700 text-white"
+                            }
+                          `}
                           >
-                            {uploadedDoc ? "Uploaded" : "Required"}
+                            {uploadedDoc
+                              ? uploadedDoc.status?.toLowerCase() === "approved"
+                                ? "Verified"
+                                : uploadedDoc.status?.toLowerCase() ===
+                                  "rejected"
+                                ? "Rejected"
+                                : uploadedDoc.status?.toLowerCase() ===
+                                  "revoked"
+                                ? "Revoked"
+                                : "Uploaded"
+                              : "Required"}
                           </Badge>
                         )}
                       </div>
-                      {uploadedDoc && (
+
+                      {(uploadedDoc?.status?.toLowerCase() === "rejected" ||
+                        uploadedDoc?.status?.toLowerCase() === "revoked") && (
                         <button
-                          onClick={() => openEditDialog(uploadedDoc.id)}
-                          className="text-xs text-blue-600 hover:text-blue-800 mt-1 flex items-center"
+                          onClick={() => openReasonDialog(uploadedDoc.id)}
+                          className="text-xs text-blue-600 hover:text-blue-800 mt-1 flex items-center cursor-pointer"
                         >
                           View details <ChevronRight className="h-3 w-3 ml-1" />
                         </button>
@@ -248,11 +319,16 @@ export default function TourGuideDocumentsPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Tabs for document filtering */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-4 w-full">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="pending">Pending</TabsTrigger>
-                <TabsTrigger value="approved">Approved</TabsTrigger>
-                <TabsTrigger value="rejected">Rejected</TabsTrigger>
+              <TabsList className="grid grid-cols-5 w-full">
+                {statusOptions.map((status) => (
+                  <TabsTrigger
+                    key={status.value}
+                    value={status.value}
+                    className="cursor-pointer"
+                  >
+                    {status.label}
+                  </TabsTrigger>
+                ))}
               </TabsList>
             </Tabs>
 
@@ -482,6 +558,42 @@ export default function TourGuideDocumentsPage() {
                   Loading document details...
                 </div>
               ))}
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog for Reason */}
+        <Dialog
+          open={dialogMode === "reason" && selectedDocId !== null}
+          onOpenChange={(open) => {
+            setDialogOpen(open);
+            if (!open) {
+              setDialogMode(null);
+              setSelectedDocId(null);
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-[600px] rounded-xl">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold">
+                Reason for{" "}
+                {documents.find((d) => d.id === selectedDocId)?.status ===
+                "revoked"
+                  ? "Revocation"
+                  : "Rejection"}
+              </DialogTitle>
+              <DialogDescription className="text-gray-600">
+                {documents.find((d) => d.id === selectedDocId)?.status ===
+                "revoked"
+                  ? "This document was revoked for the following reason:"
+                  : "This document was rejected for the following reason:"}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="p-6">
+              <div className="bg-gray-100 rounded-lg p-4 text-gray-800 text-base">
+                {documents.find((d) => d.id === selectedDocId)?.note ||
+                  "No reason provided."}
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

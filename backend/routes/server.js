@@ -104,6 +104,7 @@ const {
   getGuideUploadByUserIdController,
   approveGuideUploadDocuController,
   rejectGuideUploadDocuController,
+  revokeGuideUploadDocuController,
 } = require("../controllers/guideUploadDocuController.js");
 
 const {
@@ -481,6 +482,11 @@ app.put(
   "/api/v1/guideUploadDocu/reject",
   allowedRoles(["Tourism Officer"]),
   rejectGuideUploadDocuController
+);
+app.put(
+  "/api/v1/guideUploadDocu/revoke",
+  allowedRoles(["Tourism Officer"]),
+  revokeGuideUploadDocuController
 );
 app.put(
   "/api/v1/guideUploadDocu/:docuId",

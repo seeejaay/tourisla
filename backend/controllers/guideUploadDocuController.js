@@ -6,6 +6,7 @@ const {
   getGuideUploadByUserId,
   approveGuideUploadDocu,
   rejectGuideUploadDocu,
+  revokeGuideUploadDocu,
 } = require("../models/guideUploadDocuModel.js");
 
 const {
@@ -18,6 +19,7 @@ const { s3Client, PutObjectCommand } = require("../utils/s3.js"); // Adjust the 
 const {
   sendDocumentApproveEmail,
   sendDocumentRejectEmail,
+  sendDocumentRevokeEmail,
 } = require("../utils/email.js"); // Adjust the path as necessary
 // from tour guide's end: can upload (create), update, and view their own documents only
 
@@ -242,8 +244,9 @@ const approveGuideUploadDocuController = async (req, res) => {
 
 const rejectGuideUploadDocuController = async (req, res) => {
   try {
-    const { docuId } = req.body;
-    const rejectedDoc = await rejectGuideUploadDocu(docuId);
+    const { docuId, reason } = req.body;
+    // console.log("Rejecting Document ID:", docuId, "Reason:", reason);
+    const rejectedDoc = await rejectGuideUploadDocu(docuId, reason);
     const guideRegis = await getGuideUserIDByGuideId(rejectedDoc.tourguide_id);
     const guideEmail = guideRegis.email;
     if (!rejectedDoc) {
@@ -254,11 +257,39 @@ const rejectGuideUploadDocuController = async (req, res) => {
       await sendDocumentRejectEmail(
         guideEmail,
         rejectedDoc.document_type,
-        rejectedDoc.file_path
+        rejectedDoc.file_path,
+        rejectedDoc.note || reason
       );
     }
 
     res.json(rejectedDoc);
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const revokeGuideUploadDocuController = async (req, res) => {
+  try {
+    const { docuId, reason } = req.body;
+
+    const revokedDoc = await revokeGuideUploadDocu(docuId, reason);
+    const guideRegis = await getGuideUserIDByGuideId(revokedDoc.tourguide_id);
+    const guideEmail = guideRegis.email;
+    if (!revokedDoc) {
+      return res.status(404).json({ error: "Document not found" });
+    }
+
+    if (revokedDoc.status === "REVOKED") {
+      await sendDocumentRevokeEmail(
+        guideEmail,
+        revokedDoc.document_type,
+        revokedDoc.file_path,
+        revokedDoc.note || reason
+      );
+    }
+
+    res.json(revokedDoc);
   } catch (err) {
     console.log(err.message);
     res.status(500).json({ error: "Internal server error" });
@@ -272,4 +303,5 @@ module.exports = {
   getGuideUploadByUserIdController,
   approveGuideUploadDocuController,
   rejectGuideUploadDocuController,
+  revokeGuideUploadDocuController,
 };

@@ -76,15 +76,19 @@ const updateTourPackage = async (id, touroperator_id, packageData) => {
     date_start,
     date_end,
     start_time,
+    assigned_guides,
     end_time,
+    cancellation_days,
+    cancellation_note,
   } = packageData;
 
+  // 1. Update the tour package main info
   const result = await db.query(
     `UPDATE tour_packages 
      SET package_name = $1, location = $2, description = $3, price = $4, duration_days = $5,
          inclusions = $6, exclusions = $7, available_slots = $8, is_active = $9,
-         date_start = $10, date_end = $11, start_time = $12, end_time = $13, updated_at = NOW()
-     WHERE id = $14 AND touroperator_id = $15
+         date_start = $10, date_end = $11, start_time = $12, end_time = $13, cancellation_days = $14, cancellation_note = $15, updated_at = NOW()
+     WHERE id = $16 AND touroperator_id = $17
      RETURNING *`,
     [
       package_name,
@@ -100,11 +104,37 @@ const updateTourPackage = async (id, touroperator_id, packageData) => {
       date_end,
       start_time,
       end_time,
+      cancellation_days,
+      cancellation_note,
       id,
       touroperator_id,
     ]
   );
-  return result.rows[0];
+  const updatedPackage = result.rows[0];
+
+  // 2. Update assigned guides if provided
+  if (assigned_guides) {
+    // Remove all previous assignments for this package
+    await db.query(
+      `DELETE FROM tourguide_assignments WHERE tour_package_id = $1`,
+      [id]
+    );
+    // Insert new assignments only if they have google_tokens
+    for (const guideId of assigned_guides) {
+      const tokenRes = await db.query(
+        `SELECT 1 FROM google_tokens WHERE tourguide_id = $1`,
+        [guideId]
+      );
+      if (tokenRes.rowCount > 0) {
+        await db.query(
+          `INSERT INTO tourguide_assignments (tourguide_id, tour_package_id) VALUES ($1, $2)`,
+          [guideId, id]
+        );
+      }
+    }
+  }
+
+  return updatedPackage;
 };
 
 const deleteTourPackage = async (id) => {

@@ -130,10 +130,11 @@ const updateTourPackageController = async (req, res) => {
       date_end,
       start_time,
       end_time,
+      assigned_guides,
       cancellation_days,
       cancellation_note,
     } = req.body;
-
+    console.log(assigned_guides);
     package_name = package_name.toUpperCase();
     location = location.toUpperCase();
     description = description.toUpperCase();
@@ -179,6 +180,7 @@ const updateTourPackageController = async (req, res) => {
       date_end,
       start_time,
       end_time,
+      assigned_guides,
       cancellation_days,
       cancellation_note,
     });
