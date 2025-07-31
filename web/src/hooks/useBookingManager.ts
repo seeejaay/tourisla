@@ -5,7 +5,7 @@ import {
   createBooking,
   updateBookingStatus,
   getBookingsByTourist,
-  // getBookingsByPackage,
+  getBookingsByPackage,
   getBookingById,
   // getFilteredBookingsByTourist,
   cancelBooking,
@@ -136,29 +136,29 @@ export function useBookingsByTourist() {
 }
 
 // Hook for fetching bookings by package
-// export function useBookingsByPackage() {
-//   const [data, setData] = useState<any[]>([]);
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState<string | null>(null);
+export function useBookingsByPackage() {
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-//   const fetchByPackage = useCallback(async (packageId: string | number) => {
-//     setLoading(true);
-//     setError(null);
-//     try {
-//       const result = await getBookingsByPackage(packageId);
-//       console.log("Fetched bookings by package:", result);
-//       setData(result);
-//       return result;
-//     } catch (err) {
-//       setError(err + "Unknown error");
-//       setData([]);
-//     } finally {
-//       setLoading(false);
-//     }
-//   }, []);
+  const fetchByPackage = useCallback(async (packageId: string | number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await getBookingsByPackage(packageId);
+      console.log("Fetched bookings by package:", result);
+      setData(result);
+      return result;
+    } catch (err) {
+      setError(err + "Unknown error");
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-//   return { data, fetchByPackage, loading, error };
-// }
+  return { data, fetchByPackage, loading, error };
+}
 
 // Hook for fetching a single booking by ID
 export function useBookingById() {

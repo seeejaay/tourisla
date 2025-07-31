@@ -149,11 +149,14 @@ const deleteTourPackage = async (id) => {
 
 const getAllTourPackagesByOperator = async (touroperator_id) => {
   const result = await db.query(
-    `SELECT * FROM tour_packages 
-     WHERE touroperator_id = $1`,
+    `SELECT tp.*, 
+      EXISTS (
+        SELECT 1 FROM bookings b WHERE b.tour_package_id = tp.id
+      ) AS "hasBookings"
+     FROM tour_packages tp
+     WHERE tp.touroperator_id = $1`,
     [touroperator_id]
   );
-
   return result.rows;
 };
 
@@ -227,14 +230,35 @@ const getAllTourPackages = async () => {
   return packages;
 };
 
+const getBookingsByTourPackage = async (packageId) => {
+  const result = await db.query(
+    `SELECT * FROM bookings WHERE tour_package_id = $1`,
+    [packageId]
+  );
+  return result.rows;
+};
+
+const updateTourPackageStatus = async (id, is_active) => {
+  const result = await db.query(
+    `UPDATE tour_packages 
+       SET is_active = $1, updated_at = NOW() 
+       WHERE id = $2 
+       RETURNING *`,
+    [is_active, id]
+  );
+  return result.rows[0];
+};
+
 module.exports = {
   createTourPackage,
   updateTourPackage,
   deleteTourPackage,
+  getBookingsByTourPackage,
   getAllTourPackagesByOperator,
   getTourPackageByIdForOperator,
   getTourPackageById,
   getAssignedGuidesByPackage,
   getTourPackagesByTourGuide,
   getAllTourPackages,
+  updateTourPackageStatus,
 };

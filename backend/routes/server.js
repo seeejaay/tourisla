@@ -213,6 +213,8 @@ const {
   viewTourPackageByIdController,
   getTourPackagesByGuideController,
   viewAllTourPackages,
+  getBookingsByTourPackageController,
+  updateTourPackageStatusController,
 } = require("../controllers/tourPackagesController.js");
 
 const {
@@ -860,6 +862,13 @@ app.put(
   allowedRoles(["Tour Operator"]),
   updateTourPackageController
 );
+
+app.patch(
+  "/api/v1/tour-packages/:id/status",
+  allowedRoles(["Tour Operator"]),
+  updateTourPackageStatusController
+);
+
 app.delete(
   "/api/v1/tour-packages/:id",
   // authenticateTourOperator,
@@ -885,6 +894,11 @@ app.get(
   "/api/v1/tour-packages/by-guide/:tourguide_id",
   allowedRoles(["Tour Guide"]),
   getTourPackagesByGuideController
+);
+app.get(
+  "/api/v1/tour-packages/bookings/:packageId",
+  allowedRoles(["Tour Operator"]),
+  getBookingsByTourPackageController
 );
 
 // Routes for Google Calendar integration

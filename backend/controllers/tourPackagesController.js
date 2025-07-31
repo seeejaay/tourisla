@@ -8,6 +8,8 @@ const {
   getAssignedGuidesByPackage,
   getTourPackagesByTourGuide,
   getAllTourPackages,
+  getBookingsByTourPackage,
+  updateTourPackageStatus,
 } = require("../models/tourPackagesModel.js");
 
 const { getOperatorRegisById } = require("../models/operatorRegisModel.js");
@@ -309,13 +311,47 @@ const getTourPackagesByGuideController = async (req, res) => {
   }
 };
 
+const getBookingsByTourPackageController = async (req, res) => {
+  try {
+    const { packageId } = req.params;
+    console.log("Fetching bookings for tour package ID:", packageId);
+    const bookings = await getBookingsByTourPackage(packageId);
+    if (!bookings || bookings.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No bookings found for this package." });
+    }
+    res.json(bookings);
+  } catch (err) {
+    console.error("Error fetching bookings for tour package:", err);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+const updateTourPackageStatusController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { is_active } = req.body;
+    const updatedPackage = await updateTourPackageStatus(id, is_active);
+    if (!updatedPackage) {
+      return res.status(404).json({ message: "Tour package not found." });
+    }
+    res.json(updatedPackage);
+  } catch (err) {
+    console.log(err.message);
+    res.send(err.message);
+  }
+};
+
 module.exports = {
   createTourPackageController,
   updateTourPackageController,
   deleteTourPackageController,
   viewTourPackagesController,
+  updateTourPackageStatusController,
   viewTourPackageByIdController,
   viewAssignedGuidesController,
   getTourPackagesByGuideController,
   viewAllTourPackages,
+  getBookingsByTourPackageController,
 };

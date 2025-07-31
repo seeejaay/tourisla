@@ -39,6 +39,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
+
 import { format } from "date-fns";
 
 type AssignedGuide = {
@@ -68,10 +70,12 @@ type TourPackage = {
   is_active: boolean;
   assigned_guides: AssignedGuide[];
   package_image?: string;
+  hasBookings?: boolean;
 };
 
 export default function TourPackagesPage() {
-  const { fetchAll, loading, error } = useTourPackageManager();
+  const { fetchAll, loading, error, updateTourPackageStatus } =
+    useTourPackageManager();
   const [packages, setPackages] = useState<TourPackage[]>([]);
   const [filteredPackages, setFilteredPackages] = useState<TourPackage[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -117,10 +121,15 @@ export default function TourPackagesPage() {
     }
 
     // Apply tab filter
+    const today = new Date();
     if (activeTab === "active") {
-      result = result.filter((pkg) => pkg.is_active);
-    } else if (activeTab === "inactive") {
-      result = result.filter((pkg) => !pkg.is_active);
+      result = result.filter(
+        (pkg) => pkg.is_active && new Date(pkg.date_end) >= today // Not completed
+      );
+    } else if (activeTab === "complete") {
+      result = result.filter(
+        (pkg) => new Date(pkg.date_end) < today // Completed
+      );
     }
 
     setFilteredPackages(result);
@@ -239,7 +248,7 @@ export default function TourPackagesPage() {
             <TabsList className="grid w-full md:w-fit grid-cols-3">
               <TabsTrigger value="all">All Packages</TabsTrigger>
               <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="inactive">Inactive</TabsTrigger>
+              <TabsTrigger value="complete">Completed</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -344,16 +353,46 @@ export default function TourPackagesPage() {
                     <h3 className="font-semibold text-xl text-gray-900">
                       {pkg.package_name}
                     </h3>
-                    <Badge
-                      variant={pkg.is_active ? "default" : "secondary"}
-                      className={`${
-                        pkg.is_active
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      } px-3 py-1 rounded-full text-sm font-medium`}
-                    >
-                      {pkg.is_active ? "Active" : "Inactive"}
-                    </Badge>
+                    <div className="flex justify-around items-center space-x-2">
+                      <Badge
+                        variant={
+                          !pkg.is_active
+                            ? "secondary"
+                            : new Date(pkg.date_end) < new Date()
+                            ? "secondary"
+                            : "default"
+                        }
+                        className={`px-3 py-1  text-sm font-medium ${
+                          !pkg.is_active
+                            ? "bg-red-100 text-red-800"
+                            : new Date(pkg.date_end) < new Date()
+                            ? "bg-gray-200 text-gray-700"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
+                        {!pkg.is_active
+                          ? "Inactive"
+                          : new Date(pkg.date_end) < new Date()
+                          ? "Completed"
+                          : "Active"}
+                      </Badge>
+                      <Switch
+                        checked={pkg.is_active}
+                        onCheckedChange={async (checked) => {
+                          await updateTourPackageStatus(pkg.id, checked);
+                          await loadPackages();
+                        }}
+                        disabled={
+                          new Date(pkg.date_end) < new Date() || pkg.hasBookings
+                        }
+                        className={`cursor-pointer ${
+                          pkg.is_active
+                            ? "bg-green-500 data-[state=checked]:bg-green-500"
+                            : "bg-red-300 data-[state=unchecked]:bg-red-300"
+                        }`}
+                        aria-label="Toggle package status "
+                      />
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
                     <MapPin className="h-4 w-4" />
@@ -475,7 +514,11 @@ export default function TourPackagesPage() {
                       <Pencil className="w-4 h-4 " />
                       Edit
                     </Button>
-                    <DeleteTourPackage id={pkg.id} onDeleted={loadPackages} />
+                    <DeleteTourPackage
+                      id={pkg.id}
+                      onDeleted={loadPackages}
+                      disabled={pkg.hasBookings}
+                    />
                   </div>
                 </CardFooter>
               </Card>
