@@ -748,6 +748,34 @@ export default function EditTourPackage({
                       ).length && (
                         <div className="absolute top-0 z-10 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none">
                           <CommandGroup className="h-full overflow-auto">
+                            {/* Select All Option */}
+                            <CommandItem
+                              key="select-all"
+                              onMouseDown={(e) => e.preventDefault()}
+                              onSelect={() => {
+                                const availableGuideIds = guides
+                                  .filter(
+                                    (g) =>
+                                      !selectedGuides.includes(g.id) &&
+                                      !isGuideUnavailableForDates(
+                                        g.id,
+                                        form.date_start!,
+                                        form.date_end!,
+                                        packages,
+                                        tourPackage.id
+                                      )
+                                  )
+                                  .map((g) => g.id);
+                                setSelectedGuides([
+                                  ...selectedGuides,
+                                  ...availableGuideIds,
+                                ]);
+                              }}
+                              className="cursor-pointer font-semibold text-[#1c5461]"
+                            >
+                              Select All
+                            </CommandItem>
+                            {/* Individual Guides */}
                             {guides
                               .filter(
                                 (g) =>
