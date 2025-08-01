@@ -96,7 +96,8 @@ const viewAllIncidentReportsController = async (req, res) => {
 
 const viewIncidentReportByUserController = async (req, res) => {
   try {
-    const userId = req.user.user_id;
+    const userId = req.params.userId;
+    console.log("Fetching reports for user:", userId);
     const reports = await getIncidentReportsByUser(userId);
     res.status(200).json(reports);
   } catch (error) {

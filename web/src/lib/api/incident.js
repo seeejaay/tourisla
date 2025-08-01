@@ -21,6 +21,7 @@ export const fetchIncidentReportsByUser = async (userId) => {
   const res = await axios.get(`${API_URL}incident-report/user/${userId}`, {
     withCredentials: true,
   });
+  console.log("Fetched reports for user:", userId, res.data);
   return res.data;
 };
 
