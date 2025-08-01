@@ -104,7 +104,7 @@ export default function TourGuideApplicantsPage() {
         textColor="#000"
       />
 
-      <View style={{ paddingHorizontal: 16, flexDirection: "row", gap: 4, paddingTop: 16 }}>
+      <View style={{ paddingHorizontal: 16, flexDirection: "row", gap: 4, paddingTop: 16, marginBottom: 16 }}>
         <View style={{ flex: 1 }}>
           <SearchBar
             value={searchQuery}
@@ -141,6 +141,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f9fafb",
+    paddingBottom: 40,
   },
   centered: {
     marginTop: 20,
