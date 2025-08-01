@@ -30,7 +30,7 @@ const Sidebar = ({
   const pathName = usePathname();
 
   // On mobile, always expanded
-  const collapsed = false;
+  const collapsed = mobile ? false : isCollapsed;
 
   const handleLogout = async () => {
     try {

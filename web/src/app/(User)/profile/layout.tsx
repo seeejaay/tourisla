@@ -47,7 +47,7 @@ export default function ProfileLayout({
   const [user, setUser] = useState<User | null>(null);
   const [guideStatus, setGuideStatus] = useState<string>("pending");
   const [operatorStatus, setOperatorStatus] = useState<string>("pending");
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -95,8 +95,8 @@ export default function ProfileLayout({
     <div className="flex h-screen w-full">
       {/* Mobile Hamburger Button */}
       <button
-        className="sm:hidden fixed top-6 left-6 z-50 p-4 rounded-full cursor-pointer hover:bg-[#1c5461] transition-all 
-    ease-in-out duration-300 "
+        className="sm:hidden fixed top-6 left-6 z-50 p-4 rounded-full cursor-pointer hover:bg-[#1c5461] transition-all hover:text-white active:bg-[#3e979f]/10 text-[#1c5461] bg-white shadow-lg flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:ring-offset-2 focus:ring-offset-white  transform  hover:shadow-lg active:shadow-md active:translate-y-0.5 hover:translate-y-0.5 hover:transition-transform hover:transform hover:duration-300 hover:translate-x-0 hover:scale-100 active:scale-95 active:translate-x-0
+        ease-in-out duration-300"
         onClick={() => setMobileSidebarOpen(true)}
         aria-label="Open sidebar"
       >
