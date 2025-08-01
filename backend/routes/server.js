@@ -122,6 +122,7 @@ const {
   getOperatorUploadByUserIdController,
   approveOperatorUploadDocuController,
   rejectOperatorUploadDocuController,
+  revokeOperatorUploadDocuController,
 } = require("../controllers/operatorUploadDocuController.js");
 
 const {
@@ -567,6 +568,12 @@ app.put(
   "/api/v1/operatorUploadDocu/reject",
   allowedRoles(["Tourism Officer"]),
   rejectOperatorUploadDocuController
+);
+
+app.put(
+  "/api/v1/operatorUploadDocu/revoke",
+  allowedRoles(["Tourism Officer"]),
+  revokeOperatorUploadDocuController
 );
 
 app.put(

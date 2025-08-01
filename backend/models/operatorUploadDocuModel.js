@@ -45,16 +45,24 @@ const getOperatorUploadByUserId = async (tourOperatorId) => {
 
 const approveOperatorUpload = async (docuId) => {
   const result = await db.query(
-    "UPDATE touroperator_documents SET status = 'APPROVED' WHERE id = $1 RETURNING *",
+    "UPDATE touroperator_documents SET status = 'APPROVED', note = null WHERE id = $1 RETURNING *",
     [docuId]
   );
   return result.rows[0];
 };
 
-const rejectOperatorUpload = async (docuId) => {
+const rejectOperatorUpload = async (docuId, reason) => {
   const result = await db.query(
-    "UPDATE touroperator_documents SET status = 'REJECTED' WHERE id = $1 RETURNING *",
-    [docuId]
+    "UPDATE touroperator_documents SET status = 'REJECTED', note = $2 WHERE id = $1 RETURNING *",
+    [docuId, reason]
+  );
+  return result.rows[0];
+};
+
+const revokeOperatorUpload = async (docuId, reason) => {
+  const result = await db.query(
+    "UPDATE touroperator_documents SET status = 'REVOKED', note= $2 WHERE id = $1 RETURNING *",
+    [docuId, reason]
   );
   return result.rows[0];
 };
@@ -67,4 +75,5 @@ module.exports = {
   getOperatorUploadByUserId,
   approveOperatorUpload,
   rejectOperatorUpload,
+  revokeOperatorUpload,
 };

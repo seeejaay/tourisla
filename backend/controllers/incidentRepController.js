@@ -115,7 +115,7 @@ const updateIncidentStatusController = async (req, res) => {
       return res.status(400).json({ error: "Invalid status" });
     }
 
-    const updated = await updateIncidentStatus(id, status);
+    const updated = await updateIncidentStatus(id, status, actionTaken);
     console.log("Updated report:", updated);
 
     if (!updated) {

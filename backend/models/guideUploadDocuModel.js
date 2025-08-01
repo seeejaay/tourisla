@@ -47,7 +47,7 @@ const getGuideUploadByUserId = async (tourGuideId) => {
 
 const approveGuideUploadDocu = async (docuId) => {
   const result = await db.query(
-    "UPDATE tourguide_documents SET status = 'APPROVED' WHERE id = $1 RETURNING *",
+    "UPDATE tourguide_documents SET status = 'APPROVED', note = '' WHERE id = $1 RETURNING *",
     [docuId]
   );
   return result.rows[0];

@@ -169,7 +169,6 @@ export const useTourOperatorManager = () => {
     },
     []
   );
-
   return {
     OperatorApplicants,
     loading,
