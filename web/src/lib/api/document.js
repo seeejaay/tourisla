@@ -226,11 +226,11 @@ export const approveTourOperatorDocument = async (docuId) => {
   }
 };
 
-export const rejectTourOperatorDocument = async (docuId) => {
+export const rejectTourOperatorDocument = async (docuId, reason) => {
   try {
     const response = await axios.put(
       `${API_URL}operatorUploadDocu/reject`,
-      { docuId },
+      { docuId, reason },
       { withCredentials: true }
     );
 
@@ -242,6 +242,28 @@ export const rejectTourOperatorDocument = async (docuId) => {
   } catch (error) {
     console.error(
       "Error Rejecting Tour Operator Document: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const revokeTourOperatorDocument = async (docuId, reason) => {
+  try {
+    const response = await axios.put(
+      `${API_URL}operatorUploadDocu/revoke`,
+      { docuId, reason },
+      { withCredentials: true }
+    );
+
+    if (response.status !== 200) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Revoking Tour Operator Document: ",
       error.response?.data || error.message
     );
     throw error;

@@ -75,13 +75,13 @@ const getIncidentReportsByUser = async (userId) => {
   return result.rows;
 };
 
-const updateIncidentStatus = async (id, status) => {
+const updateIncidentStatus = async (id, status, actionTaken) => {
   const result = await db.query(
     `UPDATE incident_report
-     SET status = $1
-     WHERE id = $2
+     SET status = $1, note= $2
+     WHERE id = $3
      RETURNING *`,
-    [status, id]
+    [status, actionTaken, id]
   );
   return result.rows[0];
 };

@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useDocumentManager } from "@/hooks/useDocumentManager";
 import { useTourOperatorManager } from "@/hooks/useTourOperatorManager";
 import { FileText, Loader2, Check, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-// import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import {
   Dialog,
@@ -22,11 +20,12 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DocumentCard } from "@/components/custom/document/documentCard";
 
 type OperatorDocument = {
-  id?: string | number;
+  id: string;
   document_type: string;
   file_path?: string;
   upload_date?: string;
-  status?: "PENDING" | "APPROVED" | "REJECTED";
+  status?: "PENDING" | "APPROVED" | "REJECTED" | "REVOKED";
+  note?: string;
 };
 
 const statusOptions = [
@@ -34,6 +33,7 @@ const statusOptions = [
   { value: "PENDING", label: "Pending" },
   { value: "APPROVED", label: "Approved" },
   { value: "REJECTED", label: "Rejected" },
+  { value: "REVOKED", label: "Revoked" },
 ];
 
 const documentTypes = [
@@ -62,26 +62,25 @@ type TourOperator = {
   profile_picture?: string;
 };
 
-export default function TourOperatorDocumentsPage() {
+export default function TourOperatorDocumentsApprovalPage() {
   const params = useParams();
-  const operatorId = params?.id as string;
   const router = useRouter();
+  const operatorId = params?.id as string;
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("All");
+  const [operator, setOperator] = useState<TourOperator | null>(null);
   const {
     fetchOperatorDocumentsById,
     approveOperatorDocument,
     rejectOperatorDocument,
+    revokeTourOperatorDocument,
+    fetchOperatorDocument,
   } = useDocumentManager();
   const { fetchApplicant, approveApplicant, rejectApplicant } =
     useTourOperatorManager();
-
   const [documents, setDocuments] = useState<OperatorDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("All");
-  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
-  const [operator, setOperator] = useState<TourOperator | null>(null);
-
-  // Alert state (optional, for future use)
   const [alertOpen, setAlertOpen] = useState(false);
   const [message, setMessage] = useState<string>("");
 
@@ -127,99 +126,116 @@ export default function TourOperatorDocumentsPage() {
         );
 
   // Calculate verification progress
-  const requiredDocs = documentTypes.filter((doc) => doc.required);
-
-  // Count unique required document types that have at least one APPROVED document
-  const verifiedDocs = requiredDocs.filter((req) =>
-    documents.some(
-      (doc) => doc.document_type === req.value && doc.status === "APPROVED"
-    )
-  ).length;
-
+  const requiredDocTypes = new Set(
+    documentTypes.filter((doc) => doc.required).map((doc) => doc.value)
+  );
+  const verifiedDocTypes = new Set(
+    documents
+      .filter(
+        (doc) =>
+          doc.status === "APPROVED" && requiredDocTypes.has(doc.document_type)
+      )
+      .map((doc) => doc.document_type)
+  );
+  const requiredDocs = Array.from(requiredDocTypes);
+  const verifiedDocs = verifiedDocTypes.size;
   const verificationPercentage = Math.round(
     (verifiedDocs / requiredDocs.length) * 100
   );
 
+  // Approve, Reject, Revoke handlers
   const handleApprove = async (docId: string) => {
-    setLoading(true);
-    setError(null);
     try {
       const result = await approveOperatorDocument(docId);
       if (result) {
-        setDocuments((prevDocs) =>
-          prevDocs.map((doc) =>
-            doc.id === docId ? { ...doc, status: "APPROVED" } : doc
-          )
+        const updatedDoc = await fetchOperatorDocument(docId);
+        setDocuments((prev) =>
+          prev.map((doc) => (doc.id === docId ? updatedDoc : doc))
         );
-        setMessage("Document approved successfully.");
-      } else {
-        setError("Failed to approve document.");
       }
     } catch (error) {
-      setError("Error approving document: " + (error as string));
+      setError(
+        "Failed to approve document: " +
+          (error instanceof Error ? error.message : String(error))
+      );
+      console.error("Error approving document:", error);
     }
-    setLoading(false);
   };
 
-  const handleReject = async (docId: string) => {
-    setLoading(true);
-    setError(null);
+  const handleReject = async (docId: string, rejectionReason: string) => {
     try {
-      const result = await rejectOperatorDocument(docId);
+      const result = await rejectOperatorDocument(docId, rejectionReason);
       if (result) {
-        setDocuments((prevDocs) =>
-          prevDocs.map((doc) =>
-            doc.id === docId ? { ...doc, status: "REJECTED" } : doc
-          )
+        const updatedDoc = await fetchOperatorDocument(docId);
+        setDocuments((prev) =>
+          prev.map((doc) => (doc.id === docId ? updatedDoc : doc))
         );
-        setMessage("Document rejected successfully.");
-      } else {
-        setError("Failed to reject document.");
       }
     } catch (error) {
-      setError("Error rejecting document: " + (error as string));
+      setError(
+        "Failed to reject document: " +
+          (error instanceof Error ? error.message : String(error))
+      );
+      console.error("Error rejecting document:", error);
     }
-    setLoading(false);
   };
 
-  const handleApproveOperator = async (freshOperator: TourOperator) => {
-    if (!freshOperator || !freshOperator.id) {
-      setError("Invalid tour operator data.");
+  const handleRevoke = async (docId: string, revocationReason: string) => {
+    try {
+      const result = await revokeTourOperatorDocument(docId, revocationReason);
+      if (result) {
+        const updatedDoc = await fetchOperatorDocument(docId);
+        setDocuments((prev) =>
+          prev.map((doc) => (doc.id === docId ? updatedDoc : doc))
+        );
+      }
+    } catch (error) {
+      setError(
+        "Failed to revoke document: " +
+          (error instanceof Error ? error.message : String(error))
+      );
+      console.error("Error revoking document:", error);
+    }
+  };
+
+  const handleApproveOperator = async () => {
+    if (
+      !operator ||
+      (typeof operator.id !== "string" && typeof operator.id !== "number")
+    ) {
       return;
     }
     try {
-      const approvedOperator = await approveApplicant(Number(freshOperator.id));
-      if (!approvedOperator) {
-        setError("Failed to approve tour operator.");
-        return;
-      }
-      setOperator(approvedOperator);
+      const result = await approveApplicant(Number(operatorId));
       setMessage("Tour operator approved successfully.");
+      setAlertOpen(true);
+      if (result) {
+        // router.push("/tourism-officer/tour-operators");
+      }
     } catch (error) {
-      setError("Error approving tour operator: " + (error as string));
+      setError(
+        "Failed to approve tour operator: " +
+          (error instanceof Error ? error.message : String(error))
+      );
+      console.error("Error approving tour operator:", error);
     }
-    setAlertOpen(true);
-    router.push(`/tourism-officer/tour-operators`);
   };
 
-  const handleRejectOperator = async (freshOperator: TourOperator) => {
-    if (!freshOperator || !freshOperator.id) {
-      setError("Invalid tour operator data.");
-      return;
-    }
+  const handleRejectOperator = async () => {
     try {
-      const rejectedOperator = await rejectApplicant(Number(freshOperator.id));
-      if (!rejectedOperator) {
-        setError("Failed to reject tour operator.");
-        return;
+      const result = await rejectApplicant(Number(operatorId));
+      if (result) {
+        setMessage("Tour operator rejected successfully.");
+        setAlertOpen(true);
+        router.push("/tourism-officer/tour-operators");
       }
-      setOperator(rejectedOperator);
-      setMessage("Tour operator rejected successfully.");
     } catch (error) {
-      setError("Error rejecting tour operator: " + (error as string));
+      setError(
+        "Failed to reject tour operator: " +
+          (error instanceof Error ? error.message : String(error))
+      );
+      console.error("Error rejecting tour operator:", error);
     }
-    setAlertOpen(true);
-    router.push(`/tourism-officer/tour-operators`);
   };
 
   return (
@@ -240,6 +256,20 @@ export default function TourOperatorDocumentsPage() {
             {/* Operator Information */}
             {operator && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col md:flex-row items-center gap-6">
+                {/* Avatar or Placeholder */}
+                <div className="flex-shrink-0 w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
+                  <Image
+                    src={
+                      typeof operator.profile_picture === "string"
+                        ? operator.profile_picture
+                        : "/images/maleavatar.png"
+                    }
+                    alt={operator.operator_name || "Operator"}
+                    width={96}
+                    height={96}
+                    className="object-contain"
+                  />
+                </div>
                 {/* Info */}
                 <div className="flex-1">
                   <h2 className="text-md lg:text-lg font-semibold text-gray-900 mb-2">
@@ -266,31 +296,29 @@ export default function TourOperatorDocumentsPage() {
                         {operator.office_address}
                       </p>
                     </div>
-                    {/* You can add Approve/Reject buttons here if needed */}
                     <div className="flex items-center gap-2">
                       <Button
-                        onClick={() => handleApproveOperator(operator)}
+                        onClick={handleApproveOperator}
                         className={`bg-green-100 text-green-600 hover:bg-green-200 cursor-pointer
-                      
-                      ${
-                        operator.application_status === "APPROVED"
-                          ? "hidden"
-                          : "block"
-                      }
-                    `}
+                        ${
+                          operator.application_status === "APPROVED"
+                            ? "hidden"
+                            : "block"
+                        }
+                      `}
                         disabled={verificationPercentage < 100}
                       >
                         Approve
                       </Button>
                       <Button
-                        onClick={() => handleRejectOperator(operator)}
+                        onClick={handleRejectOperator}
                         className={`bg-red-100 text-red-600 hover:bg-red-200 cursor-pointer
-
-                      ${
-                        operator.application_status === "REJECTED"
-                          ? "hidden"
-                          : "block"
-                      }`}
+                        ${
+                          operator.application_status === "REJECTED"
+                            ? "hidden"
+                            : "block"
+                        }
+                      `}
                       >
                         {operator.application_status === "PENDING"
                           ? "Reject"
@@ -345,6 +373,8 @@ export default function TourOperatorDocumentsPage() {
                               ? "bg-green-100 text-green-600"
                               : uploadedDoc.status === "REJECTED"
                               ? "bg-red-100 text-red-600"
+                              : uploadedDoc.status === "REVOKED"
+                              ? "bg-gray-100 text-gray-600"
                               : "bg-yellow-100 text-yellow-600"
                             : "bg-gray-100 text-gray-400"
                         }`}
@@ -380,6 +410,8 @@ export default function TourOperatorDocumentsPage() {
                                     ? "default"
                                     : uploadedDoc.status === "REJECTED"
                                     ? "destructive"
+                                    : uploadedDoc.status === "REVOKED"
+                                    ? "secondary"
                                     : "secondary"
                                   : "destructive"
                               }
@@ -389,6 +421,8 @@ export default function TourOperatorDocumentsPage() {
                                     ? "bg-blue-100 text-blue-600"
                                     : uploadedDoc.status === "REJECTED"
                                     ? "bg-red-100 text-red-600"
+                                    : uploadedDoc.status === "REVOKED"
+                                    ? "bg-gray-100 text-gray-600"
                                     : "bg-yellow-100 text-yellow-600"
                                   : ""
                               }`}
@@ -398,6 +432,8 @@ export default function TourOperatorDocumentsPage() {
                                   ? "Verified"
                                   : uploadedDoc.status === "REJECTED"
                                   ? "Rejected"
+                                  : uploadedDoc.status === "REVOKED"
+                                  ? "Revoked"
                                   : "Pending"
                                 : "Required"}
                             </Badge>
@@ -418,7 +454,7 @@ export default function TourOperatorDocumentsPage() {
                 onValueChange={setActiveTab}
                 className="w-full"
               >
-                <TabsList className="grid grid-cols-4 gap-1 w-full bg-neutral-200/60 ">
+                <TabsList className="grid grid-cols-5 gap-1 w-full bg-neutral-200/60 ">
                   {statusOptions.map((status) => (
                     <TabsTrigger
                       key={status.value}
@@ -463,9 +499,9 @@ export default function TourOperatorDocumentsPage() {
                         docType={docType}
                         doc={doc}
                         onEnlarge={setEnlargedImage}
-                        onApprove={() => handleApprove(doc.id as string)}
-                        onReject={() => handleReject(doc.id as string)}
-                        // Add onApprove/onReject if needed
+                        onApprove={handleApprove}
+                        onReject={handleReject}
+                        onRevoke={handleRevoke}
                       />
                     );
                   })}

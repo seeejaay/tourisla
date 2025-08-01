@@ -6,6 +6,7 @@ const {
   getOperatorUploadByUserId,
   approveOperatorUpload,
   rejectOperatorUpload,
+  revokeOperatorUpload,
 } = require("../models/operatorUploadDocuModel.js");
 
 const {
@@ -17,6 +18,7 @@ const { s3Client, PutObjectCommand } = require("../utils/s3.js"); // Adjust the 
 const {
   sendDocumentApproveEmail,
   sendDocumentRejectEmail,
+  sendDocumentRevokeEmail,
 } = require("../utils/email.js"); // Adjust the path as necessary
 // from tour operator's end: can upload (create), update, and view their own documents only
 
@@ -27,7 +29,7 @@ const createOperatorUploadDocuController = async (req, res) => {
 
     const operator_id = operatorReg.id;
 
-    console.log("Operator ID:", operator_id);
+    // console.log("Operator ID:", operator_id);
     let { document_type } = req.body;
 
     const allowedTypes = [
@@ -166,9 +168,9 @@ const getOperatorUploadDocuByIdController = async (req, res) => {
 const getOperatorUploadByUserIdController = async (req, res) => {
   try {
     const currentUserId = req.params.userId;
-    console.log(currentUserId); // current user ID from session
+    // console.log(currentUserId); // current user ID from session
     const operatorReg = await getOperatorRegisById(currentUserId);
-    console.log(operatorReg);
+    // console.log(operatorReg);
     if (!operatorReg) {
       return res
         .status(404)
@@ -198,14 +200,18 @@ const approveOperatorUploadDocuController = async (req, res) => {
     const operatorReg = await getOperatorRegisByUserId(
       operatorUploadDocu.touroperator_id
     );
-    console.log("Operator Registration:", operatorReg);
+    // console.log("Operator Registration:", operatorReg);
     if (!operatorUploadDocu) {
       return res.status(404).json({ error: "Document not found." });
     }
     const operatorEmail = operatorReg.email;
 
     if (operatorUploadDocu.status === "APPROVED") {
-      await sendDocumentApproveEmail(operatorEmail, operatorUploadDocu);
+      await sendDocumentApproveEmail(
+        operatorEmail,
+        operatorUploadDocu.document_type,
+        operatorUploadDocu.file_path
+      );
     }
     res.json(operatorUploadDocu);
   } catch (err) {
@@ -216,9 +222,9 @@ const approveOperatorUploadDocuController = async (req, res) => {
 
 const rejectOperatorUploadDocuController = async (req, res) => {
   try {
-    const { docuId } = req.body;
-    const operatorUploadDocu = await rejectOperatorUpload(docuId);
-    console.log("Rejected Document:", operatorUploadDocu);
+    const { docuId, reason } = req.body;
+    const operatorUploadDocu = await rejectOperatorUpload(docuId, reason);
+    // console.log("Rejected Document:", operatorUploadDocu);
     const operatorReg = await getOperatorRegisByUserId(
       operatorUploadDocu.touroperator_id
     );
@@ -227,7 +233,12 @@ const rejectOperatorUploadDocuController = async (req, res) => {
     }
     const operatorEmail = operatorReg.email;
     if (operatorUploadDocu.status === "REJECTED") {
-      await sendDocumentRejectEmail(operatorEmail, operatorUploadDocu);
+      await sendDocumentRejectEmail(
+        operatorEmail,
+        operatorUploadDocu.document_type,
+        operatorUploadDocu.file_path,
+        operatorUploadDocu.note || reason
+      );
     }
 
     res.json(operatorUploadDocu);
@@ -236,6 +247,35 @@ const rejectOperatorUploadDocuController = async (req, res) => {
     res.status(500).json({ error: "Internal server error." });
   }
 };
+
+const revokeOperatorUploadDocuController = async (req, res) => {
+  try {
+    const { docuId, reason } = req.body;
+    const operatorUploadDocu = await revokeOperatorUpload(docuId, reason);
+    // console.log("Revoked Document:", operatorUploadDocu);
+    const operatorReg = await getOperatorRegisByUserId(
+      operatorUploadDocu.touroperator_id
+    );
+    if (!operatorUploadDocu) {
+      return res.status(404).json({ error: "Document not found." });
+    }
+    const operatorEmail = operatorReg.email;
+    if (operatorUploadDocu.status === "REVOKED") {
+      await sendDocumentRevokeEmail(
+        operatorEmail,
+        operatorUploadDocu.document_type,
+        operatorUploadDocu.file_path,
+        operatorUploadDocu.note || reason
+      );
+    }
+
+    res.json(operatorUploadDocu);
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ error: "Internal server error." });
+  }
+};
+
 module.exports = {
   createOperatorUploadDocuController,
   editOperatorUploadDocuController,
@@ -243,4 +283,5 @@ module.exports = {
   getOperatorUploadByUserIdController,
   approveOperatorUploadDocuController,
   rejectOperatorUploadDocuController,
+  revokeOperatorUploadDocuController,
 };

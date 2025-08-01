@@ -13,6 +13,7 @@ import {
   revokeTourGuideDocument as revokeTourGuideDocumentapi,
   approveTourOperatorDocument,
   rejectTourOperatorDocument,
+  revokeTourOperatorDocument as revokeTourOperatorDocumentapi,
 } from "@/lib/api/document";
 
 type GuideDocument = {
@@ -245,11 +246,11 @@ export const useDocumentManager = () => {
     }
   }, []);
 
-  const rejectOperatorDocument = useCallback(async (docuId: string) => {
+  const rejectOperatorDocument = useCallback(async (docuId: string, reason: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await rejectTourOperatorDocument(docuId);
+      const response = await rejectTourOperatorDocument(docuId, reason);
       return response;
     } catch (error) {
       setError(error + "Unknown error");
@@ -258,6 +259,23 @@ export const useDocumentManager = () => {
       setLoading(false);
     }
   }, []);
+
+  const revokeTourOperatorDocument = useCallback(
+    async (docuId: string, reason: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await revokeTourOperatorDocumentapi(docuId, reason);
+        return response;
+      } catch (error) {
+        setError(error + "Unknown error");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   return {
     loading,
@@ -277,5 +295,6 @@ export const useDocumentManager = () => {
     revokeTourGuideDocument,
     approveOperatorDocument,
     rejectOperatorDocument,
+    revokeTourOperatorDocument,
   };
 };

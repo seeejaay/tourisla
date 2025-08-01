@@ -5,7 +5,7 @@ import {
   DropdownMenuContent,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Cloud, Loader2 } from "lucide-react";
+import { Cloud, Loader2, Ban } from "lucide-react";
 import { useWeather } from "@/hooks/useWeather";
 import Image from "next/image";
 export default function WeatherWidget() {
@@ -20,8 +20,8 @@ export default function WeatherWidget() {
 
   if (error || !weather)
     return (
-      <div className="w-full flex justify-center items-center py-8">
-        <span className="text-red-500">Weather data not available.</span>
+      <div className="rounded-full h-10 w-10 p-0 relative flex items-center justify-center bg-red-100">
+        <Ban className="text-red-600 w-4 h-4" />
       </div>
     );
   function fixImageUrl(url: string) {

@@ -10,9 +10,9 @@ import touristNavigation from "@/app/static/navigation/tourist-navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useTourGuideManager } from "@/hooks/useTourGuideManager";
 import { useTourOperatorManager } from "@/hooks/useTourOperatorManager";
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PanelLeftOpen, X } from "lucide-react";
 
 type User = {
   id: string;
@@ -32,8 +32,9 @@ type TourGuideApplicant = {
   reason_for_applying: string;
   id?: number;
   profile_picture?: File;
-  application_status?: "pending" | "approved" | "rejected"; // <-- Add this line
+  application_status?: "pending" | "approved" | "rejected";
 };
+
 export default function ProfileLayout({
   children,
 }: {
@@ -47,6 +48,7 @@ export default function ProfileLayout({
   const [guideStatus, setGuideStatus] = useState<string>("pending");
   const [operatorStatus, setOperatorStatus] = useState<string>("pending");
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     async function fetchUserAndGuide() {
@@ -84,13 +86,59 @@ export default function ProfileLayout({
   } else if (role === "tour operator") {
     navigation = operatorNavigation(user.id, operatorStatus);
   } else if (role === "tourist") {
-    navigation = touristNavigation(user.user_id);
+    navigation = touristNavigation(user.id);
   } else {
     navigation = [];
   }
 
   return (
     <div className="flex h-screen w-full">
+      {/* Mobile Hamburger Button */}
+      <button
+        className="sm:hidden fixed top-6 left-6 z-50 p-4 rounded-full cursor-pointer hover:bg-[#1c5461] transition-all 
+    ease-in-out duration-300 "
+        onClick={() => setMobileSidebarOpen(true)}
+        aria-label="Open sidebar"
+      >
+        <PanelLeftOpen className="w-6 h-6" />
+      </button>
+
+      {/* Mobile Sidebar Drawer */}
+      <div
+        className={`fixed inset-0 z-50 bg-black/40 sm:hidden transition-opacity duration-300 ${
+          mobileSidebarOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setMobileSidebarOpen(false)}
+      >
+        <aside
+          className={`
+        fixed left-0 top-0 bottom-0 w-64 bg-white z-50
+        transition-transform duration-300 transform
+        ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+      `}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Close Icon Button */}
+          <button
+            onClick={() => setMobileSidebarOpen(false)}
+            className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 cursor-pointer transition-all"
+            aria-label="Close sidebar"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          {/* Sidebar content */}
+          <Sidebar
+            navigation={navigation}
+            isCollapsed={false}
+            setIsCollapsed={() => {}}
+            mobile
+          />
+        </aside>
+      </div>
+
+      {/* Desktop Sidebar */}
       <Sidebar
         navigation={navigation}
         isCollapsed={isCollapsed}
