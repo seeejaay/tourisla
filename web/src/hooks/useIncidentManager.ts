@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   submitIncidentReport,
   fetchAllIncidentReports,
@@ -17,6 +17,7 @@ export interface IncidentReport {
   photo_url: string | null;
   submitted_at: string | null;
   status: "RECEIVED" | "RESOLVED" | "ARCHIVED";
+  note?: string | null;
 }
 
 export function useIncidentManager() {
@@ -44,15 +45,21 @@ export function useIncidentManager() {
       console.error("Failed to fetch incident reports:", error);
     }
   };
-
-  const getMyReports = async (userId: number): Promise<void> => {
-    try {
-      const data: IncidentReport[] = await fetchIncidentReportsByUser(userId);
-      setReports(data);
-    } catch (error) {
-      console.error("Failed to fetch user incident reports:", error);
-    }
-  };
+  const getMyReports = useCallback(
+    async (userId: number): Promise<IncidentReport[]> => {
+      try {
+        setLoading(true);
+        const userReports = await fetchIncidentReportsByUser(userId);
+        return userReports;
+      } catch (error) {
+        console.error("Failed to fetch user incident reports:", error);
+        return [];
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   const changeStatus = async (
     id: number,

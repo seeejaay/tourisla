@@ -1,4 +1,11 @@
-import { User, QrCode, Home, History, MapPin } from "lucide-react";
+import {
+  User,
+  QrCode,
+  Home,
+  History,
+  MapPin,
+  ClipboardList,
+} from "lucide-react";
 import type { NavItem } from "@/components/custom/sidebar";
 
 const touristNavigation = (userId: string): NavItem[] => {
@@ -32,6 +39,12 @@ const touristNavigation = (userId: string): NavItem[] => {
       href: `/profile/${userId}/booking-history`,
       title: "Booking History",
       icon: History,
+    },
+    {
+      name: "Incident Report History",
+      href: `/profile/${userId}/incident-history`,
+      title: "Incident Report History",
+      icon: ClipboardList,
     },
   ];
 };

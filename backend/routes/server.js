@@ -1098,6 +1098,15 @@ app.get(
 app.get(
   "/api/v1/incident-report/user/:userId",
   // authenticateTourismOfficer,
+  allowedRoles([
+    "Tourism Officer",
+    "Tour Operator",
+    "Tourist",
+    "Tour Guide",
+    "Cultural Director",
+    "Admin",
+    "Tourism Staff",
+  ]),
   viewIncidentReportByUserController
 );
 app.patch("/api/v1/incident-report/:id/status", updateIncidentStatusController);
