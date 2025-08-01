@@ -283,6 +283,7 @@ export default function TourPackagesPage() {
             </DialogHeader>
             {editingPackage && (
               <EditTourPackage
+                // Ensure unique key for re-rendering
                 tourPackage={editingPackage}
                 onSuccess={handleEditSuccess}
                 onCancel={() => {

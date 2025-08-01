@@ -6,6 +6,7 @@ import { useTourPackageManager } from "@/hooks/useTourPackageManager";
 import { useBookingsByPackage } from "@/hooks/useBookingManager";
 import { useApplyOperatorManager } from "@/hooks/useApplyOperatorManager";
 import { TourPackage } from "@/app/static/tour-packages/tour-packageSchema";
+import barangay from "@/app/static/barangay.json";
 import { useParams } from "next/navigation";
 import {
   inclusions,
@@ -20,7 +21,13 @@ import {
 import { Command as CommandPrimitive } from "cmdk";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
-
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectItem,
+  SelectContent,
+} from "@/components/ui/select";
 export default function EditTourPackage({
   tourPackage,
   onSuccess,
@@ -50,6 +57,9 @@ export default function EditTourPackage({
   const [openExclusions, setOpenExclusions] = useState(false);
   const [inclusionsSearch, setInclusionsSearch] = useState("");
   const [exclusionsSearch, setExclusionsSearch] = useState("");
+  const municipalities = ["Bantayan", "Madridejos", "Santa Fe"];
+  const [municipality, setMunicipality] = useState<string>("");
+  const [selectedBarangay, setSelectedBarangay] = useState<string>("");
   type TourGuide = {
     id: string;
     first_name: string;
@@ -106,6 +116,32 @@ export default function EditTourPackage({
     }
     loadPackages();
   }, [fetchAll]);
+
+  useEffect(() => {
+    console.log("EditTourPackage useEffect running", tourPackage.location);
+    if (tourPackage.location) {
+      const loc = tourPackage.location.trim().toLowerCase();
+      if (loc.includes("bantayan")) {
+        setMunicipality("Bantayan");
+        const parts = tourPackage.location.split(",");
+        const barangayRaw = parts[0]?.trim() || "";
+        setSelectedBarangay(barangayRaw.toUpperCase());
+      } else if (loc === "madridejos") {
+        setMunicipality("Madridejos");
+        setSelectedBarangay("");
+      } else if (loc === "santa fe") {
+        setMunicipality("Santa Fe");
+        setSelectedBarangay("");
+      }
+    }
+    console.log("Tour Package Location:", tourPackage.location);
+    console.log("Selected Municipality:", municipality);
+    console.log("Selected Barangay:", selectedBarangay);
+  }, [tourPackage.location, municipality, selectedBarangay]);
+
+  // console.log("Tour Package Location:", tourPackage.location);
+  // console.log("Selected Municipality:", municipality);
+  // console.log("Selected Barangay:", selectedBarangay);
 
   useEffect(() => {
     async function loadGuides() {
@@ -232,11 +268,15 @@ export default function EditTourPackage({
     const dataToSubmit = {
       ...form,
       touroperator_id,
-      assigned_guides: selectedGuides, // <-- should always be present
+      assigned_guides: selectedGuides,
       inclusions: selectedInclusions.join(", "),
       exclusions: selectedExclusions.join(", "),
       date_start: form.date_start ? form.date_start.split("T")[0] : "",
       date_end: form.date_end ? form.date_end.split("T")[0] : "",
+      location:
+        municipality === "Bantayan" && selectedBarangay
+          ? `${selectedBarangay}, Bantayan`
+          : municipality,
     };
 
     console.log("Submitting tour package data:", dataToSubmit);
@@ -274,9 +314,9 @@ export default function EditTourPackage({
             )}
           </div>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-2">
           {/* Package Name & Location */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
             <div>
               <label className="block font-semibold mb-2 text-[#1c5461]">
                 Package Name
@@ -290,7 +330,7 @@ export default function EditTourPackage({
                 required
               />
             </div>
-            <div>
+            {/* <div>
               <label className="block font-semibold mb-2 text-[#1c5461]">
                 Location
               </label>
@@ -302,6 +342,59 @@ export default function EditTourPackage({
                 placeholder="Enter location"
                 required
               />
+            </div> */}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="block font-semibold text-[#1c5461]">
+                Municipality
+              </label>
+              <Select
+                value={municipality}
+                onValueChange={(val) => {
+                  setMunicipality(val);
+                  setSelectedBarangay(""); // Reset barangay if municipality changes
+                }}
+              >
+                <SelectTrigger
+                  className="w-full border border-[#3e979f] rounded-lg px-3 py-[18px] bg-[#f8fcfd] cursor-pointer"
+                  disabled={hasBookings}
+                >
+                  <SelectValue placeholder="Select Municipality" />
+                </SelectTrigger>
+                <SelectContent>
+                  {municipalities.map((m) => (
+                    <SelectItem
+                      key={m}
+                      value={m}
+                      className="cursor-pointer hover:bg-gray-100 text-[#1c5461] font-semibold"
+                    >
+                      {m}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="block font-semibold text-[#1c5461]">
+                Barangay
+              </label>
+              <Select
+                value={selectedBarangay}
+                onValueChange={setSelectedBarangay}
+                disabled={municipality !== "Bantayan" || hasBookings}
+              >
+                <SelectTrigger className="w-full border border-[#3e979f] rounded-lg px-3 py-[18px] bg-[#f8fcfd] cursor-pointer">
+                  <SelectValue placeholder="Select Barangay" />
+                </SelectTrigger>
+                <SelectContent>
+                  {barangay.map((b: { name: string; code: string }) => (
+                    <SelectItem key={b.code} value={b.name}>
+                      {b.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           {/* Description */}
@@ -757,14 +850,14 @@ export default function EditTourPackage({
             <button
               type="submit"
               disabled={loading}
-              className="bg-[#3e979f] hover:bg-[#1c5461] text-white font-semibold px-6 py-2 rounded-lg shadow w-full"
+              className="bg-[#3e979f] hover:bg-[#1c5461] text-white font-semibold px-6 py-2 rounded-lg shadow cursor-pointer w-1/4"
             >
               {loading ? "Saving..." : "Save Changes"}
             </button>
             <button
               type="button"
               onClick={onCancel}
-              className="border border-[#e6f7fa] text-[#1c5461] font-semibold px-6 py-2 rounded-lg bg-white hover:bg-[#e6f7fa] w-full"
+              className="border border-gray-300 text-[#1c5461] font-semibold px-6 py-2 rounded-lg cursor-pointer bg-white hover:bg-[#f0f0f0] w-1/4"
             >
               Cancel
             </button>

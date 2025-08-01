@@ -20,7 +20,15 @@ import {
 import { Command as CommandPrimitive } from "cmdk";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
+import barangay from "@/app/static/barangay.json";
 export default function AddTourPackage({
   onSuccess,
   onCancel,
@@ -52,6 +60,7 @@ export default function AddTourPackage({
     updated_at: string;
     user_id: string;
   };
+  const municipalities = ["Bantayan", "Madridejos", "Santa Fe"];
 
   const [guides, setGuides] = useState<TourGuide[]>([]);
   const [selectedGuides, setSelectedGuides] = useState<string[]>([]);
@@ -64,6 +73,8 @@ export default function AddTourPackage({
   const [formError, setFormError] = useState<string | null>(null);
   const [packages, setPackages] = useState<TourPackage[]>([]);
 
+  const [municipality, setMunicipality] = useState<string>("Bantayan");
+  const [selectedBarangay, setBarangay] = useState<string>("");
   // Fetch all packages for overlap checking
   useEffect(() => {
     async function loadPackages() {
@@ -278,6 +289,10 @@ export default function AddTourPackage({
         assigned_guides: selectedGuides,
         inclusions: selectedInclusions.join(", "),
         exclusions: selectedExclusions.join(", "),
+        location:
+          municipality === "Bantayan" && selectedBarangay
+            ? `${selectedBarangay}, Bantayan`
+            : municipality,
       });
       onSuccess();
     } catch (err) {
@@ -309,7 +324,7 @@ export default function AddTourPackage({
         </div>
         <form onSubmit={handleSubmit} className="space-y-2">
           {/* Package Name & Location */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1  gap-4">
             <div>
               <label className="block font-semibold mb-2 text-[#1c5461]">
                 Package Name
@@ -318,13 +333,13 @@ export default function AddTourPackage({
                 name="package_name"
                 value={form.package_name}
                 onChange={handleChange}
-                className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                className="w-full border text-sm border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                 placeholder="Enter package name"
                 required
               />
             </div>
-            <div>
-              <label className="block font-semibold mb-2 text-[#1c5461]">
+            {/* <div> */}
+            {/* <label className="block font-semibold mb-2 text-[#1c5461]">
                 Location
               </label>
               <input
@@ -334,7 +349,55 @@ export default function AddTourPackage({
                 className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
                 placeholder="Enter location"
                 required
-              />
+              /> */}
+            {/* </div> */}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
+            <div className="space-y-2">
+              <label className="block font-semibold  text-[#1c5461]">
+                Municipality
+              </label>
+              <Select value={municipality} onValueChange={setMunicipality}>
+                <SelectTrigger className="w-full border border-[#3e979f] rounded-lg px-3 py-[18px] bg-[#f8fcfd] cursor-pointer">
+                  <SelectValue placeholder="Select Municipality" />
+                </SelectTrigger>
+                <SelectContent>
+                  {municipalities.map((municipality) => (
+                    <SelectItem
+                      key={municipality}
+                      value={municipality}
+                      className="cursor-pointer hover:bg-gray-100 text-[#1c5461] font-semibold "
+                    >
+                      {municipality}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="block font-semibold  text-[#1c5461]">
+                Barangay
+              </label>
+              <Select value={selectedBarangay} onValueChange={setBarangay}>
+                <SelectTrigger
+                  className="
+                w-full border border-[#3e979f] rounded-lg px-3 py-[18px] bg-[#f8fcfd] cursor-pointer"
+                  disabled={municipality === "Bantayan" ? false : true}
+                >
+                  <SelectValue placeholder="Select Barangay" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60 overflow-y-auto">
+                  {barangay.map((barangays: { name: string; code: string }) => (
+                    <SelectItem
+                      key={barangays.code}
+                      value={barangays.code}
+                      className="cursor-pointer hover:bg-gray-100 text-[#1c5461] font-semibold "
+                    >
+                      {barangays.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           {/* Description */}
@@ -346,7 +409,7 @@ export default function AddTourPackage({
               name="description"
               value={form.description}
               onChange={handleChange}
-              className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd] min-h-[80px]"
+              className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd] min-h-[80px] text-sm"
               placeholder="Describe the package"
               required
             />
@@ -677,6 +740,7 @@ export default function AddTourPackage({
                       onFocus={() => setOpen(true)}
                       placeholder="Select guides..."
                       className="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
+                      disabled={form.date_start === "" || form.date_end === ""}
                     />
                   </div>
                 </div>
