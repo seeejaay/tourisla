@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { SafeAreaView, View, Text, StyleSheet, ActivityIndicator, ScrollView, StatusBar, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons';
-import { fetchTourPackage } from "@/lib/api/tour-packages";
+import { useTourPackageManager } from "@/hooks/useTourPackagesManager";
 import HeaderWithBack from "@/components/HeaderWithBack";
 import { toTitleCase } from "@/lib/utils/textFormat";
 
@@ -41,6 +41,7 @@ export default function TourPackageDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
+  const { fetchAllTourPackages } = useTourPackageManager();
   const [pkg, setPkg] = useState<TourPackage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,15 +71,19 @@ export default function TourPackageDetailsScreen() {
     const loadPackage = async () => {
       try {
         setLoading(true);
-        const data = await fetchTourPackage(Number(id));
-        setPkg(data);
+        const allPackages = await fetchAllTourPackages();
+        const pkg = allPackages.find(p => p.id === Number(id));
+        setPkg(pkg || null);
+        console.log("Fetched package data:", pkg);
       } catch (err: any) {
+        console.error("Error fetching tour package:", err);
         setError(err.message || "Error loading tour package");
       } finally {
         setLoading(false);
       }
     };
     loadPackage();
+    console.log("Received ID param:", id);
   }, [id]);
 
   if (loading) {
@@ -123,7 +128,7 @@ export default function TourPackageDetailsScreen() {
         <View style={styles.content}>
           {pkg.package_name && (
             <Text style={styles.packageName}>
-              {toTitleCase(pkg.package_name)} {pkg.id}
+              {toTitleCase(pkg.package_name)}
             </Text>
           )}
           {pkg.location && (
@@ -164,21 +169,23 @@ export default function TourPackageDetailsScreen() {
             )}
 
             {pkg.start_time && pkg.end_time && (
-              <View style={styles.scheduleCard}>
-                <View style={styles.scheduleRow}>
-                  <View style={{ borderRadius: 8}}>
-                  <Text style={styles.scheduleLabel}>Schedule</Text>
-                    <Text style={styles.scheduleTime}>
-                      {formatTime(pkg.start_time)} - {formatTime(pkg.end_time)}
+              <View style={{flexDirection: 'row', width: '100%', justifyContent: 'space-between', gap: 8, borderBottomWidth: 1, borderBottomColor: '#ececee', paddingBottom: 8, marginBottom: 8,}}>
+                <View style={{ borderRadius: 8, flexDirection: 'column'}}>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#7b7b7b',}}>Schedule</Text>
+                  <Text style={styles.scheduleTime}>
+                    {formatTime(pkg.start_time)} - {formatTime(pkg.end_time)}
+                  </Text>
+                </View>
+                <View style={{ borderRadius: 8, flexDirection: 'column'}}>
+                  <View style={{ marginBottom: 8, }}>
+                    <Text style={styles.scheduleLabel}>Start</Text>
+                    <Text style={styles.scheduleDate}>{formatDate(pkg.date_start)}
                     </Text>
                   </View>
-                  <View style={{ borderRadius: 8}}>
-                  <Text style={styles.scheduleLabel}>Start</Text>
-                    <Text style={styles.scheduleDate}>{formatDate(pkg.date_start)}</Text>
-                  </View>
-                  <View style={{ borderRadius: 8}}>
-                  <Text style={styles.scheduleLabel}>End</Text>
-                    <Text style={styles.scheduleDate}>{formatDate(pkg.date_end)}</Text>
+                  <View>
+                    <Text style={styles.scheduleLabel}>End</Text>
+                    <Text style={styles.scheduleDate}>{formatDate(pkg.date_end)}
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -191,7 +198,20 @@ export default function TourPackageDetailsScreen() {
               <Text style={styles.packagePriceText}>per person</Text>
             </View>
           )}
-
+          {pkg.tour_guides && pkg.tour_guides.length > 0 && (
+            <View style={[styles.packagegroup1, { marginTop: 12 }]}>
+              <Text style={styles.gridLabel}>
+                Assigned Tour Guide{pkg.tour_guides.length > 1 ? "s" : ""}:
+              </Text>
+              <Text style={styles.textcontent}>
+                {pkg.tour_guides
+                  .map(guide =>
+                    toTitleCase(`${guide.first_name} ${guide.last_name}`.trim())
+                  )
+                  .join(", ")}
+              </Text>
+            </View>
+          )}
           {pkg.available_slots && pkg.available_slots > 0 ? (
             <TouchableOpacity
               style={styles.bookButton}
@@ -275,28 +295,22 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   scheduleLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: '#7b7b7b',
-  },
-  
-  scheduleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
+    alignSelf: 'flex-end',
   },
   scheduleDate: {
-    fontSize: 12,
-    color: '#002b11',
-    fontWeight: 'normal',
+    fontSize: 15,
+    color: '#00ab84',
+    fontWeight: '700',
     fontStyle: 'italic',
   },
   scheduleTime: {
-    fontSize: 14,
-    color: '#002b11',
+    fontSize: 18,
+    color: '#00ab84',
     fontStyle: 'italic',
-    fontWeight: '400',
+    fontWeight: '900',
   },
   pricecontent: {
     marginTop: 16,
