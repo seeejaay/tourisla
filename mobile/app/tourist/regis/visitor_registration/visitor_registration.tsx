@@ -7,9 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
-  Platform,
-  StatusBar,
-  Dimensions,
+  SafeAreaView,
 } from "react-native";
 import { useState } from "react";
 import { useRouter } from "expo-router";
@@ -17,11 +15,7 @@ import { useVisitorRegistration } from "@/hooks/useVisitorRegistration";
 import { visitorRegistrationFields } from "@/static/visitor-registration/visitor";
 import type { Visitor } from "@/static/visitor-registration/visitorSchema";
 import { Picker } from "@react-native-picker/picker";
-import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
-
-interface TourPackageDetailsScreenProps {
-  headerHeight: number;
-}
+import HeaderWithBack from "@/components/HeaderWithBack";
 
 const emptyVisitor = () =>
   Object.fromEntries(
@@ -39,13 +33,7 @@ type CreateVisitorResponse = {
   };
 };
 
-const STATUS_BAR_HEIGHT =
-  Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0;
-const { width, height } = Dimensions.get("window");
-
-export default function VisitorRegistrationScreen({
-  headerHeight,
-}: TourPackageDetailsScreenProps) {
+export default function VisitorRegistrationScreen() {
   const [mainVisitor, setMainVisitor] =
     useState<Partial<Visitor>>(emptyVisitor());
   const [companions, setCompanions] = useState<Partial<Visitor>[]>([]);
@@ -148,20 +136,13 @@ export default function VisitorRegistrationScreen({
   );
 
   return (
-    <View style={[styles.container, { paddingTop: headerHeight }]}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      <View style={styles.navbar}>
-        <TouchableOpacity
-          style={styles.navButton}
-          onPress={() => router.back()}
-        >
-          <FontAwesome5 name="arrow-left" size={18} color="#fff" />
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.container}>
+    <HeaderWithBack
+      title="Visitor Registration"
+      onBackPress={() => router.back()}
+    />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.heading}>Visitor Registration</Text>
-
-        <Text style={styles.sectionTitle}>Main Visitor</Text>
+        <Text style={styles.heading}>Register</Text>
         {renderFields(mainVisitor, null)}
 
         <Text style={styles.sectionTitle}>Companions</Text>
@@ -193,47 +174,25 @@ export default function VisitorRegistrationScreen({
           </Text>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, backgroundColor: "#f8fafc" },
-  navbar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingTop: STATUS_BAR_HEIGHT + 10,
-    paddingBottom: 10,
-    paddingHorizontal: 16,
-    backgroundColor: "transparent",
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-  },
-  navButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    backgroundColor: "rgba(15, 23, 42, 0.7)",
-    justifyContent: "center",
-    alignItems: "center",
+  container: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
+    paddingBottom: 40
   },
   scrollContent: {
-    marginHorizontal: 16,
-    marginVertical: 70,
-    paddingBottom: 120,
+    padding: 16,
   },
 
   heading: {
-    fontSize: 30,
+    fontSize: 26,
     fontWeight: "900",
     color: "#1c5461",
     marginBottom: 16,
-    textAlign: "center",
-    marginTop: 24,
   },
 
   sectionTitle: {
@@ -249,20 +208,21 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: 15,
+    fontWeight: "600",
     color: "#1c5461",
     marginBottom: 6,
   },
 
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#ececee",
     borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    backgroundColor: "#fff",
-    fontSize: 14,
+    backgroundColor: "#f8fafc",
+    marginBottom: 12,
+    height: 50,
+    padding: 12,
+    fontSize: 15,
   },
 
   companionCard: {
@@ -340,16 +300,13 @@ const styles = StyleSheet.create({
   },
   selectWrapper: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#ececee',
     borderRadius: 8,
-    backgroundColor: "#fff",
-    height: 42,
-    justifyContent: "center",
+    backgroundColor: '#f8fafc',
+    marginBottom: 12,
   },
   selectPicker: {
-    height: 60,
-    paddingHorizontal: 12,
-    color: "#000",
-    transform: [{ scale: 0.9 }],
+    height: 50,
+    width: '100%',
   },
 });

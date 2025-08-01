@@ -22,6 +22,7 @@ import { getLatestIslandEntry } from '@/lib/api/islandEntry';
 import { islandEntrySchema } from '@/static/islandEntry/schema';
 import { islandEntryFields } from '@/static/islandEntry/islandEntryFields';
 import { Picker } from '@react-native-picker/picker';
+import HeaderWithBack from "@/components/HeaderWithBack";
 
 export default function IslandRegistrationScreen() {
   const router = useRouter();
@@ -208,8 +209,12 @@ export default function IslandRegistrationScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+    <HeaderWithBack
+      title="Island Entry Registration"
+      onBackPress={() => router.back()}
+    />
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.header}>Island Entry Registration</Text>
+        <Text style={styles.header}>Register</Text>
 
         <View style={styles.card}>
           {filteredFields.map((field) => (
@@ -415,6 +420,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
+    paddingBottom: 40
   },
   container2: {
     flex: 1,
