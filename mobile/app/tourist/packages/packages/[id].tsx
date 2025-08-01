@@ -196,6 +196,7 @@ export default function TourPackageDetailsScreen() {
             <View style={styles.pricecontent}>
               <Text style={styles.packagePrice}>₱ {pkg.price}</Text>
               <Text style={styles.packagePriceText}>per person</Text>
+
             </View>
           )}
           {pkg.tour_guides && pkg.tour_guides.length > 0 && (
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
   },
   textcontent: {
     fontSize: 13,
-    color: "#002b11",
+    color: "#49796b",
     fontWeight: "500",
   },
   scheduleLabel: {
@@ -301,12 +302,14 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   scheduleDate: {
+    marginTop: -5,
     fontSize: 15,
     color: '#00ab84',
     fontWeight: '700',
     fontStyle: 'italic',
   },
   scheduleTime: {
+    marginTop: -3,
     fontSize: 18,
     color: '#00ab84',
     fontStyle: 'italic',
@@ -323,6 +326,7 @@ const styles = StyleSheet.create({
     color: "#00a63e",
   },
   packagePriceText: {
+    marginTop: -3,
     fontSize: 14,
     color: "#7b7b7b",
   },
