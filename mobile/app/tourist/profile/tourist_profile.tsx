@@ -17,6 +17,7 @@ import TabBar from '@/components/profile/TabBar';
 import TouristActivityScreen from '../activity/tourist_activity';
 import VisitHistoryScreen from '../activity/attraction_history/visitHistory';
 import BookingHistoryScreen from '../activity/booking_history/visitHistory';
+import IncidentHistoryScreen from '../profile/about/incident-report/IncidentHistoryScreen';
 
 
 
@@ -194,6 +195,7 @@ export default function TouristProfile() {
           {activeTab === 'Booking History' && <BookingHistoryScreen />}
           {activeTab === 'Attraction Visit History' && <VisitHistoryScreen />}
           {activeTab === 'Visitor Registration' && <TouristActivityScreen />}
+          {activeTab === 'Incident Report' && <IncidentHistoryScreen />}
         </View>
       </Animated.ScrollView>
 

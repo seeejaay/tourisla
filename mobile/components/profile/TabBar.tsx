@@ -8,6 +8,7 @@ const TabBar = ({ activeTab, onTabPress }) => {
     { label: 'Visitor Registration', icon: 'qrcode', library: 'FontAwesome5' },
     { label: 'Attraction Visit History', icon: 'location', library: 'Ionicons' },
     { label: 'Booking History', icon: 'clock', library: 'FontAwesome5' },
+    { label: 'Incident Report', icon: 'warning', library: 'Ionicons' },
   ];
 
   return (
