@@ -360,7 +360,7 @@ export default function IncidentHistoryPage() {
                 <span className="font-medium text-gray-700">Location:</span>{" "}
                 {toTitleCase(selectedReport.location) || "—"}
               </p>
-              <p className="h-48 overflow-y-auto text-justify">
+              <p className="max-h-48 overflow-y-auto text-justify">
                 <span className="font-medium text-gray-700">Description:</span>{" "}
                 {toSentenceCase(selectedReport.description) || "—"}
               </p>

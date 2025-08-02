@@ -12,6 +12,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import Image from "next/image";
 
 export interface Companion {
@@ -22,6 +31,14 @@ export interface Companion {
   sex?: string;
   phone_number?: string;
 }
+
+const TABS = [
+  { value: "all", label: "All" },
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Approved" },
+  { value: "finished", label: "Finished" },
+  { value: "rejected", label: "Rejected" },
+];
 
 export default function BookingHistoryPage() {
   const { loggedInUser } = useAuth();
@@ -45,6 +62,11 @@ export default function BookingHistoryPage() {
     guideName: string;
   }>(null);
 
+  // Tabs and Pagination state
+  const [tab, setTab] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const bookingsPerPage = 5;
+
   useEffect(() => {
     async function fetchUser() {
       const res = await loggedInUser(router);
@@ -55,6 +77,27 @@ export default function BookingHistoryPage() {
     }
     fetchUser();
   }, [loggedInUser, router, fetchByTourist, userId]);
+
+  // Filter bookings by tab
+  const filteredBookings =
+    tab === "all"
+      ? bookings || []
+      : (bookings || []).filter(
+          (b) => b.status && b.status.toLowerCase() === tab
+        );
+
+  // Pagination logic
+  const totalBookings = filteredBookings.length;
+  const totalPages = Math.ceil(totalBookings / bookingsPerPage);
+  const paginatedBookings = filteredBookings.slice(
+    (currentPage - 1) * bookingsPerPage,
+    currentPage * bookingsPerPage
+  );
+
+  // Reset to page 1 when tab changes or bookings change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [tab, bookings]);
 
   if (loading)
     return (
@@ -81,8 +124,17 @@ export default function BookingHistoryPage() {
         <h1 className="text-3xl font-bold mb-8 text-[#1c5461] text-center">
           Booking History
         </h1>
-        {bookings && bookings.length > 0 ? (
-          bookings.map((booking) => (
+        <Tabs value={tab} onValueChange={setTab} className="mb-6 w-full">
+          <TabsList className="w-full flex justify-center gap-2">
+            {TABS.map((t) => (
+              <TabsTrigger key={t.value} value={t.value} className="flex-1">
+                {t.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        {paginatedBookings && paginatedBookings.length > 0 ? (
+          paginatedBookings.map((booking) => (
             <div
               key={`${booking.id}-${booking.created_at}`}
               className="bg-[#f8fcfd] rounded-xl border border-[#e6f7fa] shadow flex flex-col md:flex-row items-stretch justify-between p-6"
@@ -102,6 +154,8 @@ export default function BookingHistoryPage() {
                           ? "bg-green-100 text-green-700"
                           : booking.status === "FINISHED"
                           ? "bg-[#51702c] text-white"
+                          : booking.status === "REJECTED"
+                          ? "bg-red-100 text-red-700"
                           : "bg-gray-100 text-gray-600"
                       }`}
                     >
@@ -240,15 +294,34 @@ export default function BookingHistoryPage() {
               </div>
 
               {booking.proof_of_payment && (
-                <div className="bg-white p-2 rounded-lg border-2 border-[#e6f7fa] shadow">
-                  <Image
-                    src={booking.proof_of_payment}
-                    alt="Proof of Payment"
-                    width={128}
-                    height={128}
-                    className="object-cover"
-                  />
-                </div>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <div className="bg-white p-2 rounded-lg border-2 border-[#e6f7fa] shadow cursor-pointer transition hover:scale-105 flex flex-col items-center">
+                      <Image
+                        src={booking.proof_of_payment}
+                        alt="Proof of Payment"
+                        width={128}
+                        height={128}
+                        className="object-cover"
+                      />
+                      <span className="mt-2 text-xs text-gray-500">
+                        Click to enlarge
+                      </span>
+                    </div>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-xl flex flex-col items-center">
+                    <DialogHeader>
+                      <DialogTitle>Proof of Payment</DialogTitle>
+                    </DialogHeader>
+                    <Image
+                      src={booking.proof_of_payment}
+                      alt="Proof of Payment Large"
+                      width={400}
+                      height={400}
+                      className="object-contain rounded"
+                    />
+                  </DialogContent>
+                </Dialog>
               )}
             </div>
           ))
@@ -272,6 +345,51 @@ export default function BookingHistoryPage() {
             </span>
           </div>
         )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-8">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage((prev) => Math.max(prev - 1, 1));
+                    }}
+                    aria-disabled={currentPage === 1}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <PaginationItem key={i + 1}>
+                    <PaginationLink
+                      href="#"
+                      isActive={currentPage === i + 1}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage(i + 1);
+                      }}
+                    >
+                      {i + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+                    }}
+                    aria-disabled={currentPage === totalPages}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+
         {/* Feedback Modals */}
         <OperatorFeedbackModal
           open={!!operatorFeedbackOpen}
