@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import categories from "@/app/static/announcement/category.json";
-
+import { Switch } from "@/components/ui/switch";
 export default function AddAnnouncement({
   onSuccess,
   onCancel,
@@ -24,6 +24,7 @@ export default function AddAnnouncement({
     date_posted: today,
     location: "",
     category: "",
+    is_pinned: false, // Default to false
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +80,7 @@ export default function AddAnnouncement({
         date_posted: today,
         location: "",
         category: "",
+        is_pinned: false,
       });
       setImageFile(null);
       if (onSuccess) onSuccess();
@@ -175,6 +177,19 @@ export default function AddAnnouncement({
             accept="image/*"
             onChange={handleImageChange}
             className="bg-white border-[#e6f7fa] focus:border-[#3e979f] focus:ring-[#3e979f] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-[#e6f7fa] file:text-[#1c5461]"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold mb-1 text-[#1c5461]">
+            Pin Announcement
+          </label>
+          <Switch
+            name="is_pinned"
+            checked={form.is_pinned}
+            onCheckedChange={(checked) =>
+              setForm((prev) => ({ ...prev, is_pinned: checked }))
+            }
+            className="bg-white border-[#e6f7fa] focus:border-[#3e979f] focus:ring-[#3e979f]"
           />
         </div>
         {error && <div className="text-red-500 text-sm">{error}</div>}

@@ -12,14 +12,21 @@ import {
   getBookingsByOperator as apigetBookingsByOperator,
 } from "@/lib/api/booking";
 export interface BookingCreateInput {
-  scheduled_date: string; // ISO date string
-  number_of_guests: number; // number of guests
-  total_price: number; // total price
-  proof_of_payment: File; // uploaded file
-  notes: string; // optional notes
-  package_id: string; // package ID (string, could be number if backend expects)
-  operator_qr_id: string; // operator QR ID (string, could be number if backend expects)
-  payment_method: string; // e.g. "QR"
+  scheduled_date: string;
+  number_of_guests: number;
+  total_price: number;
+  proof_of_payment: File;
+  notes: string;
+  package_id: string;
+  operator_qr_id: string;
+  payment_method: string;
+  companions?: {
+    first_name: string;
+    last_name: string;
+    age: number;
+    sex: string;
+    phone_number: string;
+  }[];
 }
 export interface Booking {
   id: number;
@@ -37,6 +44,13 @@ export interface Booking {
   updated_at: string; // ISO date string
   tour_operator_name?: string;
   tour_guides?: { first_name: string; last_name: string }[];
+  companions?: {
+    first_name: string;
+    last_name: string;
+    age: number;
+    sex: string;
+    phone_number: string;
+  }[];
 }
 
 export interface BookingFetch {
@@ -51,14 +65,19 @@ export interface BookingFetch {
   status: string;
   created_at: string;
   updated_at: string;
-  // Joined from tour_packages
   package_name: string;
   touroperator_id: number;
   location: string;
-  // Joined from users
   first_name: string;
   last_name: string;
   email: string;
+  companions?: {
+    first_name: string;
+    last_name: string;
+    age: number;
+    sex: string;
+    phone_number: string;
+  }[];
 }
 
 // Hook for creating a booking

@@ -21,19 +21,31 @@ const { s3Client, PutObjectCommand } = require("../utils/s3.js");
 
 const createBookingController = async (req, res) => {
   try {
+    console.log("Creating booking with data:", req.body);
     const user = req.session.user;
-    console.log("Tourist ID from session:", user?.id);
     if (!user || user.role !== "Tourist") {
       return res
         .status(403)
         .json({ error: "Only tourists can create bookings." });
     }
-    const tourist_id = user.id; // Get tourist ID from session
-    console.log("Tourist ID:", tourist_id);
+    const tourist_id = user.id;
 
-    const { package_id, scheduled_date, number_of_guests, total_price, notes } =
-      req.body;
-    console.log("Booking Request Body:", req.body);
+    // Accept companions from the request body
+    let {
+      package_id,
+      scheduled_date,
+      number_of_guests,
+      total_price,
+      notes,
+      companions,
+    } = req.body;
+    if (typeof companions === "string") {
+      try {
+        companions = JSON.parse(companions);
+      } catch (e) {
+        companions = [];
+      }
+    }
     if (!package_id || !scheduled_date || !number_of_guests || !total_price) {
       return res
         .status(400)
@@ -58,6 +70,7 @@ const createBookingController = async (req, res) => {
         .json({ error: "Upload image for proof of payment is required." });
     }
 
+    // Pass companions to createBooking
     const newBooking = await createBooking({
       tourist_id,
       tour_package_id: package_id,
@@ -66,6 +79,7 @@ const createBookingController = async (req, res) => {
       total_price,
       notes,
       proof_of_payment,
+      companions: companions || [],
     });
 
     res

@@ -34,7 +34,8 @@ const { s3Client, PutObjectCommand } = require("../utils/s3.js"); // Adjust the 
 
 const createAnnouncementController = async (req, res) => {
   try {
-    let { title, description, date_posted, location, category } = req.body;
+    let { title, description, date_posted, location, category, is_pinned } =
+      req.body;
 
     // Validate required fields
     if (!title || !description || !date_posted || !location || !category) {
@@ -68,6 +69,7 @@ const createAnnouncementController = async (req, res) => {
       location,
       image_url,
       category,
+      is_pinned,
     });
 
     res.json(announcement);
@@ -84,8 +86,15 @@ const editAnnouncementController = async (req, res) => {
     console.log("Edit announcement request file:", req.file);
 
     // Extract fields from request body
-    let { title, description, date_posted, location, image_url, category } =
-      req.body;
+    let {
+      title,
+      description,
+      date_posted,
+      location,
+      image_url,
+      category,
+      is_pinned,
+    } = req.body;
 
     // Validate required fields
     if (!title) {
@@ -159,6 +168,7 @@ const editAnnouncementController = async (req, res) => {
       location: location || "GENERAL",
       image_url,
       category,
+      is_pinned,
     };
 
     console.log("Updating announcement with data:", updateData);

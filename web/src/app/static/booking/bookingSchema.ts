@@ -1,5 +1,28 @@
 import { z } from "zod";
 
+const CompanionSchema = z.object({
+  first_name: z
+    .string()
+    .min(3, "First name is required")
+    .regex(
+      /^[A-Za-z\s'-]+$/,
+      "First name can only contain letters, spaces, hyphens, and apostrophes"
+    ),
+  last_name: z
+    .string()
+    .min(2, "Last name is required")
+    .regex(
+      /^[A-Za-z\s'-]+$/,
+      "Last name can only contain letters, spaces, hyphens, and apostrophes"
+    ),
+  age: z.number().int().min(0, "Age must be a positive number"),
+  sex: z.enum(["MALE", "FEMALE"]),
+  phone_number: z
+    .string()
+    .min(11, "Phone number is required")
+    .regex(/^\+?[0-9\s-]+$/, "Phone number must be a valid format"),
+});
+
 const BookingSchema = z.object({
   id: z.number().optional(),
   scheduled_date: z.string(),
@@ -28,6 +51,7 @@ const BookingSchema = z.object({
       "Notes can only contain letters, numbers, spaces, and basic punctuation"
     )
     .optional(),
+  companions: z.array(CompanionSchema).optional(), // <-- add this line
 });
 
 export type Booking = z.infer<typeof BookingSchema>;

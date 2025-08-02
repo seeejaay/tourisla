@@ -49,7 +49,7 @@ export default function AnnouncementsPage() {
                   const posted = new Date(a.date_posted).getTime();
                   const sixMonthsAgo =
                     Date.now() - 6 * 30 * 24 * 60 * 60 * 1000;
-                  return posted >= sixMonthsAgo;
+                  return posted >= sixMonthsAgo || a.is_pinned;
                 })
                 .slice()
                 .sort(

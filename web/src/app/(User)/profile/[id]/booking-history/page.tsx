@@ -5,10 +5,28 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { OperatorFeedbackModal } from "@/components/custom/booking-history/OperatorFeedbackModal";
 import { GuideFeedbackModal } from "@/components/custom/booking-history/GuideFeedbackModal";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import Image from "next/image";
+
+export interface Companion {
+  id?: number;
+  first_name?: string;
+  last_name?: string;
+  age?: number;
+  sex?: string;
+  phone_number?: string;
+}
 
 export default function BookingHistoryPage() {
   const { loggedInUser } = useAuth();
   const [userId, setUserId] = useState<number | null>(null);
+  const [openCompanions, setOpenCompanions] = useState<null | number>(null);
   const {
     data: bookings,
     fetchByTourist,
@@ -94,6 +112,7 @@ export default function BookingHistoryPage() {
                 <div className="font-bold text-lg text-[#1c5461] mb-1">
                   {booking.package_name || booking.tour_package_id}
                 </div>
+
                 <div className="font-semibold text-[#51702c] mb-1">
                   Scheduled Date:{" "}
                   {booking.scheduled_date
@@ -114,43 +133,61 @@ export default function BookingHistoryPage() {
                     {booking.tour_operator_name || "N/A"}
                   </span>
                 </div>
-                {(
-                  booking.tour_guides as
-                    | {
-                        tourguide_id: number;
-                        first_name: string;
-                        last_name: string;
-                      }[]
-                    | undefined
-                )?.length > 0 && (
-                  <div className="text-[#3e979f] text-sm mb-1">
-                    Tour Guide
-                    {(
-                      booking.tour_guides as {
-                        tourguide_id: number;
-                        first_name: string;
-                        last_name: string;
-                      }[]
-                    ).length > 1
-                      ? "s"
-                      : ""}
-                    :{" "}
-                    {(
-                      booking.tour_guides as {
-                        tourguide_id: number;
-                        first_name: string;
-                        last_name: string;
-                      }[]
-                    )
-                      .map((g) =>
-                        g.first_name && g.last_name
-                          ? `${g.first_name} ${g.last_name}`
-                          : null
-                      )
-                      .filter(Boolean)
-                      .join(", ") || "N/A"}
-                  </div>
-                )}
+                {Array.isArray(booking.tour_guides) &&
+                  booking.tour_guides.length > 0 && (
+                    <div className="text-[#3e979f] text-sm mb-1">
+                      Tour Guide
+                      {booking.tour_guides.length > 1 ? "s" : ""}:{" "}
+                      {booking.tour_guides
+                        .map((g) =>
+                          g.first_name && g.last_name
+                            ? `${g.first_name} ${g.last_name}`
+                            : null
+                        )
+                        .filter(Boolean)
+                        .join(", ") || "N/A"}
+                    </div>
+                  )}
+                {Array.isArray(booking.companions) &&
+                  booking.companions.length > 0 && (
+                    <div className="mt-3">
+                      <Dialog
+                        open={openCompanions === booking.id}
+                        onOpenChange={(open) =>
+                          setOpenCompanions(open ? booking.id : null)
+                        }
+                      >
+                        <DialogTrigger asChild>
+                          <button className="px-3 py-1 bg-[#3e979f] text-white rounded hover:bg-[#1c5461] text-sm transition">
+                            View Companions ({booking.companions.length})
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Companions</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-3">
+                            {booking.companions.map((companion: Companion) => (
+                              <div key={companion.id} className="border-b pb-2">
+                                <div className="font-semibold">
+                                  {companion.first_name} {companion.last_name}
+                                </div>
+                                <div className="text-sm text-gray-600">
+                                  Age: {companion.age}
+                                </div>
+                                <div className="text-sm text-gray-600">
+                                  Sex: {companion.sex}
+                                </div>
+                                <div className="text-sm text-gray-600">
+                                  Phone: {companion.phone_number}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  )}
                 {booking.status === "FINISHED" && (
                   <div className="flex gap-2 mt-4 flex-wrap">
                     {(
@@ -201,18 +238,18 @@ export default function BookingHistoryPage() {
                   </span>
                 </div>
               </div>
-              {/* Right: Proof of Payment */}
-              <div className="flex items-center justify-center md:ml-8 mt-6 md:mt-0">
-                {booking.proof_of_payment && (
-                  <div className="bg-white p-2 rounded-lg border-2 border-[#e6f7fa] shadow">
-                    <img
-                      src={booking.proof_of_payment}
-                      alt="Proof of Payment"
-                      className="w-32 h-32 object-contain"
-                    />
-                  </div>
-                )}
-              </div>
+
+              {booking.proof_of_payment && (
+                <div className="bg-white p-2 rounded-lg border-2 border-[#e6f7fa] shadow">
+                  <Image
+                    src={booking.proof_of_payment}
+                    alt="Proof of Payment"
+                    width={128}
+                    height={128}
+                    className="object-cover"
+                  />
+                </div>
+              )}
             </div>
           ))
         ) : (
