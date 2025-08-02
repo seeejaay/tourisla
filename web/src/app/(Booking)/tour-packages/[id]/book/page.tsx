@@ -10,6 +10,7 @@ import BookingSchema from "@/app/static/booking/bookingSchema";
 import { bookingFields } from "@/app/static/booking/booking";
 import { useAuth } from "@/hooks/useAuth";
 import Footer from "@/components/custom/footer";
+import Image from "next/image";
 // Types matching your API response
 type TourPackage = {
   id: number;
@@ -42,13 +43,22 @@ type QrData = {
   created_at: string;
 };
 
+type Companion = {
+  first_name: string;
+  last_name: string;
+  age: number;
+  sex: string;
+  phone_number: string;
+};
+
 type BookingForm = {
   scheduled_date: string;
   number_of_guests: number;
   total_price: number;
   proof_of_payment: File | null;
   notes: string;
-  [key: string]: string | number | File | null;
+  companions: Companion[]; // <-- add this
+  [key: string]: string | number | File | null | Companion[];
 };
 
 export default function BookingPage() {
@@ -78,6 +88,7 @@ export default function BookingPage() {
     total_price: 0,
     proof_of_payment: null,
     notes: "",
+    companions: [], // <-- initialize
   });
   const [formError, setFormError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -177,6 +188,7 @@ export default function BookingPage() {
       package_id: tourPackage.id,
       operator_qr_id: qrData.id,
       payment_method: "QR",
+      companions: form.companions, // <-- include companions
     };
 
     // If proof_of_payment is a file, use FormData
@@ -185,7 +197,12 @@ export default function BookingPage() {
       payload = new FormData();
       Object.entries(bookingData).forEach(([key, value]) => {
         if (value !== null && value !== undefined) {
-          (payload as FormData).append(key, value as Blob | string);
+          // Stringify companions array before appending
+          if (key === "companions") {
+            (payload as FormData).append(key, JSON.stringify(value));
+          } else {
+            (payload as FormData).append(key, value as Blob | string);
+          }
         }
       });
     }
@@ -206,9 +223,11 @@ export default function BookingPage() {
         {/* Hero Section */}
         <section className="relative h-56 w-full flex items-center justify-center overflow-hidden mb-10">
           <div className="absolute inset-0">
-            <img
+            <Image
               src="/images/article_image.webp"
               alt="Book Tour Package"
+              width={500}
+              height={500}
               className="w-full h-full object-cover object-center brightness-[40%]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#1c5461]/80 via-[#1c5461]/40 to-transparent" />
@@ -242,84 +261,213 @@ export default function BookingPage() {
               Book: {tourPackage?.package_name || "Loading..."}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-8">
-              {bookingFields.map((field) => (
-                <div key={field.name}>
-                  <label className="block font-semibold mb-2 text-[#1c5461]">
-                    {field.label}
-                  </label>
-                  {field.name === "scheduled_date" ? (
-                    <input
-                      type="date"
-                      name="scheduled_date"
-                      value={
-                        tourPackage?.date_start
-                          ? new Date(tourPackage.date_start)
-                              .toISOString()
-                              .split("T")[0]
-                          : ""
-                      }
-                      readOnly
-                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed"
-                    />
-                  ) : field.name === "total_price" ? (
-                    <input
-                      type="number"
-                      name="total_price"
-                      value={form.total_price}
-                      readOnly
-                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed"
-                    />
-                  ) : field.type === "textarea" ? (
-                    <textarea
-                      name={field.name}
-                      value={(form[field.name] as string) || ""}
-                      onChange={handleChange}
-                      className="w-full border border-[#3e979f] rounded-lg px-3 py-2"
-                      rows={3}
-                    />
-                  ) : field.type === "file" ? (
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      ref={fileInputRef}
-                      className="w-full"
-                    />
-                  ) : (
-                    <>
-                      {field.name === "number_of_guests" && tourPackage && (
-                        <p className="text-xs text-gray-600 mb-1">
-                          Maximum Guests: {tourPackage.available_slots}
-                        </p>
-                      )}
+              {bookingFields.map((field) =>
+                field.type === "file" ? null : (
+                  <div key={field.name}>
+                    <label className="block font-semibold mb-2 text-[#1c5461]">
+                      {field.label}
+                    </label>
+                    {field.name === "scheduled_date" ? (
                       <input
-                        type={field.type}
-                        name={field.name}
+                        type="date"
+                        name="scheduled_date"
                         value={
-                          form[field.name] !== undefined &&
-                          form[field.name] !== null &&
-                          typeof form[field.name] !== "object"
-                            ? form[field.name]
-                            : field.type === "number"
-                            ? 1
+                          tourPackage?.date_start
+                            ? new Date(tourPackage.date_start)
+                                .toISOString()
+                                .split("T")[0]
                             : ""
                         }
+                        readOnly
+                        className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed"
+                      />
+                    ) : field.name === "total_price" ? (
+                      <input
+                        type="number"
+                        name="total_price"
+                        value={form.total_price}
+                        readOnly
+                        className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed"
+                      />
+                    ) : field.type === "textarea" ? (
+                      <textarea
+                        name={field.name}
+                        value={(form[field.name] as string) || ""}
                         onChange={handleChange}
                         className="w-full border border-[#3e979f] rounded-lg px-3 py-2"
-                        min={field.type === "number" ? 1 : undefined}
-                        max={
-                          field.type === "number" &&
-                          tourPackage &&
-                          field.name === "number_of_guests"
-                            ? tourPackage.available_slots
-                            : undefined
-                        }
-                        required={field.name !== "notes"}
+                        rows={3}
                       />
-                    </>
-                  )}
+                    ) : (
+                      <>
+                        {field.name === "number_of_guests" && tourPackage && (
+                          <p className="text-xs text-gray-600 mb-1">
+                            Maximum Guests: {tourPackage.available_slots}
+                          </p>
+                        )}
+                        <input
+                          type={field.type}
+                          name={field.name}
+                          value={
+                            form[field.name] !== undefined &&
+                            form[field.name] !== null &&
+                            typeof form[field.name] !== "object"
+                              ? form[field.name]
+                              : field.type === "number"
+                              ? 1
+                              : ""
+                          }
+                          onChange={handleChange}
+                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2"
+                          min={field.type === "number" ? 1 : undefined}
+                          max={
+                            field.type === "number" &&
+                            tourPackage &&
+                            field.name === "number_of_guests"
+                              ? tourPackage.available_slots
+                              : undefined
+                          }
+                          required={field.name !== "notes"}
+                        />
+                      </>
+                    )}
+                  </div>
+                )
+              )}
+
+              {form.number_of_guests > 1 && (
+                <div className="space-y-6">
+                  <h3 className="font-bold text-[#1c5461] text-lg flex items-center gap-2">
+                    <svg
+                      className="w-5 h-5 text-[#3e979f]"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-7.13a4 4 0 11-8 0 4 4 0 018 0zm6 4a4 4 0 10-8 0 4 4 0 008 0z"
+                      />
+                    </svg>
+                    Companion Details
+                  </h3>
+                  {[...Array(form.number_of_guests - 1)].map((_, idx) => (
+                    <div key={idx} className="p-4 flex flex-col gap-4">
+                      <h4 className="font-semibold text-[#1c5461]">
+                        Companion {idx + 1}
+                      </h4>
+                      <div className="flex flex-col md:flex-row gap-4">
+                        <div className="flex-1">
+                          <label className="block text-xs font-semibold text-[#3e979f] mb-1">
+                            First Name
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="First Name"
+                            value={form.companions[idx]?.first_name || ""}
+                            onChange={(e) => {
+                              const companions = [...form.companions];
+                              companions[idx] = {
+                                ...companions[idx],
+                                first_name: e.target.value,
+                              };
+                              setForm((f) => ({ ...f, companions }));
+                            }}
+                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] transition"
+                            required
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-xs font-semibold text-[#3e979f] mb-1">
+                            Last Name
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Last Name"
+                            value={form.companions[idx]?.last_name || ""}
+                            onChange={(e) => {
+                              const companions = [...form.companions];
+                              companions[idx] = {
+                                ...companions[idx],
+                                last_name: e.target.value,
+                              };
+                              setForm((f) => ({ ...f, companions }));
+                            }}
+                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] transition"
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="flex flex-col md:flex-row gap-4">
+                        <div className="w-full md:w-1/4">
+                          <label className="block text-xs font-semibold text-[#3e979f] mb-1">
+                            Age
+                          </label>
+                          <input
+                            type="number"
+                            placeholder="Age"
+                            value={form.companions[idx]?.age || ""}
+                            onChange={(e) => {
+                              const companions = [...form.companions];
+                              companions[idx] = {
+                                ...companions[idx],
+                                age: Number(e.target.value),
+                              };
+                              setForm((f) => ({ ...f, companions }));
+                            }}
+                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] transition"
+                            required
+                          />
+                        </div>
+                        <div className="w-full md:w-1/4">
+                          <label className="block text-xs font-semibold text-[#3e979f] mb-1">
+                            Sex
+                          </label>
+                          <select
+                            value={form.companions[idx]?.sex || ""}
+                            onChange={(e) => {
+                              const companions = [...form.companions];
+                              companions[idx] = {
+                                ...companions[idx],
+                                sex: e.target.value,
+                              };
+                              setForm((f) => ({ ...f, companions }));
+                            }}
+                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] transition"
+                            required
+                          >
+                            <option value="">Select</option>
+                            <option value="MALE">Male</option>
+                            <option value="FEMALE">Female</option>
+                          </select>
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-xs font-semibold text-[#3e979f] mb-1">
+                            Phone Number
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Phone Number"
+                            value={form.companions[idx]?.phone_number || ""}
+                            onChange={(e) => {
+                              const companions = [...form.companions];
+                              companions[idx] = {
+                                ...companions[idx],
+                                phone_number: e.target.value,
+                              };
+                              setForm((f) => ({ ...f, companions }));
+                            }}
+                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] transition"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
+
               {/* Payment Section */}
               <div>
                 <label className="block font-semibold mb-2 text-[#1c5461]">
@@ -332,9 +480,11 @@ export default function BookingPage() {
                     <p className="text-red-500">Failed to load QR code.</p>
                   ) : qrData ? (
                     <>
-                      <img
+                      <Image
                         src={qrData.qr_image_url}
                         alt="Operator QR Code"
+                        width={160}
+                        height={160}
                         className="w-40 h-40 object-contain border-2 border-[#3e979f] rounded mb-2"
                       />
                       <span className="text-sm text-gray-600 mb-2">
@@ -345,6 +495,19 @@ export default function BookingPage() {
                     <p className="text-gray-500">No QR code available.</p>
                   )}
                 </div>
+              </div>
+              {/* Proof of Payment input moved below QR code */}
+              <div>
+                <label className="block font-semibold mb-2 text-[#1c5461]">
+                  Proof of Payment
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  ref={fileInputRef}
+                  className="w-full"
+                />
               </div>
               {formError && <p className="text-red-600 text-sm">{formError}</p>}
               {bookingError && (

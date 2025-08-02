@@ -1,24 +1,47 @@
 const db = require("../db/index.js");
 
 const createAnnouncement = async (announcementData) => {
-  const { title, description, date_posted, location, image_url, category } =
-    announcementData;
+  const {
+    title,
+    description,
+    date_posted,
+    location,
+    image_url,
+    category,
+    is_pinned,
+  } = announcementData;
 
   const result = await db.query(
-    "INSERT INTO announcements (title, description, date_posted, location, image_url, category) VALUES ($1, $2, COALESCE($3, NOW()), $4, $5, $6) RETURNING *",
-    [title, description, date_posted, location, image_url, category]
+    "INSERT INTO announcements (title, description, date_posted, location, image_url, category, is_pinned) VALUES ($1, $2, COALESCE($3, NOW()), $4, $5, $6, $7) RETURNING *",
+    [title, description, date_posted, location, image_url, category, is_pinned]
   );
 
   return result.rows[0];
 };
 
 const editAnnouncement = async (announcementId, announcementData) => {
-  const { title, description, date_posted, location, image_url, category } =
-    announcementData;
+  const {
+    title,
+    description,
+    date_posted,
+    location,
+    image_url,
+    category,
+    is_pinned,
+  } = announcementData;
 
   const result = await db.query(
-    "UPDATE announcements SET title = $1, description = $2, date_posted = $3, location = $4, image_url = $5, category = $6 WHERE id = $7 RETURNING *",
-    [title, description, date_posted, location, image_url, category, announcementId]
+    "UPDATE announcements SET title = $1, description = $2, date_posted = $3, location = $4, image_url = $5, category = $6, is_pinned = $7 WHERE id = $8 RETURNING *",
+    [
+      title,
+      description,
+      date_posted,
+      location,
+      image_url,
+      category,
+      is_pinned,
+      announcementId,
+    ]
   );
 
   return result.rows[0];

@@ -32,6 +32,7 @@ const announcementSchema = z.object({
     invalid_type_error: "Invalid category.",
   }),
   image_url: z.string().optional(),
+  is_pinned: z.boolean().default(false),
 });
 
 export type Announcement = z.infer<typeof announcementSchema>;

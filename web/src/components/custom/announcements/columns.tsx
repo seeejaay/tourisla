@@ -22,6 +22,7 @@ export const AnnouncementSchema = z.object({
   location: z.string(),
   image_url: z.string(),
   category: z.string(),
+  is_pinned: z.boolean().default(false), // New field for pinning announcements
 });
 
 // Infer the TypeScript type from the Zod schema

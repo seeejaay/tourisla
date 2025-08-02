@@ -1,7 +1,7 @@
 import { Announcement } from "./columns";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-
+import { Badge } from "@/components/ui/badge";
 export default function ViewAnnouncement({
   announcement,
 }: {
@@ -12,6 +12,14 @@ export default function ViewAnnouncement({
     <div className="w-full flex flex-col items-center justify-center">
       <Card className="w-full max-w-xl border-none shadow-none">
         <CardContent className="space-y-5 py-2">
+          {/* Pinned status */}
+          <div className="flex justify-end">
+            {announcement.is_pinned && (
+              <Badge className="bg-yellow-200 text-yellow-800 font-semibold px-3 py-1 rounded-full">
+                📌 Pinned
+              </Badge>
+            )}
+          </div>
           <div>
             <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
               Title
@@ -46,6 +54,7 @@ export default function ViewAnnouncement({
               </div>
             </div>
           </div>
+
           <div>
             <Label className="uppercase tracking-widest font-semibold text-xs text-[#3e979f]">
               Category

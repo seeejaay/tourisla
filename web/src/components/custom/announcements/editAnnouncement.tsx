@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { announcementSchema } from "@/app/static/announcement/useAnnouncementManagerSchema";
+
 import categories from "@/app/static/announcement/category.json";
 
 export default function EditAnnouncement({
@@ -18,9 +20,21 @@ export default function EditAnnouncement({
   ) => void | Promise<void>;
   onCancel: () => void;
 }) {
+  const getToday = () => {
+    const now = new Date();
+    // Convert to UTC+8 (Philippine time)
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const phTime = new Date(utc + 8 * 60 * 60000);
+    // Format as YYYY-MM-DD in PH time
+    const year = phTime.getFullYear();
+    const month = String(phTime.getMonth() + 1).padStart(2, "0");
+    const day = String(phTime.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
   const [form, setForm] = useState<Announcement>({
     ...announcement,
     id: announcement.id ? String(announcement.id) : "",
+    date_posted: getToday(), // <-- use announcement date if present
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -120,6 +134,7 @@ export default function EditAnnouncement({
               onChange={handleChange}
               required
               className="bg-white border-[#e6f7fa] focus:border-[#3e979f] focus:ring-[#3e979f]"
+              disabled
             />
           </div>
           <div className="flex-1">
@@ -184,6 +199,22 @@ export default function EditAnnouncement({
             ref={fileInputRef}
             onChange={handleChange}
             className="bg-white border-[#e6f7fa] focus:border-[#3e979f] focus:ring-[#3e979f] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-[#e6f7fa] file:text-[#1c5461]"
+          />
+        </div>
+        <div>
+          <Label
+            htmlFor="is_pinned"
+            className="text-[#1c5461] font-semibold mb-1"
+          >
+            Pin Announcement
+          </Label>
+          <Switch
+            id="is_pinned"
+            checked={form.is_pinned}
+            onCheckedChange={(checked) =>
+              setForm((prev) => ({ ...prev, is_pinned: checked }))
+            }
+            className="bg-white border-[#e6f7fa] focus:border-[#3e979f] focus:ring-[#3e979f]"
           />
         </div>
         {error && <div className="text-red-500 text-sm">{error}</div>}
