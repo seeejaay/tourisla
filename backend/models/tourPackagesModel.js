@@ -207,27 +207,30 @@ const getTourPackagesByTourGuide = async (tourguide_id) => {
 };
 
 const getAllTourPackages = async () => {
-  // Get all tour packages
-  const result = await db.query(`SELECT * FROM tour_packages`);
-  const packages = result.rows;
+  const result = await db.query(`
+    SELECT 
+      tp.*,
+      topr.operator_name,
+      topr.email AS operator_email,
+      COALESCE(
+        json_agg(
+          DISTINCT jsonb_build_object(
+            'tourguide_id', tga.tourguide_id,
+            'first_name', ta.first_name,
+            'last_name', ta.last_name,
+            'email', ta.email
+          )
+        ) FILTER (WHERE tga.tourguide_id IS NOT NULL), '[]'
+      ) AS assigned_guides
+    FROM tour_packages tp
+    JOIN touroperator_applicants topr ON tp.touroperator_id = topr.id
+    LEFT JOIN tourguide_assignments tga ON tp.id = tga.tour_package_id
+    LEFT JOIN tourguide_applicants ta ON tga.tourguide_id = ta.id
+    GROUP BY tp.id, topr.operator_name, topr.email
+    ORDER BY tp.id
+  `);
 
-  // For each package, get assigned guides (with names)
-  for (const pkg of packages) {
-    const guidesRes = await db.query(
-      `SELECT 
-        tga.tourguide_id,
-        ta.first_name,
-        ta.last_name,
-        ta.email
-      FROM tourguide_assignments tga
-      JOIN tourguide_applicants ta ON tga.tourguide_id = ta.id
-      WHERE tga.tour_package_id = $1`,
-      [pkg.id]
-    );
-    pkg.tour_guides = guidesRes.rows;
-  }
-
-  return packages;
+  return result.rows;
 };
 
 const getBookingsByTourPackage = async (packageId) => {
