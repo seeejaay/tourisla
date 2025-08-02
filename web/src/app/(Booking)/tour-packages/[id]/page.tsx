@@ -5,19 +5,32 @@ import { useRouter, useParams } from "next/navigation";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
 import Header from "@/components/custom/header";
 import Image from "next/image";
-import { Users } from "lucide-react";
+import { Users, BadgeCheck, BadgeX, Calendar } from "lucide-react";
 import Footer from "@/components/custom/footer";
+
+type TourGuide = {
+  tourguide_id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+};
+
 type TourPackage = {
   id: number;
   package_name: string;
   location: string;
-  price: number;
+  price: number | string;
   description: string;
   inclusions: string;
   exclusions: string;
   available_slots: number;
   date_start: string;
   date_end: string;
+  start_time?: string;
+  end_time?: string;
+  operator_name?: string;
+  operator_email?: string;
+  assigned_guides: TourGuide[];
   // Add other fields if needed
 };
 
@@ -34,8 +47,10 @@ export default function ViewTourPackagePage() {
       setLoading(true);
       try {
         const allPackages = await fetchAllTourPackages();
-        const pkg = allPackages[parseInt(params.id as string, 10)];
-
+        // Find by id, not by array index
+        const pkg = allPackages.find((p) => p.id === Number(params.id)) as
+          | TourPackage
+          | undefined;
         setTourPackage(pkg || null);
       } catch (error) {
         console.error("Error fetching tour package:", error);
@@ -46,6 +61,17 @@ export default function ViewTourPackagePage() {
 
     fetchPackage();
   }, [params.id, fetchAllTourPackages]);
+
+  const toTitleCase = (str: string) => {
+    return str
+      .split(" ")
+      .map((word) =>
+        word.length > 0
+          ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          : ""
+      )
+      .join(" ");
+  };
 
   if (loading) {
     return (
@@ -111,12 +137,8 @@ export default function ViewTourPackagePage() {
                 className="object-cover object-center rounded-t-2xl"
                 priority
               />
-              <div className="absolute top-2 left-2 bg-[#3e979f]/80 text-white text-xs px-3 py-1 rounded-full shadow">
-                {tourPackage.tour_guides && tourPackage.tour_guides.length > 0
-                  ? tourPackage.tour_guides
-                      .map((g) => `${g.first_name} ${g.last_name}`.trim())
-                      .join(", ")
-                  : "Tour Guide"}
+              <div className="absolute top-2 left-2 bg-[#3e979f] text-white text-sm px-3 py-1 rounded-full shadow">
+                {tourPackage.operator_name}
               </div>
             </div>
             <div className="p-8">
@@ -130,25 +152,49 @@ export default function ViewTourPackagePage() {
                 <span className="text-gray-400 text-sm">per person</span>
               </div>
               <p className="text-gray-700 mb-6">{tourPackage.description}</p>
+              <div className="mb-4">
+                <span className="font-semibold text-[#1c5461]">Operator:</span>{" "}
+                <span className="text-[#3e979f]">
+                  {tourPackage.operator_name}
+                </span>
+                <br />
+                <span className="font-semibold text-[#1c5461]">
+                  Email:
+                </span>{" "}
+                <span className="text-[#3e979f]">
+                  {tourPackage.operator_email}
+                </span>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <div className="bg-blue-50 rounded-lg p-4">
-                  <span className="font-semibold text-blue-700">
+                  <span className="font-semibold text-blue-700 flex items-center gap-1">
+                    <BadgeCheck className="w-4 h-4 text-blue-700" />
                     Inclusions:
                   </span>
-                  <p className="text-gray-600 text-sm mt-1">
-                    {tourPackage.inclusions}
-                  </p>
+                  <div className="max-h-48 overflow-y-auto">
+                    <ul className="text-gray-600 text-sm mt-1 list-disc list-inside">
+                      {tourPackage.inclusions.split(",").map((item, idx) => (
+                        <li key={idx}>{toTitleCase(item.trim())}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
                 <div className="bg-red-50 rounded-lg p-4">
-                  <span className="font-semibold text-red-700">
+                  <span className="font-semibold text-red-700 flex items-center gap-1">
+                    <BadgeX className="w-4 h-4 text-red-700" />
                     Exclusions:
                   </span>
-                  <p className="text-gray-600 text-sm mt-1">
-                    {tourPackage.exclusions}
-                  </p>
+                  <div className="max-h-48 overflow-y-auto">
+                    <ul className="text-gray-600 text-sm mt-1 list-disc list-inside">
+                      {tourPackage.exclusions.split(",").map((item, idx) => (
+                        <li key={idx}>{toTitleCase(item.trim())}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
                 <div className="bg-green-50 rounded-lg p-4">
-                  <span className="font-semibold text-green-700">
+                  <span className="font-semibold text-green-700 flex items-center gap-1">
+                    <Users className="w-4 h-4 text-[#3e979f]" />
                     Available Slots:
                   </span>
                   <div className="flex items-center gap-2 mt-1">
@@ -159,7 +205,8 @@ export default function ViewTourPackagePage() {
                   </div>
                 </div>
                 <div className="bg-yellow-50 rounded-lg p-4">
-                  <span className="font-semibold text-yellow-700">
+                  <span className="font-semibold text-yellow-700 flex items-center gap-1">
+                    <Calendar className="w-4 h-4 text-yellow-700" />
                     Schedule:
                   </span>
                   <p className="text-gray-600 text-sm mt-1">
@@ -167,24 +214,40 @@ export default function ViewTourPackagePage() {
                       undefined,
                       { year: "numeric", month: "long", day: "numeric" }
                     )}{" "}
+                    {tourPackage.start_time &&
+                      new Date(
+                        `1970-01-01T${tourPackage.start_time}Z`
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
                     &rarr;{" "}
                     {new Date(tourPackage.date_end).toLocaleDateString(
                       undefined,
                       { year: "numeric", month: "long", day: "numeric" }
                     )}
+                    {tourPackage.end_time &&
+                      ` ${new Date(
+                        `1970-01-01T${tourPackage.end_time}Z`
+                      ).toLocaleTimeString([], {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}`}
                   </p>
                 </div>
               </div>
-              {/* Tour Guides Section */}
-              {tourPackage.tour_guides &&
-                tourPackage.tour_guides.length > 0 && (
+              {/* Assigned Guides Section */}
+              {tourPackage.assigned_guides &&
+                tourPackage.assigned_guides.length > 0 && (
                   <div className="mb-6">
                     <span className="font-semibold text-[#1c5461]">
                       Assigned Tour Guide
-                      {tourPackage.tour_guides.length > 1 ? "s" : ""}:
+                      {tourPackage.assigned_guides.length > 1 ? "s" : ""}:
                     </span>
                     <p className="text-gray-800 mt-1">
-                      {tourPackage.tour_guides
+                      {tourPackage.assigned_guides
                         .map((g) => `${g.first_name} ${g.last_name}`.trim())
                         .join(", ")}
                     </p>
