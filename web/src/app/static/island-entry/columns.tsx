@@ -6,6 +6,15 @@ import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 // Define your type
+import { Users, User } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
 export type IslandEntry = {
   id: number;
   unique_code: string;
@@ -17,6 +26,8 @@ export type IslandEntry = {
   status: string;
   first_name: string;
   last_name: string;
+  full_name: string;
+  companion_names: string;
 };
 
 export function columns(): ColumnDef<IslandEntry>[] {
@@ -108,6 +119,73 @@ export function columns(): ColumnDef<IslandEntry>[] {
         </Badge>
       ),
       enableSorting: true,
+    },
+    {
+      accessorKey: "companion_names",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="w-48 font-bold text-center cursor-pointer"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Companions
+          <ArrowUpDown className="ml-1 h-4 w-4 text-[#3e979f]" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const companions = row.original.companion_names
+          ? row.original.companion_names.split(",").map((n: string) => n.trim())
+          : [];
+        return (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 px-3 py-1 rounded-full border-blue-200 hover:bg-blue-50 transition cursor-pointer"
+              >
+                <Users className="h-4 w-4 text-blue-600" />
+                <span className="font-semibold text-blue-700">View</span>
+                <span className="ml-1 bg-blue-100 text-blue-700 rounded-full px-2 py-0.5 text-xs font-bold">
+                  {companions.length}
+                </span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md rounded-2xl shadow-2xl p-6 bg-gradient-to-br from-white to-blue-50 border border-blue-100">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold mb-2 flex items-center gap-2 text-blue-800">
+                  <Users className="h-5 w-5 text-blue-500" />
+                  Companions
+                </DialogTitle>
+                <div className="h-px bg-blue-100 my-2" />
+              </DialogHeader>
+              <div className="py-2">
+                {companions.length > 0 ? (
+                  <ul className="space-y-2">
+                    {companions.map((name: string, idx: number) => (
+                      <li
+                        key={idx}
+                        className="flex items-center gap-2 text-base text-gray-800 bg-blue-100/60 rounded-lg px-3 py-2 transition hover:bg-blue-200"
+                      >
+                        <User className="h-4 w-4 text-blue-400" />
+                        <span className="font-medium">{name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-6">
+                    <Users className="mb-2 h-8 w-8 text-blue-200" />
+                    <span className="italic text-gray-400 text-base">
+                      No companions
+                    </span>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        );
+      },
+      enableSorting: false,
     },
     // {
     //   accessorKey: "unique_code",

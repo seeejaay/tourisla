@@ -107,9 +107,20 @@ const getLatestIslandEntryByUserId = async (userId) => {
 
 const getAllIslandEntries = async () => {
   const result = await db.query(`
-    SELECT ier.*, u.first_name, u.last_name
+    SELECT
+      ier.*,
+      u.first_name,
+      u.last_name,
+      COALESCE(members.companion_names, '') AS companion_names
     FROM island_entry_registration ier
     JOIN users u ON ier.user_id = u.user_id
+    LEFT JOIN (
+      SELECT
+        registration_id,
+        STRING_AGG(name, ', ') AS companion_names
+      FROM island_entry_registration_members
+      GROUP BY registration_id
+    ) members ON ier.id = members.registration_id
   `);
   return result.rows;
 };

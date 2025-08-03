@@ -87,9 +87,30 @@ const getAllVisitorLogsWithSpotName = async () => {
   const query = `
     SELECT
       avl.*,
-      ts.name AS tourist_spot_name
+      ts.name AS tourist_spot_name,
+      u.first_name || ' ' || u.last_name AS scanned_by_name,
+      -- Main visitor's name
+      main_visitor.first_name || ' ' || main_visitor.last_name AS main_visitor_name,
+      -- All names: main + companions
+      main_visitor_and_group.all_names AS visitor_names,
+      main_visitor_and_group.total_visitors
     FROM attraction_visitor_logs avl
     JOIN tourist_spots ts ON avl.tourist_spot_id = ts.id
+    LEFT JOIN users u ON avl.scanned_by_user_id = u.user_id
+    JOIN visitor_registrations vr ON avl.registration_id = vr.id
+    JOIN users main_visitor ON vr.user_id = main_visitor.user_id
+    LEFT JOIN (
+      SELECT
+        vr.id AS registration_id,
+        -- Concatenate main visitor and companions
+        vr_user.first_name || ' ' || vr_user.last_name
+          || CASE WHEN COUNT(vgm.name) > 0 THEN ', ' || STRING_AGG(vgm.name, ', ') ELSE '' END AS all_names,
+        1 + COUNT(vgm.name) AS total_visitors
+      FROM visitor_registrations vr
+      JOIN users vr_user ON vr.user_id = vr_user.user_id
+      LEFT JOIN visitor_group_members vgm ON vgm.registration_id = vr.id
+      GROUP BY vr.id, vr_user.first_name, vr_user.last_name
+    ) main_visitor_and_group ON avl.registration_id = main_visitor_and_group.registration_id
     ORDER BY avl.visit_date DESC
   `;
 
