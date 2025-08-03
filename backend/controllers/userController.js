@@ -215,12 +215,24 @@ const editUserController = async (req, res) => {
       });
     }
 
+    req.session.user = {
+      ...req.session.user,
+      first_name: first_name.toUpperCase(),
+      last_name: last_name.toUpperCase(),
+      email: email.toUpperCase(),
+      mobile_number: phone_number,
+      nationality,
+      role,
+      status,
+      last_login_at,
+    };
+
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
     }
     res.status(200).json({
       status: "success",
-      data: { user: updatedUser },
+      data: { user: req.session.user.role },
     });
   } catch (error) {
     console.error("Error updating user:", error);
