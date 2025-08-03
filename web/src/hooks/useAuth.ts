@@ -161,23 +161,26 @@ export function useAuth() {
     }
   };
 
-  const verifyUserAccount = async (token: string) => {
-    setLoading(true);
-    setError("");
-    try {
-      const resVerifyUser = await verifyUser(token);
-      if (resVerifyUser.error) {
-        setError(resVerifyUser.error);
+  const verifyUserAccount = useCallback(
+    async (token: string) => {
+      setLoading(true);
+      setError("");
+      try {
+        const resVerifyUser = await verifyUser(token);
+        if (resVerifyUser.error) {
+          setError(resVerifyUser.error);
+          return null;
+        }
+        return resVerifyUser;
+      } catch (err) {
+        setError("An error occurred during account verification: " + err);
         return null;
+      } finally {
+        setLoading(false);
       }
-      return resVerifyUser;
-    } catch (err) {
-      setError("An error occurred during account verification: " + err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [setLoading, setError]
+  );
 
   return {
     loginUser,
