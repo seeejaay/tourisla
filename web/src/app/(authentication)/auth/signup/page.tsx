@@ -207,12 +207,7 @@ export default function SignUp() {
     }
 
     if (role === "Tour Operator") {
-      if (
-        !data.operator_name ||
-        !data.business_email ||
-        !data.mobile_number ||
-        !data.office_address
-      ) {
+      if (!data.operator_name || !data.mobile_number || !data.office_address) {
         setError("Please fill in all required tour operator fields.");
         return;
       }
@@ -270,7 +265,7 @@ export default function SignUp() {
           last_name: data.last_name,
           operator_name: data.operator_name!,
           representative_name: `${data.first_name} ${data.last_name}`,
-          email: data.business_email!,
+          email: data.email!,
           phone_number: data.phone_number,
           mobile_number: data.mobile_number!,
           office_address: data.office_address!,
@@ -724,6 +719,8 @@ export default function SignUp() {
                                   type="email"
                                   placeholder="Business Contact Email"
                                   {...field}
+                                  value={form.watch("email")}
+                                  readOnly // Optional: make it read-only
                                   className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-white"
                                 />
                               </FormControl>
