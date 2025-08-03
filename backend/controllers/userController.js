@@ -14,8 +14,12 @@ const {
 } = require("../models/userModel");
 const { editGuideRegisByUserId } = require("../models/guideRegisModel");
 const { editOperatorRegisByUserId } = require("../models/operatorRegisModel");
-const { sendWelcomeEmail } = require("../utils/email");
-const { sendResetPasswordEmail } = require("../utils/email");
+const {
+  sendWelcomeEmail,
+  sendVerificationEmail,
+  sendResetPasswordEmail,
+} = require("../utils/email");
+// const {  } = require("../utils/email");
 const createUserController = async (req, res) => {
   try {
     const {
@@ -100,6 +104,10 @@ const createUserController = async (req, res) => {
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
+    //generate verification token and expiry
+    const verifyToken = crypto.randomBytes(32).toString("hex");
+    // Set token expiry to 1 hour from now
+    const verifyTokenExpires = new Date(Date.now() + 3600 * 1000);
 
     // Create the user in the database
     const user = await createUser({
@@ -112,8 +120,17 @@ const createUserController = async (req, res) => {
       nationality,
       birth_date,
       sex: formattedSex,
+      verify_token: verifyToken,
+      verify_token_expires: verifyTokenExpires,
     });
 
+    await sendVerificationEmail(
+      email,
+      first_name,
+      last_name,
+      verifyToken,
+      verifyTokenExpires
+    );
     await sendWelcomeEmail(email, first_name, last_name);
     res.status(201).json({
       status: "success",

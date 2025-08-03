@@ -100,3 +100,25 @@ export const currentUser = async (sessionCookie) => {
   });
   return response.json();
 };
+
+export const verifyUser = async (token) => {
+  try {
+    const response = await axios.put(`${API_URL}verify/${token}`, null, {
+      withCredentials: true, // Include cookies in the request
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Failed to verify user. Server responded with status: ${response.status}`
+      );
+    }
+    console.log("User verified successfully:", response.data); // Log the API response
+    return response.data; // Return response data
+  } catch (error) {
+    console.error(
+      "Error during user verification:",
+      error.response?.data || error.message
+    );
+    throw error; // Re-throw the error for handling in the calling code
+  }
+};

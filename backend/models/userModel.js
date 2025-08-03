@@ -1,5 +1,6 @@
 const db = require("../db/index.js");
 const bcrypt = require("bcrypt");
+
 const createUser = async (userData) => {
   const {
     first_name,
@@ -12,10 +13,12 @@ const createUser = async (userData) => {
     status = "Unverified",
     birth_date,
     sex,
+    verify_token,
+    verify_token_expires,
   } = userData;
 
   const result = await db.query(
-    "INSERT INTO users (first_name, last_name, email, password, phone_number, role, nationality, created_at, status,birth_date, sex) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8,$9,$10) RETURNING *",
+    "INSERT INTO users (first_name, last_name, email, password, phone_number, role, nationality, created_at, status,birth_date, sex, verify_token, verify_token_expires) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8,$9,$10,$11,$12) RETURNING *",
     [
       first_name,
       last_name,
@@ -27,6 +30,8 @@ const createUser = async (userData) => {
       status,
       birth_date,
       sex,
+      verify_token,
+      verify_token_expires,
     ]
   );
 
@@ -126,7 +131,10 @@ const updatePassword = async (userId, newPassword) => {
 
 const verifyUser = async (token) => {
   const result = await db.query(
-    "UPDATE users SET status = 'Active' WHERE verify_token = $1 RETURNING *",
+    `UPDATE users
+     SET status = 'Active', verify_token = NULL, verify_token_expires = NULL
+     WHERE verify_token = $1 AND verify_token_expires > NOW()
+     RETURNING *`,
     [token]
   );
   return result.rows[0];
