@@ -102,7 +102,7 @@ const getVisitorHistoryByUserId = async (userId) => {
      JOIN visitor_registrations r ON l.registration_id = r.id
      LEFT JOIN visitor_group_members m ON m.registration_id = r.id
      WHERE l.user_id = $1
-     ORDER BY l.visit_date DESC, r.registration_date DESC` ,
+     ORDER BY l.visit_date DESC, r.registration_date DESC`,
     [userId]
   );
   return result.rows;
