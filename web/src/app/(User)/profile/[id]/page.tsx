@@ -267,6 +267,7 @@ export default function ProfilePage() {
                   className="px-6 py-2 rounded-lg bg-[#e6f7fa] text-[#1c5461] font-semibold shadow hover:bg-[#f0f0f0] transition"
                   onClick={() => {
                     setEditMode(false);
+                    setShowAlert(false);
                     setForm({
                       ...user,
                       password: "",
@@ -334,7 +335,9 @@ export default function ProfilePage() {
               </AlertTitle>
               <AlertDescription>
                 {updateError
-                  ? updateError
+                  ? updateError.toString().includes("409")
+                    ? "A user with this email  already exists."
+                    : updateError
                   : "Your profile information has been updated."}
               </AlertDescription>
             </Alert>
