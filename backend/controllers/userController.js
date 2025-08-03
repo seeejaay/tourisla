@@ -188,7 +188,7 @@ const editUserController = async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, 10);
       updatedFields.password = hashedPassword;
     }
-    const existingUser = await findUserByEmail(email);
+    const existingUser = await findUserByEmail(updatedFields.email);
     console.log("Updating user with ID:", userId);
     console.log("Existing user:", existingUser);
     if (existingUser.user_id == userId) {
