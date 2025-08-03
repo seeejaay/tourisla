@@ -265,6 +265,9 @@ const {
   getTouristBookingsFilteredController,
   cancelBookingController,
   getBookingsByTourOperatorController,
+  getTotalEarningsController,
+  getEarningsByPackageController,
+  getMonthlyEarningsController,
 } = require("../controllers/bookingController.js");
 
 const {
@@ -963,6 +966,25 @@ app.get(
   allowedRoles(["Tourist"]),
   getTouristBookingsFilteredController
 );
+
+app.get(
+  "/api/v1/earnings/total",
+  allowedRoles(["Tour Operator"]),
+  getTotalEarningsController
+);
+
+app.get(
+  "/api/v1/earnings/by-package",
+  allowedRoles(["Tour Operator"]),
+  getEarningsByPackageController
+);
+
+app.get(
+  "/api/v1/earnings/by-monthly",
+  allowedRoles(["Tour Operator"]),
+  getMonthlyEarningsController
+);
+
 app.put(
   "/api/v1/bookings/:id/cancel",
   allowedRoles(["Tourist"]),

@@ -10,6 +10,9 @@ import {
   // getFilteredBookingsByTourist,
   cancelBooking,
   getBookingsByOperator as apigetBookingsByOperator,
+  getTotalEarnings,
+  getEarningsByPackage,
+  getMonthlyEarnings,
 } from "@/lib/api/booking";
 export interface BookingCreateInput {
   scheduled_date: string;
@@ -323,4 +326,78 @@ export function useBookingsByOperator() {
   }, []);
 
   return { data, fetchByOperator, loading, error };
+}
+
+export function useTotalEarnings() {
+  const [data, setData] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchTotalEarnings = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await getTotalEarnings();
+      console.log("Fetched total earnings:", result);
+      setData(result);
+      return result;
+    } catch (err) {
+      setError(err + "Unknown error");
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { data, fetchTotalEarnings, loading, error };
+}
+
+export function useEarningsByPackage() {
+  const [data, setData] = useState<{ packageName: string; earnings: number }[]>(
+    []
+  );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchEarningsByPackage = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await getEarningsByPackage();
+      console.log("Fetched earnings by package:", result);
+      setData(result);
+      return result;
+    } catch (err) {
+      setError(err + "Unknown error");
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { data, fetchEarningsByPackage, loading, error };
+}
+
+export function useMonthlyEarningsByTourOperator() {
+  const [data, setData] = useState<{ month: string; earnings: number }[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchMonthlyEarnings = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await getMonthlyEarnings();
+      console.log("Fetched monthly earnings by tour operator:", result);
+      setData(result);
+      return result;
+    } catch (err) {
+      setError(err + "Unknown error");
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { data, fetchMonthlyEarnings, loading, error };
 }

@@ -16,6 +16,9 @@ const {
   getBookingById,
   getFilteredBookingsByTourist,
   getBookingsByTourOperatorId,
+  getTotalEarningsByTourOperator,
+  getEarningsByPackageForTourOperator,
+  getMonthlyEarningsByTourOperator,
 } = require("../models/bookingModel.js");
 const { s3Client, PutObjectCommand } = require("../utils/s3.js");
 
@@ -305,6 +308,70 @@ const getBookingsByTourOperatorController = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch tour operator bookings" });
   }
 };
+
+const getTotalEarningsController = async (req, res) => {
+  try {
+    const user = req.session.user;
+    if (!user) return res.status(403).json({ error: "Not authenticated." });
+
+    const operatorRegis = await getOperatorRegisById(user.id);
+    if (!operatorRegis)
+      return res.status(404).json({ error: "Tour operator not found." });
+
+    const { dateRange } = req.query;
+    const total = await getTotalEarningsByTourOperator(
+      operatorRegis.id,
+      dateRange
+    );
+    res.json({ totalEarnings: total });
+  } catch (err) {
+    console.error("Error fetching total earnings:", err);
+    res.status(500).json({ error: "Failed to fetch total earnings" });
+  }
+};
+
+const getEarningsByPackageController = async (req, res) => {
+  try {
+    const user = req.session.user;
+    if (!user) return res.status(403).json({ error: "Not authenticated." });
+
+    const operatorRegis = await getOperatorRegisById(user.id);
+    if (!operatorRegis)
+      return res.status(404).json({ error: "Tour operator not found." });
+
+    const { dateRange } = req.query;
+    const earnings = await getEarningsByPackageForTourOperator(
+      operatorRegis.id,
+      dateRange
+    );
+    res.json(earnings);
+  } catch (err) {
+    console.error("Error fetching earnings by package:", err);
+    res.status(500).json({ error: "Failed to fetch earnings by package" });
+  }
+};
+
+const getMonthlyEarningsController = async (req, res) => {
+  try {
+    const user = req.session.user;
+    if (!user) return res.status(403).json({ error: "Not authenticated." });
+
+    const operatorRegis = await getOperatorRegisById(user.id);
+    if (!operatorRegis)
+      return res.status(404).json({ error: "Tour operator not found." });
+
+    const { dateRange } = req.query;
+    const monthly = await getMonthlyEarningsByTourOperator(
+      operatorRegis.id,
+      dateRange
+    );
+    res.json(monthly);
+  } catch (err) {
+    console.error("Error fetching monthly earnings:", err);
+    res.status(500).json({ error: "Failed to fetch monthly earnings" });
+  }
+};
+
 module.exports = {
   createBookingController,
   updateBookingStatusController,
@@ -314,4 +381,7 @@ module.exports = {
   getTouristBookingsFilteredController,
   cancelBookingController,
   getBookingsByTourOperatorController,
+  getTotalEarningsController,
+  getEarningsByPackageController,
+  getMonthlyEarningsController,
 };
