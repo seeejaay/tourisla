@@ -191,7 +191,7 @@ const editUserController = async (req, res) => {
     const existingUser = await findUserByEmail(updatedFields.email);
     console.log("Updating user with ID:", userId);
     console.log("Existing user:", existingUser);
-    if (existingUser.user_id == userId) {
+    if (existingUser && existingUser.user_id == userId) {
       // If the existing user is the same as the one being updated, skip the email check
       console.log("User is updating their own email, skipping conflict check.");
     } else if (existingUser) {
