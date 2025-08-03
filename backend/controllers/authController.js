@@ -59,4 +59,22 @@ const logoutUser = (req, res) => {
   });
 };
 
-module.exports = { loginUser, logoutUser };
+const verifyUserController = async (req, res) => {
+  const { token } = req.params;
+  try {
+    const user = await verifyUser(token);
+    if (!user) {
+      return res
+        .status(400)
+        .json({ error: "Invalid or expired verification token" });
+    }
+    return res
+      .status(200)
+      .json({ message: "User verified successfully", user });
+  } catch (error) {
+    console.error("Error during user verification:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+module.exports = { loginUser, logoutUser, verifyUserController };

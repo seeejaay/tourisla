@@ -439,9 +439,81 @@ const sendIncidentEmail = async (email, incidentDetails) => {
   }
 };
 
+async function sendVerificationEmail(
+  email,
+  firstName,
+  lastName,
+  verifyToken,
+  verifyTokenExpires
+) {
+  try {
+    const verificationLink = `https://tourisla.space/auth/verify?token=${verifyToken}`;
+    // Format the expiry date for display
+    const expiresDate = new Date(verifyTokenExpires).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+      timeZoneName: "short",
+    });
+
+    const result = await resend.emails.send({
+      from: "Tourisla <tourisla@tourisla.space>",
+      to: email,
+      subject: "Verify Your Email Address",
+      html: `
+      <html>
+      <body style="font-family: Arial, sans-serif; background: #f8f9fa; margin:0; padding:0;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background: #f8f9fa; padding: 40px 0;">
+          <tr>
+            <td align="center">
+              <table width="480" cellpadding="0" cellspacing="0" style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 32px;">
+                <tr>
+                  <td align="center" style="padding-bottom: 24px;">
+                    <h1 style="color: #2a7ae4; margin: 0 0 8px 0; font-size: 28px;">Verify Your Email Address</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="color: #333; font-size: 16px; line-height: 1.6; padding-bottom: 24px;">
+                    <p style="margin: 0;">Dear ${firstName} ${lastName},</p>
+                    <p style="margin: 16px 0;">Please verify your email address by clicking the button below:</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center">
+                    <a href="${verificationLink}" style="display:inline-block; background: #2a7ae4; color: #fff; text-decoration: none; padding: 12px 32px; border-radius: 4px; font-size: 16px;">Verify Email</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 24px; color: #888; font-size: 13px;" align="center">
+                    <p style="margin:0;">This link will expire on <strong>${expiresDate}</strong>.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 32px; color: #888; font-size: 12px;" align="center">
+                    &copy; ${new Date().getFullYear()} Tourisla. All rights reserved.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+      `,
+    });
+    console.log("Verification email sent successfully:", result);
+  } catch (error) {
+    console.error("Error sending verification email:", error);
+  }
+}
+
 module.exports = {
   sendWelcomeEmail,
   sendResetPasswordEmail,
+  sendVerificationEmail,
   sendIslandEntryEmail,
   sendDocumentApproveEmail,
   sendDocumentRejectEmail,
