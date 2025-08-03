@@ -1,4 +1,12 @@
-import { User, FileText, BookA, FileStack, Wallet, Star } from "lucide-react";
+import {
+  User,
+  FileText,
+  BookA,
+  FileStack,
+  Wallet,
+  Star,
+  QrCode,
+} from "lucide-react";
 
 import type { NavItem } from "@/components/custom/sidebar";
 
@@ -10,6 +18,12 @@ const operatorNavigation = (userId: string, status: string): NavItem[] => {
         href: `/profile/${userId}`,
         title: "Profile",
         icon: User,
+      },
+      {
+        name: "Earnings",
+        href: `/profile/${userId}/earnings`,
+        title: "Earnings",
+        icon: Wallet,
       },
       {
         name: "Bookings",
@@ -39,7 +53,7 @@ const operatorNavigation = (userId: string, status: string): NavItem[] => {
         name: "Upload QR Code",
         href: `/profile/${userId}/qr-code`,
         title: "Upload QR Code",
-        icon: Wallet,
+        icon: QrCode,
       },
       {
         name: "Feedback",

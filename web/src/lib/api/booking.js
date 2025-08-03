@@ -217,3 +217,50 @@ export const getBookingsByOperator = async (operatorId) => {
     throw error;
   }
 };
+
+export const getTotalEarnings = async () => {
+  try {
+    console.log("Fetching Total Earnings");
+    const response = await axios.get(`${API_URL}earnings/total`, {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Fetching Total Earnings: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const getEarningsByPackage = async () => {
+  try {
+    console.log("Fetching Earnings by Package");
+    const response = await axios.get(`${API_URL}earnings/by-package`, {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Fetching Earnings by Package: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+export const getMonthlyEarnings = async () => {
+  try {
+    console.log("Fetching Monthly Earnings");
+    const response = await axios.get(`${API_URL}earnings/by-monthly`, {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error Fetching Monthly Earnings: ",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};

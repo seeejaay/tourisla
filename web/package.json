@@ -52,6 +52,7 @@
     "react-dom": "^19.0.0",
     "react-google-recaptcha": "^3.1.0",
     "react-hook-form": "^7.56.1",
+    "recharts": "^2.15.4",
     "sonner": "^2.0.6",
     "tailwind-merge": "^3.2.0",
     "yup": "^1.6.1",

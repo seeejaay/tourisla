@@ -201,6 +201,85 @@ const getBookingsByTourOperatorId = async (operatorId) => {
   );
   return result.rows;
 };
+
+//earnings total
+async function getTotalEarningsByTourOperator(
+  tourOperatorId,
+  dateRange = null
+) {
+  let query = `
+    SELECT SUM(b.total_price) AS totalEarnings
+    FROM bookings b
+    JOIN tour_packages tp ON b.tour_package_id = tp.id
+    WHERE tp.touroperator_id = $1
+      AND b.status IN ('APPROVED', 'FINISHED')
+  `;
+  const params = [tourOperatorId];
+
+  if (dateRange) {
+    query += " AND b.scheduled_date >= $2";
+    params.push(dateRange);
+  }
+
+  const result = await db.query(query, params);
+  return result.rows[0]?.totalearnings || 0;
+}
+
+//tour package earnings
+async function getEarningsByPackageForTourOperator(
+  tourOperatorId,
+  dateRange = null
+) {
+  let query = `
+    SELECT 
+      tp.id AS packageId,
+      tp.package_name AS packageName,
+      SUM(b.total_price) AS earnings
+    FROM bookings b
+    JOIN tour_packages tp ON b.tour_package_id = tp.id
+    WHERE tp.touroperator_id = $1
+      AND b.status IN ('APPROVED', 'FINISHED')
+  `;
+  const params = [tourOperatorId];
+
+  if (dateRange) {
+    query += " AND b.scheduled_date >= $2";
+    params.push(dateRange);
+  }
+
+  query += " GROUP BY tp.id, tp.package_name ORDER BY earnings DESC";
+
+  const result = await db.query(query, params);
+  return result.rows;
+}
+
+// Earnings per month for a tour operator (optionally filtered by date range)
+async function getMonthlyEarningsByTourOperator(
+  tourOperatorId,
+  dateRange = null
+) {
+  let query = `
+    SELECT 
+      TO_CHAR(b.scheduled_date, 'YYYY-MM-DD') AS month,
+      SUM(b.total_price) AS earnings
+    FROM bookings b
+    JOIN tour_packages tp ON b.tour_package_id = tp.id
+    WHERE tp.touroperator_id = $1
+      AND b.status IN ('APPROVED', 'FINISHED')
+  `;
+  const params = [tourOperatorId];
+
+  if (dateRange) {
+    query += " AND b.scheduled_date >= $2";
+    params.push(dateRange);
+  }
+
+  query += " GROUP BY month ORDER BY month";
+
+  const result = await db.query(query, params);
+  return result.rows;
+}
+
 module.exports = {
   createBooking,
   updateBookingStatus,
@@ -209,4 +288,7 @@ module.exports = {
   getBookingById,
   getFilteredBookingsByTourist,
   getBookingsByTourOperatorId,
+  getTotalEarningsByTourOperator,
+  getEarningsByPackageForTourOperator,
+  getMonthlyEarningsByTourOperator,
 };
