@@ -56,6 +56,7 @@ const {
   loginUser,
   logoutUser,
   verifyUserController,
+  resendVerificationController,
 } = require("../controllers/authController.js");
 const {
   createUserController,
@@ -372,6 +373,11 @@ app.post("/api/v1/admin-action", authenticateAdmin, (req, res) => {
 
 app.post("/api/v1/login", loginUser);
 app.post("/api/v1/logout", logoutUser);
+app.post(
+  "/api/v1/resend-verification",
+  authenticateUser,
+  resendVerificationController
+);
 app.put("/api/v1/verify/:token", verifyUserController);
 
 app.get("/api/v1/user", authenticateUser, currentUserController);

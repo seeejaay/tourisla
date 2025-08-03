@@ -1,11 +1,15 @@
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const {
   findUserByEmail,
   statusCheck,
   loginDate,
   verifyUser,
+  setVerificationToken,
+  findUserById,
 } = require("../models/userModel.js");
 
+const { sendVerificationEmail } = require("../utils/email.js");
 const loginUser = async (req, res) => {
   let { email, password } = req.body;
   const Upperemail = email.toUpperCase();
@@ -36,6 +40,7 @@ const loginUser = async (req, res) => {
       nationality: user.nationality,
       birthDate: user.birth_date,
       sex: user.sex,
+      status: user.status,
     };
     await loginDate(email, ipAddress);
     return res.status(200).json({
@@ -68,6 +73,9 @@ const verifyUserController = async (req, res) => {
         .status(400)
         .json({ error: "Invalid or expired verification token" });
     }
+    if (req.session.user) {
+      req.session.user.status = user.status;
+    }
     return res
       .status(200)
       .json({ message: "User verified successfully", user });
@@ -77,4 +85,38 @@ const verifyUserController = async (req, res) => {
   }
 };
 
-module.exports = { loginUser, logoutUser, verifyUserController };
+const resendVerificationController = async (req, res) => {
+  const userId = req.session.user.id; // or get from req.body/email if not authenticated
+  try {
+    const user = await findUserById(userId);
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+    if (user.status === "Active")
+      return res.status(400).json({ error: "User already verified" });
+
+    const verify_token = crypto.randomBytes(32).toString("hex");
+    const verify_token_expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await setVerificationToken(userId, verify_token, verify_token_expires);
+
+    await sendVerificationEmail(
+      user.email,
+      user.first_name,
+      user.last_name,
+      verify_token,
+      verify_token_expires
+    );
+
+    res.json({ message: "Verification email resent" });
+  } catch (error) {
+    console.error("Resend verification error:", error);
+    res.status(500).json({ error: "Failed to resend verification email" });
+  }
+};
+
+module.exports = {
+  loginUser,
+  logoutUser,
+  verifyUserController,
+  resendVerificationController,
+};

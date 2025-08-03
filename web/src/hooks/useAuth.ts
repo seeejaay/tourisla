@@ -6,6 +6,7 @@ import {
   resetPassword,
   currentUser,
   verifyUser,
+  resendVerification as resendVerificationController,
 } from "@/lib/api/auth";
 import {
   forgotPasswordSchema,
@@ -182,11 +183,29 @@ export function useAuth() {
     [setLoading, setError]
   );
 
+  const resendVerification = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const resResendVerification = await resendVerificationController();
+      if (resResendVerification.error) {
+        setError(resResendVerification.error);
+        return null;
+      }
+      return resResendVerification;
+    } catch (err) {
+      setError("An error occurred while resending verification: " + err);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [setLoading, setError]);
   return {
     loginUser,
     error,
     setError,
     verifyUserAccount,
+    resendVerification,
     loading,
     setLoading,
     handleForgotPassword,

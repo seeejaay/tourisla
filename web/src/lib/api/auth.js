@@ -122,3 +122,29 @@ export const verifyUser = async (token) => {
     throw error; // Re-throw the error for handling in the calling code
   }
 };
+
+export const resendVerification = async () => {
+  try {
+    const response = await axios.post(
+      `${API_URL}resend-verification`,
+      {},
+      {
+        withCredentials: true, // Browser sends session cookie automatically
+      }
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Failed to resend verification. Server responded with status: ${response.status}`
+      );
+    }
+    console.log("Verification email resent successfully");
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error resending verification email:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};

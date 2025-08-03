@@ -30,7 +30,13 @@ interface UserForm extends UserProfile {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { loggedInUser, loading: authLoading } = useAuth();
+  const {
+    loggedInUser,
+    loading: authLoading,
+    resendVerification,
+    loading: resendLoading,
+    error: resendError,
+  } = useAuth();
   const { authorizeCalendar } = useCalendar();
   const {
     updateUser,
@@ -42,11 +48,13 @@ export default function ProfilePage() {
   const [form, setForm] = useState<UserForm | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   // Fetch current user on mount
   useEffect(() => {
     async function fetchUser() {
       const res = await loggedInUser(router);
+      console.log("Fetched user:", res);
       if (res && res.data && res.data.user) {
         const u = res.data.user;
         const normalizedUser = {
@@ -119,6 +127,19 @@ export default function ProfilePage() {
     }
   };
 
+  const handleResendVerification = async () => {
+    setResendSuccess(false);
+    try {
+      const res = await resendVerification();
+      if (res && res.message) {
+        setResendSuccess(true);
+      }
+    } catch (err) {
+      console.error("Error resending verification:", err);
+      setResendSuccess(false);
+    }
+  };
+
   if (authLoading || !user || !form) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4]">
@@ -138,6 +159,35 @@ export default function ProfilePage() {
     <>
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] overflow-hidden">
         <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full border border-[#e6f7fa]">
+          {/* Resend verification alert */}
+          {user.status !== "Active" && (
+            <div className="mb-6">
+              <Alert>
+                <AlertTitle>Email Not Verified</AlertTitle>
+                <AlertDescription>
+                  Your account is not verified. Please check your email for a
+                  verification link.
+                  <br />
+                  <button
+                    className="mt-2 px-4 py-2 bg-[#3e979f] text-white rounded hover:bg-[#1c5461] transition"
+                    onClick={handleResendVerification}
+                    disabled={resendLoading}
+                  >
+                    {resendLoading ? "Sending..." : "Resend Verification Email"}
+                  </button>
+                  {resendError && (
+                    <div className="text-red-600 mt-2">{resendError}</div>
+                  )}
+                  {resendSuccess && (
+                    <div className="text-green-600 mt-2">
+                      Verification email sent!
+                    </div>
+                  )}
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
+
           <div className="flex flex-col items-center mb-8">
             <div className="w-24 h-24 rounded-full bg-[#e6f7fa] flex items-center justify-center mb-4 shadow-lg border-2 border-[#3e979f]">
               <span className="text-4xl font-bold text-[#3e979f] select-none">

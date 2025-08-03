@@ -140,6 +140,14 @@ const verifyUser = async (token) => {
   return result.rows[0];
 };
 
+const setVerificationToken = async (userId, token, expires) => {
+  const result = await db.query(
+    "UPDATE users SET verify_token = $1, verify_token_expires = $2 WHERE user_id = $3 RETURNING *",
+    [token, expires, userId]
+  );
+  return result.rows[0];
+};
+
 module.exports = {
   findUserById,
   findUserByEmail,
@@ -153,4 +161,5 @@ module.exports = {
   getUserByResetToken,
   updatePassword,
   verifyUser,
+  setVerificationToken,
 };

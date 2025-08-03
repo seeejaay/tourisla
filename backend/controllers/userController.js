@@ -145,8 +145,6 @@ const createUserController = async (req, res) => {
 
 const currentUserController = async (req, res) => {
   try {
-    console.log("Session cookie:", req.headers.cookie);
-    console.log("Session object:", req.session);
     console.log("Session user:", req.session.user);
     if (!req.session.user) {
       return res.status(401).json({ error: "Unauthorized" });
