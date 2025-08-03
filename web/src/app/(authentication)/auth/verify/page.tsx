@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 
-export default function VerifyPage() {
+function VerifyContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const { verifyUserAccount, error, loading } = useAuth();
@@ -16,7 +16,6 @@ export default function VerifyPage() {
       verifyUserAccount(token).then((res) => {
         if (res && !res.error) {
           setSuccess(true);
-          // Optionally redirect after a delay:
           setTimeout(() => router.push("/auth/login"), 3000);
         }
       });
@@ -44,5 +43,13 @@ export default function VerifyPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function VerifyPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VerifyContent />
+    </Suspense>
   );
 }
