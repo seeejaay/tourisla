@@ -38,7 +38,7 @@ const loginUser = async (req, res) => {
       phone_number: user.phone_number,
       role: user.role,
       nationality: user.nationality,
-      birthDate: user.birth_date,
+      birth_date: user.birth_date,
       sex: user.sex,
       status: user.status,
     };
