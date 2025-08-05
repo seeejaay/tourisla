@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { touristSpotSchema } from "@/app/static/tourist-spot/useTouristSpotManagerSchema";
 import { ZodError } from "zod";
-
+import Image from "next/image";
 const BANTAYAN_POLYGON: [number, number][] = [
   [11.3040035, 123.7223524],
   [11.2144373, 123.6749739],
@@ -53,18 +53,16 @@ const KINATARKAN_POLYGON: [number, number][] = [
   [11.3169689, 123.9241607],
   [11.3327908, 123.9222724],
   [11.3578686, 123.9155777],
-  [11.3458186, 124.1160323], // <-- Added this point
-  [11.3593833, 123.892575], // Close the polygon
+  [11.3458186, 124.1160323],
+  [11.3593833, 123.892575],
 ];
 
-// Combine all polygons
 const POLYGONS: [number, number][][] = [
   BANTAYAN_POLYGON,
   HILANTAGAAN_POLYGON,
   KINATARKAN_POLYGON,
 ];
 
-// Point-in-any-polygon utility
 function isPointInAnyPolygon(
   lat: number,
   lng: number,
@@ -73,7 +71,6 @@ function isPointInAnyPolygon(
   return polygons.some((polygon) => isPointInPolygon(lat, lng, polygon));
 }
 
-// Ray-casting algorithm for point-in-polygon
 function isPointInPolygon(
   lat: number,
   lng: number,
@@ -138,7 +135,6 @@ export default function AddTouristSpot({
       updatedForm = { ...form, [name]: selected };
       setForm(updatedForm);
     } else if (name === "images" && type === "file" && files) {
-      // Images validation
       const fileArray = Array.from(files);
       for (const file of fileArray) {
         if (!file.type.startsWith("image/")) {
@@ -158,7 +154,6 @@ export default function AddTouristSpot({
       setForm(updatedForm);
     }
 
-    // Validate only the changed field
     const fieldSchema =
       touristSpotSchema.shape[name as keyof typeof touristSpotSchema.shape];
     if (fieldSchema) {
@@ -171,14 +166,12 @@ export default function AddTouristSpot({
         } else {
           setError("Invalid input for " + name);
         }
-        return; // Stop further validation if this field is invalid
+        return;
       }
     }
 
-    // Location validation (geocoding + polygon)
     if (name === "location" && value.trim() !== "") {
       const coords = await getLatLngFromInput(value);
-      console.log("Geocoded coordinates:", coords);
       if (!coords || !isPointInAnyPolygon(coords.lat, coords.lng, POLYGONS)) {
         setError(
           "Location must be within Bantayan Island or its islets. Please enter a valid address or Google Maps link."
@@ -190,7 +183,6 @@ export default function AddTouristSpot({
   async function getLatLngFromInput(
     input: string
   ): Promise<{ lat: number; lng: number } | null> {
-    // Try to extract lat/lng if input is in "lat,lng" format
     const latLngMatch = input
       .trim()
       .match(/^(-?\d+(\.\d+)?),\s*(-?\d+(\.\d+)?)$/);
@@ -201,8 +193,6 @@ export default function AddTouristSpot({
         return { lat, lng };
       }
     }
-
-    // Otherwise, use Google Maps Geocoding API
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
       input
@@ -267,19 +257,20 @@ export default function AddTouristSpot({
 
   return (
     <div className="w-full flex flex-col items-center justify-start">
-      <div
-        className={`w-full text-white flex items-center justify-center ${
-          !error ? "hidden" : "block"
-        }`}
-      >
-        <div className="bg-red-100 p-4 rounded-md">
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-        </div>
-      </div>
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-2xl p-4 sm:p-6 space-y-8"
+        className="w-full   p-4 sm:p-8 md:p-10   space-y-6"
       >
+        <h2 className="text-2xl font-bold text-[#1c5461] mb-2 text-center">
+          Add Tourist Spot
+        </h2>
+        {error && (
+          <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-2 rounded mb-2 text-center text-sm">
+            {error}
+          </div>
+        )}
+
+        {/* Responsive grid for fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {touristSpotFields
             .filter(
@@ -293,10 +284,10 @@ export default function AddTouristSpot({
                 ].includes(field.name)
             )
             .map((field) => (
-              <div className="space-y-1 w-full" key={field.name}>
+              <div className="flex flex-col gap-1" key={field.name}>
                 <Label
                   htmlFor={field.name}
-                  className="block text-sm font-semibold mb-1 text-[#1c5461]"
+                  className="text-sm font-semibold text-[#1c5461]"
                 >
                   {field.label}
                 </Label>
@@ -306,7 +297,7 @@ export default function AddTouristSpot({
                     name={field.name}
                     value={form[field.name]}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#3e979f] focus:border-[#3e979f] ${
+                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition ${
                       form.municipality !== "BANTAYAN"
                         ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
                         : "bg-white text-gray-900 border-gray-200"
@@ -326,7 +317,7 @@ export default function AddTouristSpot({
                     name={field.name}
                     value={form[field.name]}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-[#e6f7fa] rounded-md focus:ring-1 focus:ring-[#3e979f] focus:border-[#3e979f]"
+                    className="w-full px-3 py-2 text-sm border border-[#e6f7fa] rounded-md focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition"
                   >
                     <option value="">{field.placeholder}</option>
                     {field.options?.map((option) => (
@@ -364,7 +355,7 @@ export default function AddTouristSpot({
                     name={field.name}
                     value={form[field.name]}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-[#e6f7fa] rounded-md focus:ring-1 focus:ring-[#3e979f] focus:border-[#3e979f]"
+                    className="w-full px-3 py-2 text-sm border border-[#e6f7fa] rounded-md focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition"
                   >
                     <option value="">{field.placeholder}</option>
                     {field.options?.map((option) => (
@@ -388,12 +379,13 @@ export default function AddTouristSpot({
             ))}
         </div>
 
+        {/* Opening/Closing time */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {["opening_time", "closing_time"].map((fieldName) => {
             const field = touristSpotFields.find((f) => f.name === fieldName);
             return field ? (
-              <div className="space-y-1" key={fieldName}>
-                <Label className="block text-sm font-semibold mb-1 text-[#1c5461]">
+              <div className="flex flex-col gap-1" key={fieldName}>
+                <Label className="text-sm font-semibold text-[#1c5461]">
                   {field.label}
                 </Label>
                 <Input
@@ -409,12 +401,13 @@ export default function AddTouristSpot({
           })}
         </div>
 
+        {/* Description and Rules */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {["description", "rules"].map((fieldName) => {
             const field = touristSpotFields.find((f) => f.name === fieldName);
             return field ? (
-              <div className="space-y-1" key={fieldName}>
-                <Label className="block text-sm font-semibold mb-1 text-[#1c5461]">
+              <div className="flex flex-col gap-1" key={fieldName}>
+                <Label className="text-sm font-semibold text-[#1c5461]">
                   {field.label}
                 </Label>
                 <Textarea
@@ -431,8 +424,9 @@ export default function AddTouristSpot({
           })}
         </div>
 
+        {/* Images */}
         <div>
-          <Label className="block text-sm font-semibold mb-1 text-[#1c5461]">
+          <Label className="text-sm font-semibold text-[#1c5461] mb-1 block">
             Images
           </Label>
           <Input
@@ -444,13 +438,32 @@ export default function AddTouristSpot({
             className="text-sm"
             multiple
           />
+          {imageFiles.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {imageFiles.map((file, idx) => (
+                <div
+                  key={idx}
+                  className="w-20 h-20 rounded-lg overflow-hidden border border-[#e6f7fa] bg-gray-50 flex items-center justify-center"
+                >
+                  <Image
+                    src={URL.createObjectURL(file)}
+                    alt={`Preview ${idx + 1}`}
+                    width={80}
+                    height={80}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="flex gap-2 justify-end pt-2">
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row gap-2 justify-end pt-2">
           <Button
             type="submit"
             disabled={loading}
-            className="bg-[#3e979f] hover:bg-[#1c5461] text-white font-semibold px-6 py-2 rounded-lg shadow"
+            className="bg-[#3e979f] hover:bg-[#1c5461] text-white font-semibold px-6 py-2 rounded-lg shadow w-full sm:w-auto"
           >
             {loading ? "Adding..." : "Add Tourist Spot"}
           </Button>
@@ -459,7 +472,7 @@ export default function AddTouristSpot({
               type="button"
               variant="outline"
               onClick={onCancel}
-              className="border-[#e6f7fa] text-[#1c5461] font-semibold px-6 py-2 rounded-lg"
+              className="border-[#e6f7fa] text-[#1c5461] font-semibold px-6 py-2 rounded-lg w-full sm:w-auto"
             >
               Cancel
             </Button>

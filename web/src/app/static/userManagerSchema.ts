@@ -80,6 +80,15 @@ const signupSchema = z
       message: "You must accept the terms and conditions",
     }),
     status: z.literal("Active"),
+    birth_date: z
+      .string()
+      .min(1, { message: "Birth date is required" })
+      .refine((val) => !isNaN(Date.parse(val)), {
+        message: "Invalid date format",
+      }),
+    sex: z.enum(["Male", "Female", "Other"], {
+      message: "Sex is required",
+    }),
   })
   .refine((data) => data.password === data.confirm_password, {
     message: "Passwords must match",
