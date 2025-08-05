@@ -56,6 +56,8 @@ export default function SignUp() {
       nationality: "Philippines",
       terms: true,
       status: "Active",
+      birth_date: "",
+      sex: "Male",
     },
   });
 
@@ -206,36 +208,87 @@ export default function SignUp() {
                   </FormItem>
                 )}
               />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Birth Date Field */}
               <FormField
                 control={form.control}
-                name="role"
+                name="birth_date"
                 render={({ field }) => (
                   <FormItem className="w-full flex flex-col">
                     <FormLabel className="text-[#3e979f] text-sm font-semibold">
-                      Role
+                      Birth Date
                     </FormLabel>
                     <FormControl>
-                      <select
+                      <Input
+                        type="date"
                         {...field}
-                        className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-[#f8fcfd]"
-                      >
-                        <option value="">Select your role</option>
-                        <option value="Tourist">Tourist</option>
-                        <option value="Tour Guide">Tour Guide</option>
-                        <option value="Tour Operator">Tour Operator</option>
-                        <option value="Admin">Admin</option>
-                        <option value="Cultural Director">
-                          Cultural Director
-                        </option>
-                        <option value="Tourism Officer">Tourism Officer</option>
-                        <option value="Tourism Staff">Tourism Staff</option>
-                      </select>
+                        className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-[#f8fcfd]"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              <div className="w-full flex flex-col">
+                {/* {sex field} */}
+                <FormField
+                  control={form.control}
+                  name="sex"
+                  render={({ field }) => (
+                    <FormItem className="w-full flex flex-col">
+                      <FormLabel className="text-[#3e979f] text-sm font-semibold">
+                        Sex
+                      </FormLabel>
+                      <FormControl>
+                        <select
+                          {...field}
+                          className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-[#f8fcfd]"
+                        >
+                          <option value="">Select your sex</option>
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
+
+            {/* Role Select */}
+
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem className="w-full flex flex-col">
+                  <FormLabel className="text-[#3e979f] text-sm font-semibold">
+                    Role
+                  </FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className="border border-[#e6f7fa] rounded-md px-3 py-3 text-base w-full focus:outline-none focus:ring-2 focus:ring-[#3e979f] focus:border-[#3e979f] transition bg-[#f8fcfd]"
+                    >
+                      <option value="">Select your role</option>
+                      <option value="Tourist">Tourist</option>
+                      <option value="Admin">Admin</option>
+                      <option value="Cultural Director">
+                        Cultural Director
+                      </option>
+                      <option value="Tourism Officer">Tourism Officer</option>
+                      <option value="Tourism Staff">Tourism Staff</option>
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Terms Checkbox */}
             <FormField
