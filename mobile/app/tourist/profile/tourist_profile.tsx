@@ -52,30 +52,30 @@ export default function TouristProfile() {
     try {
       setLoading(true);
       setUser(null);
+  
       const storedUserData = await AsyncStorage.getItem('userData');
-      if (storedUserData) {
-        const parsedData = JSON.parse(storedUserData);
-        setTimeout(() => setUser(parsedData), 100);
-      }
+      const parsedStored = storedUserData ? JSON.parse(storedUserData) : null;
+  
       const response = await auth.currentUser();
       let userData = null;
+  
       if (response.data?.user) userData = response.data.user;
       else if (response.user) userData = response.user;
       else if (response.data) userData = response.data;
       else if (typeof response === 'object') userData = response;
-
+  
       if (userData) {
-        if (storedUserData) {
-          const parsedStored = JSON.parse(storedUserData);
+        // Merge only specific fields
+        if (parsedStored) {
           if (parsedStored.profile_image) userData.profile_image = parsedStored.profile_image;
           if (parsedStored.avatar) userData.avatar = parsedStored.avatar;
-          if (parsedStored.first_name) userData.first_name = parsedStored.first_name;
-          if (parsedStored.last_name) userData.last_name = parsedStored.last_name;
-          if (parsedStored.phone_number) userData.phone_number = parsedStored.phone_number;
-          if (parsedStored.nationality) userData.nationality = parsedStored.nationality;
         }
-        await AsyncStorage.setItem('userData', JSON.stringify(userData));
+  
+        console.log("Fetched userData:", userData);
+
+        // ✅ Set fresh user data to state and AsyncStorage
         setUser(userData);
+        await AsyncStorage.setItem('userData', JSON.stringify(userData));
       } else {
         setError("Invalid user data format received from server.");
       }
@@ -180,7 +180,10 @@ export default function TouristProfile() {
             <Text style={styles.displayName}>
               {formatNameWords(user.first_name)} {formatNameWords(user.last_name)}
             </Text>
-            <Text style={styles.displayRole}>{formatNameWords(user.email)}</Text>
+            <Text style={styles.displayRole}>{user.email?.toLowerCase()}</Text>
+            <Text style={styles.displayRole}>{user.mobile_number?.toLowerCase()}</Text>
+            <Text style={styles.displayRole}>{user.birth_date?.toLowerCase()}</Text> 
+            
           </View>
         )}
 

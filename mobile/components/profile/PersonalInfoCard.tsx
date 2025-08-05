@@ -26,9 +26,10 @@ export default function PersonalInfoCard({ user }: { user: any }) {
     router.push({
       pathname: '/tourist/profile/edit_profile',
       params: {
+        user_id: user.id.toString(),
         first_name: user?.first_name || '',
         last_name: user?.last_name || '',
-        phone_number: user?.phone_number || '',
+        mobile_number: user?.mobile_number || '',
         nationality: user?.nationality || '',
         email: user?.email || '',
         birth_date: user?.birth_date || ''
@@ -58,7 +59,7 @@ export default function PersonalInfoCard({ user }: { user: any }) {
             {
               icon: 'phone',
               label: 'Phone',
-              value: user?.phone_number || 'Not provided',
+              value: user?.mobile_number || 'Not provided',
             },
             {
               icon: 'flag',
