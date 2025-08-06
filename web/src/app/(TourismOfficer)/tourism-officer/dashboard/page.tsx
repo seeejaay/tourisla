@@ -189,7 +189,7 @@ export default function Dashboard() {
               </span>
             </div>
           )}
-          href="/tourism-officer/incidents"
+          href="/tourism-officer/incident-report"
         />
       </div>
 
