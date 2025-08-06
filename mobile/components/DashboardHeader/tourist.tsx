@@ -1,12 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { View, TouchableOpacity, Image, Text, StyleSheet, Platform, StatusBar } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  Image,
+  Text,
+  StyleSheet,
+  Platform,
+  StatusBar,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { toTitleCase } from "@/lib/utils/textFormat";
-toTitleCase
+toTitleCase;
 
 export default function DashboardHeader() {
   const insets = useSafeAreaInsets();
@@ -41,12 +49,11 @@ export default function DashboardHeader() {
     if (role === "tour_operator") return "Tour Operator";
     return role
       .split("_")
-      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ");
   };
 
   return (
-    
     <View style={{ ...styles.headerWrapper }}>
       <LinearGradient
         colors={["#f8fafc", "#f8fafc"]} //"#f4fcfd", "#5fd6c7"
@@ -69,11 +76,16 @@ export default function DashboardHeader() {
         >
           <View style={styles.avatarContainer}>
             {currentUser?.avatar ? (
-              <Image source={{ uri: currentUser.avatar }} style={styles.avatar} />
+              <Image
+                source={{ uri: currentUser.avatar }}
+                style={styles.avatar}
+              />
             ) : (
               <View style={styles.avatarPlaceholder}>
                 <Text style={styles.avatarInitial}>
-                  {currentUser?.first_name?.[0] || currentUser?.email?.[0] || "U"}
+                  {currentUser?.first_name?.[0] ||
+                    currentUser?.email?.[0] ||
+                    "U"}
                 </Text>
               </View>
             )}
@@ -87,17 +99,20 @@ export default function DashboardHeader() {
                   {currentUser?.role ? formatRole(currentUser.role) : "User"}
                 </Text>
                 <Text style={styles.userName} numberOfLines={1}>
-                {currentUser
+                  {currentUser
                     ? toTitleCase(
-                        `${currentUser.first_name || ""} ${currentUser.last_name || ""}`.trim() ||
-                        currentUser.email
-                    )
+                        `${currentUser.first_name || ""} ${currentUser.last_name || ""}`.trim()
+                      )
                     : "Unknown User"}
                 </Text>
               </>
             )}
           </View>
-          <Ionicons name="chevron-forward" size={16} color="rgba(132, 139, 150,0.5)" />
+          <Ionicons
+            name="chevron-forward"
+            size={16}
+            color="rgba(132, 139, 150,0.5)"
+          />
         </TouchableOpacity>
       </LinearGradient>
     </View>

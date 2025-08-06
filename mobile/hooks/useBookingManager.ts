@@ -71,6 +71,7 @@ export function useBookingsByTourist() {
     setError(null);
     try {
       const result = await getBookingsByTourist(touristId);
+      console.log("Fetched bookings by tourist:", result);
       setData(result);
       return result;
     } catch (err) {
