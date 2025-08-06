@@ -32,13 +32,20 @@ const BookingSchema = z.object({
     .min(1, "Number of guests must be at least 1"),
   total_price: z.number().min(0, "Total price must be at least 0"),
   proof_of_payment: z
-    .instanceof(File)
+    .object({
+      uri: z.string(),
+      name: z.string(),
+      type: z.string().optional(),
+      mimeType: z.string().optional(),
+      size: z.number().optional(),
+    })
     .refine(
-      (file) => file.size <= 5 * 1024 * 1024,
+      (file) => !file.size || file.size <= 5 * 1024 * 1024,
       "File size must be 5MB or less"
     )
     .refine(
       (file) =>
+        !file.type ||
         ["image/jpeg", "image/png", "image/gif", "image/webp"].includes(
           file.type
         ),
