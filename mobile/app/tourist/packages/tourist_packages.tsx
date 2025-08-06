@@ -1,386 +1,381 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator, FlatList, StatusBar, Dimensions, Image } from 'react-native';
-import { fetchAllTourPackages } from '@/lib/api/tour-packages';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { toTitleCase } from '@/lib/utils/textFormat';
-import SearchBar from "@/components/SearchBar";
-import FilterDropdown from '@/components/FilterDropdown';
-import Pagination from '@/components/Pagination';
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Image,
+  ScrollView,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useTourPackageManager } from "@/hooks/useTourPackagesManager";
+import { Picker } from "@react-native-picker/picker";
+import { toTitleCase } from "@/lib/utils/textFormat";
+import Pagination from "@/components/Pagination";
+import { router } from "expo-router";
 
-interface TouristPackagesScreenProps {
-  headerHeight: number;
-}
+const PAGE_SIZE = 6;
 
-interface TourGuide {
-  tourguide_id: number;
-  first_name: string;
-  last_name: string;
-}
+const TouristPackagesScreen = () => {
+  const { fetchAllTourPackages } = useTourPackageManager();
+  const [tourPackages, setTourPackages] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-interface TourPackage {
-  id: number;
-  package_name: string;
-  description?: string;
-  price?: number;
-  duration?: string;
-  location?: string;
-  created_at?: string;
-  updated_at?: string;
-  available_slots?: number; 
-  guide_name?: string; // fallback
-  tour_guides?: TourGuide[];
-}
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredLocation, setFilteredLocation] = useState("All");
+  const [filteredOperator, setFilteredOperator] = useState("All");
+  const [filteredGuide, setFilteredGuide] = useState("All");
+  const [page, setPage] = useState(1);
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const CARD_GAP = 16;
-const CARD_WIDTH = SCREEN_WIDTH - CARD_GAP * 2;
-
-const ITEMS_PER_PAGE = 10; // Customize as needed
-
-export default function TouristPackagesScreen() {
-  const [packages, setPackages] = useState<TourPackage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-
-  const [searchText, setSearchText] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState('');
-  const filteredPackages = packages.filter(pkg =>
-    pkg.package_name.toLowerCase().includes(searchText.toLowerCase()) &&
-    (selectedFilter === '' || toTitleCase(pkg.location || '') === selectedFilter)
-  );
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(filteredPackages.length / ITEMS_PER_PAGE);
-  const paginatedPackages = filteredPackages.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
-  const locationOptions = Array.from(
-    new Set(packages.map(pkg => toTitleCase(pkg.location || '')).filter(loc => loc))
-  );
-  
   useEffect(() => {
-    const loadPackages = async () => {
+    const fetchData = async () => {
+      setIsLoading(true);
       try {
-        setLoading(true);
         const data = await fetchAllTourPackages();
-        setPackages(data); 
-      } catch (err: any) {
-        setError(err.message || 'Failed to load packages');
+        setTourPackages(data || []);
+      } catch (error) {
+        console.error("Error loading tour packages:", error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
-    loadPackages();
+    fetchData();
   }, []);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchText, selectedFilter]);
+  const today = new Date();
 
-  const renderPackage = ({ item }: { item: TourPackage }) => (
-    <TouchableOpacity
-      style={styles.packageCard}
-      onPress={() => router.push(`/tourist/packages/packages/${item.id}`)}
-      activeOpacity={0.9}
-    >
-      {item.package_name && (
-        <View style={styles.nameWrapper}>
-          <Text style={styles.packageName}>{toTitleCase(item.package_name)}</Text>
-          {item.price !== undefined && (
-            <View style={styles.priceWrapper}>
-              <View style={styles.pointyCorner} />
-              <Text style={styles.priceText}>₱ {item.price}</Text>
+  const filteredPackages = useMemo(() => {
+    return tourPackages
+      .filter(pkg => {
+        const endDate = new Date(pkg.date_end);
+        const matchesSearch =
+          pkg.package_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          pkg.description.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesLocation =
+          filteredLocation === "All" || pkg.location === filteredLocation;
+        const matchesOperator =
+          filteredOperator === "All" ||
+          pkg.operator_name === filteredOperator;
+        const matchesGuide =
+          filteredGuide === "All" ||
+          pkg.assigned_guides?.some(
+            g =>
+              `${g.first_name} ${g.last_name}`.trim() === filteredGuide.trim()
+          );
+
+        return (
+          pkg.is_active &&
+          endDate >= today &&
+          matchesSearch &&
+          matchesLocation &&
+          matchesOperator &&
+          matchesGuide
+        );
+      });
+  }, [
+    tourPackages,
+    searchTerm,
+    filteredLocation,
+    filteredOperator,
+    filteredGuide,
+  ]);
+
+  const totalPages = Math.ceil(filteredPackages.length / PAGE_SIZE);
+  const paginatedPackages = filteredPackages.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
+
+  const uniqueLocations = useMemo(() => {
+    const set = new Set(
+      tourPackages?.map(pkg => pkg.location).filter(Boolean)
+    );
+    return ["All", ...Array.from(set)];
+  }, [tourPackages]);
+
+  const uniqueOperators = useMemo(() => {
+    const set = new Set(
+      tourPackages?.map(pkg => pkg.operator_name).filter(Boolean)
+    );
+    return ["All", ...Array.from(set)];
+  }, [tourPackages]);
+
+  const uniqueGuides = useMemo(() => {
+    const guideNames = new Set<string>();
+    tourPackages?.forEach(pkg => {
+      pkg.assigned_guides?.forEach(g => {
+        guideNames.add(`${g.first_name} ${g.last_name}`.trim());
+      });
+    });
+    return ["All", ...Array.from(guideNames)];
+  }, [tourPackages]);
+
+  const renderPackage = ({ item }: { item: any }) => (
+    <View style={styles.card}>
+      <View style={styles.cardWrapper}>
+        <Image
+          source={
+            item.image_url
+              ? { uri: item.image_url }
+              : require("@/assets/images/nature/sand.jpg")
+          }
+          style={styles.image}
+        />
+        <Text style={styles.operatorOverlay}>
+          {toTitleCase(item.operator_name)}
+        </Text>
+        <View style={{ padding: 16 }}>
+          <Text style={styles.title}>{toTitleCase(item.package_name)}</Text>
+          <Text style={styles.subtitle}>{item.location}</Text>
+          <Text style={styles.text}>Price: ₱ {item.price}</Text>
+          <Text style={styles.subtitle}>{item.available_slots} slots available</Text>
+          <Text numberOfLines={3} style={styles.description}>
+            {toTitleCase(item.description)}
+          </Text>
+          {item.assigned_guides?.length > 0 && (
+            <View style={{ marginTop: 6 }}>
+              <Text style={styles.guideHeader}>Guides:</Text>
+              <View style={styles.guideChipContainer}>
+                {item.assigned_guides.map((g, idx) => (
+                  <View key={idx} style={styles.guideChip}>
+                    <Text style={styles.guideChipText}>
+                      {toTitleCase(`${g.first_name} ${g.last_name}`)}
+                    </Text>
+                  </View>
+                ))}
+              </View>
             </View>
           )}
+          <TouchableOpacity
+            style={styles.detailsBtn}
+            onPress={() =>
+              router.push(`/tourist/packages/packages/${item.id}`)
+            }
+          >
+            <Text style={styles.detailsBtnText}>View Details</Text>
+          </TouchableOpacity>
         </View>
-      )}
-
-      {item.location ? (
-        <View style={styles.locationRow}>
-          <Ionicons name="location-sharp" size={12} color="#737385" style={styles.locationIcon} />
-          <Text style={styles.packageLocation}>
-            {toTitleCase(item.location)}
-          </Text>
-        </View>
-      ) : null}
-
-      {(item.tour_guides?.length || item.guide_name) && (
-        <View style={styles.guideRow}>
-          <Ionicons name="person" size={14} color="#3e979f" style={styles.guideIcon} />
-            <Text style={styles.guideText}>
-            {item.tour_guides && item.tour_guides.length > 0
-              ? item.tour_guides.map(g => toTitleCase(`${g.first_name} ${g.last_name}`.trim())).join(', ')
-              : toTitleCase(item.guide_name || '')}
-            </Text>
-        </View>
-      )}
-
-      {item.available_slots !== undefined && (
-        <View style={styles.slotsContainer}>
-            <Ionicons name="people" size={16} color="#24b4ab" style={{ marginRight: 4 }} />
-            <Text style={styles.slots}>
-            {item.available_slots} {item.available_slots === 1 ? 'Slot' : 'Slots'} Available
-            </Text>
-        </View>
-      )}
-    </TouchableOpacity>
+      </View>
+    </View>
   );
+  
+  if (isLoading) {
+    return <ActivityIndicator size="large" style={{ marginTop: 100 }} />;
+  }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
-        <Image
-          source={require("@/assets/images/hero-carousel/1.jpg")}
-          style={styles.headerImage}
-          resizeMode="cover"
-        />
-        <View style={styles.overlay} />
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.headerTitle}>Explore Tour Packages</Text>
-          <Text style={styles.headerSubtitle}>Discover our curated tour packages designed to enhance your travel experience.</Text>
-        </View>
-      </View>
-      <View style={[styles.container]}>
-        <View style={styles.searchFilterRow}>
-          <View style={styles.searchBarWrapper}>
-            <SearchBar
-              value={searchText}
-              onChangeText={setSearchText}
-              placeholder="Search packages..."
-            />
-          </View>
-          <FilterDropdown
-            options={locationOptions}
-            selected={selectedFilter}
-            onSelect={setSelectedFilter}
-          />
-        </View>
+    <ScrollView contentContainerStyle={styles.container}>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search packages..."
+        value={searchTerm}
+        onChangeText={setSearchTerm}
+      />
 
-        {loading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#0ea5e9" />
-            <Text style={styles.loadingText}>Loading packages...</Text>
-          </View>
-        )}
+      {/* Filters */}
+      <View style={styles.dropdownContainer}>
+  {/* Location Dropdown */}
+  <View style={styles.dropdownWrapper}>
+    <Text style={styles.filterLabel}>Location</Text>
+    <Picker
+      selectedValue={filteredLocation}
+      onValueChange={(value) => setFilteredLocation(value)}
+      style={styles.picker}
+    >
+      {uniqueLocations.map((loc, i) => (
+        <Picker.Item label={loc} value={loc} key={i} />
+      ))}
+    </Picker>
+  </View>
 
-        {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        )}
+  {/* Operator Dropdown */}
+  <View style={styles.dropdownWrapper}>
+    <Text style={styles.filterLabel}>Operator</Text>
+    <Picker
+      selectedValue={filteredOperator}
+      onValueChange={(value) => setFilteredOperator(value)}
+      style={styles.picker}
+    >
+      {uniqueOperators.map((op, i) => (
+        <Picker.Item label={op} value={op} key={i} />
+      ))}
+    </Picker>
+  </View>
 
-        {!loading && !error && packages.length === 0 && (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No packages found.</Text>
-          </View>
-        )}
+  {/* Guide Dropdown */}
+  <View style={styles.dropdownWrapper}>
+    <Text style={styles.filterLabel}>Guide</Text>
+    <Picker
+      selectedValue={filteredGuide}
+      onValueChange={(value) => setFilteredGuide(value)}
+      style={styles.picker}
+    >
+      {uniqueGuides.map((g, i) => (
+        <Picker.Item label={g} value={g} key={i} />
+      ))}
+    </Picker>
+  </View>
+</View>
 
-        {!loading && !error && packages.length > 0 && (
-          <View style={{ flex: 1 }}>
-            <>
-              <FlatList
-                data={paginatedPackages}
-                keyExtractor={pkg => pkg.id.toString()}
-                renderItem={renderPackage}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={false}
-                numColumns={1}
-                ListFooterComponent={
-                  <View style={styles.paginationWrapper}>
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={setCurrentPage}
-                    />
-                  </View>
-                }
-              />
-              <LinearGradient
-                colors={['transparent', '#f8fafc']}
-                style={styles.bottomFade}
-                pointerEvents="none"
-              />
-            </>
-          </View>
-        )}
-      </View>
-    </SafeAreaView>
+      {/* Packages */}
+      <FlatList
+        data={paginatedPackages}
+        keyExtractor={item => item.id?.toString() || Math.random().toString()}
+        renderItem={renderPackage}
+        contentContainerStyle={{ paddingBottom: 0 }}
+      />
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+      />
+    </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
   container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  header: { position: "relative", height: 200, marginBottom: 16 },
-  headerImage: { width: "100%", height: "100%" },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  headerTextContainer: {
-    position: "absolute",
-    top: 70,
-    left: 20,
-    right: 20,
-    alignItems: "center",
-  },
-  headerTitle: {
-    fontSize: 28,
-    color: "white",
-    fontWeight: "900",
-    textAlign: "center",
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "#e6f7fa",
-    marginTop: 5,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  searchFilterRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 12,
-    marginHorizontal: 16,
-  },
-  searchBarWrapper: {
-    flex: 1,
-  },
-  listContent: {
-    paddingHorizontal: 16,
+    padding: 16,
+    backgroundColor: "#f7fafa",
     paddingBottom: 100,
   },
-  bottomFade: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 30,
-    zIndex: 1,
+  searchInput: {
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#ccc",
   },
-  packageCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    width: '100%',
-    marginBottom: 12,
-    elevation: 8,
-    shadowColor: '#f4f1de',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
+  dropdownContainer: {
+    justifyContent: "space-between",
+    marginBottom: 16,
   },
-  nameWrapper: {
-    position: 'relative',
-    paddingRight: 100, // reserve space for price so text doesn’t overflow into it
-  },
-  packageName: {
-    width: '80%',
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#1c5461',
-    flexShrink: 1,
-  },
-  priceWrapper: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    overflow: 'visible',
-  },
-  
-  pointyCorner: {
-    width: 0,
-    height: 0,
-    borderTopWidth: 30,
-    borderLeftWidth: 30,
-    borderTopColor: '#60dd8e', // Price badge background color
-    borderLeftColor: 'transparent',
-  },
-  
-  priceText: {
-    backgroundColor: '#60dd8e',
-    color: 'white',
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    fontSize: 14,
-    fontWeight: '900',
-    borderTopRightRadius: 8,
-    borderBottomRightRadius: 8,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  locationIcon: {
-    marginRight: 4,
-  },
-  packageLocation: {
-    fontSize: 12,
-    color: '#737385',
-    fontWeight: '500',
-  },
-  guideRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  guideIcon: {
-    marginRight: 4,
-  },
-  guideText: {
-    fontSize: 12,
-    color: '#3e979f',
-    fontWeight: '600',
-  },
-  slotsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  slots: {
-    fontSize: 12,
-    color: '#24b4ab',
-    fontWeight: '600',
-  },
-  loadingContainer: {
+  dropdownWrapper: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
   },
-  loadingText: {
-    marginTop: 8,
-    color: '#64748b',
+picker: {
+  backgroundColor: "#fff",
+  borderColor: "#ccc",
+  borderWidth: 1,
+  borderRadius: 6,
+  paddingHorizontal: 4,
+  marginBottom: 8,
+},
+  filters: {
+    marginBottom: 16,
   },
-  errorContainer: {
-    padding: 24,
-    alignItems: 'center',
+  filterGroup: {
+    marginRight: 16,
   },
-  errorText: {
-    color: '#ef4444',
-    textAlign: 'center',
-    fontSize: 16,
+  filterLabel: {
+    fontWeight: "bold",
+    marginBottom: 4,
   },
-  emptyContainer: {
-    padding: 24,
-    alignItems: 'center',
+  filterBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: "#ddd",
+    borderRadius: 16,
+    marginRight: 8,
   },
-  emptyText: {
-    color: '#64748b',
-    fontSize: 16,
+  filterBtnActive: {
+    backgroundColor: "#1c5461",
   },
-  paginationWrapper: {
-    alignItems: 'center',
+  filterText: {
+    color: "#333",
+  },
+  filterTextActive: {
+    color: "#fff",
+  },
+  resetButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-end",
+    marginBottom: 12,
+  },
+  cardWrapper: {
+    position: "relative",
+  },
+  operatorOverlay: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "rgba(62, 151, 159, 0.8)",
+    color: "#fff",
+    fontSize: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 20,
+    zIndex: 10,
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    marginBottom: 20,
+    overflow: "hidden",
+  },
+  image: {
+    width: "100%",
+    height: 150,
+  },
+  title: {
+    fontWeight: "bold",
+    fontSize: 18,
+    color: "#1c5461",
+  },
+  subtitle: {
+    fontSize: 12,
+    color: "#3e979f",
+    marginBottom: 4,
+  },
+  text: {
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  description: {
+    fontSize: 13,
+    color: "#444",
+  },
+  guideChipContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginTop: 4,
+  },
+  guideChip: {
+    backgroundColor: "#e0f0f2",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 16,
+  },
+  guideChipText: {
+    fontSize: 13,
+    color: "#1c5461",
+    fontWeight: "500",
+  },
+  guideHeader: {
+    fontWeight: "bold",
+    marginTop: 4,
+  },
+  guideName: {
+    fontSize: 13,
+    color: "#1c5461",
+  },
+  detailsBtn: {
+    marginTop: 10,
+    backgroundColor: "#3e979f",
+    padding: 10,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  detailsBtnText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
+
+export default TouristPackagesScreen;
