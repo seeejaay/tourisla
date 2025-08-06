@@ -13,8 +13,8 @@ import { z } from "zod";
 import { fetchRegions, fetchCities } from "@/lib/api/philippines";
 type FieldValue = string | boolean | number;
 
-function getAge(birthDate: string): string {
-  const dob = new Date(birthDate);
+function getAge(birth_date: string): string {
+  const dob = new Date(birth_date);
   const diffMs = Date.now() - dob.getTime();
   const ageDt = new Date(diffMs);
   return Math.abs(ageDt.getUTCFullYear() - 1970).toString();
@@ -65,7 +65,7 @@ export default function WalkInRegister() {
         sex: res.data.user.sex === "MALE" ? "Male" : "Female",
         country: res.data.user.nationality || "",
         is_foreign: res.data.user.nationality?.toLowerCase() !== "philippines",
-        age: Number(getAge(res.data.user.birthDate)),
+        age: Number(getAge(res.data.user.birth_date)),
         municipality: "",
         province: "",
       });
