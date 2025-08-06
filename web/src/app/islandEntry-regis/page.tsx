@@ -48,7 +48,7 @@ export interface User {
   email: string;
   phone_number: string;
   role?: string;
-  birthDate: string;
+  birth_date: string;
   nationality: string;
   sex: string;
 }
@@ -89,7 +89,7 @@ export default function IslandEntryPage() {
           last_name,
           email,
           phone_number,
-          birthDate,
+          birth_date,
           nationality,
           sex,
         } = response.data.user;
@@ -98,7 +98,7 @@ export default function IslandEntryPage() {
           last_name,
           email,
           phone_number,
-          birthDate,
+          birth_date,
           nationality,
           sex,
         } as User);
@@ -132,12 +132,12 @@ export default function IslandEntryPage() {
     }
   }, [showResult]);
 
-  function getExactAge(birthDateStr: string) {
-    const birthDate = new Date(birthDateStr);
+  function getExactAge(birth_dateStr: string) {
+    const birth_date = new Date(birth_dateStr);
     const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    let age = today.getFullYear() - birth_date.getFullYear();
+    const m = today.getMonth() - birth_date.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth_date.getDate())) {
       age--;
     }
     return age;
@@ -500,9 +500,9 @@ export default function IslandEntryPage() {
                                   "w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f0f0f0] cursor-not-allowed",
                               }
                             : {})}
-                          {...(field.name === "age" && user && user.birthDate
+                          {...(field.name === "age" && user && user.birth_date
                             ? {
-                                value: getExactAge(user.birthDate),
+                                value: getExactAge(user.birth_date),
                                 readOnly: true,
                                 disabled: true,
                                 className:
