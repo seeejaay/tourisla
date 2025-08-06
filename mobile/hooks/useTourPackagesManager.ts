@@ -7,6 +7,7 @@ import {
   fetchTourPackage,
   fetchAllTourPackages as apiFetchAllTourPackages,
   fetchTourPackagesByGuide as apiFetchTourPackagesByGuide,
+  updateTourPackageStatus as apiUpdateTourPackageStatus,
 } from "@/lib/api/tour-packages";
 import tourPackageSchema, {
   TourPackage,
@@ -26,7 +27,7 @@ export const useTourPackageManager = () => {
 
       const packages = await fetchTourPackages();
       setTourPackages(packages);
-      console.log("API Tour packages fetched successfully:", packages);
+      // console.log("API Tour packages fetched successfully:", packages);
       return packages;
     } catch (err) {
       setError("Failed to fetch tour packages.");
@@ -43,7 +44,7 @@ export const useTourPackageManager = () => {
     try {
       const packages = await apiFetchAllTourPackages();
       setTourPackages(packages);
-      console.log("API Tour packages fetched successfully:", packages);
+      // console.log("API Tour packages fetched successfully:", packages);
       return packages;
     } catch (err) {
       setError("Failed to fetch all tour packages.");
@@ -60,10 +61,10 @@ export const useTourPackageManager = () => {
       setLoading(true);
       setError("");
       try {
-        console.log(`Fetching tour package with ID: ${id}`);
+        // console.log(`Fetching tour package with ID: ${id}`);
 
         const pkg = await fetchTourPackage(id);
-        console.log("API Tour package fetched successfully:", pkg);
+        // console.log("API Tour package fetched successfully:", pkg);
         return pkg;
       } catch (err) {
         setError("Failed to fetch tour package.");
@@ -81,7 +82,7 @@ export const useTourPackageManager = () => {
     async (data: Partial<TourPackage>): Promise<TourPackage | null> => {
       setLoading(true);
       setError("");
-      console.log("Front end Creating tour package with data:", data);
+      // console.log("Front end Creating tour package with data:", data);
       try {
         // const validated = tourPackageSchema.parse(data);
         const newPackage = await createTourPackage(data);
@@ -108,6 +109,10 @@ export const useTourPackageManager = () => {
       setError("");
       try {
         const validated = tourPackageSchema.parse(data);
+        // console.log(
+        //   `Front end Editing tour package with ID ${id} data:`,
+        //   validated
+        // );
         const updatedPackage = await editTourPackage(id, validated);
         setTourPackages((prev) =>
           prev.map((pkg) => (pkg.id === id ? updatedPackage : pkg))
@@ -147,18 +152,42 @@ export const useTourPackageManager = () => {
       setError("");
 
       try {
-        console.log(`Fetching tour packages by guide ID: ${guideId}`);
+        // console.log(`Fetching tour packages by guide ID: ${guideId}`);
         const packages = await apiFetchTourPackagesByGuide(guideId); // <-- Use the API function
         setTourPackages(packages);
-        console.log(
-          "API Tour packages by guide fetched successfully:",
-          packages
-        );
+        // console.log(
+        //   "API Tour packages by guide fetched successfully:",
+        //   packages
+        // );
         return packages;
       } catch (err) {
         setError("Failed to fetch tour packages by guide.");
         console.error(err);
         return [];
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const updateTourPackageStatus = useCallback(
+    async (
+      id: number | string,
+      is_active: boolean
+    ): Promise<TourPackage | null> => {
+      setLoading(true);
+      setError("");
+      try {
+        const updatedPackage = await apiUpdateTourPackageStatus(id, is_active);
+        setTourPackages((prev) =>
+          prev.map((pkg) => (pkg.id === id ? updatedPackage : pkg))
+        );
+        return updatedPackage;
+      } catch (err) {
+        setError("Failed to update tour package status.");
+        console.error(err);
+        return null;
       } finally {
         setLoading(false);
       }
@@ -178,5 +207,6 @@ export const useTourPackageManager = () => {
     setTourPackages, // Exposed for manual updates if needed
     fetchAllTourPackages,
     fetchTourPackagesByGuide, // Exposed for fetching all tour packages
+    updateTourPackageStatus,
   };
 };
