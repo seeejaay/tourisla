@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
   View,
@@ -12,6 +11,7 @@ import {
   Image,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
+import { Picker } from "@react-native-picker/picker";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useOperatorQrManager } from "@/hooks/useOperatorQr";
 import { useCreateBooking } from "@/hooks/useBookingManager";
@@ -22,18 +22,20 @@ import HeaderWithBack from "@/components/HeaderWithBack";
 import InputSpinner from "@/components/InputSpinner";
 
 export default function BookScreen() {
-  interface Booking {
-    id: number;
-    scheduled_date: string;
-    status: string;
-  }
-
   const router = useRouter();
   const { id: packageId } = useLocalSearchParams();
 
   const { fetchOne: fetchTourPackage } = useTourPackageManager();
-  const { fetchQr, loading: qrLoading, error: qrError } = useOperatorQrManager();
-  const { create, loading: bookingLoading, error: bookingError } = useCreateBooking();
+  const {
+    fetchQr,
+    loading: qrLoading,
+    error: qrError,
+  } = useOperatorQrManager();
+  const {
+    create,
+    loading: bookingLoading,
+    error: bookingError,
+  } = useCreateBooking();
 
   const [tourPackage, setTourPackage] = useState<any>(null);
   const [qrData, setQrData] = useState<any>(null);
@@ -43,9 +45,9 @@ export default function BookScreen() {
     total_price: 0,
     proof_of_payment: null,
     notes: "",
+    companions: [],
   });
   const [formError, setFormError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch package & QR
   useEffect(() => {
@@ -82,6 +84,33 @@ export default function BookScreen() {
       }));
     }
   }, [form.number_of_guests, tourPackage]);
+
+  // Ensure companions array matches number_of_guests - 1
+  useEffect(() => {
+    if (form.number_of_guests > 1) {
+      setForm((prev) => {
+        const companions = prev.companions || [];
+        const needed = form.number_of_guests - 1;
+        if (companions.length !== needed) {
+          const newCompanions = Array.from(
+            { length: needed },
+            (_, idx) =>
+              companions[idx] || {
+                first_name: "",
+                last_name: "",
+                age: "",
+                sex: "",
+                phone_number: "",
+              }
+          );
+          return { ...prev, companions: newCompanions };
+        }
+        return prev;
+      });
+    } else {
+      setForm((prev) => ({ ...prev, companions: [] }));
+    }
+  }, [form.number_of_guests]);
 
   const pickProofOfPayment = async () => {
     const result = await DocumentPicker.getDocumentAsync({
@@ -128,12 +157,14 @@ export default function BookScreen() {
     formData.append("package_id", String(tourPackage.id));
     formData.append("operator_qr_id", String(qrData.id));
     formData.append("payment_method", "QR");
+    formData.append("companions", JSON.stringify(form.companions));
 
     if (
       form.proof_of_payment &&
       form.proof_of_payment.uri &&
       form.proof_of_payment.name
     ) {
+      // @ts-ignore
       formData.append("proof_of_payment", {
         uri: form.proof_of_payment.uri,
         name: form.proof_of_payment.name || "proof.jpg",
@@ -154,30 +185,137 @@ export default function BookScreen() {
       router.dismiss(2);
     } catch (err) {
       setFormError("Booking failed. Please try again.");
+      console.error("Booking error:", err);
     }
+  };
+
+  // Render companion fields
+  const renderCompanionFields = () => {
+    if (form.number_of_guests <= 1) return null;
+    return (
+      <View style={{ marginBottom: 16 }}>
+        <Text
+          style={[
+            styles.labelWithSpacing,
+            { fontWeight: "700", color: "#1c5461" },
+          ]}
+        >
+          Companion Details
+        </Text>
+        {form.companions.map((companion: any, idx: number) => (
+          <View
+            key={idx}
+            style={{
+              marginBottom: 12,
+              padding: 8,
+              backgroundColor: "#f0fdf4",
+              borderRadius: 8,
+            }}
+          >
+            <Text
+              style={{ fontWeight: "600", color: "#3e979f", marginBottom: 4 }}
+            >
+              Companion {idx + 1}
+            </Text>
+            <TextInput
+              style={styles.input}
+              placeholder="First Name"
+              value={companion.first_name}
+              onChangeText={(text) => {
+                const companions = [...form.companions];
+                companions[idx] = { ...companions[idx], first_name: text };
+                setForm((f) => ({ ...f, companions }));
+              }}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Last Name"
+              value={companion.last_name}
+              onChangeText={(text) => {
+                const companions = [...form.companions];
+                companions[idx] = { ...companions[idx], last_name: text };
+                setForm((f) => ({ ...f, companions }));
+              }}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Age"
+              keyboardType="numeric"
+              value={companion.age ? String(companion.age) : ""}
+              onChangeText={(text) => {
+                const companions = [...form.companions];
+                companions[idx] = { ...companions[idx], age: Number(text) };
+                setForm((f) => ({ ...f, companions }));
+              }}
+            />
+            <View style={styles.picker}>
+              <Picker
+                selectedValue={companion.sex}
+                onValueChange={(value) => {
+                  const companions = [...form.companions];
+                  companions[idx] = { ...companions[idx], sex: value };
+                  setForm((f) => ({ ...f, companions }));
+                }}
+                mode="dropdown"
+              >
+                <Picker.Item label="Select Sex" value="" />
+                <Picker.Item label="Male" value="MALE" />
+                <Picker.Item label="Female" value="FEMALE" />
+              </Picker>
+            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Phone Number"
+              keyboardType="phone-pad"
+              value={companion.phone_number}
+              onChangeText={(text) => {
+                const companions = [...form.companions];
+                companions[idx] = { ...companions[idx], phone_number: text };
+                setForm((f) => ({ ...f, companions }));
+              }}
+            />
+          </View>
+        ))}
+      </View>
+    );
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <HeaderWithBack title="Package Details" backgroundColor="#transparent" textColor="#002b11" />
+      <HeaderWithBack
+        title="Package Details"
+        backgroundColor="#transparent"
+        textColor="#002b11"
+      />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {bookingLoading ? (
-          <ActivityIndicator size="large" color="#0ea5e9" style={{ marginTop: 32 }} />
+          <ActivityIndicator
+            size="large"
+            color="#0ea5e9"
+            style={{ marginTop: 32 }}
+          />
         ) : (
           <>
             {formError && <Text style={styles.errorText}>{formError}</Text>}
 
-            <Text style={styles.heading}>Book: {tourPackage?.package_name}</Text>
+            <Text style={styles.heading}>
+              Book: {tourPackage?.package_name}
+            </Text>
 
             {bookingFields.map((field) => {
               if (field.name === "proof_of_payment") {
                 return (
                   <View key={field.name}>
-                    <Text style={styles.labelWithSpacing}>{field.label || "Proof of Payment"}:</Text>
-                    <TouchableOpacity style={styles.uploadButton} onPress={pickProofOfPayment}>
+                    <Text style={styles.labelWithSpacing}>
+                      {field.label || "Proof of Payment"}:
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.uploadButton}
+                      onPress={pickProofOfPayment}
+                    >
                       <Text style={styles.uploadButtonText}>
                         {form.proof_of_payment?.name
-                          ? `Choose File: ${form.proof_of_payment.name}`
+                          ? `File: ${form.proof_of_payment.name}`
                           : "Choose File"}
                       </Text>
                     </TouchableOpacity>
@@ -212,12 +350,16 @@ export default function BookScreen() {
               if (field.name === "scheduled_date") {
                 return (
                   <View key={field.name}>
-                    <Text style={styles.labelWithSpacing}>{field.label || "Scheduled Date"}:</Text>
+                    <Text style={styles.labelWithSpacing}>
+                      {field.label || "Scheduled Date"}:
+                    </Text>
                     <TextInput
                       style={styles.input}
                       value={
                         tourPackage?.date_start
-                          ? new Date(tourPackage.date_start).toISOString().split("T")[0]
+                          ? new Date(tourPackage.date_start)
+                              .toISOString()
+                              .split("T")[0]
                           : ""
                       }
                       editable={false}
@@ -239,6 +381,8 @@ export default function BookScreen() {
                 );
               }
             })}
+
+            {renderCompanionFields()}
 
             <Text style={styles.label}>Pay via QR Code</Text>
             {qrLoading ? (
@@ -279,7 +423,12 @@ export default function BookScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
   scrollContent: { paddingHorizontal: 16, paddingBottom: 24 },
-  heading: { fontSize: 24, fontWeight: "900", color: "#002b11", marginVertical: 8 },
+  heading: {
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#002b11",
+    marginVertical: 8,
+  },
   errorText: { color: "#ef4444", marginVertical: 8 },
   labelWithSpacing: {
     fontSize: 12,
@@ -312,7 +461,31 @@ const styles = StyleSheet.create({
     marginTop: 16,
     width: "100%",
   },
-  bookButtonText: { color: "#fff", fontSize: 16, fontWeight: "600", textAlign: "center" },
-  textPrice: { marginBottom: 8, fontWeight: "700", alignSelf: "flex-end", color: "#00a63e" },
-  qrImage: { width: 160, height: 160, borderWidth: 2, borderColor: "#bfdbfe", borderRadius: 8 },
+  bookButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  textPrice: {
+    marginBottom: 8,
+    fontWeight: "700",
+    alignSelf: "flex-end",
+    color: "#00a63e",
+  },
+  qrImage: {
+    width: 160,
+    height: 160,
+    borderWidth: 2,
+    borderColor: "#bfdbfe",
+    borderRadius: 8,
+  },
+  picker: {
+    height: 44,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderRadius: 6,
+    marginBottom: 8,
+    justifyContent: "center",
+  },
 });
