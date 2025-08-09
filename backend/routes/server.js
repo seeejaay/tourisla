@@ -854,10 +854,7 @@ app.post(
   manualIslandEntryCheckInController
 );
 app.post("/api/v1/island-entry/walk-in", registerIslandWalkInController);
-app.get(
-  "/api/v1/island-entry/members/:unique_code",
-  getIslandEntryMembersController
-);
+app.get("/api/v1/island-entry/members", getIslandEntryMembersController);
 app.post("/api/v1/island-entry/status", checkPayMongoPaymentStatusController);
 app.get(
   "/api/v1/island-entry",

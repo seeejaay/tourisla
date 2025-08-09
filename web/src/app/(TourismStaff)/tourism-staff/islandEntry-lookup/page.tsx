@@ -57,7 +57,12 @@ export default function IslandEntryLookupPage() {
     setError(null);
     setResult(null);
     try {
-      const res = await getIslandEntryMembers(code.trim());
+      // Helper: check if input is likely a unique code (alphanumeric, 5-10 chars)
+      const isUniqueCode = /^[A-Z0-9]{5,10}$/i.test(code.trim());
+      const params = isUniqueCode
+        ? { unique_code: code.trim() }
+        : { name: code.trim() };
+      const res = await getIslandEntryMembers(params);
       setResult(res.data);
     } catch (err) {
       const axiosErr = err as AxiosError<{ error: string }>;
