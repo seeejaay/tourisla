@@ -119,6 +119,7 @@ export const useVisitorRegistration = () => {
     setError("");
     try {
       const result = await apiGetVisitorResult(uniqueCode);
+      console.log("Visitor result fetched:", result);
       return result;
     } catch (err) {
       setError(
