@@ -234,13 +234,38 @@ const manualIslandEntryCheckInController = async (req, res) => {
 
 const getIslandEntryMembersController = async (req, res) => {
   try {
-    const uniqueCode = req.params.unique_code?.trim().toUpperCase();
+    // Accept from query, body, or params for flexibility
+    const uniqueCode =
+      req.query.unique_code?.trim().toUpperCase() ||
+      req.body.unique_code?.trim().toUpperCase() ||
+      req.params.unique_code?.trim().toUpperCase();
+    const name = req.query.name?.trim() || req.body.name?.trim();
 
-    if (!uniqueCode) {
-      return res.status(400).json({ error: "Unique code is required." });
+    let registration;
+    if (uniqueCode) {
+      registration = await getIslandEntryByCode(uniqueCode);
+    } else if (name) {
+      // Find registration by member name (case-insensitive, trimmed)
+      const memberResult = await db.query(
+        `SELECT registration_id FROM island_entry_registration_members WHERE TRIM(LOWER(name)) = TRIM(LOWER($1)) ORDER BY registration_id DESC LIMIT 1`,
+        [name.toLowerCase()]
+      );
+      if (memberResult.rows.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No entry found with that name." });
+      }
+      const registrationId = memberResult.rows[0].registration_id;
+      const regResult = await db.query(
+        `SELECT * FROM island_entry_registration WHERE id = $1`,
+        [registrationId]
+      );
+      registration = regResult.rows[0];
+    } else {
+      return res
+        .status(400)
+        .json({ error: "Unique code or name is required." });
     }
-
-    const registration = await getIslandEntryByCode(uniqueCode);
 
     if (!registration) {
       return res.status(404).json({ error: "Registration not found." });
@@ -261,7 +286,6 @@ const getIslandEntryMembersController = async (req, res) => {
     return res.status(500).json({ error: "Internal server error." });
   }
 };
-
 const checkPayMongoPaymentStatusController = async (req, res) => {
   try {
     const { unique_code } = req.body;

@@ -27,8 +27,9 @@ export const registerIslandWalkIn = async (data) => {
   });
 };
 
-export const getIslandEntryMembers = async (unique_code) => {
-  return axios.get(`${API_URL}island-entry/members/${unique_code}`, {
+export const getIslandEntryMembers = async (input) => {
+  const query = new URLSearchParams(input).toString();
+  return axios.get(`${API_URL}island-entry/members?${query}`, {
     withCredentials: true,
   });
 };
