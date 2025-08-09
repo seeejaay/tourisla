@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useIslandEntryManager } from "@/hooks/useIslandEntryManager";
 import { islandEntrySchema } from "@/app/static/islandEntry/schema";
 import { islandEntryFields } from "@/app/static/islandEntry/islandEntryFields";
@@ -31,6 +31,7 @@ export interface GroupMember {
 
 export interface RegistrationPayload {
   groupMembers: GroupMember[];
+  expected_arrival_date: string;
   payment_method: string;
   total_fee: number;
 }
@@ -72,14 +73,52 @@ export default function IslandEntryPage() {
   const [user, setUser] = useState<User | null>(null);
   const { loading, result, fee, fetchFee, register } = useIslandEntryManager();
 
-  // For region/city dropdowns
+  // Caching regions/cities for performance
+  const regionsCache = useRef<Region[] | null>(null);
+  const citiesCache = useRef<{
+    [key: string]: { code: string; name: string }[];
+  } | null>(null);
+
   const [regionList, setRegions] = useState<Region[]>([]);
   const [cityList, setCities] = useState<{
     [key: string]: { code: string; name: string }[];
   }>({});
 
   useEffect(() => {
-    async function fetchUser() {
+    async function fetchInitialData() {
+      // Regions
+      if (!regionsCache.current) {
+        const regions = await fetchRegions();
+        regionsCache.current = regions;
+        setRegions(regions);
+      } else {
+        setRegions(regionsCache.current);
+      }
+      // Cities
+      if (!citiesCache.current) {
+        const cities = await fetchCities();
+        const citiesByRegion: {
+          [key: string]: { code: string; name: string }[];
+        } = {};
+        cities.forEach(
+          (city: { name: string; regionCode: string; code: string }) => {
+            if (!citiesByRegion[city.regionCode]) {
+              citiesByRegion[city.regionCode] = [];
+            }
+            citiesByRegion[city.regionCode].push({
+              code: city.code,
+              name: city.name,
+            });
+          }
+        );
+        citiesCache.current = citiesByRegion;
+        setCities(citiesByRegion);
+      } else {
+        setCities(citiesCache.current);
+      }
+    }
+
+    async function fetchUserData() {
       const response = await loggedInUser(router);
       if (!response || !response.data?.user) {
         router.push("/auth/login?redirect=/islandEntry-regis");
@@ -104,26 +143,10 @@ export default function IslandEntryPage() {
         } as User);
       }
     }
-    fetchUser();
+
+    fetchUserData();
     fetchFee();
-    fetchRegions().then(setRegions);
-    fetchCities().then((data) => {
-      const citiesByRegion: {
-        [key: string]: { code: string; name: string }[];
-      } = {};
-      data.forEach(
-        (city: { name: string; regionCode: string; code: string }) => {
-          if (!citiesByRegion[city.regionCode]) {
-            citiesByRegion[city.regionCode] = [];
-          }
-          citiesByRegion[city.regionCode].push({
-            code: city.code,
-            name: city.name,
-          });
-        }
-      );
-      setCities(citiesByRegion);
-    });
+    fetchInitialData();
   }, [loggedInUser, router, fetchFee]);
 
   useEffect(() => {
@@ -165,15 +188,25 @@ export default function IslandEntryPage() {
     enableReinitialize: true,
     initialValues: {
       ...getInitialMainVisitor(user),
+      expected_arrival_date: "",
       companions: [],
       payment_method: "Cash",
       total_fee: 0,
     },
     validationSchema: yup.object().shape({
       ...islandEntrySchema.fields,
+      expected_arrival_date: yup
+        .string()
+        .required("Expected arrival date is required"),
       companions: yup.array().of(islandEntrySchema),
     }),
     onSubmit: async (values) => {
+      // Ensure companions have country set if not foreign
+      const sanitizedCompanions = values.companions.map((comp) => ({
+        ...comp,
+        country: comp.is_foreign ? comp.country : "Philippines",
+      }));
+
       const groupMembers = [
         {
           name: values.name,
@@ -184,7 +217,7 @@ export default function IslandEntryPage() {
           province: values.province,
           country: values.country,
         },
-        ...values.companions,
+        ...sanitizedCompanions,
       ];
 
       if (values.payment_method === "Online" && groupMembers.length < 3) {
@@ -194,6 +227,7 @@ export default function IslandEntryPage() {
 
       const payload = {
         groupMembers,
+        expected_arrival_date: values.expected_arrival_date,
         payment_method: fee?.is_enabled
           ? values.payment_method.toUpperCase()
           : "NOT_REQUIRED",
@@ -491,6 +525,7 @@ export default function IslandEntryPage() {
                           value={formik.values[field.name]}
                           onChange={formik.handleChange}
                           placeholder={`Enter ${field.label.toLowerCase()}`}
+                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
                           {...(field.name === "name" && user
                             ? {
                                 value: `${user.first_name} ${user.last_name}`,
@@ -521,6 +556,29 @@ export default function IslandEntryPage() {
                   })}
                 </div>
               </div>
+
+              {/* Expected Arrival Date */}
+              <div>
+                <label className="block font-semibold mb-2 text-[#1c5461]">
+                  Expected Date of Arrival
+                </label>
+                <input
+                  type="date"
+                  name="expected_arrival_date"
+                  value={formik.values.expected_arrival_date}
+                  onChange={formik.handleChange}
+                  min={new Date().toISOString().split("T")[0]}
+                  className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
+                  required
+                />
+                {formik.touched.expected_arrival_date &&
+                  formik.errors.expected_arrival_date && (
+                    <div className="text-red-500 text-xs mt-1">
+                      {formik.errors.expected_arrival_date}
+                    </div>
+                  )}
+              </div>
+
               {/* Companions */}
               <div>
                 <h2 className="font-semibold text-lg mb-3 text-[#1c5461]">
@@ -783,6 +841,7 @@ export default function IslandEntryPage() {
                   Add Companion
                 </button>
               </div>
+
               {/* Fee and Payment */}
               {fee?.is_enabled && (
                 <div>
@@ -825,6 +884,7 @@ export default function IslandEntryPage() {
                   </div>
                 </div>
               )}
+
               {/* Payment Link */}
               {showPaymentLink && latestEntry?.payment_link && (
                 <div className="mt-5 text-center space-y-3">
@@ -861,6 +921,7 @@ export default function IslandEntryPage() {
                   </button>
                 </div>
               )}
+
               {/* Submit */}
               {!(
                 formik.values.payment_method === "Online" &&

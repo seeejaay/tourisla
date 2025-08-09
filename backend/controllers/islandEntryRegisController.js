@@ -52,9 +52,11 @@ const generateUniqueCode = async () => {
 
 const registerIslandEntryController = async (req, res) => {
   try {
-    const { groupMembers, payment_method: userSelectedPaymentMethod } =
-      req.body;
-
+    const {
+      groupMembers,
+      payment_method: userSelectedPaymentMethod,
+      expected_arrival_date,
+    } = req.body;
     if (
       !groupMembers ||
       !Array.isArray(groupMembers) ||
@@ -117,6 +119,7 @@ const registerIslandEntryController = async (req, res) => {
       status: finalStatus,
       total_fee: totalFee,
       user_id: userId,
+      expected_arrival: expected_arrival_date,
     });
 
     // Step 6: Save group members
