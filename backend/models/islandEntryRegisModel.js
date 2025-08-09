@@ -8,13 +8,22 @@ const createIslandEntryRegistration = async ({
   status,
   total_fee,
   user_id,
+  expected_arrival,
 }) => {
   const result = await db.query(
     `INSERT INTO island_entry_registration 
-     (unique_code, qr_code_url, payment_method, status, total_fee, user_id)
-     VALUES ($1, $2, $3, $4, $5, $6)
+     (unique_code, qr_code_url, payment_method, status, total_fee, user_id, expected_arrival)
+     VALUES ($1, $2, $3, $4, $5, $6,$7)
      RETURNING *`,
-    [unique_code, qr_code_url, payment_method, status, total_fee, user_id]
+    [
+      unique_code,
+      qr_code_url,
+      payment_method,
+      status,
+      total_fee,
+      user_id,
+      expected_arrival,
+    ]
   );
   return result.rows[0];
 };
