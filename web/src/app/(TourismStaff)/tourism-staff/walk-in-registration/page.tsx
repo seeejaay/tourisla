@@ -1,10 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { visitorRegistrationFields } from "@/app/static/visitor-registration/visitor";
 import type { Visitor } from "@/app/static/visitor-registration/visitorSchema";
 import { useVisitorRegistration } from "@/hooks/useVisitorRegistration";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { fetchRegions, fetchCities } from "@/lib/api/philippines";
 
 const emptyVisitor = () =>
   Object.fromEntries(
@@ -28,16 +29,67 @@ export default function WalkInStaffRegister() {
   } | null>(null);
   const { registerWalkInVisitor, loading, error } = useVisitorRegistration();
 
+  // Regions and cities state
+  const [regions, setRegions] = useState<{ code: string; name: string }[]>([]);
+  const [cities, setCities] = useState<
+    { code: string; name: string; regionCode: string }[]
+  >([]);
+
+  useEffect(() => {
+    fetchRegions().then(setRegions);
+    fetchCities().then(setCities);
+  }, []);
+
+  const getCitiesForProvince = (province: string) => {
+    const region = regions.find((r) => r.name === province);
+    if (!region) return [];
+    return cities.filter((c) => c.regionCode === region.code);
+  };
+
+  // Ensure country is always "Philippines" if not foreign
   const handleInputChange = (
     idx: number | null,
     field: keyof Visitor,
     value: FieldValue
   ) => {
     if (idx === null) {
-      setMainVisitor((prev) => ({ ...prev, [field]: value }));
+      if (field === "is_foreign") {
+        setMainVisitor((prev) => ({
+          ...prev,
+          is_foreign: Boolean(value),
+          country: Boolean(value) ? prev.country : "Philippines",
+        }));
+      } else if (field === "country") {
+        setMainVisitor((prev) => ({
+          ...prev,
+          country: prev.is_foreign ? String(value) : "Philippines",
+        }));
+      } else {
+        setMainVisitor((prev) => ({ ...prev, [field]: value }));
+        if (field === "province") {
+          setMainVisitor((prev) => ({ ...prev, municipality: "" }));
+        }
+      }
     } else {
       setCompanions((prev) =>
-        prev.map((comp, i) => (i === idx ? { ...comp, [field]: value } : comp))
+        prev.map((comp, i) => {
+          if (i !== idx) return comp;
+          if (field === "is_foreign") {
+            return {
+              ...comp,
+              is_foreign: Boolean(value),
+              country: Boolean(value) ? comp.country : "Philippines",
+            };
+          } else if (field === "country") {
+            return {
+              ...comp,
+              country: comp.is_foreign ? String(value) : "Philippines",
+            };
+          }
+          const updated = { ...comp, [field]: value };
+          if (field === "province") updated.municipality = "";
+          return updated;
+        })
       );
     }
   };
@@ -127,7 +179,73 @@ export default function WalkInStaffRegister() {
                         <label className="block font-semibold mb-2 text-[#1c5461]">
                           {field.label}
                         </label>
-                        {field.type === "select" ? (
+                        {field.name === "province" ? (
+                          <select
+                            value={mainVisitor.province ?? ""}
+                            onChange={(e) =>
+                              handleInputChange(
+                                null,
+                                "province",
+                                e.target.value
+                              )
+                            }
+                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
+                            required
+                          >
+                            <option value="">Select region...</option>
+                            {regions.map((reg) => (
+                              <option key={reg.code} value={reg.name}>
+                                {reg.name}
+                              </option>
+                            ))}
+                          </select>
+                        ) : field.name === "municipality" ? (
+                          <select
+                            value={mainVisitor.municipality ?? ""}
+                            onChange={(e) =>
+                              handleInputChange(
+                                null,
+                                "municipality",
+                                e.target.value
+                              )
+                            }
+                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
+                            required
+                            disabled={!mainVisitor.province}
+                          >
+                            <option value="">Select municipality...</option>
+                            {getCitiesForProvince(
+                              mainVisitor.province ?? ""
+                            ).map((city) => (
+                              <option key={city.code} value={city.name}>
+                                {city.name}
+                              </option>
+                            ))}
+                          </select>
+                        ) : field.name === "country" ? (
+                          <select
+                            value={
+                              mainVisitor.is_foreign
+                                ? mainVisitor.country ?? ""
+                                : "Philippines"
+                            }
+                            onChange={(e) =>
+                              handleInputChange(null, "country", e.target.value)
+                            }
+                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
+                            required
+                            disabled={!mainVisitor.is_foreign}
+                          >
+                            <option value="Philippines">Philippines</option>
+                            {field.options
+                              ?.filter((opt) => opt.value !== "Philippines")
+                              .map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                          </select>
+                        ) : field.type === "select" ? (
                           <select
                             value={
                               typeof mainVisitor[
@@ -146,7 +264,8 @@ export default function WalkInStaffRegister() {
                                 e.target.value
                               )
                             }
-                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
+                            required
                           >
                             <option value="">Select...</option>
                             {field.options?.map((opt) => (
@@ -195,7 +314,8 @@ export default function WalkInStaffRegister() {
                                 e.target.value
                               )
                             }
-                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                            className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
+                            required
                           />
                         )}
                       </div>
@@ -236,7 +356,77 @@ export default function WalkInStaffRegister() {
                             <label className="block font-semibold mb-2 text-[#1c5461]">
                               {field.label}
                             </label>
-                            {field.type === "select" ? (
+                            {field.name === "province" ? (
+                              <select
+                                value={comp.province ?? ""}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    idx,
+                                    "province",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
+                                required
+                              >
+                                <option value="">Select region...</option>
+                                {regions.map((reg) => (
+                                  <option key={reg.code} value={reg.name}>
+                                    {reg.name}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : field.name === "municipality" ? (
+                              <select
+                                value={comp.municipality ?? ""}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    idx,
+                                    "municipality",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
+                                required
+                                disabled={!comp.province}
+                              >
+                                <option value="">Select municipality...</option>
+                                {getCitiesForProvince(comp.province ?? "").map(
+                                  (city) => (
+                                    <option key={city.code} value={city.name}>
+                                      {city.name}
+                                    </option>
+                                  )
+                                )}
+                              </select>
+                            ) : field.name === "country" ? (
+                              <select
+                                value={
+                                  comp.is_foreign
+                                    ? comp.country ?? ""
+                                    : "Philippines"
+                                }
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    idx,
+                                    "country",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
+                                required
+                                disabled={!comp.is_foreign}
+                              >
+                                <option value="Philippines">Philippines</option>
+                                {field.options
+                                  ?.filter((opt) => opt.value !== "Philippines")
+                                  .map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
+                              </select>
+                            ) : field.type === "select" ? (
                               <select
                                 value={
                                   typeof comp[field.name as keyof Visitor] ===
@@ -254,7 +444,8 @@ export default function WalkInStaffRegister() {
                                     e.target.value
                                   )
                                 }
-                                className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                                className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
+                                required
                               >
                                 <option value="">Select...</option>
                                 {field.options?.map((opt) => (
@@ -300,7 +491,8 @@ export default function WalkInStaffRegister() {
                                     e.target.value
                                   )
                                 }
-                                className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                                className="w-full border border-[#3e979f] rounded-lg px-3 py-2 bg-[#f8fcfd]"
+                                required
                               />
                             )}
                           </div>

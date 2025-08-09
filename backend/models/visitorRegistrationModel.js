@@ -48,11 +48,22 @@ const isUniqueCodeTaken = async (uniqueCode) => {
 
 // ✅ Fetch registration by unique code
 const getVisitorByUniqueCode = async (uniqueCode) => {
+  // Get registration
   const result = await db.query(
     `SELECT * FROM visitor_registrations WHERE unique_code = $1`,
     [uniqueCode]
   );
-  return result.rows[0];
+  const registration = result.rows[0];
+  if (!registration) return null;
+
+  // Get group members
+  const membersRes = await db.query(
+    `SELECT * FROM visitor_group_members WHERE registration_id = $1`,
+    [registration.id]
+  );
+  registration.members = membersRes.rows;
+
+  return registration;
 };
 
 // ✅ Get attraction ID based on user ID
