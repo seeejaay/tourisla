@@ -2,9 +2,10 @@ import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export const getVisitorGroupMembers = async (groupId) => {
+export const getVisitorGroupMembers = async (input) => {
   try {
-    const response = await axios.get(`${API_URL}register/members/${groupId}`, {
+    const query = new URLSearchParams(input).toString();
+    const response = await axios.get(`${API_URL}register/members?${query}`, {
       withCredentials: true,
     });
 
@@ -94,14 +95,12 @@ export const walkInVisitor = async (groupMembers) => {
   }
 };
 
-export const getVisitorResult = async (uniqueCode) => {
+export const getVisitorResult = async (input) => {
   try {
-    const response = await axios.get(
-      `${API_URL}register/result/${uniqueCode}`,
-      {
-        withCredentials: true,
-      }
-    );
+    const query = new URLSearchParams(input).toString();
+    const response = await axios.get(`${API_URL}register/result?${query}`, {
+      withCredentials: true,
+    });
 
     if (response.status !== 200) {
       throw new Error(`HTTP Error! Status: ${response.status}`);

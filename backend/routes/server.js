@@ -821,17 +821,14 @@ app.put(
 );
 
 // Visitor Registration Route
-app.get(
-  "/api/v1/register/members/:unique_code",
-  getVisitorGroupMembersController
-);
+app.get("/api/v1/register/members", getVisitorGroupMembersController);
 app.get(
   "/api/v1/register/qr/:user_id",
   allowedRoles(["Tourist"]),
   getQRCodebyUserIdController
 );
 app.get(
-  "/api/v1/register/result/:unique_code",
+  "/api/v1/register/result",
   allowedRoles(["Tourist", "Tourism Staff"]),
   getVisitorResultController
 );

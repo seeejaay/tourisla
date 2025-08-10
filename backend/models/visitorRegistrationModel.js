@@ -119,10 +119,19 @@ const getVisitorHistoryByUserId = async (userId) => {
   return result.rows;
 };
 
+const getVisitorGroupMembersByRegistrationId = async (registrationId) => {
+  const result = await db.query(
+    `SELECT * FROM visitor_group_members WHERE registration_id = $1`,
+    [registrationId]
+  );
+  return result.rows;
+};
+
 module.exports = {
   createVisitorRegistration,
   createVisitorGroupMembers,
   getVisitorByUniqueCode,
+  getVisitorGroupMembersByRegistrationId,
   isUniqueCodeTaken,
   getUserAttractionId,
   logAttractionVisitByRegistration,
