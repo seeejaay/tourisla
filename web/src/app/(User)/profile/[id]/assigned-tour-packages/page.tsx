@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
 import { Loader2, MapPin, Calendar, Users, Clock } from "lucide-react";
 import { useParams } from "next/navigation";
+import { useBookingsByPackage } from "@/hooks/useBookingManager";
+import jsPDF from "jspdf";
 
 type TourPackage = {
   id: number;
@@ -28,10 +30,19 @@ type TourPackage = {
   tourguide_id: number | null;
 };
 
+type Booking = {
+  tourist_name: string;
+  email: string;
+  contact: string;
+  booking_date: string;
+  // Add other fields if needed
+};
+
 export default function AssignedTourPackagesPage() {
   const { fetchTourPackagesByGuide, loading, error } = useTourPackageManager();
   const [packages, setPackages] = useState<TourPackage[]>([]);
   const params = useParams();
+  const { fetchByPackage } = useBookingsByPackage();
 
   // Ensure id is always a string
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -46,6 +57,85 @@ export default function AssignedTourPackagesPage() {
   useEffect(() => {
     loadPackages();
   }, [loadPackages]);
+
+  // PDF generation logic for a single package
+  const generatePDFForPackage = async (pkg: TourPackage) => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text(`Master List for Package: ${pkg.package_name}`, 10, 15);
+
+    let y = 25;
+    doc.setFontSize(10);
+    doc.text("Name", 12, y);
+    doc.text("Sex", 60, y);
+    doc.text("Contact", 90, y);
+    doc.text("Booking Date", 160, y);
+    y += 6;
+
+    // Fetch bookings for this package
+    let bookings: Booking[] = [];
+    try {
+      bookings = await fetchByPackage(pkg.id);
+    } catch (err) {
+      console.error("Error fetching bookings:", err);
+      doc.text("Error fetching bookings.", 12, y);
+      doc.save(`master-list-${pkg.package_name}.pdf`);
+      return;
+    }
+
+    bookings.forEach((booking) => {
+      // Main tourist
+      doc.text(
+        `${booking.tourist_first_name || ""} ${
+          booking.tourist_last_name || ""
+        }`.trim(),
+        12,
+        y
+      );
+      doc.text(booking.tourist_sex || "-", 60, y);
+      doc.text(booking.tourist_phone_number || "-", 90, y);
+      doc.text(
+        booking.scheduled_date
+          ? new Date(booking.scheduled_date).toLocaleDateString()
+          : "",
+        160,
+        y
+      );
+      y += 6;
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+
+      // Companions
+      if (Array.isArray(booking.companions) && booking.companions.length > 0) {
+        booking.companions.forEach((companion) => {
+          doc.text(
+            `${companion.first_name || ""} ${companion.last_name || ""}`.trim(),
+            12,
+            y
+          );
+          doc.text(companion.sex || "-", 60, y);
+          doc.text(companion.phone_number || "-", 90, y);
+          doc.text("-", 120, y); // Email not available for companion
+          doc.text(
+            booking.scheduled_date
+              ? new Date(booking.scheduled_date).toLocaleDateString()
+              : "",
+            160,
+            y
+          );
+          y += 6;
+          if (y > 270) {
+            doc.addPage();
+            y = 20;
+          }
+        });
+      }
+    });
+
+    doc.save(`master-list-${pkg.package_name}.pdf`);
+  };
 
   if (!id) {
     return (
@@ -133,8 +223,16 @@ export default function AssignedTourPackagesPage() {
                     Price: <span className="font-semibold">₱{pkg.price}</span>
                   </div>
                 </div>
-                <div className="px-5 py-3 border-t border-[#e6f7fa] text-xs text-gray-400 bg-[#f8fcfd] rounded-b-2xl">
-                  Created: {new Date(pkg.created_at).toLocaleDateString()}
+                <div className="px-5 py-3 border-t border-[#e6f7fa] text-xs text-gray-400 bg-[#f8fcfd] rounded-b-2xl flex flex-col gap-2">
+                  <span>
+                    Created: {new Date(pkg.created_at).toLocaleDateString()}
+                  </span>
+                  <button
+                    onClick={() => generatePDFForPackage(pkg)}
+                    className="bg-[#1c5461] text-white px-3 py-1 rounded shadow hover:bg-[#17434c] transition text-xs"
+                  >
+                    Download Master List PDF
+                  </button>
                 </div>
               </div>
             ))}

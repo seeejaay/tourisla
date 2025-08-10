@@ -127,11 +127,17 @@ const getBookingsByTourist = async (touristId) => {
 const getBookingsByPackage = async (packageId) => {
   const result = await db.query(
     `SELECT b.*,
+            u.first_name AS tourist_first_name,
+            u.last_name AS tourist_last_name,
+            u.email AS tourist_email,
+            u.sex AS tourist_sex,
+            u.phone_number AS tourist_phone_number,
             COALESCE(json_agg(bg.*) FILTER (WHERE bg.id IS NOT NULL), '[]') AS companions
      FROM bookings b
+     JOIN users u ON b.tourist_id = u.user_id
      LEFT JOIN bookings_group_members bg ON b.id = bg.booking_id
      WHERE b.tour_package_id = $1
-     GROUP BY b.id
+     GROUP BY b.id, u.first_name, u.last_name, u.email, u.phone_number, u.sex
      ORDER BY b.scheduled_date`,
     [packageId]
   );
