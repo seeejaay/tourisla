@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { useIslandEntryManager } from "@/hooks/useIslandEntryManager";
+import {
+  useIslandEntryManager,
+  IslandEntryExportFilter,
+} from "@/hooks/useIslandEntryManager";
 import {
   columns as islandEntryColumns,
   IslandEntry,
@@ -140,7 +143,7 @@ export default function IslandEntryLogsPage() {
 
   async function handleExport(e?: React.FormEvent) {
     e?.preventDefault();
-    const filter: any = {};
+    const filter: IslandEntryExportFilter = {};
     if (filterMode === "monthYear" && exportFilter.month && exportFilter.year) {
       filter.month = Number(exportFilter.month);
       filter.year = Number(exportFilter.year);
@@ -244,7 +247,9 @@ export default function IslandEntryLogsPage() {
 
                     <Tabs
                       value={filterMode}
-                      onValueChange={(v: any) => setFilterMode(v)}
+                      onValueChange={(v) =>
+                        setFilterMode(v as "monthYear" | "range")
+                      }
                       className="mt-5"
                     >
                       <TabsList className="grid grid-cols-2 bg-slate-100">
