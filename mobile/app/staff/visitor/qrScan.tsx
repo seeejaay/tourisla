@@ -70,8 +70,21 @@ export default function QrScan() {
           [{ text: "OK", onPress: () => router.back() }]
         );
       } else {
-        Alert.alert("Error", result.error || "Check-in failed.");
-        setIsScanning(true);
+        // 🆕 Handle already scanned case
+        if (
+          result.error?.toLowerCase().includes("already") ||
+          result.message?.toLowerCase().includes("already")
+        ) {
+          Alert.alert(
+            "Already Scanned",
+            "This QR code has already been checked in.",
+            [{ text: "OK", onPress: () => setIsScanning(true) }]
+          );
+        } else {
+          Alert.alert("Error", result.error || "Check-in failed.", [
+            { text: "OK", onPress: () => setIsScanning(true) },
+          ]);
+        }
       }
     } catch (error) {
       console.error("Check-in error:", error);
