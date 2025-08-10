@@ -101,7 +101,7 @@ const manualCheckInController = async (req, res) => {
   try {
     const { unique_code } = req.body;
 
-    const userId = req.session.user.id;
+    const userId = req.session.user;
     console.log("User ID:", userId);
     if (!userId) {
       return res
@@ -109,7 +109,7 @@ const manualCheckInController = async (req, res) => {
         .json({ error: "Invalid session: missing user ID." });
     }
 
-    const attractionId = await getUserAttractionId(userId);
+    const attractionId = await getUserAttractionId(userId.id ?? userId.user_id);
 
     if (!attractionId) {
       return res
