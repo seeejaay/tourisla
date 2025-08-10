@@ -14,16 +14,15 @@ function VisitorRegistrationResultInner() {
   } | null>(null);
 
   useEffect(() => {
-    if (code) {
-      getVisitorResultByCode(code).then((res) => {
-        if (res && res.registration) {
-          setResult({
-            unique_code: res.registration.unique_code,
-            qr_code_url: res.registration.qr_code_url,
-          });
-        }
-      });
-    }
+    if (!code) return;
+    getVisitorResultByCode({ unique_code: code }).then((res) => {
+      if (res && res.registration) {
+        setResult({
+          unique_code: res.registration.unique_code,
+          qr_code_url: res.registration.qr_code_url,
+        });
+      }
+    });
   }, [code, getVisitorResultByCode]);
 
   if (!code)
