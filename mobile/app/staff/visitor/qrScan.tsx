@@ -1,12 +1,21 @@
 import { CameraView } from "expo-camera";
-import { Platform, StyleSheet, TouchableOpacity, Text, View, Animated, Alert } from "react-native";
+import {
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  View,
+  Animated,
+  Alert,
+} from "react-native";
 import { router, Stack } from "expo-router";
 import { useState, useEffect, useRef } from "react";
 import Overlay from "@/components/Overlay"; // <-- default import now!
 import { LinearGradient } from "expo-linear-gradient";
 
 // Replace with your API URL
-const API_URL = "https://tourisla-production.up.railway.app/api/v1"; 
+const API_URL = "https://tourisla-production-5c54.up.railway.app/api/v1";
+// const API_URL = "http://192.168.0.130:3005/api/v1";
 
 export default function QrScan() {
   const [ready, setReady] = useState(false);
@@ -19,8 +28,16 @@ export default function QrScan() {
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(animatedValue, { toValue: 185, duration: 1500, useNativeDriver: true }),
-        Animated.timing(animatedValue, { toValue: 0, duration: 0, useNativeDriver: true }),
+        Animated.timing(animatedValue, {
+          toValue: 185,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(animatedValue, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: true,
+        }),
       ])
     ).start();
 
@@ -30,47 +47,38 @@ export default function QrScan() {
   const handleScanned = async ({ data }: { data: string }) => {
     if (!isScanning) return;
     setIsScanning(false);
-  
+    console.log("Scanned data:", data);
     let extracted = data.trim().toUpperCase();
-    console.log("Scanned code raw:", extracted);
+    console.log("Extracted code:", extracted);
     const match = extracted.match(/\/([A-Z0-9]{6})(?:\?.*)?$/);
     const trimmedCode = match ? match[1] : extracted;
-
-    console.log("Final extracted code:", trimmedCode);
-  
+    console.log("Trimmed code:", trimmedCode);
     try {
       let endpoint = "";
       if (isVisitorCode(trimmedCode)) {
-        endpoint = `${API_URL}/register/manual-check-in`; // Visitor check-in
+        endpoint = `${API_URL}/register/manual-check-in`;
       } else if (isIslandEntryCode(trimmedCode)) {
-        endpoint = `${API_URL}/island-entry/manual-check-in`; // Island Entry check-in
+        endpoint = `${API_URL}/island-entry/manual-check-in`;
       } else {
         Alert.alert("Invalid Code", "Unrecognized QR code format.");
         setIsScanning(true);
         return;
       }
-  
+      const payload = { unique_code: trimmedCode }; // FIX
       const res = await fetch(endpoint, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ unique_code: trimmedCode }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
         credentials: "include",
       });
-      console.log("Check-in status:", res.status);
-  
+
       const result = await res.json();
-      console.log("Check-in API result:", result); // 👈 Add this!
-  
+      console.log("API response:", result);
       if (res.ok) {
-        Alert.alert(
-          "Success",
-          `Check-in successful for code ${trimmedCode}`,
-          [{ text: "OK", onPress: () => router.back() }]
-        );
+        Alert.alert("Success", `Check-in successful for code ${trimmedCode}`, [
+          { text: "OK", onPress: () => router.back() },
+        ]);
       } else {
-        // 🆕 Handle already scanned case
         if (
           result.error?.toLowerCase().includes("already") ||
           result.message?.toLowerCase().includes("already")
@@ -86,13 +94,12 @@ export default function QrScan() {
           ]);
         }
       }
-    } catch (error) {
-      console.error("Check-in error:", error);
-      Alert.alert("Error", "Something went wrong. Please try again.");
+    } catch (e) {
+      console.log("Error during API call:", e);
+      Alert.alert("Error", "Network or server issue.");
       setIsScanning(true);
     }
   };
-  
 
   if (!ready) return null;
 
@@ -118,12 +125,12 @@ export default function QrScan() {
 
       <Animated.View
         style={[
-            styles.scanLine,
-            { transform: [{ translateY: animatedValue }] },
+          styles.scanLine,
+          { transform: [{ translateY: animatedValue }] },
         ]}
-        >
+      >
         <LinearGradient
-            colors={[
+          colors={[
             "rgba(11,205,76,0.1)",
             "rgba(11,205,76,0.5)",
             "rgba(11,205,76,0.0)",
@@ -131,74 +138,73 @@ export default function QrScan() {
             "rgba(11,205,76,0)",
             "rgba(11,205,76,0)",
             "rgba(11,205,76,0)",
-            ]}
-            style={{ flex: 1 }}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 3 }}
+          ]}
+          style={{ flex: 1 }}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 3 }}
         />
       </Animated.View>
 
-
-        {/* Four corner brackets */}
-        {/* top-left corner */}
-        <View
+      {/* Four corner brackets */}
+      {/* top-left corner */}
+      <View
         style={[
-            styles.cornerBracket,
-            {
+          styles.cornerBracket,
+          {
             top: "50%",
             left: "50%",
             marginLeft: -boxSize / 2 - 3,
             marginTop: -boxSize / 2 - 3,
             borderRightWidth: 0,
             borderBottomWidth: 0,
-            },
+          },
         ]}
-        />
+      />
 
-        {/* top-right corner */}
-        <View
+      {/* top-right corner */}
+      <View
         style={[
-            styles.cornerBracket,
-            {
+          styles.cornerBracket,
+          {
             top: "50%",
             left: "50%",
             marginLeft: boxSize / 2 - 58,
             marginTop: -boxSize / 2 - 3,
             borderLeftWidth: 0,
             borderBottomWidth: 0,
-            },
+          },
         ]}
-        />
+      />
 
-        {/* bottom-left corner */}
-        <View
+      {/* bottom-left corner */}
+      <View
         style={[
-            styles.cornerBracket,
-            {
+          styles.cornerBracket,
+          {
             top: "50%",
             left: "50%",
             marginLeft: -boxSize / 2 - 3,
             marginTop: boxSize / 2 - 58,
             borderRightWidth: 0,
             borderTopWidth: 0,
-            },
+          },
         ]}
-        />
+      />
 
-        {/* bottom-right corner */}
-        <View
+      {/* bottom-right corner */}
+      <View
         style={[
-            styles.cornerBracket,
-            {
+          styles.cornerBracket,
+          {
             top: "50%",
             left: "50%",
             marginLeft: boxSize / 2 - 58,
             marginTop: boxSize / 2 - 58,
             borderLeftWidth: 0,
             borderTopWidth: 0,
-            },
+          },
         ]}
-        />
+      />
 
       <Text style={styles.helperText}>Align QR code inside the box</Text>
     </View>
@@ -207,82 +213,82 @@ export default function QrScan() {
 
 const boxSize = 250;
 const styles = StyleSheet.create({
-    backButton: {
-      position: "absolute",
-      top: 50,
-      left: 20,
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      backgroundColor: "rgba(255,255,255,0.2)",
-      borderRadius: 8,
-      zIndex: 3,
-    },
-    backButtonText: {
-      color: "#fff",
-      fontSize: 16,
-      fontWeight: "600",
-    },
-  
-    overlay: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: "rgba(0,0,0,0.5)",
-      zIndex: 1,
-    },
-  
-    scanFrame: {
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      width: boxSize,
-      height: boxSize,
-      marginLeft: -boxSize / 2,
-      marginTop: -boxSize / 2,
-      borderWidth: 0,
-      borderColor: "#0BCD4C",
-      borderRadius: 0,
-      backgroundColor: "rgba(0,0,0,0.1)",
-      shadowColor: "#0BCD4C",
-      shadowOpacity: 0.6,
-      shadowRadius: 12,
-      shadowOffset: { width: 0, height: 0 },
-      zIndex: 2,
-    },
-  
-    scanLine: {
-        position: "absolute",
-        top: "35%",
-        left: "50%",
-        width: boxSize - 16,
-        height: 60,                // taller to make a fade gradient more visible
-        zIndex: 3,
-        marginLeft: -(boxSize - 16) / 2,
-        borderRadius: 8,           // rounded edges for a smoother look
-        overflow: "hidden",
-    },
-  
-    helperText: {
-      position: "absolute",
-      top: "70%",
-      width: "80%",
-      alignSelf: "center",
-      textAlign: "center",
-      color: "#fff",
-      fontSize: 16,
-      fontWeight: "700",
-      backgroundColor: "rgba(255,255,255,0.2)",
-      paddingHorizontal: 16,
-      paddingVertical: 16,
-      borderRadius: 12,
-      zIndex: 4,
-    },
-  
-    cornerBracket: {
-      position: "absolute",
-      width: 60,
-      height: 60,
-      borderWidth: 6,
-      borderColor: "#0BCD4C",
-      backgroundColor: "transparent",
-      zIndex: 2,
-    },
+  backButton: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: 8,
+    zIndex: 3,
+  },
+  backButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    zIndex: 1,
+  },
+
+  scanFrame: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    width: boxSize,
+    height: boxSize,
+    marginLeft: -boxSize / 2,
+    marginTop: -boxSize / 2,
+    borderWidth: 0,
+    borderColor: "#0BCD4C",
+    borderRadius: 0,
+    backgroundColor: "rgba(0,0,0,0.1)",
+    shadowColor: "#0BCD4C",
+    shadowOpacity: 0.6,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 0 },
+    zIndex: 2,
+  },
+
+  scanLine: {
+    position: "absolute",
+    top: "35%",
+    left: "50%",
+    width: boxSize - 16,
+    height: 60, // taller to make a fade gradient more visible
+    zIndex: 3,
+    marginLeft: -(boxSize - 16) / 2,
+    borderRadius: 8, // rounded edges for a smoother look
+    overflow: "hidden",
+  },
+
+  helperText: {
+    position: "absolute",
+    top: "70%",
+    width: "80%",
+    alignSelf: "center",
+    textAlign: "center",
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderRadius: 12,
+    zIndex: 4,
+  },
+
+  cornerBracket: {
+    position: "absolute",
+    width: 60,
+    height: 60,
+    borderWidth: 6,
+    borderColor: "#0BCD4C",
+    backgroundColor: "transparent",
+    zIndex: 2,
+  },
 });

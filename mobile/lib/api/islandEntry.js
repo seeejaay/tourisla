@@ -35,6 +35,7 @@ export const getIslandEntryMembers = async (input) => {
 };
 
 export const manualIslandEntryCheckIn = async (unique_code) => {
+  console.log("Manual check-in for code:", unique_code);
   return axios.post(
     `${API_URL}island-entry/manual-check-in`,
     { unique_code },
