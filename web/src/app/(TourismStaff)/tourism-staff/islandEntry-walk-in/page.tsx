@@ -168,7 +168,8 @@ export default function WalkInIslandEntryPage() {
     setError(null);
     try {
       const groupMembers = [main, ...companions];
-      const res = await registerIslandWalkIn({ groupMembers });
+      // Add status: "PAID" to the registration payload
+      const res = await registerIslandWalkIn({ groupMembers, status: "PAID" });
       setResult(res.data);
     } catch (err) {
       const axiosErr = err as AxiosError<{ error: string }>;

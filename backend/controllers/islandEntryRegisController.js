@@ -13,6 +13,7 @@ const {
   getLatestIslandEntryByUserId,
   logIslandEntryByRegistration,
   getAllIslandEntries,
+  exportIslandEntryLog,
 } = require("../models/islandEntryRegisModel");
 const { sendIslandEntryEmail } = require("../utils/email");
 const s3Client = new S3Client({
@@ -393,7 +394,7 @@ const registerIslandWalkInController = async (req, res) => {
       unique_code: uniqueCode,
       qr_code_url: qrCodeUrl,
       payment_method: "CASH",
-      payment_status: "PAID",
+      status: "PAID",
       total_fee: totalFee,
       user_id: userId,
     });
@@ -476,10 +477,42 @@ const getAllIslandEntriesController = async (req, res) => {
   }
 };
 
+const exportIslandEntryLogController = async (req, res) => {
+  try {
+    // Accept filters from query params
+    const { start_date, end_date, month, year } = req.query;
+
+    // Build filter object
+    const filter = {
+      start_date: start_date?.trim() || null,
+      end_date: end_date?.trim() || null,
+      month: month ? parseInt(month, 10) : null,
+      year: year ? parseInt(year, 10) : null,
+    };
+
+    // Get Excel file buffer from model
+    const fileBuffer = await exportIslandEntryLog(filter);
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=island_entry_visitors.xlsx"
+    );
+    res.send(fileBuffer);
+  } catch (error) {
+    console.error("Error exporting island entry log:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   registerIslandEntryController,
   manualIslandEntryCheckInController,
   getIslandEntryMembersController,
+  exportIslandEntryLogController,
   checkPayMongoPaymentStatusController,
   registerIslandWalkInController,
   getLatestIslandEntryController,
