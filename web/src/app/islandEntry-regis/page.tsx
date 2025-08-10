@@ -37,10 +37,22 @@ export interface RegistrationPayload {
 }
 
 export interface LatestEntry {
-  unique_code: string;
-  qr_code_url: string;
+  registration: {
+    id: number;
+    unique_code: string;
+    qr_code_url: string;
+    expected_arrival: string;
+    payment_method: string;
+    registration_date: string;
+    status: string;
+    total_fee: string;
+    user_id: number;
+    // add other fields as needed
+  };
+  members: GroupMember[];
+  total_fee: number;
   payment_link?: string;
-  paymongo_status?: string;
+  message?: string;
 }
 export interface User {
   id?: string;
@@ -203,6 +215,7 @@ export default function IslandEntryPage() {
     }),
     onSubmit: async (values) => {
       // Ensure companions have country set if not foreign
+      console.log("Submitting registration with values:", values);
       const sanitizedCompanions = values.companions.map((comp) => ({
         ...comp,
         country: comp.is_foreign ? comp.country : "Philippines",
@@ -238,8 +251,10 @@ export default function IslandEntryPage() {
       try {
         const res = await register(payload);
 
+        console.log("Registration successful:", res);
         if (res?.payment_link && values.payment_method === "Online") {
           setLatestEntry(res);
+
           setHasSubmitted(true);
           setShowPaymentLink(true);
         } else if (res) {
@@ -247,6 +262,7 @@ export default function IslandEntryPage() {
           setLatestEntry(latest);
           setShowResult(true);
         }
+        console.log("Latest entry:", latestEntry);
       } catch (err) {
         console.error("Registration failed", err);
       }
@@ -907,7 +923,13 @@ export default function IslandEntryPage() {
                     type="button"
                     onClick={async () => {
                       try {
-                        const updated = await markPaid(latestEntry.unique_code);
+                        console.log(
+                          "Marking island entry as paid:",
+                          latestEntry.registration.unique_code
+                        );
+                        const updated = await markPaid(
+                          latestEntry.registration.unique_code
+                        );
                         setLatestEntry(updated);
                         setShowResult(true);
                         setShowPaymentLink(false);
