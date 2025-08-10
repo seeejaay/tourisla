@@ -101,8 +101,7 @@ const manualCheckInController = async (req, res) => {
   try {
     const { unique_code } = req.body;
 
-    const userId =
-      req.user?.user_id || req.session?.user?.user_id || req.session?.user?.id;
+    const userId = req.session.user.id;
     console.log("User ID:", userId);
     if (!userId) {
       return res
