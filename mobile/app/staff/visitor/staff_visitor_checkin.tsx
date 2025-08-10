@@ -5,206 +5,294 @@ import {
   TextInput,
   Pressable,
   Image,
-  Alert,
   StyleSheet,
+  Alert,
+  ScrollView,
 } from 'react-native';
 import { useVisitorRegistration } from '@/hooks/useVisitorRegistration';
 
+interface GroupMember {
+  id: number;
+  registration_id: number;
+  name: string;
+  sex: string;
+  age: number;
+  is_foreign: boolean;
+  municipality: string;
+  province: string;
+  country: string;
+}
+
+interface VisitorData {
+  id: number;
+  unique_code: string;
+  qr_code_url: string;
+  registration_date: string;
+  user_id: number | string;
+  members?: GroupMember[];
+}
+
 export default function ManualVisitorCheckIn() {
   const [uniqueCode, setUniqueCode] = useState('');
-  const [visitorResult, setVisitorResult] = useState<any>(null);
-  const [success, setSuccess] = useState('');
+  const [visitorId, setVisitorId] = useState<number | null>(null);
+  const [visitorResult, setVisitorResult] = useState<VisitorData | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  const { getVisitorResultByCode, checkInVisitor, loading } = useVisitorRegistration();
+  const { getVisitorResultByCode, checkInVisitor, loading, error } =
+    useVisitorRegistration();
 
   const handleFindVisitor = async () => {
-    setSuccess('');
+    setSuccess(null);
+    setVisitorId(null);
     setVisitorResult(null);
     if (!uniqueCode) return;
 
-    try {
-      const result = await getVisitorResultByCode(uniqueCode);
+    const input = /^[A-Z0-9]+$/i.test(uniqueCode.trim())
+      ? { unique_code: uniqueCode.trim() }
+      : { name: uniqueCode.trim() };
 
-      if (result?.registration?.id) {
-        const lastCheckIn = result.registration.checked_in_at;
-        const lastDate = new Date(lastCheckIn).toDateString();
-        const today = new Date().toDateString();
-
-        if (lastDate === today) {
-          Alert.alert('Already Checked In', 'This visitor has already checked in today.');
-          return;
-        }
-
-        setVisitorResult(result.registration);
-      } else {
-        Alert.alert('Not Found', 'No visitor found with that code.');
-      }
-    } catch {
-      Alert.alert('Error', 'Failed to find visitor.');
+    const result = await getVisitorResultByCode(input);
+    if (result && result.registration && result.registration.id) {
+      setVisitorId(result.registration.id);
+      setVisitorResult(result.registration);
+    } else {
+      setVisitorId(null);
+      setVisitorResult(null);
+      Alert.alert('Not Found', 'No visitor found with that code or name.');
     }
   };
 
   const handleCheckIn = async () => {
-    if (!visitorResult?.unique_code) {
-      Alert.alert('Error', 'Visitor code not found.');
-      return;
-    }
-
-    try {
-      const res = await checkInVisitor(visitorResult.unique_code);
-      if (res) {
-        setSuccess('Visitor checked in successfully!');
-        setVisitorResult(null);
-        setUniqueCode('');
-      }
-    } catch {
-      Alert.alert('Error', 'Failed to check in visitor.');
+    if (!visitorId) return;
+    const checkedIn = await checkInVisitor(uniqueCode);
+    if (checkedIn) {
+      setSuccess('Visitor checked in successfully!');
+      setVisitorId(null);
+      setVisitorResult(null);
+      setUniqueCode('');
     }
   };
 
   return (
-    <View style={{ padding: 16, flex: 1 }}>
-      <Text style={styles.mainText2}>Manual Visitor Check-In</Text>
-      <View style={styles.manualwrapper}>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Manual Visitor Check-In</Text>
+
+      <View style={styles.inputRow}>
         <TextInput
-          style={styles.inputRow}
+          style={styles.input}
           placeholder="Enter unique code"
           value={uniqueCode}
           onChangeText={setUniqueCode}
         />
         <Pressable
-          style={styles.findBtn}
+          style={[styles.button, styles.findButton]}
           onPress={handleFindVisitor}
           disabled={loading}
         >
-          <Text style={styles.btnTextFind}>Find</Text>
+          <Text style={styles.buttonText}>
+            {loading ? 'Searching...' : 'Find'}
+          </Text>
         </Pressable>
       </View>
 
-      {visitorResult && (
-        <View style={styles.visitorBox}>
-          <View style={styles.visitorContentRow}>
-            <View style={styles.visitorDetails}>
-              <Text style={styles.codeText}>Code: {visitorResult.unique_code}</Text>
-              <Text style={styles.infoText}>
-                Registration Date:{' '}
-                {new Date(visitorResult.registration_date).toLocaleString()}
-              </Text>
-              <Text style={styles.infoText}>User ID: {visitorResult.user_id}</Text>
-              <Text style={styles.infoText}>Registration ID: {visitorResult.id}</Text>
-            </View>
-            <Image
-              source={{ uri: visitorResult.qr_code_url }}
-              style={styles.qrImage}
-              resizeMode="contain"
-            />
-          </View>
+      {error && <Text style={styles.error}>{error}</Text>}
+      {success && <Text style={styles.success}>{success}</Text>}
 
-          <Pressable
-            style={[styles.mainBtn, styles.btnGreen, { marginTop: 16, width: '100%' }]}
-            onPress={handleCheckIn}
-          >
-            <Text style={styles.btnText}>Check In Visitor</Text>
-          </Pressable>
+      {visitorId && visitorResult && (
+        <View style={styles.card}>
+          <Image
+            source={{ uri: visitorResult.qr_code_url }}
+            style={styles.qrImage}
+          />
+          <View style={styles.details}>
+            <Text style={styles.detailLabel}>Unique Code:</Text>
+            <Text style={styles.detailValue}>{visitorResult.unique_code}</Text>
+
+            <Text style={styles.detailLabel}>Registration Date:</Text>
+            <Text style={styles.detailValue}>
+              {visitorResult.registration_date
+                ? new Date(visitorResult.registration_date).toLocaleString()
+                : 'N/A'}
+            </Text>
+
+            <Text style={styles.detailLabel}>User ID:</Text>
+            <Text style={styles.detailValue}>
+              {visitorResult.user_id ?? 'N/A'}
+            </Text>
+
+            <Text style={styles.detailLabel}>Registration ID:</Text>
+            <Text style={styles.detailValue}>{visitorResult.id}</Text>
+          </View>
         </View>
       )}
 
-      {success !== '' && (
-        <Text style={{ color: 'green', textAlign: 'center', marginTop: 16 }}>
-          {success}
-        </Text>
+      {visitorResult?.members?.length ? (
+        <View style={styles.membersSection}>
+          <Text style={styles.membersTitle}>Group Members</Text>
+          {visitorResult.members.map((m) => (
+            <View key={m.id} style={styles.memberRow}>
+              <Text style={[styles.memberText, { fontWeight: '900' }]}>{m.name}</Text>
+
+              <View style={styles.memberDetailRow}>
+                <Text style={styles.memberLabel}>Sex:</Text>
+                <Text style={styles.memberValue}>{m.sex}</Text>
+              </View>
+
+              <View style={styles.memberDetailRow}>
+                <Text style={styles.memberLabel}>Age:</Text>
+                <Text style={styles.memberValue}>{m.age} years old</Text>
+              </View>
+
+              <View style={styles.memberDetailRow}>
+                <Text style={styles.memberLabel}>Country:</Text>
+                <Text style={styles.memberValue}>{m.country}</Text>
+              </View>
+
+              <View style={styles.memberDetailRow}>
+                <Text style={styles.memberLabel}>Municipality:</Text>
+                <Text style={styles.memberValue}>{m.municipality}</Text>
+              </View>
+
+              <View style={styles.memberDetailRow}>
+                <Text style={styles.memberLabel}>Province:</Text>
+                <Text style={styles.memberValue}>{m.province}</Text>
+              </View>
+
+              <View style={styles.memberDetailRow}>
+                <Text style={styles.memberLabel}>Is Foreign:</Text>
+                <Text style={styles.memberValue}>{m.is_foreign ? 'Yes' : 'No'}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      ) : null}
+
+      {visitorId && visitorResult && (
+        <Pressable
+          style={[styles.button, styles.checkInButton]}
+          onPress={handleCheckIn}
+        >
+          <Text style={styles.buttonText}>Check In Visitor</Text>
+        </Pressable>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  mainText2: {
-    fontSize: 17,
-    fontWeight: '900',
-    color: '#036e55',
-    marginBottom: 4,
+  container: {
+    padding: 16,
+    backgroundColor: '#f8fcfd',
+    flexGrow: 1,
+    paddingBottom: 115,
   },
-  manualwrapper: {
-    marginBottom: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+  title: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#1c5461',
+    marginBottom: 16,
+    textAlign: 'center',
   },
   inputRow: {
-    flex: 1,
-    borderColor: '#D1D5DB',
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 12,
-    backgroundColor: '#FFF',
-  },
-  findBtn: {
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    backgroundColor: '#74cbab',
-    borderRadius: 10,
+    flexDirection: 'row',
+    marginBottom: 12,
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 8,
   },
-  btnTextFind: {
-    fontSize: 13,
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#3e979f',
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: '#fff',
+  },
+  button: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  findButton: {
+    backgroundColor: '#3e979f',
+  },
+  checkInButton: {
+    backgroundColor: '#159e96',
+    marginTop: 16,
+  },
+  buttonText: {
+    alignSelf: 'center',
     fontWeight: '600',
     color: '#fff',
   },
-  visitorBox: {
-    backgroundColor: '#e6f8f0',
-    borderWidth: 1,
-    borderColor: '#86efac',
-    padding: 16,
-    borderRadius: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+  error: {
+    color: 'red',
+    textAlign: 'center',
+    marginBottom: 8,
   },
-  visitorContentRow: {
+  success: {
+    color: 'green',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  card: {
     flexDirection: 'row',
+    backgroundColor: '#e6f7fa',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
     alignItems: 'center',
-    width: '100%',
-    marginTop: 8,
-  },
-  visitorDetails: {
-    flex: 1,
-  },
-  codeText: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#00365e',
-    marginBottom: 2,
-  },
-  infoText: {
-    fontSize: 14,
-    color: '#42495c',
-    marginBottom: 2,
-    fontWeight: '500',
   },
   qrImage: {
     width: 100,
     height: 100,
+    borderRadius: 8,
     backgroundColor: '#fff',
-    borderRadius: 10,
-    marginLeft: 10,
-    flexShrink: 0,
+    marginRight: 12,
   },
-  mainBtn: {
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+  details: {
+    flex: 1,
   },
-  btnGreen: {
-    backgroundColor: '#159e96',
+  detailLabel: {
+    fontWeight: '700',
+    color: '#1c5461',
   },
-  btnText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#fff',
+  detailValue: {
+    marginBottom: 6,
+    color: '#333',
+  },
+  membersSection: {
+    marginTop: 16,
+  },
+  membersTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1c5461',
+    marginBottom: 8,
+  },
+  memberDetailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 2,
+  },
+  memberRow: {
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    backgroundColor: '#f0f9f9',
+    padding: 8,
+    marginBottom: 4,
+    borderRadius: 6,
+  },
+  memberLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#1c5461',
+  },
+  memberText: {
+    fontSize: 12,
+    flex: 1,
+  },
+  memberValue: {
+    fontSize: 12,
+    color: '#333',
   },
 });

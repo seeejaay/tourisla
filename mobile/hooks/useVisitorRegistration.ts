@@ -114,22 +114,25 @@ export const useVisitorRegistration = () => {
     []
   );
 
-  const getVisitorResultByCode = useCallback(async (uniqueCode: string) => {
-    setLoading(true);
-    setError("");
-    try {
-      const result = await apiGetVisitorResult(uniqueCode);
-      return result;
-    } catch (err) {
-      setError(
-        "Error fetching registration result: " +
-          (err instanceof Error ? err.message : String(err))
-      );
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const getVisitorResultByCode = useCallback(
+    async (input: { unique_code?: string; name?: string }) => {
+      setLoading(true);
+      setError("");
+      try {
+        const result = await apiGetVisitorResult(input);
+        return result;
+      } catch (err) {
+        setError(
+          "Error fetching registration result: " +
+            (err instanceof Error ? err.message : String(err))
+        );
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   const getQRCodebyUserId = useCallback(
     async (
