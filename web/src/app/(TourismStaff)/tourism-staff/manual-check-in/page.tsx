@@ -40,7 +40,13 @@ export default function ManualCheckIn() {
     setVisitorId(null);
     setVisitorResult(null);
     if (!uniqueCode) return;
-    const result = await getVisitorResultByCode(uniqueCode);
+
+    // Accept either code or name
+    const input = /^[A-Z0-9]+$/i.test(uniqueCode.trim())
+      ? { unique_code: uniqueCode.trim() }
+      : { name: uniqueCode.trim() };
+
+    const result = await getVisitorResultByCode(input);
     if (result && result.registration && result.registration.id) {
       setVisitorId(result.registration.id);
       setVisitorResult(result.registration); // registration now includes members

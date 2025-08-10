@@ -10,6 +10,7 @@ const {
   logAttractionVisitByRegistration,
   getQRCodebyUserId,
   getVisitorHistoryByUserId,
+  getVisitorGroupMembersByRegistrationId,
 } = require("../models/visitorRegistrationModel");
 
 const db = require("../db/index");
@@ -289,20 +290,60 @@ const registerWalkInVisitorController = async (req, res) => {
 
 const getVisitorResultController = async (req, res) => {
   try {
-    const uniqueCode = req.params.unique_code?.trim().toUpperCase();
-    if (!uniqueCode) {
-      return res.status(400).json({ error: "Unique code is required." });
+    // Accept from query, body, or params for flexibility
+    const uniqueCode =
+      req.query.unique_code?.trim().toUpperCase() ||
+      req.body.unique_code?.trim().toUpperCase() ||
+      req.params.unique_code?.trim().toUpperCase();
+    const name = req.query.name?.trim() || req.body.name?.trim();
+
+    let registration;
+    if (uniqueCode) {
+      registration = await getVisitorByUniqueCode(uniqueCode);
+    } else if (name) {
+      // Find registration by member name (case-insensitive, trimmed)
+      const memberResult = await db.query(
+        `SELECT registration_id FROM visitor_group_members WHERE TRIM(LOWER(name)) = TRIM(LOWER($1)) ORDER BY registration_id DESC LIMIT 1`,
+        [name.toLowerCase()]
+      );
+      if (memberResult.rows.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No visitor entry found with that name." });
+      }
+      const registrationId = memberResult.rows[0].registration_id;
+      const regResult = await db.query(
+        `SELECT * FROM visitor_registrations WHERE id = $1`,
+        [registrationId]
+      );
+      registration = regResult.rows[0];
+
+      // Attach members to registration object for consistency
+      if (registration) {
+        const membersRes = await db.query(
+          `SELECT * FROM visitor_group_members WHERE registration_id = $1`,
+          [registration.id]
+        );
+        registration.members = membersRes.rows;
+      }
+    } else {
+      return res
+        .status(400)
+        .json({ error: "Unique code or name is required." });
     }
 
-    const registration = await getVisitorByUniqueCode(uniqueCode);
     if (!registration) {
       return res.status(404).json({ error: "Visitor registration not found." });
     }
 
-    // Optionally fetch group members
-    // const members = await getVisitorGroupMembersByRegistrationId(
-    //   registration.id
-    // );
+    // If registration.members is not set (unique code path), fetch and attach
+    if (!registration.members) {
+      const membersRes = await db.query(
+        `SELECT * FROM visitor_group_members WHERE registration_id = $1`,
+        [registration.id]
+      );
+      registration.members = membersRes.rows;
+    }
 
     return res.status(200).json({
       registration,
@@ -345,7 +386,9 @@ const visitorHistoryController = async (req, res) => {
   try {
     const userId = req.session.user?.user_id ?? req.session.user?.id;
     if (!userId) {
-      return res.status(403).json({ error: "Invalid session: missing user ID." });
+      return res
+        .status(403)
+        .json({ error: "Invalid session: missing user ID." });
     }
     const history = await getVisitorHistoryByUserId(userId);
     return res.status(200).json({
