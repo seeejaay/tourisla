@@ -30,6 +30,16 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
 
 const months = [
   { value: "1", label: "January" },
@@ -159,6 +169,44 @@ export default function IslandEntryLogsPage() {
     setDialogOpen(false);
   }
 
+  // --- Chart Data Aggregation ---
+  // Group by date (YYYY-MM-DD), count expected and actual visitors
+  const chartData = (() => {
+    // Helper to format date to YYYY-MM-DD
+    const formatDate = (dateStr: string | null) =>
+      dateStr ? new Date(dateStr).toISOString().slice(0, 10) : null;
+
+    // Aggregate expected visitors
+    const expectedMap: Record<string, number> = {};
+    islandEntries.forEach((entry) => {
+      const expectedDate = formatDate(entry.expected_arrival);
+      if (expectedDate) {
+        expectedMap[expectedDate] = (expectedMap[expectedDate] || 0) + 1;
+      }
+    });
+
+    // Aggregate actual visitors (by registration_date)
+    const actualMap: Record<string, number> = {};
+    islandEntries.forEach((entry) => {
+      const actualDate = formatDate(entry.registration_date);
+      if (actualDate) {
+        actualMap[actualDate] = (actualMap[actualDate] || 0) + 1;
+      }
+    });
+
+    // Combine dates
+    const allDates = Array.from(
+      new Set([...Object.keys(expectedMap), ...Object.keys(actualMap)])
+    ).sort();
+
+    // Build chart data array
+    return allDates.map((date) => ({
+      date,
+      expected: expectedMap[date] || 0,
+      actual: actualMap[date] || 0,
+    }));
+  })();
+
   return (
     <>
       <main className="flex flex-col items-center min-h-screen w-full bg-gradient-to-br from-[#e6f7fa] via-white to-[#b6e0e4] px-2 py-8">
@@ -172,247 +220,292 @@ export default function IslandEntryLogsPage() {
             </p>
           </div>
 
-          <div className="max-w-4xl w-full mx-auto bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-4 md:p-8">
-            <div className="w-full flex items-center justify-between mb-5">
-              <span className="text-lg md:text-xl font-bold text-[#3e979f]">
-                Total Logs: {islandEntries.length}
-              </span>
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="px-5 py-2 font-semibold bg-[#1c5461] text-white hover:bg-[#17434c] shadow rounded">
-                    Export
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-lg p-0 overflow-hidden rounded-xl border border-blue-100">
-                  <div className="bg-gradient-to-br from-white to-blue-50 px-6 py-5">
-                    <DialogHeader>
-                      <DialogTitle className="text-xl font-bold text-[#123f46]">
-                        Export Logs
-                      </DialogTitle>
-                      <DialogDescription className="text-sm text-slate-600">
-                        Choose a period to export visitor entries or use a quick
-                        preset.
-                      </DialogDescription>
-                    </DialogHeader>
+          <Tabs defaultValue="table" className="w-full">
+            <TabsList>
+              <TabsTrigger value="table">Logs Table</TabsTrigger>
+              <TabsTrigger value="chart">Visitor Chart</TabsTrigger>
+            </TabsList>
 
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => applyPreset("thisMonth")}
-                      >
-                        This Month
+            <TabsContent value="table">
+              <div className="max-w-4xl w-full mx-auto bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-4 md:p-8">
+                <div className="w-full flex items-center justify-between mb-5">
+                  <span className="text-lg md:text-xl font-bold text-[#3e979f]">
+                    Total Logs: {islandEntries.length}
+                  </span>
+                  <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="px-5 py-2 font-semibold bg-[#1c5461] text-white hover:bg-[#17434c] shadow rounded">
+                        Export
                       </Button>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => applyPreset("lastMonth")}
-                      >
-                        Last Month
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => applyPreset("ytd")}
-                      >
-                        YTD
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => applyPreset("all")}
-                      >
-                        All Time
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          setExportFilter({
-                            month: "",
-                            year: "",
-                            start_date: "",
-                            end_date: "",
-                          })
-                        }
-                      >
-                        Reset
-                      </Button>
-                    </div>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-lg p-0 overflow-hidden rounded-xl border border-blue-100">
+                      <div className="bg-gradient-to-br from-white to-blue-50 px-6 py-5">
+                        <DialogHeader>
+                          <DialogTitle className="text-xl font-bold text-[#123f46]">
+                            Export Logs
+                          </DialogTitle>
+                          <DialogDescription className="text-sm text-slate-600">
+                            Choose a period to export visitor entries or use a
+                            quick preset.
+                          </DialogDescription>
+                        </DialogHeader>
 
-                    <Tabs
-                      value={filterMode}
-                      onValueChange={(v) =>
-                        setFilterMode(v as "monthYear" | "range")
-                      }
-                      className="mt-5"
-                    >
-                      <TabsList className="grid grid-cols-2 bg-slate-100">
-                        <TabsTrigger
-                          value="monthYear"
-                          className="data-[state=active]:bg-white"
-                        >
-                          Month / Year
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value="range"
-                          className="data-[state=active]:bg-white"
-                        >
-                          Date Range
-                        </TabsTrigger>
-                      </TabsList>
-
-                      <TabsContent value="monthYear" className="mt-4 space-y-4">
-                        <div className="flex gap-4">
-                          <div className="flex-1 space-y-2">
-                            <label className="text-xs font-medium text-slate-600">
-                              Month
-                            </label>
-                            <Select
-                              value={exportFilter.month}
-                              onValueChange={(val) =>
-                                setExportFilter((f) => ({
-                                  ...f,
-                                  month: val,
-                                  start_date: "",
-                                  end_date: "",
-                                }))
-                              }
-                            >
-                              <SelectTrigger className="w-full bg-white">
-                                <SelectValue placeholder="Select month" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {months.map((m) => (
-                                  <SelectItem key={m.value} value={m.value}>
-                                    {m.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="flex-1 space-y-2">
-                            <label className="text-xs font-medium text-slate-600">
-                              Year
-                            </label>
-                            <Select
-                              value={exportFilter.year}
-                              onValueChange={(val) =>
-                                setExportFilter((f) => ({
-                                  ...f,
-                                  year: val,
-                                  start_date: "",
-                                  end_date: "",
-                                }))
-                              }
-                            >
-                              <SelectTrigger className="w-full bg-white">
-                                <SelectValue placeholder="Select year" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {Array.from({ length: 9 }, (_, i) => {
-                                  const y = new Date().getFullYear() - 4 + i;
-                                  return (
-                                    <SelectItem key={y} value={String(y)}>
-                                      {y}
-                                    </SelectItem>
-                                  );
-                                })}
-                              </SelectContent>
-                            </Select>
-                          </div>
+                        {/* Presets */}
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => applyPreset("thisMonth")}
+                          >
+                            This Month
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => applyPreset("lastMonth")}
+                          >
+                            Last Month
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => applyPreset("ytd")}
+                          >
+                            YTD
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => applyPreset("all")}
+                          >
+                            All Time
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              setExportFilter({
+                                month: "",
+                                year: "",
+                                start_date: "",
+                                end_date: "",
+                              })
+                            }
+                          >
+                            Reset
+                          </Button>
                         </div>
-                        {!isMonthYearValid && (
-                          <p className="text-xs text-amber-600">
-                            Select both month and year or switch to Date Range.
-                          </p>
-                        )}
-                      </TabsContent>
 
-                      <TabsContent value="range" className="mt-4 space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <label className="text-xs font-medium text-slate-600">
-                              Start Date
-                            </label>
-                            <input
-                              type="date"
-                              value={exportFilter.start_date}
-                              onChange={(e) =>
-                                setExportFilter((f) => ({
-                                  ...f,
-                                  start_date: e.target.value,
-                                  month: "",
-                                  year: "",
-                                }))
-                              }
-                              className="w-full rounded border bg-white px-2 py-1 text-sm"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-xs font-medium text-slate-600">
-                              End Date
-                            </label>
-                            <input
-                              type="date"
-                              value={exportFilter.end_date}
-                              onChange={(e) =>
-                                setExportFilter((f) => ({
-                                  ...f,
-                                  end_date: e.target.value,
-                                  month: "",
-                                  year: "",
-                                }))
-                              }
-                              className="w-full rounded border bg-white px-2 py-1 text-sm"
-                            />
-                          </div>
-                        </div>
-                        {!isRangeValid && (
-                          <p className="text-xs text-amber-600">
-                            Provide both start and end dates or switch to Month
-                            / Year.
-                          </p>
-                        )}
-                      </TabsContent>
-                    </Tabs>
-
-                    <div className="mt-7 flex justify-end gap-3 border-t pt-4">
-                      <DialogClose asChild>
-                        <Button
-                          variant="outline"
-                          type="button"
-                          className="px-5"
+                        {/* Tabs for filter mode */}
+                        <Tabs
+                          value={filterMode}
+                          onValueChange={(v) =>
+                            setFilterMode(v as "monthYear" | "range")
+                          }
+                          className="mt-5"
                         >
-                          Cancel
-                        </Button>
-                      </DialogClose>
-                      <Button
-                        type="button"
-                        disabled={exportDisabled}
-                        onClick={() => handleExport()}
-                        className="bg-[#1c5461] hover:bg-[#17434c] text-white font-semibold px-6"
-                      >
-                        {loading ? "Exporting..." : "Export"}
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
+                          <TabsList className="grid grid-cols-2 bg-slate-100">
+                            <TabsTrigger
+                              value="monthYear"
+                              className="data-[state=active]:bg-white"
+                            >
+                              Month / Year
+                            </TabsTrigger>
+                            <TabsTrigger
+                              value="range"
+                              className="data-[state=active]:bg-white"
+                            >
+                              Date Range
+                            </TabsTrigger>
+                          </TabsList>
 
-            <DataTable
-              columns={islandEntryColumns()}
-              data={islandEntries}
-              searchPlaceholder="Search by name or status..."
-              searchColumn={["status", "full_name"]}
-            />
-          </div>
+                          <TabsContent
+                            value="monthYear"
+                            className="mt-4 space-y-4"
+                          >
+                            <div className="flex gap-4">
+                              <div className="flex-1 space-y-2">
+                                <label className="text-xs font-medium text-slate-600">
+                                  Month
+                                </label>
+                                <Select
+                                  value={exportFilter.month}
+                                  onValueChange={(val) =>
+                                    setExportFilter((f) => ({
+                                      ...f,
+                                      month: val,
+                                      start_date: "",
+                                      end_date: "",
+                                    }))
+                                  }
+                                >
+                                  <SelectTrigger className="w-full bg-white">
+                                    <SelectValue placeholder="Select month" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {months.map((m) => (
+                                      <SelectItem key={m.value} value={m.value}>
+                                        {m.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="flex-1 space-y-2">
+                                <label className="text-xs font-medium text-slate-600">
+                                  Year
+                                </label>
+                                <Select
+                                  value={exportFilter.year}
+                                  onValueChange={(val) =>
+                                    setExportFilter((f) => ({
+                                      ...f,
+                                      year: val,
+                                      start_date: "",
+                                      end_date: "",
+                                    }))
+                                  }
+                                >
+                                  <SelectTrigger className="w-full bg-white">
+                                    <SelectValue placeholder="Select year" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {Array.from({ length: 10 }, (_, i) => {
+                                      const y = new Date().getFullYear() - i;
+                                      return (
+                                        <SelectItem key={y} value={String(y)}>
+                                          {y}
+                                        </SelectItem>
+                                      );
+                                    })}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                            {!isMonthYearValid && (
+                              <p className="text-xs text-amber-600">
+                                Select both month and year or switch to Date
+                                Range.
+                              </p>
+                            )}
+                          </TabsContent>
+
+                          <TabsContent value="range" className="mt-4 space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <label className="text-xs font-medium text-slate-600">
+                                  Start Date
+                                </label>
+                                <input
+                                  type="date"
+                                  value={exportFilter.start_date}
+                                  onChange={(e) =>
+                                    setExportFilter((f) => ({
+                                      ...f,
+                                      start_date: e.target.value,
+                                      month: "",
+                                      year: "",
+                                    }))
+                                  }
+                                  className="w-full rounded border bg-white px-2 py-1 text-sm"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-xs font-medium text-slate-600">
+                                  End Date
+                                </label>
+                                <input
+                                  type="date"
+                                  value={exportFilter.end_date}
+                                  onChange={(e) =>
+                                    setExportFilter((f) => ({
+                                      ...f,
+                                      end_date: e.target.value,
+                                      month: "",
+                                      year: "",
+                                    }))
+                                  }
+                                  className="w-full rounded border bg-white px-2 py-1 text-sm"
+                                />
+                              </div>
+                            </div>
+                            {!isRangeValid && (
+                              <p className="text-xs text-amber-600">
+                                Provide both start and end dates or switch to
+                                Month / Year.
+                              </p>
+                            )}
+                          </TabsContent>
+                        </Tabs>
+
+                        {/* Footer */}
+                        <div className="mt-7 flex justify-end gap-3 border-t pt-4">
+                          <DialogClose asChild>
+                            <Button
+                              variant="outline"
+                              type="button"
+                              className="px-5"
+                            >
+                              Cancel
+                            </Button>
+                          </DialogClose>
+                          <Button
+                            type="button"
+                            disabled={exportDisabled}
+                            onClick={() => handleExport()}
+                            className="bg-[#1c5461] hover:bg-[#17434c] text-white font-semibold px-6"
+                          >
+                            {loading ? "Exporting..." : "Export"}
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+                <DataTable
+                  columns={islandEntryColumns()}
+                  data={islandEntries}
+                  searchPlaceholder="Search by name or status..."
+                  searchColumn={["status", "full_name"]}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="chart">
+              <div className="max-w-4xl w-full mx-auto bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-4 md:p-8 mt-4">
+                <h2 className="text-2xl font-bold text-[#1c5461] mb-4">
+                  Expected vs Actual Visitors
+                </h2>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart
+                    data={chartData}
+                    margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Legend />
+                    <Bar
+                      dataKey="expected"
+                      fill="#3e979f"
+                      name="Expected Visitors"
+                    />
+                    <Bar
+                      dataKey="actual"
+                      fill="#51702c"
+                      name="Actual Visitors"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     </>

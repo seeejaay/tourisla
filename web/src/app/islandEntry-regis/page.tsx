@@ -18,6 +18,7 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import { m } from "framer-motion";
 
 export interface GroupMember {
   name: string;
@@ -71,7 +72,8 @@ export default function IslandEntryPage() {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const { loggedInUser } = useAuth();
   const [user, setUser] = useState<User | null>(null);
-  const { loading, result, fee, fetchFee, register } = useIslandEntryManager();
+  const { loading, result, fee, fetchFee, register, markPaid } =
+    useIslandEntryManager();
 
   // Caching regions/cities for performance
   const regionsCache = useRef<Region[] | null>(null);
@@ -906,7 +908,7 @@ export default function IslandEntryPage() {
                     type="button"
                     onClick={async () => {
                       try {
-                        const updated = await getLatestIslandEntry();
+                        const updated = await markPaid(latestEntry.unique_code);
                         setLatestEntry(updated);
                         setShowResult(true);
                         setShowPaymentLink(false);
