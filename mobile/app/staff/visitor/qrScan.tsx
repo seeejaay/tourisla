@@ -12,7 +12,7 @@ export default function QrScan() {
   const [ready, setReady] = useState(false);
   const [isScanning, setIsScanning] = useState(true); // prevent multiple scans
   const isVisitorCode = (code: string) => /^[A-Z]{3}[0-9]{3}$/.test(code);
-  const isIslandEntryCode = (code: string) => /^([A-Z][0-9]){3}$/.test(code);
+  const isIslandEntryCode = (code: string) => /^[A-Z0-9]{6}$/.test(code);
 
   const animatedValue = useRef(new Animated.Value(0)).current;
 
@@ -33,7 +33,7 @@ export default function QrScan() {
   
     let extracted = data.trim().toUpperCase();
     console.log("Scanned code raw:", extracted);
-    const match = extracted.match(/\/([A-Z0-9]+)$/);
+    const match = extracted.match(/\/([A-Z0-9]{6})(?:\?.*)?$/);
     const trimmedCode = match ? match[1] : extracted;
 
     console.log("Final extracted code:", trimmedCode);
