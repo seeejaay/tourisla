@@ -75,6 +75,25 @@ export default function IslandEntryLogsPage() {
     end_date: "",
   });
 
+  // Chart filter state (add nextWeek, nextMonth, dateRange)
+  const [chartFilter, setChartFilter] = useState<
+    | "daily"
+    | "lastWeek"
+    | "month"
+    | "year"
+    | "all"
+    | "nextWeek"
+    | "nextMonth"
+    | "dateRange"
+  >("all");
+  const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [selectedYear, setSelectedYear] = useState<string>(
+    String(new Date().getFullYear())
+  );
+  // Date range state for chart
+  const [chartStartDate, setChartStartDate] = useState<string>("");
+  const [chartEndDate, setChartEndDate] = useState<string>("");
+
   useEffect(() => {
     async function getCurrentUserAndEntries() {
       try {
@@ -169,14 +188,44 @@ export default function IslandEntryLogsPage() {
     setDialogOpen(false);
   }
 
-  // --- Chart Data Aggregation ---
-  // Group by date (YYYY-MM-DD), count expected and actual visitors
-  const chartData = (() => {
-    // Helper to format date to YYYY-MM-DD
-    const formatDate = (dateStr: string | null) =>
-      dateStr ? new Date(dateStr).toISOString().slice(0, 10) : null;
+  // --- Chart Data Aggregation with Filtering ---
+  // Helper to format date to YYYY-MM-DD
+  const formatDate = (dateStr: string | null) =>
+    dateStr ? new Date(dateStr).toISOString().slice(0, 10) : null;
 
-    // Aggregate expected visitors
+  // Next week dates
+  const today = new Date();
+  const nextWeekDates = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    return d.toISOString().slice(0, 10);
+  });
+
+  // Next month dates
+  const nextMonthDates = (() => {
+    const arr: string[] = [];
+    const d = new Date(today);
+    for (let i = 0; i < 31; i++) {
+      arr.push(d.toISOString().slice(0, 10));
+      d.setDate(d.getDate() + 1);
+    }
+    return arr;
+  })();
+
+  // Expected visitors for next week
+  const expectedNextWeek = islandEntries.filter((entry) => {
+    const expectedDate = formatDate(entry.expected_arrival);
+    return expectedDate && nextWeekDates.includes(expectedDate);
+  }).length;
+
+  // Expected visitors for next month
+  const expectedNextMonth = islandEntries.filter((entry) => {
+    const expectedDate = formatDate(entry.expected_arrival);
+    return expectedDate && nextMonthDates.includes(expectedDate);
+  }).length;
+
+  const chartData = (() => {
+    // Aggregate expected visitors by expected_arrival
     const expectedMap: Record<string, number> = {};
     islandEntries.forEach((entry) => {
       const expectedDate = formatDate(entry.expected_arrival);
@@ -185,22 +234,53 @@ export default function IslandEntryLogsPage() {
       }
     });
 
-    // Aggregate actual visitors (by registration_date)
+    // Aggregate actual visitors by latest_visit_date
     const actualMap: Record<string, number> = {};
     islandEntries.forEach((entry) => {
-      const actualDate = formatDate(entry.registration_date);
+      const actualDate = formatDate(entry.latest_visit_date);
       if (actualDate) {
         actualMap[actualDate] = (actualMap[actualDate] || 0) + 1;
       }
     });
 
-    // Combine dates
+    // Combine all dates
     const allDates = Array.from(
       new Set([...Object.keys(expectedMap), ...Object.keys(actualMap)])
     ).sort();
 
-    // Build chart data array
-    return allDates.map((date) => ({
+    // Filter logic
+    const todayStr = today.toISOString().slice(0, 10);
+    const lastWeekDates = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return d.toISOString().slice(0, 10);
+    });
+
+    let filteredDates = allDates;
+    if (chartFilter === "daily") {
+      filteredDates = allDates.filter((d) => d === todayStr);
+    } else if (chartFilter === "lastWeek") {
+      filteredDates = allDates.filter((d) => lastWeekDates.includes(d));
+    } else if (chartFilter === "month" && selectedMonth && selectedYear) {
+      filteredDates = allDates.filter((d) => {
+        const [year, month] = d.split("-");
+        return (
+          year === selectedYear && month === selectedMonth.padStart(2, "0")
+        );
+      });
+    } else if (chartFilter === "year" && selectedYear) {
+      filteredDates = allDates.filter((d) => d.startsWith(selectedYear + "-"));
+    } else if (chartFilter === "nextWeek") {
+      filteredDates = allDates.filter((d) => nextWeekDates.includes(d));
+    } else if (chartFilter === "nextMonth") {
+      filteredDates = allDates.filter((d) => nextMonthDates.includes(d));
+    } else if (chartFilter === "dateRange" && chartStartDate && chartEndDate) {
+      filteredDates = allDates.filter(
+        (d) => d >= chartStartDate && d <= chartEndDate
+      );
+    }
+
+    return filteredDates.map((date) => ({
       date,
       expected: expectedMap[date] || 0,
       actual: actualMap[date] || 0,
@@ -227,7 +307,7 @@ export default function IslandEntryLogsPage() {
             </TabsList>
 
             <TabsContent value="table">
-              <div className="max-w-4xl w-full mx-auto bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-4 md:p-8">
+              <div className="max-w-7xl w-full mx-auto bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-4 md:p-8">
                 <div className="w-full flex items-center justify-between mb-5">
                   <span className="text-lg md:text-xl font-bold text-[#3e979f]">
                     Total Logs: {islandEntries.length}
@@ -481,13 +561,110 @@ export default function IslandEntryLogsPage() {
                 <h2 className="text-2xl font-bold text-[#1c5461] mb-4">
                   Expected vs Actual Visitors
                 </h2>
+                {/* Summary boxes for next week/month */}
+                <div className="flex gap-6 mb-4">
+                  <div>
+                    <span className="font-semibold text-[#1c5461]">
+                      Expected Visitors (Next 7 Days):{" "}
+                    </span>
+                    <span className="font-bold">{expectedNextWeek}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-[#1c5461]">
+                      Expected Visitors (Next 31 Days):{" "}
+                    </span>
+                    <span className="font-bold">{expectedNextMonth}</span>
+                  </div>
+                </div>
+                {/* Chart Filters */}
+                <div className="flex gap-3 mb-4">
+                  <Select value={chartFilter} onValueChange={setChartFilter}>
+                    <SelectTrigger className="min-w-[120px]">
+                      <SelectValue placeholder="Filter" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">Today</SelectItem>
+                      <SelectItem value="lastWeek">Last 7 Days</SelectItem>
+                      <SelectItem value="nextWeek">Next 7 Days</SelectItem>
+                      <SelectItem value="nextMonth">Next 31 Days</SelectItem>
+                      <SelectItem value="month">Month</SelectItem>
+                      <SelectItem value="year">Year</SelectItem>
+                      <SelectItem value="dateRange">Date Range</SelectItem>
+                      <SelectItem value="all">All</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {chartFilter === "month" && (
+                    <Select
+                      value={selectedMonth}
+                      onValueChange={setSelectedMonth}
+                    >
+                      <SelectTrigger className="min-w-[120px]">
+                        <SelectValue placeholder="Month" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {months.map((m) => (
+                          <SelectItem key={m.value} value={m.value}>
+                            {m.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {(chartFilter === "month" || chartFilter === "year") && (
+                    <Select
+                      value={selectedYear}
+                      onValueChange={setSelectedYear}
+                    >
+                      <SelectTrigger className="min-w-[120px]">
+                        <SelectValue placeholder="Year" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 10 }, (_, i) => {
+                          const y = new Date().getFullYear() - i;
+                          return (
+                            <SelectItem key={y} value={String(y)}>
+                              {y}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {chartFilter === "dateRange" && (
+                    <>
+                      <input
+                        type="date"
+                        value={chartStartDate}
+                        onChange={(e) => setChartStartDate(e.target.value)}
+                        className="border rounded px-2 py-1"
+                        placeholder="Start Date"
+                      />
+                      <input
+                        type="date"
+                        value={chartEndDate}
+                        onChange={(e) => setChartEndDate(e.target.value)}
+                        className="border rounded px-2 py-1"
+                        placeholder="End Date"
+                      />
+                    </>
+                  )}
+                </div>
                 <ResponsiveContainer width="100%" height={400}>
                   <BarChart
                     data={chartData}
                     margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
+                    <XAxis
+                      dataKey="date"
+                      tickFormatter={(date) =>
+                        new Date(date).toLocaleDateString("en-PH", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      }
+                    />
                     <YAxis allowDecimals={false} />
                     <Tooltip />
                     <Legend />
