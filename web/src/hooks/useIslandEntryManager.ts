@@ -6,6 +6,7 @@ import {
   getTourismFee,
   getAllIslandEntries as apigetAllIslandEntries,
   exportIslandEntryLog as apiExportIslandEntryLog,
+  markIslandEntryPaid,
 } from "@/lib/api/islandEntry";
 
 import type { RegistrationPayload } from "@/app/islandEntry-regis/page";
@@ -112,6 +113,16 @@ export function useIslandEntryManager() {
     []
   );
 
+  const markPaid = async (uniqueCode: string) => {
+    setLoading(true);
+    try {
+      const res = await markIslandEntryPaid(uniqueCode);
+      return res;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     result,
@@ -122,5 +133,6 @@ export function useIslandEntryManager() {
     checkPaymentStatus,
     getAllIslandEntries,
     exportIslandEntryLog,
+    markPaid,
   };
 }

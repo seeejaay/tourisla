@@ -137,8 +137,10 @@ export default function IslandEntryLookupPage() {
                       setError(null);
                       setSuccess(null);
                       try {
-                        await markIslandEntryPaid(code.trim());
-                        const res = await getIslandEntryMembers(code.trim());
+                        await markIslandEntryPaid(code);
+                        const res = await getIslandEntryMembers({
+                          unique_code: code,
+                        });
                         setResult(res.data);
                         setSuccess("Payment marked as received!");
                       } catch (err) {
