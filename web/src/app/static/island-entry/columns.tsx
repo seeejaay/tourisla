@@ -28,6 +28,8 @@ export type IslandEntry = {
   full_name: string;
   companion_names: string;
   role: string; // <-- Add role field
+  latest_visit_date: string;
+  expected_arrival: string;
 };
 
 export function columns(): ColumnDef<IslandEntry>[] {
@@ -71,26 +73,66 @@ export function columns(): ColumnDef<IslandEntry>[] {
     //     ),
     // },
     {
-      accessorKey: "registration_date",
+      accessorKey: "latest_visit_date",
       header: ({ column }) => (
         <Button
           variant="ghost"
           className="w-40 font-bold text-center flex items-center gap-1 px-0 py-1 cursor-pointer"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Registration Date
+          Latest Visit Date
           <ArrowUpDown className="ml-1 h-4 w-4 text-[#3e979f]" />
         </Button>
       ),
       cell: ({ row }) => (
         <span>
-          {new Date(row.original.registration_date).toLocaleString("en-PH", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+          {row.original.latest_visit_date
+            ? new Date(row.original.latest_visit_date).toLocaleString("en-US", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              })
+            : "No entry recorded yet"}
+        </span>
+      ),
+      enableSorting: true,
+    },
+    {
+      accessorKey: "expected_arrival",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="w-48 font-bold text-center cursor-pointer"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Expected Arrival Date
+          <ArrowUpDown className="ml-1 h-4 w-4 text-[#3e979f]" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <span>
+          {row.original.expected_arrival
+            ? new Date(row.original.expected_arrival).toLocaleString("en-US", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              })
+            : row.original.latest_visit_date
+            ? new Date(row.original.latest_visit_date).toLocaleString("en-US", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              })
+            : ""}
         </span>
       ),
       enableSorting: true,
