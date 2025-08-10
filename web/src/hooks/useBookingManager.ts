@@ -141,9 +141,9 @@ export function useBookingsByTourist() {
     setLoading(true);
     setError(null);
     try {
-      console.log("Fetching bookings for tourist ID:", touristId);
+      // console.log("Fetching bookings for tourist ID:", touristId);
       const result = await getBookingsByTourist(touristId);
-      console.log("Fetched bookings by tourist:", result);
+      // console.log("Fetched bookings by tourist:", result);
       setData(result);
       return result;
     } catch (err) {
@@ -168,7 +168,7 @@ export function useBookingsByPackage() {
     setError(null);
     try {
       const result = await getBookingsByPackage(packageId);
-      console.log("Fetched bookings by package");
+      // console.log("Fetched bookings by package", result);
       setData(result);
       return result;
     } catch (err) {

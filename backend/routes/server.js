@@ -918,7 +918,7 @@ app.get(
 );
 app.get(
   "/api/v1/tour-packages/bookings/:packageId",
-  allowedRoles(["Tour Operator"]),
+  allowedRoles(["Tour Operator", "Tour Guide"]),
   getBookingsByTourPackageController
 );
 
@@ -964,7 +964,7 @@ app.get(
 );
 app.get(
   "/api/v1/bookings/package/:packageId",
-  allowedRoles(["Tour Operator"]),
+  allowedRoles(["Tour Operator", "Tour Guide"]),
   getBookingsByPackageController
 );
 app.get(
