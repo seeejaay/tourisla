@@ -5,9 +5,17 @@ import {
   getIslandEntryStatus,
   getTourismFee,
   getAllIslandEntries as apigetAllIslandEntries,
+  exportIslandEntryLog as apiExportIslandEntryLog,
 } from "@/lib/api/islandEntry";
 
 import type { RegistrationPayload } from "@/app/islandEntry-regis/page";
+
+export type IslandEntryExportFilter = {
+  start_date?: string;
+  end_date?: string;
+  month?: number;
+  year?: number;
+};
 
 export function useIslandEntryManager() {
   const [loading, setLoading] = useState(false);
@@ -69,6 +77,7 @@ export function useIslandEntryManager() {
     setLoading(true);
     try {
       const entries = await apigetAllIslandEntries();
+      console.log("Fetched island entries:", entries);
       return entries;
     } catch (error) {
       console.error("Error fetching island entries:", error);
@@ -77,6 +86,31 @@ export function useIslandEntryManager() {
       setLoading(false);
     }
   }, []);
+
+  const exportIslandEntryLog = useCallback(
+    async (filter: IslandEntryExportFilter) => {
+      setLoading(true);
+      try {
+        const blob = await apiExportIslandEntryLog(filter);
+        // Trigger file download in browser
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "island_entry_visitors.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        return true;
+      } catch (error) {
+        console.error("Error exporting island entry log:", error);
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   return {
     loading,
@@ -87,5 +121,6 @@ export function useIslandEntryManager() {
     register,
     checkPaymentStatus,
     getAllIslandEntries,
+    exportIslandEntryLog,
   };
 }

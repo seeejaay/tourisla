@@ -5,7 +5,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-// Define your type
 import { Users, User } from "lucide-react";
 import {
   Dialog,
@@ -28,25 +27,21 @@ export type IslandEntry = {
   last_name: string;
   full_name: string;
   companion_names: string;
+  role: string; // <-- Add role field
 };
 
 export function columns(): ColumnDef<IslandEntry>[] {
-  //   setDialogEntry: (entry: IslandEntry | null) => void,
-  //   setEditDialogEntry: (entry: IslandEntry | null) => void,
-  //   setDeleteDialogEntry: (entry: IslandEntry | null) => void
-
-  const toSentenceCase = (str: string) => {
-    return str.charAt(0) + str.slice(1).toLowerCase();
-  };
-
   return [
     {
       accessorKey: "full_name",
-      // header: "Full Name" ,
+      accessorFn: (row) =>
+        row.role !== "Tourist"
+          ? row.companion_names.split(",")[0].trim()
+          : `${row.first_name} ${row.last_name}`,
       header: ({ column }) => (
         <Button
           variant="ghost"
-          className="w-48 font-bold text-center  cursor-pointer"
+          className="w-48 font-bold text-center cursor-pointer"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Full Name
@@ -54,13 +49,27 @@ export function columns(): ColumnDef<IslandEntry>[] {
         </Button>
       ),
       cell: ({ row }) => (
-        <div className=" w-48 pl-8">
+        <div className="w-48 pl-8">
           <span className="font-semibold text-[#1c5461]">
-            {row.original.first_name} {row.original.last_name}
+            {row.getValue("full_name")}
           </span>
         </div>
       ),
+      filterFn: "includesString", // Ensures searching works on computed value
+      enableSorting: true,
     },
+    // {
+    //   accessorKey: "staff_name",
+    //   header: "Registered By",
+    //   cell: ({ row }) =>
+    //     row.original.role === "Tourism Staff" ? (
+    //       <span className="font-semibold text-blue-900">
+    //         {row.original.first_name} {row.original.last_name}
+    //       </span>
+    //     ) : (
+    //       <span className="italic text-gray-400">—</span>
+    //     ),
+    // },
     {
       accessorKey: "registration_date",
       header: ({ column }) => (
@@ -88,7 +97,6 @@ export function columns(): ColumnDef<IslandEntry>[] {
     },
     {
       accessorKey: "status",
-      // header: "Status",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -102,7 +110,7 @@ export function columns(): ColumnDef<IslandEntry>[] {
       cell: ({ row }) => (
         <Badge
           className={`
-            w-28 font-semibold  p-1 rounded-full text-center
+            w-28 font-semibold p-1 rounded-full text-center
             ${
               row.original.status === "PAID"
                 ? "text-green-600 bg-green-100"
@@ -115,7 +123,7 @@ export function columns(): ColumnDef<IslandEntry>[] {
         >
           {row.original.status === "NOT_REQUIRED"
             ? "Not Required"
-            : toSentenceCase(row.original.status)}
+            : row.original.status}
         </Badge>
       ),
       enableSorting: true,
@@ -187,70 +195,6 @@ export function columns(): ColumnDef<IslandEntry>[] {
       },
       enableSorting: false,
     },
-    // {
-    //   accessorKey: "unique_code",
-    //   header: ({ column }) => (
-    //     <Button
-    //       variant="ghost"
-    //       className="w-32 font-bold text-left flex items-center gap-1 px-0 py-1"
-    //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-    //     >
-    //       Code
-    //       <ArrowUpDown className="ml-1 h-4 w-4 text-[#3e979f]" />
-    //     </Button>
-    //   ),
-    //   cell: ({ row }) => (
-    //     <span className="font-mono text-[#1c5461]">
-    //       {row.original.unique_code}
-    //     </span>
-    //   ),
-    //   enableSorting: true,
-    // },
-    // {
-    //   accessorKey: "actions",
-    //   header: () => (
-    //     <span className="font-bold text-center block">Actions</span>
-    //   ),
-    //   cell: ({ row }) => {
-    //     const entry = row.original;
-    //     return (
-    //       <DropdownMenu>
-    //         <DropdownMenuTrigger asChild>
-    //           <Button
-    //             variant="ghost"
-    //             className="p-0 w-8 h-8 flex items-center justify-center hover:bg-[#e6f7fa]"
-    //             aria-label="Open actions"
-    //           >
-    //             <MoreHorizontal className="h-5 w-5 text-[#1c5461]" />
-    //           </Button>
-    //         </DropdownMenuTrigger>
-    //         <DropdownMenuContent align="end" className="min-w-[140px]">
-    //           <DropdownMenuLabel className="text-[#1c5461]">
-    //             Actions
-    //           </DropdownMenuLabel>
-    //           <DropdownMenuSeparator />
-    //           <DropdownMenuItem
-    //             onClick={() => setDialogEntry(entry)}
-    //             className="hover:bg-[#e6f7fa] cursor-pointer"
-    //           >
-    //             View
-    //           </DropdownMenuItem>
-    //           <DropdownMenuItem
-    //             onClick={() => setEditDialogEntry(entry)}
-    //             className="hover:bg-[#e6f7fa] cursor-pointer"
-    //           >
-    //             Edit
-    //           </DropdownMenuItem>
-    //           <DropdownMenuItem
-    //             onClick={() => setDeleteDialogEntry(entry)}
-    //             className="text-red-500 hover:bg-red-50 cursor-pointer"
-    //           >
-    //             Delete
-    //           </DropdownMenuItem>
-    //         </DropdownMenuContent>
-    //       </DropdownMenu>
-    //     );
-    //   },
-    // },
+    // Add other columns if needed
   ];
 }

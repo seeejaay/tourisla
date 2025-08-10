@@ -70,3 +70,17 @@ export const getAllIslandEntries = async () => {
   });
   return res.data;
 };
+
+export const exportIslandEntryLog = async (filter) => {
+  try {
+    const query = new URLSearchParams(filter).toString();
+    const res = await axios.get(`${API_URL}island-entry/export?${query}`, {
+      withCredentials: true,
+      responseType: "blob", // Important for downloading files!
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Error exporting island entry log:", error);
+    throw error;
+  }
+};

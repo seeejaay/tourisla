@@ -209,6 +209,7 @@ const {
   getLatestIslandEntryController,
   markIslandEntryPaidController,
   getAllIslandEntriesController,
+  exportIslandEntryLogController,
 } = require("../controllers/islandEntryRegisController");
 
 const {
@@ -865,6 +866,11 @@ app.get(
   "/api/v1/island-entry/latest",
   authenticateUser,
   getLatestIslandEntryController
+);
+app.get(
+  "/api/v1/island-entry/export",
+  allowedRoles(["Tourism Officer"]),
+  exportIslandEntryLogController
 );
 app.post("/api/v1/island-entry/mark-paid", markIslandEntryPaidController);
 
