@@ -18,7 +18,6 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import { m } from "framer-motion";
 
 export interface GroupMember {
   name: string;
