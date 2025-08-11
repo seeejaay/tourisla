@@ -40,6 +40,8 @@ export default function Header() {
         res.data.user.role.toLowerCase() === "tour operator"
       ) {
         router.replace(`/profile/${res.data.user.id}`); // or your desired page
+      } else if (res.data.user.role.toLowerCase() === "tourism staff") {
+        router.replace("/visitor/dashboard"); // or your desired page
       }
     }
     checkAuth();
