@@ -1,5 +1,6 @@
 import { Label } from "@/components/ui/label";
 import { TourGuide } from "./column";
+import Image from "next/image";
 
 export default function ViewTourGuide({ tourGuide }: { tourGuide: TourGuide }) {
   if (!tourGuide) return null;
@@ -10,7 +11,9 @@ export default function ViewTourGuide({ tourGuide }: { tourGuide: TourGuide }) {
         typeof tourGuide.profile_picture === "string" && (
           <div className="flex flex-col items-center mt-2">
             <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 border border-gray-200 shadow">
-              <img
+              <Image
+                width={128}
+                height={128}
                 src={tourGuide.profile_picture}
                 alt="Profile"
                 className="object-cover w-full h-full"
