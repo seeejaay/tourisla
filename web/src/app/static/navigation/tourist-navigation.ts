@@ -23,11 +23,18 @@ const touristNavigation = (userId: string): NavItem[] => {
       icon: User,
     },
     {
+      name: "Island Entry QR",
+      href: `/profile/${userId}/island-entry-qr`,
+      title: "Island Entry QR",
+      icon: QrCode,
+    },
+    {
       name: "Visitor Registration",
       href: `/profile/${userId}/view-registration`,
       title: "Visitor Registration",
       icon: QrCode,
     },
+
     {
       name: "Attraction Visit History",
       href: `/profile/${userId}/attraction-history`,

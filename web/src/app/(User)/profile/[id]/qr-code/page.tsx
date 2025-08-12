@@ -4,6 +4,7 @@ import React, { useRef, useState } from "react";
 import { useOperatorQrManager } from "@/hooks/useOperatorQr";
 import { useParams } from "next/navigation";
 import OperatorUploadSchema from "@/app/static/operatorqr/operatorSchema";
+// import { useAuth } from "@/hooks/useAuth";
 import Image from "next/image";
 type OperatorQr = {
   id: number;
@@ -23,6 +24,7 @@ export default function QRCodePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const params = useParams();
   const TOUROPERATOR_ID = params.id as string;
+  // const { loggedInUser } = useAuth();
 
   // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

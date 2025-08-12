@@ -122,7 +122,9 @@ export function useAuth() {
       setLoading(true);
       setError("");
       try {
+        console.log("Fetching current user...");
         const resCurrentUser = await currentUser();
+        console.log("No user found or user role is missing.");
         if (!resCurrentUser || !resCurrentUser.data.user.role) {
           if (restrict) {
             router.replace("/auth/login");
@@ -133,6 +135,9 @@ export function useAuth() {
       } catch (error) {
         setError("An error occurred while fetching the current user." + error);
         console.error("Error fetching current user:", error);
+        if (restrict) {
+          router.replace("/auth/login");
+        }
         return null;
       } finally {
         setLoading(false);
