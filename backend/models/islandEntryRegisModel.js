@@ -104,10 +104,20 @@ const saveIslandEntryPayment = async ({
 // Get latest registration by user_id
 const getLatestIslandEntryByUserId = async (userId) => {
   const result = await db.query(
-    `SELECT unique_code, qr_code_url
-     FROM island_entry_registration
-     WHERE user_id = $1
-     ORDER BY registration_date DESC
+    `SELECT 
+       ier.unique_code, 
+       ier.qr_code_url,
+       COALESCE(members.group_members, '') AS island_entry_group_members
+     FROM island_entry_registration ier
+     LEFT JOIN (
+       SELECT 
+         registration_id, 
+         STRING_AGG(name, ', ') AS group_members
+       FROM island_entry_registration_members
+       GROUP BY registration_id
+     ) members ON ier.id = members.registration_id
+     WHERE ier.user_id = $1
+     ORDER BY ier.registration_date DESC
      LIMIT 1`,
     [userId]
   );

@@ -7,6 +7,7 @@ import {
   getAllIslandEntries as apigetAllIslandEntries,
   exportIslandEntryLog as apiExportIslandEntryLog,
   markIslandEntryPaid,
+  getLatestIslandEntry,
 } from "@/lib/api/islandEntry";
 
 import type { RegistrationPayload } from "@/app/islandEntry-regis/page";
@@ -123,6 +124,20 @@ export function useIslandEntryManager() {
     }
   };
 
+  const getLatestEntry = useCallback(async () => {
+    setLoading(true);
+    try {
+      const entry = await getLatestIslandEntry();
+      console.log("Latest island entry:", entry);
+      return entry;
+    } catch (error) {
+      console.error("Error fetching latest island entry:", error);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     loading,
     result,
@@ -134,5 +149,6 @@ export function useIslandEntryManager() {
     getAllIslandEntries,
     exportIslandEntryLog,
     markPaid,
+    getLatestEntry,
   };
 }

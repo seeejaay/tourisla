@@ -54,6 +54,7 @@ export default function ProfilePage() {
   useEffect(() => {
     async function fetchUser() {
       const res = await loggedInUser(router);
+      console.log("Logged in user:", res);
       console.log("Fetched user:", res);
       if (res && res.data && res.data.user) {
         const u = res.data.user;
