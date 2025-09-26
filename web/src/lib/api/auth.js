@@ -52,7 +52,13 @@ export const logout = async () => {
 
 export const forgotPassword = async (email) => {
   try {
-    const response = await axios.post(`${API_URL}forgot-password`, { email });
+    const response = await axios.post(
+      `${API_URL}forgot-password`,
+      { email },
+      {
+        withCredentials: true, // Include cookies in the request
+      }
+    );
     if (response.status !== 200) {
       throw new Error(
         `Failed to send reset link. Server responded with status: ${response.status}`
@@ -71,10 +77,16 @@ export const forgotPassword = async (email) => {
 
 export const resetPassword = async (token, password) => {
   try {
-    const response = await axios.post(`${API_URL}reset-password`, {
-      token,
-      password,
-    });
+    const response = await axios.post(
+      `${API_URL}reset-password`,
+      {
+        token,
+        password,
+      },
+      {
+        withCredentials: true, // Include cookies in the request
+      }
+    );
     if (response.status !== 200) {
       throw new Error(
         `Failed to reset password. Server responded with status: ${response.status}`
@@ -91,14 +103,26 @@ export const resetPassword = async (token, password) => {
   }
 };
 
-export const currentUser = async (sessionCookie) => {
-  const response = await fetch(`${API_URL}user`, {
-    headers: {
-      Cookie: `connect.sid=${sessionCookie}`,
-    },
-    credentials: "include",
-  });
-  return response.json();
+export const currentUser = async () => {
+  try {
+    const response = await axios.get(`${API_URL}user`, {
+      withCredentials: true, // Include cookies in the request
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        `Failed to get current user. Server responded with status: ${response.status}`
+      );
+    }
+    console.log("Current user fetched successfully:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error fetching current user:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
 };
 
 export const verifyUser = async (token) => {
