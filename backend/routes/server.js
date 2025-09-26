@@ -48,6 +48,8 @@ app.use(
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24,
+      domain:
+        process.env.NODE_ENV === "production" ? ".tourisla.space" : undefined,
     },
   })
 );
