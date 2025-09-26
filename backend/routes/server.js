@@ -53,6 +53,21 @@ app.use(
     },
   })
 );
+// Add this right after your session middleware
+app.use((req, res, next) => {
+  console.log("=== SESSION DEBUG ===");
+  console.log("NODE_ENV:", process.env.NODE_ENV);
+  console.log("Session ID:", req.sessionID);
+  console.log("Cookie settings:", {
+    secure: req.session.cookie.secure,
+    sameSite: req.session.cookie.sameSite,
+    domain: req.session.cookie.domain,
+  });
+  console.log("Has user in session:", !!req.session.user);
+  console.log("Request headers:", req.headers.cookie);
+  next();
+});
+// ...existing code...
 // Controllers
 const {
   loginUser,
