@@ -19,7 +19,7 @@ export const login = async (userData) => {
         `Failed to login. Server responded with status: ${response.status}`
       );
     }
-    console.log("Login Successful:", response.data); // Log the API response
+    // console.log("Login Successful:", response.data); // Log the API response
     return response.data; // Return response data
   } catch (error) {
     console.error("Error during login:", error.response?.data || error.message);

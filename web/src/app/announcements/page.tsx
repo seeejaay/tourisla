@@ -2,7 +2,8 @@
 import React, { useEffect } from "react";
 import { useAnnouncementManager } from "@/hooks/useAnnouncementManager";
 import Image from "next/image";
-import Header from "@/components/custom/header";
+// import Header from "@/components/custom/old-header";
+import NewHeader from "@/components/custom/header";
 import { Megaphone } from "lucide-react";
 import Footer from "@/components/custom/footer";
 export default function AnnouncementsPage() {
@@ -15,7 +16,7 @@ export default function AnnouncementsPage() {
 
   return (
     <>
-      <Header />
+      <NewHeader />
       <div className="max-w-4xl mx-auto pt-24 px-4 pb-12 ">
         <div className="flex flex-col items-center mb-10">
           <div className="bg-[#1c5461] rounded-full p-4 shadow-lg mb-4">

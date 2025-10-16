@@ -5,14 +5,22 @@ export const navigation = [
     title: "Home",
   },
   {
-    tag: "Culture",
-    href: "/articles",
-    title: "Culture",
+    tag: "Discover",
+    title: "Discover",
+
+    dropdown: [
+      { tag: "Culture", href: "/articles", title: "Culture" },
+      {
+        tag: "Tour Packages",
+        href: "/tour-packages",
+        title: "Tour Packages",
+      },
+    ],
   },
   {
-    tag: "Registration",
-    title: "Registration",
-    href: "#",
+    tag: "Services",
+    title: "Services",
+
     dropdown: [
       {
         tag: "Visitor Registration",
@@ -24,22 +32,17 @@ export const navigation = [
         href: "/islandEntry-regis",
         title: "Island Entry Registration",
       },
+      {
+        tag: "Verify Tour Guide",
+        href: "/tour-guides",
+        title: "Verify Tour Guide",
+      },
     ],
-  },
-  {
-    tag: "Tour Packages",
-    href: "/tour-packages",
-    title: "Tour Packages",
   },
   {
     tag: "Hotline",
     href: "/hotlines",
     title: "Hotline",
-  },
-  {
-    tag: "Verify Tour Guide",
-    href: "/tour-guides",
-    title: "Verify Tour Guide",
   },
 ];
 export const footerNavigation = [

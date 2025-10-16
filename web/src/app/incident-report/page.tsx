@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useIncidentManager } from "@/hooks/useIncidentManager";
-import Header from "@/components/custom/header";
+import NewHeader from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
 import { incidentFields } from "@/app/static/incident-report/incidentFields";
 
@@ -81,8 +81,8 @@ export default function IncidentReportPage() {
 
   return (
     <>
-      <Header />
-      <div className="min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] flex flex-col items-center justify-center px-4 pt-24 pb-20">
+      <NewHeader />
+      <div className="min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] flex flex-col items-center justify-center px-4  pb-20">
         <main className="w-full max-w-2xl pt-16">
           <div className="p-8 shadow-lg border border-[#e6f7fa] bg-white rounded-2xl space-y-8">
             <div>
@@ -94,100 +94,6 @@ export default function IncidentReportPage() {
               </p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-semibold mb-2 text-[#1c5461]">
-                    Incident Type
-                  </label>
-                  <input
-                    type="text"
-                    value={incidentType}
-                    onChange={(e) => setIncidentType(e.target.value)}
-                    required
-                    className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
-                    placeholder="e.g. Lost Item, Accident, etc."
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-2 text-[#1c5461]">
-                    Location
-                  </label>
-                  <input
-                    type="text"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    required
-                    className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
-                    placeholder="Where did it happen?"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-semibold mb-2 text-[#1c5461]">
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    value={incidentDate}
-                    onChange={(e) => setIncidentDate(e.target.value)}
-                    required
-                    className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-2 text-[#1c5461]">
-                    Time
-                  </label>
-                  <input
-                    type="time"
-                    value={incidentTime}
-                    onChange={(e) => setIncidentTime(e.target.value)}
-                    required
-                    className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block font-semibold mb-2 text-[#1c5461]">
-                  Description
-                </label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  required
-                  rows={4}
-                  className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
-                  placeholder="Describe what happened..."
-                ></textarea>
-              </div>
-              <div>
-                <label className="block font-semibold mb-2 text-[#1c5461]">
-                  Optional Photo
-                </label>
-                <label
-                  htmlFor="incident-photo"
-                  className="inline-block bg-[#e6f7fa] text-[#1c5461] px-4 py-2 rounded cursor-pointer hover:bg-[#b6e0e4] transition"
-                >
-                  Choose File
-                </label>
-                <input
-                  id="incident-photo"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files.length > 0) {
-                      setPhoto(e.target.files[0]);
-                    }
-                  }}
-                  className="hidden"
-                />
-                {photo && (
-                  <p className="text-sm text-gray-600 mt-1">
-                    Selected: {photo.name}
-                  </p>
-                )}
-              </div> */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {incidentFields.map((field) => {
                   if (field.type === "select") {
@@ -225,6 +131,29 @@ export default function IncidentReportPage() {
                       </div>
                     );
                   }
+                  if (field.type === "textarea") {
+                    return (
+                      <div key={field.name} className="md:col-span-2">
+                        <label className="block font-semibold mb-2 text-[#1c5461]">
+                          {field.label}
+                        </label>
+                        <textarea
+                          id={field.name}
+                          placeholder={field.placeholder}
+                          value={
+                            field.name === "description" ? description : ""
+                          }
+                          onChange={(e) => {
+                            if (field.name === "description")
+                              setDescription(e.target.value);
+                          }}
+                          rows={4}
+                          className="w-full border border-[#3e979f] rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#3e979f] focus:outline-none bg-[#f8fcfd]"
+                        />
+                      </div>
+                    );
+                  }
+
                   if (field.type === "file") {
                     return (
                       <div key={field.name} className="space-y-2 w-full ">

@@ -6,7 +6,7 @@ import { islandEntryFields } from "@/app/static/islandEntry/islandEntryFields";
 import { useFormik } from "formik";
 import { getLatestIslandEntry } from "@/lib/api/islandEntry";
 import * as yup from "yup";
-import Header from "@/components/custom/header";
+import NewHeader from "@/components/custom/header";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
@@ -353,7 +353,7 @@ export default function IslandEntryPage() {
 
   return (
     <>
-      <Header />
+      <NewHeader />
       <div className="min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] flex flex-col items-center justify-start px-4 pt-18 pb-20">
         <main className="w-full max-w-2xl pt-16">
           <div className="p-8 shadow-lg border border-[#e6f7fa] bg-white rounded-2xl space-y-8">

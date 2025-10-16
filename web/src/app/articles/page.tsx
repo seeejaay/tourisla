@@ -6,7 +6,8 @@ import { Article } from "@/app/static/article/useArticleSchema";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import Header from "@/components/custom/header";
+// import Header from "@/components/custom/old-header";
+import NewHeader from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
 const ARTICLES_PER_PAGE = 20;
 import Image from "next/image";
@@ -64,7 +65,7 @@ export default function PublicArticlesPage() {
 
   return (
     <>
-      <Header />
+      <NewHeader />
       <div className="min-h-screen bg-[#f1f1f1]">
         <div className="relative pt-24 w-full h-[400px] overflow-hidden ">
           <Image

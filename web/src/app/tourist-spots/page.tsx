@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useTouristSpotManager } from "@/hooks/useTouristSpotManager";
-import Header from "@/components/custom/header";
+import Header from "@/components/custom/old-header";
 import Footer from "@/components/custom/footer";
 export default function TouristSpotsPage() {
   const { touristSpots, loading, error, fetchTouristSpots } =

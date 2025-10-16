@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Header from "@/components/custom/header";
+import Header from "@/components/custom/old-header";
 import { fetchTripadvisorHotels } from "@/lib/api/tripadvisor";
 import Footer from "@/components/custom/footer";
 

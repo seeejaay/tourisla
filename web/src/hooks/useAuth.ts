@@ -30,42 +30,77 @@ export function useAuth() {
     if (!result.success) {
       setError(result.error.errors[0].message);
       setLoading(false);
-      return null;
+      return false;
     }
     try {
       const resLogin = await login({ email, password });
+      // console.log("🔍 Full API response:", resLogin);
 
       if (resLogin.error) {
-        setError(resLogin.error); // <-- Show backend error
+        setError(resLogin.error);
         setLoading(false);
-        return null;
+        return false;
       }
+
+      // Since your API returns user as a string (the role), use it directly
+      const userRole = resLogin.user; // This is the role string like "Admin"
+      // console.log("👤 User role:", userRole);
+      // console.log("🌐 Router available:", !!router);
 
       if (router) {
-        if (resLogin.user.role === "Admin") {
+        // console.log("🚀 Starting role-based routing...");
+
+        if (userRole === "Admin") {
+          // console.log("➡️ Routing to admin dashboard");
           router.replace("/admin/dashboard");
-        } else if (resLogin.user.role === "Tourism Staff") {
+        } else if (userRole === "Tourism Staff") {
+          // console.log("➡️ Routing to tourism staff dashboard");
           router.replace("/tourism-staff/dashboard");
-        } else if (resLogin.user.role === "Tourism Officer") {
+        } else if (userRole === "Tourism Officer") {
+          // console.log("➡️ Routing to tourism officer dashboard");
           router.replace("/tourism-officer/dashboard");
-        } else if (resLogin.user.role === "Cultural Director") {
+        } else if (userRole === "Cultural Director") {
+          // console.log("➡️ Routing to cultural director dashboard");
           router.replace("/cultural-director/dashboard");
-        } else if (
-          resLogin.user.role === "Tour Guide" ||
-          resLogin.user.role === "Tour Operator"
-        ) {
-          router.replace(`/profile/${resLogin.user.id}`);
+        } else if (userRole === "Tour Guide" || userRole === "Tour Operator") {
+          // console.log("➡️ Routing to profile page");
+
+          try {
+            // Get the current user data to extract the user ID
+            const currentUserData = await loggedInUser(router, false);
+
+            if (currentUserData && currentUserData.data?.user?.id) {
+              const userId = currentUserData.data.user.id;
+              // console.log("👤 Got user ID for profile:", userId);
+              router.replace(`/profile/${userId}`);
+            } else {
+              // console.log(
+              //   "⚠️ Could not get user ID, routing to general profile page"
+              // );
+              router.replace("/profile");
+            }
+          } catch (error) {
+            console.error("❌ Error getting user ID:", error);
+            console.log("⚠️ Fallback: routing to general profile page");
+            router.replace("/profile");
+          }
         } else {
+          console.log("➡️ Routing to home (unknown role):", userRole);
           router.replace("/");
         }
-      }
-      setLoading(false);
 
-      return resLogin;
+        // Check if routing worked
+        setTimeout(() => {
+          console.log("🔍 Current URL after routing:", window.location.href);
+        }, 1000);
+      }
+
+      setLoading(false);
+      return true;
     } catch (err) {
       setError("An error occurred during login: " + err);
       setLoading(false);
-      return null;
+      return false;
     }
   };
 
@@ -115,22 +150,25 @@ export function useAuth() {
   };
 
   const loggedInUser = useCallback(
-    async (
-      router: AppRouterInstance,
-      restrict: boolean = true // default: restrict access
-    ) => {
+    async (router: AppRouterInstance, restrict: boolean = true) => {
       setLoading(true);
       setError("");
       try {
-        console.log("Fetching current user...");
+        // console.log("Fetching current user...");
         const resCurrentUser = await currentUser();
-        console.log("No user found or user role is missing.");
-        if (!resCurrentUser || !resCurrentUser.data.user.role) {
+
+        // Check the actual structure of your currentUser API response
+        // console.log("Current user API response:", resCurrentUser);
+
+        if (!resCurrentUser || !resCurrentUser.data?.user) {
+          // console.log("No user found or user role is missing.");
           if (restrict) {
             router.replace("/auth/login");
           }
           return null;
         }
+
+        // console.log("✅ Current user found:", resCurrentUser.data.user);
         return resCurrentUser;
       } catch (error) {
         setError("An error occurred while fetching the current user." + error);
@@ -145,7 +183,6 @@ export function useAuth() {
     },
     [setLoading, setError]
   );
-
   const logout = async (router: AppRouterInstance) => {
     setLoading(true);
     setError("");

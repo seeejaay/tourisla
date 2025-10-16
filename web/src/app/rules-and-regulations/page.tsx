@@ -3,7 +3,8 @@
 import React, { useEffect } from "react";
 import { useRuleManager } from "@/hooks/useRuleManager";
 import { Loader2, AlertTriangle } from "lucide-react";
-import Header from "@/components/custom/header";
+// import Header from "@/components/custom/old-header";
+import NewHeader from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
 export default function RulesAndRegulationPage() {
   const { rules, loading, error, fetchRules } = useRuleManager();
@@ -14,7 +15,7 @@ export default function RulesAndRegulationPage() {
 
   return (
     <>
-      <Header />
+      <NewHeader />
       <main className="min-h-screen w-full pt-28 bg-gradient-to-b from-[#e6f7fa] to-white flex flex-col items-center py-12 px-2">
         <div className="w-full max-w-3xl mx-auto space-y-8">
           <h1 className="text-3xl font-extrabold text-[#1c5461] tracking-tight mb-4">

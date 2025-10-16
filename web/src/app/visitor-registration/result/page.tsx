@@ -2,7 +2,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import { useVisitorRegistration } from "@/hooks/useVisitorRegistration";
-import Header from "@/components/custom/header";
+import Header from "@/components/custom/old-header";
 import Footer from "@/components/custom/footer";
 function VisitorRegistrationResultInner() {
   const searchParams = useSearchParams();

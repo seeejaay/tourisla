@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useTourGuideManager } from "@/hooks/useTourGuideManager";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Header from "@/components/custom/header";
+import NewHeader from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
 import Image from "next/image";
 // Define the TourGuide type based on your data structure
@@ -54,8 +54,8 @@ export default function TourGuideVerificationPage() {
 
   return (
     <>
-      <Header />
-      <div className="min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] py-28">
+      <NewHeader />
+      <div className="min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] py-20">
         <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl border border-[#e6f7fa] p-8">
           <h1 className="text-2xl font-bold mb-6 text-[#1c5461] text-center">
             Tour Guide Accreditation Checker

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { TouristSpot } from "@/app/static/tourist-spot/useTouristSpotManagerSchema";
 import { useTouristSpotManager } from "@/hooks/useTouristSpotManager";
-import Header from "@/components/custom/header";
+import Header from "@/components/custom/old-header";
 import Footer from "@/components/custom/footer";
 import { Label } from "@/components/ui/label";
 

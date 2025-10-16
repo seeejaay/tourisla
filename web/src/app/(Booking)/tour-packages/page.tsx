@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
-import Header from "@/components/custom/header";
+// import Header from "@/components/custom/old-header";
+import NewHeader from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
 import Image from "next/image";
 import {
@@ -178,8 +179,8 @@ export default function TourPackagesPage() {
 
   return (
     <>
-      <Header />
-      <main className="w-full pt-20 min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#fffff1] to-[#b6e0e4] pb-20">
+      <NewHeader />
+      <main className="w-full  min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#fffff1] to-[#b6e0e4] pb-20">
         {/* Hero Section */}
         <section className="relative h-72 flex items-center justify-center overflow-hidden mb-10">
           <Image

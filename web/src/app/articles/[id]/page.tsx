@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Article } from "@/app/static/article/useArticleSchema";
 import Image from "next/image";
-import Header from "@/components/custom/header";
+// import Header from "@/components/custom/old-header";
+import NewHeader from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
 
 export default function ArticleDetailPage() {
@@ -50,7 +51,7 @@ export default function ArticleDetailPage() {
 
   return (
     <>
-      <Header />
+      <NewHeader />
       <div className="min-h-screen ">
         <main className="max-w-5xl mx-auto px-4 pt-32 pb-16">
           {/* Title over image if present */}

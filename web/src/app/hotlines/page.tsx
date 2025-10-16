@@ -1,7 +1,7 @@
 "use client";
 import { useHotlineManager } from "@/hooks/useHotlineManager";
 import { useState } from "react";
-import Header from "@/components/custom/header";
+import NewHeader from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
 import Link from "next/link";
 export default function HotlinesPage() {
@@ -18,8 +18,8 @@ export default function HotlinesPage() {
 
   return (
     <>
-      <Header />
-      <main className="min-h-screen bg-gradient-to-b pt-28 from-[#e6f7fa] to-white flex flex-col items-center py-10 px-2">
+      <NewHeader />
+      <main className="min-h-screen bg-gradient-to-b pt-20 from-[#e6f7fa] to-white flex flex-col items-center py-10 px-2">
         <div className="w-full max-w-3xl bg-white rounded-2xl shadow-lg border border-[#e6f7fa] p-8">
           <h1 className="text-3xl font-extrabold mb-6 text-[#1c5461] text-center">
             Emergency Hotlines

@@ -7,7 +7,7 @@ import { Visitor } from "@/app/static/visitor-registration/visitorSchema";
 import visitorSchema from "@/app/static/visitor-registration/visitorSchema";
 import { useVisitorRegistration } from "@/hooks/useVisitorRegistration";
 import { Button } from "@/components/ui/button";
-import Header from "@/components/custom/header";
+import NewHeader from "@/components/custom/header";
 import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
 import { fetchRegions, fetchCities } from "@/lib/api/philippines";
@@ -154,7 +154,7 @@ export default function WalkInRegister() {
 
   return (
     <>
-      <Header />
+      <NewHeader />
       <div className="min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] flex flex-col items-center justify-start px-4 pt-24 pb-20">
         <main className="w-full max-w-2xl pt-16">
           <div className="p-8 shadow-lg border border-[#e6f7fa] bg-white rounded-2xl space-y-8">

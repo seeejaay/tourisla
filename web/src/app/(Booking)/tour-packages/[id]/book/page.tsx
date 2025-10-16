@@ -5,12 +5,13 @@ import { useParams, useRouter } from "next/navigation";
 import { useOperatorQrManager } from "@/hooks/useOperatorQr";
 import { useCreateBooking } from "@/hooks/useBookingManager";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
-import Header from "@/components/custom/header";
+// import Header from "@/components/custom/old-header";
 import BookingSchema from "@/app/static/booking/bookingSchema";
 import { bookingFields } from "@/app/static/booking/booking";
 import { useAuth } from "@/hooks/useAuth";
 import Footer from "@/components/custom/footer";
 import Image from "next/image";
+import NewHeader from "@/components/custom/header";
 // Types matching your API response
 type TourPackage = {
   id: number;
@@ -218,7 +219,7 @@ export default function BookingPage() {
 
   return (
     <>
-      <Header />
+      <NewHeader />
       <main className="w-full pt-20 min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] flex flex-col items-center pb-20">
         {/* Hero Section */}
         <section className="relative h-56 w-full flex items-center justify-center overflow-hidden mb-10">

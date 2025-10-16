@@ -1,13 +1,13 @@
 "use client";
 
-import Header from "@/components/custom/header";
+import NewHeader from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
 
 export default function PrivacyPolicyPage() {
   return (
     <>
-      <Header />
-      <main className="min-h-screen bg-[#f8fcfd] py-28 px-4">
+      <NewHeader />
+      <main className="min-h-screen bg-[#f8fcfd] py-20 px-4">
         <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg border border-[#e6f7fa] p-8">
           <h1 className="text-3xl md:text-4xl font-bold text-[#1c5461] mb-6 text-center">
             Privacy Policy

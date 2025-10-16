@@ -3,10 +3,12 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
-import Header from "@/components/custom/header";
+// import Header from "@/components/custom/old-header";
+import NewHeader from "@/components/custom/header";
 import Image from "next/image";
 import { Users, BadgeCheck, BadgeX, Calendar } from "lucide-react";
 import Footer from "@/components/custom/footer";
+import { useAuth } from "@/hooks/useAuth";
 
 type TourGuide = {
   tourguide_id: number;
@@ -41,8 +43,25 @@ export default function ViewTourPackagePage() {
   const { fetchAllTourPackages } = useTourPackageManager();
   const [tourPackage, setTourPackage] = useState<TourPackage | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+  const { loggedInUser } = useAuth();
 
   useEffect(() => {
+    async function checkUser() {
+      try {
+        const userData = await loggedInUser(router, false); // false to prevent auto-redirect
+        // Check if userData exists and has the user object
+        if (userData && userData.data && userData.data.user) {
+          setCurrentUser(userData.data.user); // Set the actual user object
+        } else {
+          setCurrentUser(null);
+        }
+      } catch (error) {
+        console.log("Error checking user, redirecting to login." + error);
+        setCurrentUser(null);
+      }
+    }
+
     async function fetchPackage() {
       setLoading(true);
       try {
@@ -60,7 +79,8 @@ export default function ViewTourPackagePage() {
     }
 
     fetchPackage();
-  }, [params.id, fetchAllTourPackages]);
+    checkUser();
+  }, [params.id, fetchAllTourPackages, router, loggedInUser]);
 
   const toTitleCase = (str: string) => {
     return str
@@ -73,12 +93,62 @@ export default function ViewTourPackagePage() {
       .join(" ");
   };
 
+  // Button state logic (Option 1 - Cleanest approach)
+  const getButtonStyles = () => {
+    // Check if user is logged in (currentUser should contain the actual user data)
+    const isUserLoggedIn = currentUser !== null;
+    const isFullyBooked = tourPackage && tourPackage.available_slots === 0;
+
+    if (!isUserLoggedIn) {
+      return "bg-blue-500 hover:bg-blue-600 text-white cursor-pointer";
+    }
+
+    if (isFullyBooked) {
+      return "bg-gray-400 cursor-not-allowed text-gray-600";
+    }
+
+    return "bg-[#3e979f] cursor-pointer hover:bg-[#1c5461] text-white";
+  };
+
+  const getButtonText = () => {
+    const isUserLoggedIn = currentUser !== null;
+    const isFullyBooked = tourPackage && tourPackage.available_slots === 0;
+
+    if (!isUserLoggedIn) return "Login to Book";
+    if (isFullyBooked) return "Fully Booked";
+    return "Book Now";
+  };
+
+  const isButtonDisabled = () => {
+    const isUserLoggedIn = currentUser !== null;
+    const isFullyBooked = tourPackage && tourPackage.available_slots === 0;
+
+    // Only disable if user is logged in but package is fully booked
+    return Boolean(isUserLoggedIn && isFullyBooked);
+  };
+
+  const handleButtonClick = () => {
+    const isUserLoggedIn = currentUser !== null;
+
+    if (!isUserLoggedIn) {
+      router.push("/auth/login");
+      return;
+    }
+
+    if (tourPackage && tourPackage.available_slots > 0) {
+      router.push(`/tour-packages/${tourPackage.id}/book`);
+    }
+  };
+
   if (loading) {
     return (
       <>
-        <Header />
+        <NewHeader />
         <main className="w-full min-h-screen flex flex-col items-center justify-center">
-          <p className="text-gray-500">Loading...</p>
+          <div className="text-center">
+            <div className="h-8 w-8 border-2 border-[#3e979f] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-gray-500">Loading...</p>
+          </div>
         </main>
       </>
     );
@@ -87,11 +157,11 @@ export default function ViewTourPackagePage() {
   if (!tourPackage) {
     return (
       <>
-        <Header />
+        <NewHeader />
         <main className="w-full min-h-screen flex flex-col items-center justify-center">
           <p className="text-gray-500">Tour package not found.</p>
           <button
-            className="mt-4 px-4 py-2 bg-blue-500 cursor-pointer text-white rounded"
+            className="mt-4 px-4 py-2 bg-blue-500 cursor-pointer text-white rounded hover:bg-blue-600 transition"
             onClick={() => router.back()}
           >
             Go Back
@@ -103,8 +173,8 @@ export default function ViewTourPackagePage() {
 
   return (
     <>
-      <Header />
-      <main className="w-full pt-20 min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#fffff1] to-[#b6e0e4] pb-20">
+      <NewHeader />
+      <main className="w-full min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#fffff1] to-[#b6e0e4] pb-20">
         {/* Hero Section */}
         <section className="relative h-72 flex items-center justify-center overflow-hidden mb-10">
           <Image
@@ -238,6 +308,7 @@ export default function ViewTourPackagePage() {
                   </p>
                 </div>
               </div>
+
               {/* Assigned Guides Section */}
               {tourPackage.assigned_guides &&
                 tourPackage.assigned_guides.length > 0 && (
@@ -253,21 +324,16 @@ export default function ViewTourPackagePage() {
                     </p>
                   </div>
                 )}
+
+              {/* Updated Button with Option 1 Logic */}
               <button
-                className={`w-full px-6 py-3 rounded-lg font-semibold shadow transition mb-2 ${
-                  tourPackage.available_slots === 0
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-[#3e979f] cursor-pointer hover:bg-[#1c5461] text-white"
-                }`}
-                onClick={() =>
-                  router.push(`/tour-packages/${tourPackage.id}/book`)
-                }
-                disabled={tourPackage.available_slots === 0}
+                className={`w-full px-6 py-3 rounded-lg font-semibold shadow transition mb-2 ${getButtonStyles()}`}
+                onClick={handleButtonClick}
+                disabled={isButtonDisabled()}
               >
-                {tourPackage.available_slots === 0
-                  ? "Fully Booked"
-                  : "Book Now"}
+                {getButtonText()}
               </button>
+
               <button
                 className="w-full px-6 py-2 cursor-pointer bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-lg font-semibold shadow transition"
                 onClick={() => router.back()}
