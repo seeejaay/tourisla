@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import useTripAdvisor from "@/hooks/useTripAdvisor";
 import { useTouristSpotManager } from "@/hooks/useTouristSpotManager";
 import MapPage from "@/components/custom/map";
-import AutoPlay from "embla-carousel-autoplay";
+// import AutoPlay from "embla-carousel-autoplay";
 import { useArticleManager } from "@/hooks/useArticleManager";
 import {
   Carousel,
@@ -131,12 +131,12 @@ export default function Home() {
                 align: "start",
                 loop: true,
               }}
-              plugins={[
-                AutoPlay({
-                  delay: 3000,
-                  stopOnInteraction: false,
-                }),
-              ]}
+              // plugins={[
+              //   AutoPlay({
+              //     delay: 3000,
+              //     stopOnInteraction: false,
+              //   }),
+              // ]}
               className="w-full"
             >
               <CarouselContent>
@@ -337,12 +337,12 @@ export default function Home() {
                   align: "start",
                   loop: true,
                 }}
-                plugins={[
-                  AutoPlay({
-                    delay: 4000,
-                    stopOnInteraction: false,
-                  }),
-                ]}
+                // plugins={[
+                //   AutoPlay({
+                //     delay: 4000,
+                //     stopOnInteraction: false,
+                //   }),
+                // ]}
                 className="w-full"
               >
                 <CarouselContent>
@@ -415,12 +415,12 @@ export default function Home() {
                   align: "start",
                   loop: true,
                 }}
-                plugins={[
-                  AutoPlay({
-                    delay: 4000,
-                    stopOnInteraction: false,
-                  }),
-                ]}
+                // plugins={[
+                //   AutoPlay({
+                //     delay: 4000,
+                //     stopOnInteraction: false,
+                //   }),
+                // ]}
                 className="w-full"
               >
                 <CarouselContent>
