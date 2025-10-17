@@ -47,3 +47,24 @@ export const deleteArticle = async (articleId) => {
   });
   return res.data;
 };
+
+export const fetchArticlesSSR = async () => {
+  try {
+    const res = await fetch(`${API_URL}articles`, {
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      withCredentials: true,
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    const data = await res.json();
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.error("Error fetching articles:", error);
+    return [];
+  }
+};

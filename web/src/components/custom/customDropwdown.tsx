@@ -49,11 +49,11 @@ export function HoverDropdown({
       {isOpen && (
         <div
           className={`
-          absolute top-full left-0 w-48 mt-1 
-          bg-white rounded-xl shadow-lg border border-[#e6f7fa] 
-          z-50 overflow-hidden
-          ${contentClassName}
-        `}
+            absolute top-full left-0 w-48 mt-1 
+            bg-white rounded-md shadow-xl border border-[#e6f7fa]
+            z-50 overflow-hidden p-2
+            ${contentClassName}
+          `}
         >
           {items.map((item, index) => {
             // Only render Link if href exists
@@ -63,12 +63,10 @@ export function HoverDropdown({
                   key={item.tag}
                   href={item.href}
                   className={`
-                    block px-4 py-3 transition-colors 
-                    text-[#1c5461] font-medium 
-                    hover:bg-[#e6f7fa] hover:text-[#3e979f] 
+                    block w-full p-2 
+                    text-gray-700 hover:bg-gray-100 rounded-md cursor-pointer
                     focus:bg-[#e6f7fa] focus:text-[#3e979f]
-                    ${index === 0 ? "rounded-t-xl" : ""}
-                    ${index === items.length - 1 ? "rounded-b-xl" : ""}
+                    text-sm
                   `}
                 >
                   {item.title}
@@ -81,7 +79,7 @@ export function HoverDropdown({
               <span
                 key={item.tag}
                 className={`
-                  block px-4 py-3 transition-colors 
+                  block w-full px-4 py-3 transition-colors 
                   text-gray-400 font-medium cursor-default
                   ${index === 0 ? "rounded-t-xl" : ""}
                   ${index === items.length - 1 ? "rounded-b-xl" : ""}

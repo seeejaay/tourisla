@@ -14,7 +14,7 @@ export default function NewHeader() {
   const pathName = usePathname();
 
   return (
-    <nav className="w-full h-16 bg-white flex items-center justify-between px-4 lg:px-40">
+    <nav className="w-full h-20 bg-white flex items-center justify-between px-4 lg:px-40">
       {/* Logo */}
       <div>
         <Image
