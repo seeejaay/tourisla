@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { User, LogIn, LogOut } from "lucide-react";
+import { UserCircle2, User, LogIn, LogOut, UserCircle } from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
 
@@ -74,7 +74,7 @@ export default function Pill({ className }: PillProps) {
             className="rounded-full h-10 w-10 p-0 relative hover:bg-[#3e979f]/10 transition-colors group"
             aria-label="Account menu"
           >
-            <User className="w-6 h-6 text-[#1c5461] group-hover:text-[#3e979f] transition" />
+            <User className="w-6 h-6 text-[#48a894] group-hover:text-[#3e979f] transition" />
           </Button>
         </DropdownMenuTrigger>
 
@@ -99,7 +99,7 @@ export default function Pill({ className }: PillProps) {
                 className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer flex items-center gap-3"
                 onClick={() => router.push(`/profile/${user.id}`)}
               >
-                <User className="w-4 h-4 text-gray-500" />
+                <UserCircle2 className="w-4 h-4 text-gray-500" />
                 Profile
               </DropdownMenuItem>
 

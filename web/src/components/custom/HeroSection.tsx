@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
@@ -9,13 +8,14 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ onExploreClick }: HeroSectionProps) {
-  const essenceSectionRef = useRef<HTMLElement>(null);
-
   const scrollToEssenceSection = () => {
-    essenceSectionRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
+    const element = document.getElementById("essence-section");
+    if (element) {
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
     onExploreClick?.();
   };
 
@@ -24,10 +24,8 @@ export default function HeroSection({ onExploreClick }: HeroSectionProps) {
       {/* Content Section */}
       <div className="flex flex-col lg:pt-0 flex-1">
         <header className="mb-8">
-          <h2 className="font-extrabold text-lg text-gray-500 mb-2">
-            Welcome to
-          </h2>
-          <h1 className="lg:text-[6rem] text-4xl font-bold text-neutral-800 mb-6 leading-tight">
+          <h2 className="font-extrabold text-lg text-gray-500 ">Welcome to</h2>
+          <h1 className="lg:text-[5.5rem] text-4xl font-extrabold  text-neutral-800 mb-2 leading-tight">
             Bantayan Island
           </h1>
           <p className="max-w-[42rem] text-gray-600 font-medium text-lg leading-relaxed">
@@ -38,7 +36,7 @@ export default function HeroSection({ onExploreClick }: HeroSectionProps) {
 
         <div className="flex flex-col sm:flex-row gap-4">
           <Button
-            className="w-40 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out cursor-pointer"
+            className=" bg-[#48a894] hover:bg-teal-700 text-white font-semibold lg:py-5 lg:px-8 py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out cursor-pointer text-xl"
             onClick={scrollToEssenceSection}
           >
             Explore Bantayan

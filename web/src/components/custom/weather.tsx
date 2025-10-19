@@ -37,7 +37,7 @@ export default function WeatherWidget() {
           variant="ghost"
           className="rounded-full h-10 w-10 p-0 relative hover:bg-[#3e979f]/10 transition-colors group"
         >
-          <Cloud className="w-4 h-4 text-[#1c5461] group-hover:text-[#3e979f] transition" />
+          <Cloud className="w-full h-full text-[#48a894] group-hover:text-[#3e979f] transition" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="p-0 bg-transparent border-none shadow-none">

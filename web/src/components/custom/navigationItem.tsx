@@ -21,12 +21,8 @@ export function NavigationItem({ item, pathName }: NavigationItemProps) {
   const isActive = item.href ? pathName === item.href : false;
 
   const buttonClasses = `
-     font-medium px-3 py-2 rounded-lg transition-colors
-    ${
-      isActive
-        ? "bg-[#3e979f]/10 text-[#3e979f]"
-        : "text-[#1c5461] hover:bg-[#e6f7fa] hover:text-[#3e979f] focus:bg-[#e6f7fa] focus:text-[#3e979f]"
-    }
+     font-bold px-3 py-2 rounded-lg transition-colors
+    ${isActive ? "text-[#48a894]" : "text-neutral-500  hover:text-[#48a894] "}
   `;
 
   if (item.dropdown) {

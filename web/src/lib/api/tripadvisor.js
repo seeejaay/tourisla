@@ -15,3 +15,24 @@ export const fetchTripadvisorHotels = async () => {
     throw error;
   }
 };
+
+export const fetchTripAdvisorHotelSSR = async () => {
+  try {
+    const res = await fetch(`${API_URL}tripadvisor/hotels`, {
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch Tripadvisor hotels for SSR");
+    }
+
+    return res.json();
+  } catch (error) {
+    console.error("Tripadvisor SSR API error:", error);
+    return [];
+  }
+};

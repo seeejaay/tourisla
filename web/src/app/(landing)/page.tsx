@@ -2,27 +2,31 @@ import NewHeader from "@/components/custom/header";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import cardData from "@/app/static/landing-card";
 import { fetchArticlesSSR } from "@/lib/api/articles";
+import { fetchTouristSpotsSSR } from "@/lib/api/touristSpot"; // Import the SSR function
 import HeroSection from "@/components/custom/HeroSection";
 import ArticlesSection from "@/components/custom/ArticlesSection";
+import TouristSpotSection from "@/components/custom/landing/TouristSpotSection";
 import Image from "next/image";
 
 export default async function Home() {
-  // Fetch articles on the server
-  const articles = await fetchArticlesSSR();
+  // Fetch data on the server (runs in parallel)
+  const [articles, touristSpots] = await Promise.all([
+    fetchArticlesSSR(),
+    fetchTouristSpotsSSR(),
+  ]);
 
   return (
     <>
       <NewHeader />
       <main className="min-h-screen flex flex-col items-center justify-center w-full bg-gray-50">
-        {/* First section with gray background */}
+        {/* Hero and Essence Section */}
         <div>
           <div className="container w-full lg:mt-10 mt-4 px-4 lg:py-16 py-8">
-            {/* Hero Section */}
             <HeroSection />
 
             {/* Essence of Bantayan Island */}
             <section
-              className="lg:py-44 lg:mt-16 py-4 mt-8"
+              className="lg:py-44 lg:mt-20 py-4 mt-8"
               id="essence-section"
             >
               <header className="text-center mb-16">
@@ -35,10 +39,13 @@ export default async function Home() {
                   hospitality.
                 </p>
               </header>
-              <div className="w-full bg-gray-100 rounded-lg p-6">
+              <div className="w-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto lg:gap-20 gap-6">
                   {cardData.map((card, index) => (
-                    <Card key={index} className="flex flex-col h-full pt-0">
+                    <Card
+                      key={index}
+                      className="flex flex-col h-full pt-0 shadow-sm border-none bg-gray-50 hover:shadow-md transition-shadow duration-300"
+                    >
                       <CardHeader className="p-4">
                         <div className="max-w-sm overflow-hidden rounded-lg">
                           <Image
@@ -70,8 +77,13 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* Articles section with SSR data */}
+        {/* Articles Section with SSR */}
         <ArticlesSection articles={articles} />
+
+        {/* Tourist Spots Section with SSR */}
+        <TouristSpotSection touristSpots={touristSpots} />
+
+        {/* Hotel Section with SSR */}
       </main>
     </>
   );

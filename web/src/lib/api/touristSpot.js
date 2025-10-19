@@ -147,3 +147,23 @@ export const assignAttractionToStaff = async (staffId, touristSpotId) => {
     throw error;
   }
 };
+
+export const fetchTouristSpotsSSR = async () => {
+  try {
+    const res = await fetch(`${API_URL}tourist-spots`, {
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      withCredentials: true,
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    console.log("Fetched Tourist Spots SSR: ", await res.clone().json());
+    return res.json();
+  } catch (error) {
+    console.error("Error fetching tourist spots:", error);
+    return [];
+  }
+};

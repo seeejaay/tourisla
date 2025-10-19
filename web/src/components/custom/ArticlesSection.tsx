@@ -70,9 +70,9 @@ export default function ArticlesSection({ articles }: ArticlesSectionProps) {
   };
 
   return (
-    <section className="bg-gradient-to-b from-[#000000]/20 to-[#ffffff] w-full py-20">
+    <section className="bg-gradient-to-b from-[#000000]/10 to-[#ffffff] w-full py-20">
       <div className="container mx-auto px-4">
-        <div className="bg-white shadow-lg rounded-lg">
+        <div className="bg-white shadow-xs rounded-lg">
           {/* Header */}
           <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-6 sm:p-8  gap-4">
             <h2 className="text-2xl sm:text-3xl font-bold text-neutral-800">
@@ -184,7 +184,7 @@ export default function ArticlesSection({ articles }: ArticlesSectionProps) {
                               {titleCase(article.title)}
                             </h4>
                             <p className="text-xs text-gray-600 mb-2 line-clamp-4">
-                              {sentenceCase(article.content?.substring(0, 500))}
+                              {sentenceCase(article.content?.substring(0, 200))}
                               ...
                             </p>
                           </div>
