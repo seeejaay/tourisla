@@ -135,7 +135,7 @@ export default function TouristSpotSection({
   };
 
   return (
-    <section className="bg-white w-full py-20">
+    <section className="bg-gray-50 w-full lg:py-20 py-4">
       <div className="container mx-auto px-4">
         {/* Tourist Spots Grid - Changed to 4 columns on large screens */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
@@ -144,11 +144,11 @@ export default function TouristSpotSection({
 
             return (
               <Link href={`/tourist-spots/${spot.id}`} key={spot.id}>
-                <Card className="h-full transition-all duration-300  group overflow-hidden  shadow-none p-0 border-none rounded-none ">
+                <Card className="h-full transition-all duration-300  group overflow-hidden bg-gray-50  shadow-none p-0 border-none rounded-none ">
                   {/* Image - Fixed 500x250 dimensions */}
                   {imageUrl ? (
                     <CardHeader className="p-0 m-0  cursor-default">
-                      <div className="w-full lg:h-[250px] h-[100px] overflow-hidden rounded-lg">
+                      <div className="w-full lg:h-[250px] h-[200px] overflow-hidden rounded-lg">
                         <Image
                           src={imageUrl}
                           alt={spot.name}

@@ -70,7 +70,7 @@ export default function ArticlesSection({ articles }: ArticlesSectionProps) {
   };
 
   return (
-    <section className="bg-gradient-to-b from-[#000000]/10 to-[#ffffff] w-full py-20">
+    <section className="bg-gradient-to-b from-[#000000]/10 to-bg-gray-50 w-full py-20">
       <div className="container mx-auto px-4">
         <div className="bg-white shadow-xs rounded-lg">
           {/* Header */}

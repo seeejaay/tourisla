@@ -3,16 +3,19 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import cardData from "@/app/static/landing-card";
 import { fetchArticlesSSR } from "@/lib/api/articles";
 import { fetchTouristSpotsSSR } from "@/lib/api/touristSpot"; // Import the SSR function
+import { fetchTripAdvisorHotelSSR } from "@/lib/api/tripadvisor";
 import HeroSection from "@/components/custom/HeroSection";
 import ArticlesSection from "@/components/custom/ArticlesSection";
 import TouristSpotSection from "@/components/custom/landing/TouristSpotSection";
+import HotelsSection from "@/components/custom/landing/HotelSection";
 import Image from "next/image";
 
 export default async function Home() {
   // Fetch data on the server (runs in parallel)
-  const [articles, touristSpots] = await Promise.all([
+  const [articles, touristSpots, hotels] = await Promise.all([
     fetchArticlesSSR(),
     fetchTouristSpotsSSR(),
+    fetchTripAdvisorHotelSSR(),
   ]);
 
   return (
@@ -84,6 +87,7 @@ export default async function Home() {
         <TouristSpotSection touristSpots={touristSpots} />
 
         {/* Hotel Section with SSR */}
+        <HotelsSection hotels={hotels} />
       </main>
     </>
   );

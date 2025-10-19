@@ -29,7 +29,6 @@ export const fetchTripAdvisorHotelSSR = async () => {
     if (!res.ok) {
       throw new Error("Failed to fetch Tripadvisor hotels for SSR");
     }
-
     return res.json();
   } catch (error) {
     console.error("Tripadvisor SSR API error:", error);

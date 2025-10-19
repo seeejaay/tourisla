@@ -160,7 +160,6 @@ export const fetchTouristSpotsSSR = async () => {
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
-    console.log("Fetched Tourist Spots SSR: ", await res.clone().json());
     return res.json();
   } catch (error) {
     console.error("Error fetching tourist spots:", error);
