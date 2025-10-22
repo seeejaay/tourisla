@@ -47,6 +47,9 @@ const loginUser = async (req, res) => {
       status: "success",
       message: "Login successful",
       user: req.session.user.role,
+      first_name: req.session.user.first_name,
+      last_name: req.session.user.last_name,
+      email: req.session.user.email,
     });
   } catch (error) {
     console.error("Error during login:", error);
