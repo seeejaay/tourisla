@@ -1,70 +1,75 @@
-import { Stack, SplashScreen, router } from "expo-router";
+import {
+  Stack,
+  useRouter,
+  useRootNavigationState,
+  usePathname,
+} from "expo-router";
 import { useFonts } from "expo-font";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, View } from "react-native";
 import "./global.css";
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    "Poppins-Regular": require("../assets/fonts/Poppins-Regular.ttf"),
-    "Poppins-Medium": require("../assets/fonts/Poppins-Medium.ttf"),
-    "Poppins-SemiBold": require("../assets/fonts/Poppins-SemiBold.ttf"),
-    "Poppins-Bold": require("../assets/fonts/Poppins-Bold.ttf"),
-    "Poppins-Italic": require("../assets/fonts/Poppins-Italic.ttf"),
-    "Poppins-MediumItalic": require("../assets/fonts/Poppins-MediumItalic.ttf"),
-    "Poppins-SemiBoldItalic": require("../assets/fonts/Poppins-SemiBoldItalic.ttf"),
-    "Poppins-BoldItalic": require("../assets/fonts/Poppins-BoldItalic.ttf"),
-    "Poppins-ExtraBold": require("../assets/fonts/Poppins-ExtraBold.ttf"),
-    "Poppins-Light": require("../assets/fonts/Poppins-Light.ttf"),
-    "Poppins-Thin": require("../assets/fonts/Poppins-Thin.ttf"),
-    "Poppins-Black": require("../assets/fonts/Poppins-Black.ttf"),
+    // ...existing code...
     "Poppins-BlackItalic": require("../assets/fonts/Poppins-BlackItalic.ttf"),
   });
 
+  const router = useRouter();
+  const pathname = usePathname();
+  const navState = useRootNavigationState(); // navigation readiness
   const [checkingSession, setCheckingSession] = useState(true);
+  const ranRef = useRef(false); // guard against multiple runs (Strict Mode, re-nav)
+
+  const routeForRole = (role: string) => {
+    switch (role) {
+      case "Admin":
+        return "/admin/admin_dashboard";
+      case "Tourist":
+        return "/tourist/tourist_dashboard";
+      case "Tour Guide":
+      case "tour_guide":
+        return "/guide/guide_dashboard";
+      case "Tour Operator":
+      case "tour_operator":
+        return "/operator/operator_dashboard";
+      case "Tourism Staff":
+        return "/staff/staff_dashboard";
+      default:
+        return "/login";
+    }
+  };
 
   useEffect(() => {
-    const restoreSession = async () => {
+    if (!fontsLoaded || !navState?.key || ranRef.current) return;
+    ranRef.current = true;
+
+    (async () => {
       try {
         const role = await AsyncStorage.getItem("role");
-        if (role) {
-          switch (role) {
-            case "Admin":
-              router.replace("/admin/admin_dashboard");
-              break;
-            case "Tourist":
-              router.replace("/tourist/tourist_dashboard");
-              break;
-            case "Tour Guide":
-            case "tour_guide":
-              router.replace("/guide/guide_dashboard");
-              break;
-            case "Tour Operator":
-            case "tour_operator":
-              router.replace("/operator/operator_dashboard");
-              break;
-            case "Tourism Staff":
-              router.replace("/staff/staff_dashboard");
-              break;
-            default:
-              router.replace("/login");
-          }
+        console.log("Restored role from AsyncStorage:", role);
+        const target = role ? routeForRole(role) : "/login";
+
+        if (pathname !== target) {
+          router.replace(target);
         }
-      } catch (e) {
-        console.error("Error restoring session:", e);
-        router.replace("/login");
+      } catch {
+        if (pathname !== "/login") router.replace("/login");
       } finally {
         setCheckingSession(false);
-        await SplashScreen.hideAsync();
       }
-    };
+    })();
+    // Intentionally do NOT depend on pathname/router to avoid re-runs on navigation
+  }, [fontsLoaded, navState?.key]);
 
-    if (fontsLoaded) {
-      restoreSession();
-    }
-  }, [fontsLoaded]);
-
-  if (!fontsLoaded || checkingSession) return null;
+  if (!fontsLoaded || checkingSession || !navState?.key) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return <Stack screenOptions={{ headerShown: false }} />;
 }

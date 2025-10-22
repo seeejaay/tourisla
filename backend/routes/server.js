@@ -1063,6 +1063,8 @@ app.delete(
 //tripadvisors temporary turned off
 app.get("/tripadvisor/hotels", getTripadvisorHotelsWithPhotos);
 
+app.get("/api/v1/tripadvisor/hotels", getTripadvisorHotelsWithPhotos);
+
 app.get(
   "/api/v1/visitor-logs",
   allowedRoles(["Tourism Officer", "Admin"]),

@@ -66,7 +66,12 @@ export default function LoginScreen() {
       const res = (await login({
         email: trimmedEmail,
         password: trimmedPassword,
-      })) as { token: string; user: any };
+      })) as {
+        token: string;
+        user: any;
+        first_name: string;
+        last_name: string;
+      };
       console.log("Login response:", JSON.stringify(res));
       // Check if response is valid
 
@@ -90,8 +95,8 @@ export default function LoginScreen() {
         "userData",
         JSON.stringify({
           role: res.user, // ← still just the string
-          first_name: "", // ← optional fallback if needed
-          last_name: "",
+          first_name: res.first_name, // ← optional fallback if needed
+          last_name: res.last_name,
           email: trimmedEmail,
         })
       );
