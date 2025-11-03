@@ -44,6 +44,7 @@ export default function ArticleAdminPage() {
     const init = async () => {
       try {
         const user = await loggedInUser(router);
+        console.log("Logged in user:", user);
         if (!user || user.data.user.role !== "Cultural Director") {
           router.replace("/");
           return;

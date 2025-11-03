@@ -34,7 +34,7 @@ export function useAuth() {
     }
     try {
       const resLogin = await login({ email, password });
-
+      console.log("Login response:", resLogin);
       if (resLogin.error) {
         setError(resLogin.error); // <-- Show backend error
         setLoading(false);
@@ -49,6 +49,7 @@ export function useAuth() {
         } else if (resLogin.user.role === "Tourism Officer") {
           router.replace("/tourism-officer/dashboard");
         } else if (resLogin.user.role === "Cultural Director") {
+          console.log("Redirecting to Cultural Director dashboard");
           router.replace("/cultural-director/dashboard");
         } else if (
           resLogin.user.role === "Tour Guide" ||
@@ -117,20 +118,45 @@ export function useAuth() {
   const loggedInUser = useCallback(
     async (
       router: AppRouterInstance,
-      restrict: boolean = true // default: restrict access
+      restrict: boolean = true, // default: restrict access
+      autoRedirect: boolean = false // NEW: control automatic role-based redirection
     ) => {
       setLoading(true);
       setError("");
       try {
         console.log("Fetching current user...");
         const resCurrentUser = await currentUser();
-        console.log("No user found or user role is missing.");
+
         if (!resCurrentUser || !resCurrentUser.data.user.role) {
+          console.log("No user found or user role is missing.");
           if (restrict) {
             router.replace("/auth/login");
           }
           return null;
         }
+
+        // Only redirect based on role if autoRedirect is true
+        if (autoRedirect) {
+          const user = resCurrentUser.data.user;
+          if (user.role === "Admin") {
+            router.replace("/admin/dashboard");
+          } else if (user.role === "Tourism Staff") {
+            router.replace("/tourism-staff/dashboard");
+          } else if (user.role === "Tourism Officer") {
+            router.replace("/tourism-officer/dashboard");
+          } else if (user.role === "Cultural Director") {
+            console.log("Redirecting to Cultural Director dashboard");
+            router.replace("/cultural-director/dashboard");
+          } else if (
+            user.role === "Tour Guide" ||
+            user.role === "Tour Operator"
+          ) {
+            router.replace(`/profile/${user.id}`);
+          } else {
+            router.replace("/");
+          }
+        }
+
         return resCurrentUser;
       } catch (error) {
         setError("An error occurred while fetching the current user." + error);
