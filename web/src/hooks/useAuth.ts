@@ -42,18 +42,18 @@ export function useAuth() {
       }
 
       if (router) {
-        if (resLogin.user.role === "Admin") {
+        if (resLogin.user === "Admin") {
           router.replace("/admin/dashboard");
-        } else if (resLogin.user.role === "Tourism Staff") {
+        } else if (resLogin.user === "Tourism Staff") {
           router.replace("/tourism-staff/dashboard");
-        } else if (resLogin.user.role === "Tourism Officer") {
+        } else if (resLogin.user === "Tourism Officer") {
           router.replace("/tourism-officer/dashboard");
-        } else if (resLogin.user.role === "Cultural Director") {
+        } else if (resLogin.user === "Cultural Director") {
           console.log("Redirecting to Cultural Director dashboard");
           router.replace("/cultural-director/dashboard");
         } else if (
-          resLogin.user.role === "Tour Guide" ||
-          resLogin.user.role === "Tour Operator"
+          resLogin.user === "Tour Guide" ||
+          resLogin.user === "Tour Operator"
         ) {
           router.replace(`/profile/${resLogin.user.id}`);
         } else {
