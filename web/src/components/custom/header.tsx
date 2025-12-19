@@ -9,7 +9,6 @@ import Pill from "@/components/custom/pill";
 import { NavigationItem } from "./navigationItem";
 import { MobileMenu } from "./mobileMenu";
 import WeatherWidget from "./weather";
-import { Router } from "next/router";
 
 export default function NewHeader() {
   const router = useRouter();
