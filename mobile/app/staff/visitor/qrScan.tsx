@@ -14,7 +14,8 @@ import Overlay from "@/components/Overlay"; // <-- default import now!
 import { LinearGradient } from "expo-linear-gradient";
 
 // Replace with your API URL
-const API_URL = "https://tourisla-production-5c54.up.railway.app/api/v1";
+// const API_URL = "https://tourisla-production-5c54.up.railway.app/api/v1";
+const API_URL = "https://api.tourisla.space/api/v1";
 // const API_URL = "http://192.168.0.130:3005/api/v1";
 
 export default function QrScan() {
