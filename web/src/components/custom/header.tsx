@@ -2,16 +2,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { navigation } from "@/app/static/navigation";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Pill from "@/components/custom/pill";
 import { NavigationItem } from "./navigationItem";
 import { MobileMenu } from "./mobileMenu";
 import WeatherWidget from "./weather";
+import { Router } from "next/router";
 
 export default function NewHeader() {
-  // const router = useRouter();
+  const router = useRouter();
   const pathName = usePathname();
 
   return (
@@ -46,6 +47,7 @@ export default function NewHeader() {
             variant="ghost"
             className="rounded-full h-10 w-10 p-0 relative hover:bg-[#3e979f]/10 transition-colors group"
             aria-label="Announcment"
+            onClick={() => router.push("/announcements")}
           >
             <Megaphone className="w-10 h-10 text-[#48a894] group-hover:text-[#3e979f] transition" />
           </Button>
