@@ -60,9 +60,9 @@ export const fetchArticlesSSR = async () => {
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
-    // const data = await res.json();
-    // console.log(data);
-    return res.json();
+    const data = await res.json();
+    console.log(data);
+    return data;
   } catch (error) {
     console.error("Error fetching articles:", error);
     return [];

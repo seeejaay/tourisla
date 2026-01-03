@@ -36,7 +36,7 @@ export default function HeroSection({ onExploreClick }: HeroSectionProps) {
 
         <div className="flex flex-col sm:flex-row gap-4">
           <Button
-            className=" bg-[#48a894] hover:bg-teal-700 text-white font-semibold lg:py-5 lg:px-8 py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out cursor-pointer text-xl"
+            className=" bg-[#48a894] hover:bg-teal-700 text-white font-semibold lg:py-6 lg:px-8 py-4 px-6 rounded-lg shadow-md transition duration-300 ease-in-out cursor-pointer text-xl"
             onClick={scrollToEssenceSection}
           >
             Explore Bantayan

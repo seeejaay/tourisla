@@ -154,28 +154,31 @@ export function useAuth() {
       setLoading(true);
       setError("");
       try {
-        // console.log("Fetching current user...");
         const resCurrentUser = await currentUser();
-
-        // Check the actual structure of your currentUser API response
-        // console.log("Current user API response:", resCurrentUser);
-
         if (!resCurrentUser || !resCurrentUser.data?.user) {
-          // console.log("No user found or user role is missing.");
           if (restrict) {
             router.replace("/auth/login");
           }
           return null;
         }
 
-        // console.log("✅ Current user found:", resCurrentUser.data.user);
         return resCurrentUser;
       } catch (error) {
-        setError("An error occurred while fetching the current user." + error);
-        console.error("Error fetching current user:", error);
+        const status = (error as { response?: { status?: number } })?.response
+          ?.status;
+
+        if (status === 401 && !restrict) {
+          return null;
+        }
         if (restrict) {
           router.replace("/auth/login");
         }
+        if (status !== 401 || restrict) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          setError("An error occurred while fetching user: " + errorMessage);
+        }
+
         return null;
       } finally {
         setLoading(false);

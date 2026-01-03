@@ -117,10 +117,6 @@ export const currentUser = async () => {
     console.log("Current user fetched successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error(
-      "Error fetching current user:",
-      error.response?.data || error.message
-    );
     throw error;
   }
 };

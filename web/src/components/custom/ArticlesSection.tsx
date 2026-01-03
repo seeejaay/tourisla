@@ -2,25 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-interface ArticleImage {
-  id: number;
-  image_url: string;
-}
-
-interface Article {
-  id: number;
-  title: string;
-  content: string;
-  images?: ArticleImage[];
-  created_at: string;
-  author: string;
-  featured?: boolean;
-}
-
-interface ArticlesSectionProps {
-  articles: Article[];
-}
+import type { ArticlesSectionProps, ArticleImage } from "@/types/ArticleTypes";
 
 export default function ArticlesSection({ articles }: ArticlesSectionProps) {
   if (!articles || articles.length === 0) {
@@ -104,6 +86,7 @@ export default function ArticlesSection({ articles }: ArticlesSectionProps) {
                             priority
                             width={800}
                             height={400}
+                            sizes="100vw"
                           />
                         </div>
                       </CardHeader>
@@ -142,14 +125,10 @@ export default function ArticlesSection({ articles }: ArticlesSectionProps) {
 
                       {/* Tags/Categories - Optional */}
                       <div className="flex gap-2 flex-wrap">
-                        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                          Ancestral
-                        </span>
-                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                          Coral Stone
-                        </span>
-                        <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
-                          Heritage
+                        <span className="px-3 py-1 bg-teal-100 text-teal-800 rounded-full text-xs font-medium">
+                          {featuredArticle.type
+                            ? titleCase(featuredArticle.type)
+                            : "General"}
                         </span>
                       </div>
                     </CardContent>
@@ -173,7 +152,7 @@ export default function ArticlesSection({ articles }: ArticlesSectionProps) {
                                   alt={article.title}
                                   fill
                                   className="object-cover hover:scale-105 transition-transform duration-300"
-                                  sizes="100px"
+                                  sizes="100vw"
                                 />
                               </div>
                             </div>
