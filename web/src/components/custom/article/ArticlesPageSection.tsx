@@ -55,7 +55,7 @@ export default function ArticlesPageSection({
     <section className="bg-gradient-to-b from-[#000000]/5 to-[#ffffff] w-full py-20">
       <div className="container mx-auto px-4 py-0 my-0">
         <div className="bg-white shadow-xs rounded-lg">
-          <header className="flex flex-com sm:flex-row justify-between items-start sm:items-center px-6 sm:p-8">
+          <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-6 pt-6 sm:p-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-neutral-800">
               Featured
             </h2>
@@ -93,7 +93,7 @@ export default function ArticlesPageSection({
                             <Image
                               src={featuredArticle.images[0].image_url}
                               alt={featuredArticle.title}
-                              className="object-cover w-full h-[32.30rem] object-center transition-transform duration-300 group-hover:scale-105"
+                              className="object-cover w-full lg:h-[32.30rem] h-36 object-center transition-transform duration-300 group-hover:scale-105"
                               width={1000}
                               height={1000}
                               sizes="100vw"

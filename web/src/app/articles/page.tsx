@@ -2,6 +2,7 @@ import { fetchArticlesSSR } from "@/lib/api/articles";
 import Image from "next/image";
 import NewHeader from "@/components/custom/header";
 import ArticlesPageSection from "@/components/custom/article/ArticlesPageSection";
+import ArticlesListSection from "@/components/custom/article/ArticlesListSection";
 
 export default async function Articles() {
   // Ensure you get the array, not an object
@@ -30,16 +31,14 @@ export default async function Articles() {
           </div>
         </header>
 
-        <section
-          className="w-full border-red-500 border
-        flex items-center justify-center"
-        >
+        <section className="w-full flex items-center justify-center">
           <ArticlesPageSection articles={articles} />
         </section>
 
-        <section className="text-center py-20 text-2xl text-gray-400">
-          SSR Articles Page (UI coming next step)
+        <section className="w-full flex items-center justify-center">
+          <ArticlesListSection articles={articles} />
         </section>
+
         <footer>
           <p className="text-center text-sm text-gray-500">
             {`Fetched ${articles.length} articles (SSR)`}

@@ -48,6 +48,23 @@ export const deleteArticle = async (articleId) => {
   return res.data;
 };
 
+export const showArticle = async (articleId) => {
+  try {
+    const res = await fetch(`${API_URL}articles/${articleId}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      withCredentials: true,
+    });
+    const data = await res.json();
+    console.log("Fetched article data:", data);
+    return data;
+  } catch (error) {
+    console.error("Error fetching article:", error);
+    return null;
+  }
+};
+
 export const fetchArticlesSSR = async () => {
   try {
     const res = await fetch(`${API_URL}articles`, {
@@ -60,9 +77,7 @@ export const fetchArticlesSSR = async () => {
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
-    const data = await res.json();
-    console.log(data);
-    return data;
+    return await res.json();
   } catch (error) {
     console.error("Error fetching articles:", error);
     return [];

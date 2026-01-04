@@ -12,6 +12,8 @@ interface Article {
   is_featured?: boolean;
   created_at: string;
   type?: string;
+  video_url?: string;
+  tags?: string;
 }
 
 interface ArticlesSectionProps {

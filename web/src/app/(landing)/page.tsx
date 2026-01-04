@@ -5,7 +5,7 @@ import { fetchArticlesSSR } from "@/lib/api/articles";
 import { fetchTouristSpotsSSR } from "@/lib/api/touristSpot"; // Import the SSR function
 import { fetchTripAdvisorHotelSSR } from "@/lib/api/tripadvisor";
 import HeroSection from "@/components/custom/HeroSection";
-import ArticlesSection from "@/components/custom/ArticlesSection";
+import ArticlesSection from "@/components/custom/landing/ArticlesSection";
 import TouristSpotSection from "@/components/custom/landing/TouristSpotSection";
 import HotelsSection from "@/components/custom/landing/HotelSection";
 import Image from "next/image";
