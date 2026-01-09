@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import axios from "axios";
 import {
   login,
   logout as logoutApi,
@@ -66,17 +67,12 @@ export function useAuth() {
           // console.log("➡️ Routing to profile page");
 
           try {
-            // Get the current user data to extract the user ID
             const currentUserData = await loggedInUser(router, false);
 
             if (currentUserData && currentUserData.data?.user?.id) {
               const userId = currentUserData.data.user.id;
-              // console.log("👤 Got user ID for profile:", userId);
               router.replace(`/profile/${userId}`);
             } else {
-              // console.log(
-              //   "⚠️ Could not get user ID, routing to general profile page"
-              // );
               router.replace("/profile");
             }
           } catch (error) {
@@ -89,7 +85,6 @@ export function useAuth() {
           router.replace("/");
         }
 
-        // Check if routing worked
         setTimeout(() => {
           console.log("🔍 Current URL after routing:", window.location.href);
         }, 1000);
@@ -98,9 +93,15 @@ export function useAuth() {
       setLoading(false);
       return true;
     } catch (err) {
-      setError("An error occurred during login: " + err);
-      setLoading(false);
-      return false;
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        setError("Invalid email or password.");
+        setLoading(false);
+        return false;
+      } else {
+        setError("An error occurred during login: " + err);
+        setLoading(false);
+        return false;
+      }
     }
   };
 

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useIncidentManager } from "@/hooks/useIncidentManager";
-import NewHeader from "@/components/custom/header";
+import NewHeader from "@/components/custom/Header";
 import Footer from "@/components/custom/footer";
 import { incidentFields } from "@/app/static/incident-report/incidentFields";
 

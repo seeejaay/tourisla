@@ -1,4 +1,4 @@
-import type { VisitorLog } from "@/app/(User)/profile/[id]/attraction-history/page";
+import type { VisitorLog } from "@/app/profile/[id]/attraction-history/page";
 import Image from "next/image";
 interface ViewCardProps {
   log: VisitorLog;

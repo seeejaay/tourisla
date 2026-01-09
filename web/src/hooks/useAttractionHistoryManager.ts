@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { fetchAttractionHistory } from "@/lib/api/attractionHistory";
-import type { VisitorLog } from "@/app/(User)/profile/[id]/attraction-history/page"; // Adjust path as needed
+import type { VisitorLog } from "@/app/profile/[id]/attraction-history/page"; // Adjust path as needed
 
 export const useAttractionHistoryManager = () => {
   const [history, setHistory] = useState<VisitorLog[]>([]);

@@ -10,7 +10,7 @@ import { NavigationItem } from "./navigationItem";
 import { MobileMenu } from "./mobileMenu";
 import WeatherWidget from "./weather";
 
-export default function NewHeader() {
+export default function Header() {
   const router = useRouter();
   const pathName = usePathname();
 

@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { useAnnouncementManager } from "@/hooks/useAnnouncementManager";
 import Image from "next/image";
 // import Header from "@/components/custom/old-header";
-import NewHeader from "@/components/custom/header";
+import NewHeader from "@/components/custom/Header";
 import { Megaphone } from "lucide-react";
 import Footer from "@/components/custom/footer";
 export default function AnnouncementsPage() {

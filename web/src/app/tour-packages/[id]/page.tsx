@@ -4,37 +4,12 @@ import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
 // import Header from "@/components/custom/old-header";
-import NewHeader from "@/components/custom/header";
+import NewHeader from "@/components/custom/Header";
 import Image from "next/image";
 import { Users, BadgeCheck, BadgeX, Calendar } from "lucide-react";
 import Footer from "@/components/custom/footer";
 import { useAuth } from "@/hooks/useAuth";
-
-type TourGuide = {
-  tourguide_id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-};
-
-type TourPackage = {
-  id: number;
-  package_name: string;
-  location: string;
-  price: number | string;
-  description: string;
-  inclusions: string;
-  exclusions: string;
-  available_slots: number;
-  date_start: string;
-  date_end: string;
-  start_time?: string;
-  end_time?: string;
-  operator_name?: string;
-  operator_email?: string;
-  assigned_guides: TourGuide[];
-  // Add other fields if needed
-};
+import type { TourPackage } from "@/types/TourPackageType";
 
 export default function ViewTourPackagePage() {
   const router = useRouter();
@@ -49,15 +24,14 @@ export default function ViewTourPackagePage() {
   useEffect(() => {
     async function checkUser() {
       try {
-        const userData = await loggedInUser(router, false); // false to prevent auto-redirect
-        // Check if userData exists and has the user object
+        const userData = await loggedInUser(router, false);
         if (userData && userData.data && userData.data.user) {
-          setCurrentUser(userData.data.user); // Set the actual user object
+          setCurrentUser(userData.data.user);
         } else {
           setCurrentUser(null);
         }
       } catch (error) {
-        console.log("Error checking user, redirecting to login." + error);
+        console.error("Error fetching logged in user:", error);
         setCurrentUser(null);
       }
     }
@@ -66,7 +40,6 @@ export default function ViewTourPackagePage() {
       setLoading(true);
       try {
         const allPackages = await fetchAllTourPackages();
-        // Find by id, not by array index
         const pkg = allPackages.find((p) => p.id === Number(params.id)) as
           | TourPackage
           | undefined;
@@ -82,8 +55,8 @@ export default function ViewTourPackagePage() {
     checkUser();
   }, [params.id, fetchAllTourPackages, router, loggedInUser]);
 
-  const toTitleCase = (str: string) => {
-    return str
+  const toTitleCase = (str: string) =>
+    str
       .split(" ")
       .map((word) =>
         word.length > 0
@@ -91,29 +64,19 @@ export default function ViewTourPackagePage() {
           : ""
       )
       .join(" ");
-  };
 
-  // Button state logic (Option 1 - Cleanest approach)
   const getButtonStyles = () => {
-    // Check if user is logged in (currentUser should contain the actual user data)
     const isUserLoggedIn = currentUser !== null;
     const isFullyBooked = tourPackage && tourPackage.available_slots === 0;
-
-    if (!isUserLoggedIn) {
+    if (!isUserLoggedIn)
       return "bg-blue-500 hover:bg-blue-600 text-white cursor-pointer";
-    }
-
-    if (isFullyBooked) {
-      return "bg-gray-400 cursor-not-allowed text-gray-600";
-    }
-
+    if (isFullyBooked) return "bg-gray-400 cursor-not-allowed text-gray-600";
     return "bg-[#3e979f] cursor-pointer hover:bg-[#1c5461] text-white";
   };
 
   const getButtonText = () => {
     const isUserLoggedIn = currentUser !== null;
     const isFullyBooked = tourPackage && tourPackage.available_slots === 0;
-
     if (!isUserLoggedIn) return "Login to Book";
     if (isFullyBooked) return "Fully Booked";
     return "Book Now";
@@ -122,19 +85,15 @@ export default function ViewTourPackagePage() {
   const isButtonDisabled = () => {
     const isUserLoggedIn = currentUser !== null;
     const isFullyBooked = tourPackage && tourPackage.available_slots === 0;
-
-    // Only disable if user is logged in but package is fully booked
     return Boolean(isUserLoggedIn && isFullyBooked);
   };
 
   const handleButtonClick = () => {
     const isUserLoggedIn = currentUser !== null;
-
     if (!isUserLoggedIn) {
       router.push("/auth/login");
       return;
     }
-
     if (tourPackage && tourPackage.available_slots > 0) {
       router.push(`/tour-packages/${tourPackage.id}/book`);
     }
@@ -144,7 +103,7 @@ export default function ViewTourPackagePage() {
     return (
       <>
         <NewHeader />
-        <main className="w-full min-h-screen flex flex-col items-center justify-center">
+        <main className="w-full min-h-screen flex flex-col items-center justify-center bg-[#f1f1f1]">
           <div className="text-center">
             <div className="h-8 w-8 border-2 border-[#3e979f] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-gray-500">Loading...</p>
@@ -158,7 +117,7 @@ export default function ViewTourPackagePage() {
     return (
       <>
         <NewHeader />
-        <main className="w-full min-h-screen flex flex-col items-center justify-center">
+        <main className="w-full min-h-screen flex flex-col items-center justify-center bg-[#f1f1f1]">
           <p className="text-gray-500">Tour package not found.</p>
           <button
             className="mt-4 px-4 py-2 bg-blue-500 cursor-pointer text-white rounded hover:bg-blue-600 transition"
@@ -174,30 +133,31 @@ export default function ViewTourPackagePage() {
   return (
     <>
       <NewHeader />
-      <main className="w-full min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#fffff1] to-[#b6e0e4] pb-20">
-        {/* Hero Section */}
-        <section className="relative h-72 flex items-center justify-center overflow-hidden mb-10">
+      <main className="min-h-screen bg-[#f1f1f1] pb-20">
+        {/* Banner/Hero Section */}
+        <header className="relative">
           <Image
-            src="/images/article_image.webp"
-            alt="Tour Packages Hero"
-            fill
-            className="object-cover object-center brightness-[40%]"
+            src="/images/hero-carousel/4.jpg"
+            alt="Tour Package Banner"
+            width={1920}
+            height={800}
+            className="w-full h-60 md:h-96 object-cover object-top brightness-[55%]"
+            sizes="100vw"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1c5461]/80 via-[#1c5461]/40 to-transparent z-10" />
-          <div className="relative z-20 text-center px-4">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-xl mb-3">
+          <div className="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center space-y-2">
+            <h1 className="text-3xl md:text-5xl font-extrabold text-gray-50 text-center drop-shadow-2xl">
               {tourPackage.package_name}
             </h1>
-            <p className="text-lg md:text-xl text-[#e6f7fa] drop-shadow-md max-w-2xl mx-auto">
+            <p className="md:text-xl text-lg text-gray-50 text-center font-semibold drop-shadow-2xl">
               {tourPackage.location}
             </p>
           </div>
-        </section>
+        </header>
 
         {/* Details Card */}
-        <section className="flex justify-center items-start w-full px-4">
-          <div className="max-w-xl w-full bg-white/90 rounded-2xl shadow-2xl border border-[#e6f7fa] overflow-hidden">
+        <section className="flex justify-center items-start w-full px-4 py-10">
+          <div className="max-w-2xl w-full bg-white/90 rounded-2xl shadow-2xl border border-[#e6f7fa] overflow-hidden">
             {/* Package Image */}
             <div className="relative w-full h-56 sm:h-72">
               <Image
@@ -325,7 +285,6 @@ export default function ViewTourPackagePage() {
                   </div>
                 )}
 
-              {/* Updated Button with Option 1 Logic */}
               <button
                 className={`w-full px-6 py-3 rounded-lg font-semibold shadow transition mb-2 ${getButtonStyles()}`}
                 onClick={handleButtonClick}
@@ -343,6 +302,12 @@ export default function ViewTourPackagePage() {
             </div>
           </div>
         </section>
+
+        <footer>
+          <p className="text-center text-sm text-gray-500 mt-8">
+            {`Viewing tour package: ${tourPackage.package_name}`}
+          </p>
+        </footer>
       </main>
       <Footer />
     </>

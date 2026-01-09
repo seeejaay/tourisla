@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { useRuleManager } from "@/hooks/useRuleManager";
 import { Loader2, AlertTriangle } from "lucide-react";
 // import Header from "@/components/custom/old-header";
-import NewHeader from "@/components/custom/header";
+import NewHeader from "@/components/custom/Header";
 import Footer from "@/components/custom/footer";
 export default function RulesAndRegulationPage() {
   const { rules, loading, error, fetchRules } = useRuleManager();

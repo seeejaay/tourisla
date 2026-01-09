@@ -1,4 +1,4 @@
-import type { VisitorLog } from "@/app/(User)/profile/[id]/attraction-history/page";
+import type { VisitorLog } from "@/app/profile/[id]/attraction-history/page";
 
 interface DetailsModalProps {
   open: boolean;
@@ -7,7 +7,12 @@ interface DetailsModalProps {
   spotName: string;
 }
 
-export const DetailsModal: React.FC<DetailsModalProps> = ({ open, onClose, group, spotName }) => {
+export const DetailsModal: React.FC<DetailsModalProps> = ({
+  open,
+  onClose,
+  group,
+  spotName,
+}) => {
   if (!open || !group) return null;
   const main = group[0];
   return (
@@ -29,20 +34,28 @@ export const DetailsModal: React.FC<DetailsModalProps> = ({ open, onClose, group
           <b>Visit Date:</b> {new Date(main.visit_date).toLocaleDateString()}
         </div>
         <div className="mb-2">
-          <b>Unique Code:</b> <span className="font-mono">{main.unique_code}</span>
+          <b>Unique Code:</b>{" "}
+          <span className="font-mono">{main.unique_code}</span>
         </div>
         <div className="mb-2">
-          <b>Registration Date:</b> {new Date(main.registration_date).toLocaleDateString()}
+          <b>Registration Date:</b>{" "}
+          {new Date(main.registration_date).toLocaleDateString()}
         </div>
         <div className="mb-2">
           <b>QR Code:</b>
-          <img src={main.qr_code_url} alt="QR Code" className="w-24 h-24 mt-2" />
+          <img
+            src={main.qr_code_url}
+            alt="QR Code"
+            className="w-24 h-24 mt-2"
+          />
         </div>
         <div className="mb-2 font-semibold">Group Members:</div>
         <ul>
           {group.map((member, idx) => (
             <li key={idx} className="ml-4 list-disc">
-              {member.member_name} ({member.member_age}, {member.member_sex}) - {member.municipality}, {member.province}, {member.country} {member.is_foreign ? "(Foreign)" : ""}
+              {member.member_name} ({member.member_age}, {member.member_sex}) -{" "}
+              {member.municipality}, {member.province}, {member.country}{" "}
+              {member.is_foreign ? "(Foreign)" : ""}
             </li>
           ))}
         </ul>

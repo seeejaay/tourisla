@@ -1,10 +1,10 @@
 import Image from "next/image";
-import NewHeader from "@/components/custom/header";
+import Header from "@/components/custom/Header";
 import Footer from "@/components/custom/footer";
 import { notFound } from "next/navigation";
 import { showArticle } from "@/lib/api/articles";
 import type { Article } from "@/types/ArticleTypes";
-
+import { toSentenceCase, toTitleCase } from "@/lib/utils/stringUtils";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 
 export default async function ArticleDetailPage({
@@ -12,24 +12,12 @@ export default async function ArticleDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  // SSR: fetch article using your API util
   const { id } = await params;
   const article: Article | null = await showArticle(id);
 
   if (!article) {
     notFound();
   }
-
-  const toTitleCase = (str: string) => {
-    return str.replace(
-      /\w\S*/g,
-      (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase()
-    );
-  };
-
-  const toSentenceCase = (str: string) => {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  };
 
   const extractYouTubeId = (url: string): string | null => {
     const regex =
@@ -40,16 +28,16 @@ export default async function ArticleDetailPage({
 
   return (
     <>
-      <NewHeader />
+      <Header />
       <main className="min-h-screen bg-[#f1f1f1]">
-        <section className="w-full flex items-center justify-center">
+        <section className="flex items-center justify-center">
           <section className="bg-gradient-to-b from-[#000000]/5 to-white w-full py-20">
             <div className="container mx-auto px-4 py-0 ">
               <Card className="p-0 ">
                 <CardHeader className="p-0">
                   <Image
-                    width={1000}
-                    height={800}
+                    width={2000}
+                    height={2000}
                     src={
                       article.images && article.images.length > 0
                         ? article.images[0].image_url

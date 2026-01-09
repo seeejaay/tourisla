@@ -1,9 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { toTitleCase, toSentenceCase } from "@/lib/utils/stringUtils";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { ArticlesSectionProps, ArticleImage } from "@/types/ArticleTypes";
-
 export default function ArticlesSection({ articles }: ArticlesSectionProps) {
   if (!articles || articles.length === 0) {
     return (
@@ -37,18 +37,6 @@ export default function ArticlesSection({ articles }: ArticlesSectionProps) {
   const getFirstImageUrl = (images?: ArticleImage[]): string | null => {
     if (!images || images.length === 0) return null;
     return images[0].image_url;
-  };
-
-  const sentenceCase = (str: string) => {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  };
-
-  const titleCase = (str: string) => {
-    return str
-      .toLowerCase()
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
   };
 
   return (
@@ -95,13 +83,13 @@ export default function ArticlesSection({ articles }: ArticlesSectionProps) {
                     <CardContent className="p-4 sm:p-6">
                       {/* Title */}
                       <h3 className="font-bold text-xl sm:text-2xl lg:text-3xl mb-4 text-neutral-800 leading-tight">
-                        {titleCase(featuredArticle.title)}
+                        {toTitleCase(featuredArticle.title)}
                       </h3>
 
                       {/* Author and Date */}
                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-4 text-sm text-gray-500">
                         <span>
-                          Posted By: {titleCase(featuredArticle.author)}
+                          Posted By: {toTitleCase(featuredArticle.author)}
                         </span>
                         <span className="hidden sm:inline">•</span>
                         <span>
@@ -117,7 +105,7 @@ export default function ArticlesSection({ articles }: ArticlesSectionProps) {
 
                       {/* Content Preview */}
                       <p className="text-gray-600 mb-6 leading-relaxed text-sm sm:text-base">
-                        {sentenceCase(
+                        {toSentenceCase(
                           featuredArticle.content?.substring(0, 300)
                         )}
                         ...
@@ -127,7 +115,7 @@ export default function ArticlesSection({ articles }: ArticlesSectionProps) {
                       <div className="flex gap-2 flex-wrap">
                         <span className="px-3 py-1 bg-teal-100 text-teal-800 rounded-full text-xs font-medium">
                           {featuredArticle.type
-                            ? titleCase(featuredArticle.type)
+                            ? toTitleCase(featuredArticle.type)
                             : "General"}
                         </span>
                       </div>
@@ -160,10 +148,12 @@ export default function ArticlesSection({ articles }: ArticlesSectionProps) {
                           {/* Content */}
                           <div className="flex-1 min-w-0 py-4 px-2 ">
                             <h4 className="font-bold text-sm lg:text-base mb-2 text-neutral-800 line-clamp-2 leading-tight">
-                              {titleCase(article.title)}
+                              {toTitleCase(article.title)}
                             </h4>
                             <p className="text-xs text-gray-600 mb-2 line-clamp-4">
-                              {sentenceCase(article.content?.substring(0, 200))}
+                              {toSentenceCase(
+                                article.content?.substring(0, 200)
+                              )}
                               ...
                             </p>
                           </div>

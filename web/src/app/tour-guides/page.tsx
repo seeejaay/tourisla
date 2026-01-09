@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useTourGuideManager } from "@/hooks/useTourGuideManager";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import NewHeader from "@/components/custom/header";
+import NewHeader from "@/components/custom/Header";
 import Footer from "@/components/custom/footer";
 import Image from "next/image";
 // Define the TourGuide type based on your data structure

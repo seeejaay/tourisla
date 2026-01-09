@@ -11,7 +11,7 @@ import { bookingFields } from "@/app/static/booking/booking";
 import { useAuth } from "@/hooks/useAuth";
 import Footer from "@/components/custom/footer";
 import Image from "next/image";
-import NewHeader from "@/components/custom/header";
+import NewHeader from "@/components/custom/Header";
 // Types matching your API response
 type TourPackage = {
   id: number;

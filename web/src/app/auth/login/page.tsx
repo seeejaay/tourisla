@@ -32,23 +32,13 @@ export default function Login() {
     }
 
     try {
-      // console.log("🚀 Starting login with:", {
-      //   email,
-      //   passwordLength: password.length,
-      // });
-
       const isValid = await loginUser(email, password, router);
-
-      // console.log("📊 Login result:", isValid);
-      // console.log("📊 Login result type:", typeof isValid);
 
       if (isValid === true) {
         console.log("✅ Login successful!");
-        setError(""); // Clear any previous errors
-        // Routing is handled in loginUser, no need to do anything here
+        setError("");
       } else {
         console.log("❌ Login failed");
-        // Error is already set in loginUser if needed
       }
     } catch (err) {
       console.error("💥 Unexpected login error:", err);

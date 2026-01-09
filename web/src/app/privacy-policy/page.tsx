@@ -1,6 +1,6 @@
 "use client";
 
-import NewHeader from "@/components/custom/header";
+import NewHeader from "@/components/custom/Header";
 import Footer from "@/components/custom/footer";
 
 export default function PrivacyPolicyPage() {

@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTourPackageManager } from "@/hooks/useTourPackageManager";
-// import Header from "@/components/custom/old-header";
-import NewHeader from "@/components/custom/header";
+import NewHeader from "@/components/custom/Header";
 import Footer from "@/components/custom/footer";
 import Image from "next/image";
 import {
@@ -24,40 +23,10 @@ import {
   PaginationNext,
   PaginationLink,
 } from "@/components/ui/pagination";
+import type { TourPackage, RawTourPackage } from "@/types/TourPackageType";
+import type { TourGuide } from "@/types/TourGuideType";
 
 export default function TourPackagesPage() {
-  type TourGuide = {
-    tourguide_id: number;
-    first_name: string;
-    last_name: string;
-  };
-
-  type TourPackage = {
-    id?: number;
-    package_name: string;
-    location: string;
-    price: number;
-    description: string;
-    inclusions: string;
-    exclusions: string;
-    available_slots: number;
-    date_start: string;
-    date_end: string;
-    start_time?: string;
-    end_time?: string;
-    guide_name?: string;
-    image_url?: string;
-    assigned_guides?: TourGuide[];
-    operator_name?: string;
-    is_active?: boolean;
-  };
-
-  type RawTourGuide = string | TourGuide;
-
-  type RawTourPackage = Omit<TourPackage, "assigned_guides"> & {
-    assigned_guides?: RawTourGuide[];
-  };
-
   const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
   const [filteredGuide, setFilteredGuide] = useState<string>("All");
   const [filteredLocation, setFilteredLocation] = useState<string>("All");
@@ -180,41 +149,40 @@ export default function TourPackagesPage() {
   return (
     <>
       <NewHeader />
-      <main className="w-full  min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#fffff1] to-[#b6e0e4] pb-20">
-        {/* Hero Section */}
-        <section className="relative h-72 flex items-center justify-center overflow-hidden mb-10">
+      <main className="min-h-screen bg-[#f1f1f1]">
+        {/* Banner/Header Section */}
+        <header className="relative">
           <Image
-            src="/images/article_image.webp"
-            alt="Tour Packages Hero"
-            fill
-            className="object-cover object-center brightness-[40%]"
-            priority
+            src="/images/hero-carousel/1.jpg"
+            alt="Articles Banner"
+            width={1920}
+            height={800}
+            className="w-full h-96 object-cover object-center brightness-[55%]"
+            sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1c5461]/80 via-[#1c5461]/40 to-transparent z-10" />
-          <div className="relative z-20 text-center px-4">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-xl mb-3">
+          <div className="absolute top-5 inset-0 flex items-center justify-center flex-col space-y-4">
+            <h1 className="lg:text-5xl text-3xl font-extrabold text-gray-50 text-center drop-shadow-2xl">
               Explore Tour Packages
             </h1>
-            <p className="text-lg md:text-xl text-[#e6f7fa] drop-shadow-md max-w-2xl mx-auto">
+            <p className="lg:text-xl text-lg text-gray-50 text-center font-semibold drop-shadow-2xl">
               Discover exclusive Bantayan Island adventures with our trusted
               tour guides.
             </p>
           </div>
-        </section>
+        </header>
 
-        <section className="w-full flex flex-col  items-center justify-center px-4  ">
-          {/* Search Bar */}
-          <div className=" flex justify-center w-full max-w-md sm:max-w-2xl  ">
+        {/* Filters and Search */}
+        <section className="w-full flex flex-col items-center justify-center px-4 py-8">
+          <div className="flex justify-center w-full max-w-md sm:max-w-2xl mb-4">
             <input
               type="text"
               placeholder="Search tour packages..."
-              className="w-full  px-4 py-2 rounded-lg border border-[#3e979f] text-[#1c5461] bg-white focus:outline-none"
+              className="w-full px-4 py-2 rounded-lg border border-[#3e979f] text-[#1c5461] bg-white focus:outline-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center items-center py-6">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center items-center">
             {/* Location Filter */}
             <div className="w-56">
               <label
@@ -237,7 +205,6 @@ export default function TourPackagesPage() {
                 ))}
               </select>
             </div>
-
             {/* Operator Filter */}
             <div className="w-56">
               <label
@@ -260,7 +227,6 @@ export default function TourPackagesPage() {
                 ))}
               </select>
             </div>
-
             {/* Tour Guide Filter */}
             <div className="w-56">
               <label
@@ -338,7 +304,7 @@ export default function TourPackagesPage() {
         {/* Packages Grid */}
         <section className="w-full flex items-center justify-center px-4">
           <div className="max-w-7xl w-full">
-            <div className="flex flex-wrap gap-8 justify-center ">
+            <div className="flex flex-wrap gap-8 justify-center">
               {paginatedPackages.map((pkg, index) => (
                 <Card
                   key={index}
@@ -415,6 +381,12 @@ export default function TourPackagesPage() {
             </div>
           </div>
         </section>
+
+        <footer>
+          <p className="text-center text-sm text-gray-500 mt-8">
+            {`Showing ${displayedPackages.length} tour packages`}
+          </p>
+        </footer>
       </main>
       <Footer />
     </>

@@ -1,33 +1,8 @@
 import Image from "next/image";
-// import Link from "next/link";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-// import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
-
-interface PhotoImage {
-  height: number;
-  width: number;
-  url: string;
-}
-
-interface Photo {
-  id: number;
-  caption: string;
-  images: {
-    large: PhotoImage;
-  };
-}
-
-interface Hotel {
-  location_id: string;
-  name: string;
-  address_obj: {
-    street1?: string;
-    street2?: string;
-    address_string: string;
-  };
-  photos: Photo[];
-}
+import type { Hotel } from "@/types/HotelType";
+import { toTitleCase } from "@/lib/utils/stringUtils";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 interface HotelsSectionProps {
   hotels: Hotel[];
@@ -53,7 +28,6 @@ export default function HotelsSection({ hotels }: HotelsSectionProps) {
     );
   }
 
-  // Show 4 random hotels based on current date
   const displayHotels = (() => {
     const today = new Date();
     const seed =
@@ -61,13 +35,11 @@ export default function HotelsSection({ hotels }: HotelsSectionProps) {
       (today.getMonth() + 1) * 100 +
       today.getDate();
 
-    // Simple seeded random function
     const seededRandom = (seed: number) => {
       const x = Math.sin(seed) * 10000;
       return x - Math.floor(x);
     };
 
-    // Create array of indices and shuffle with seeded random
     const indices = Array.from({ length: hotels.length }, (_, i) => i);
 
     for (let i = indices.length - 1; i > 0; i--) {
@@ -75,28 +47,18 @@ export default function HotelsSection({ hotels }: HotelsSectionProps) {
       [indices[i], indices[j]] = [indices[j], indices[i]];
     }
 
-    // Return first 4 shuffled hotels
     return indices.slice(0, 4).map((index) => hotels[index]);
   })();
-  const titleCase = (str: string) => {
-    return str
-      .toLowerCase()
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
 
   return (
     <section className="bg-gray-50  w-full lg:py-20 p-4 ">
       <div className="container mx-auto lg:border lg:shadow-[0_0_20px_2px_rgba(0,0,0,0.1)] lg:rounded-lg lg:p-8 p-4">
-        {/* Header */}
         <header className="text-left ">
           <h2 className="text-xl lg:text-3xl font-bold text-neutral-800 mb-4">
             Recommended Hotels
           </h2>
         </header>
 
-        {/* Hotels Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 ">
           {displayHotels.map((hotel) => {
             return (
@@ -104,7 +66,6 @@ export default function HotelsSection({ hotels }: HotelsSectionProps) {
                 key={hotel.location_id}
                 className="h-full  border-none  shadow-none hover:shadow-none cursor-pointer bg-gray-50 group overflow-hidden p-0"
               >
-                {/* Hotel Image */}
                 {hotel.photos &&
                 Array.isArray(hotel.photos) &&
                 hotel.photos.length > 0 &&
@@ -132,12 +93,10 @@ export default function HotelsSection({ hotels }: HotelsSectionProps) {
                 )}
 
                 <CardContent className="p-0 m-0">
-                  {/* Hotel Name */}
                   <h3 className="font-semibold text-md lg:text-lg mb-2 text-neutral-800 line-clamp-1">
-                    {titleCase(hotel.name)}
+                    {toTitleCase(hotel.name)}
                   </h3>
 
-                  {/* Location */}
                   {hotel.address_obj?.address_string && (
                     <div className="flex items-center gap-1 mb-3 text-gray-500">
                       <MapPin className="w-4 h-4 flex-shrink-0" />

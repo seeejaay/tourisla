@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { UserCircle2, User, LogIn, LogOut, UserCircle } from "lucide-react";
+import { UserCircle2, User, LogIn, LogOut } from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
 

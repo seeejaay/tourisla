@@ -1,10 +1,11 @@
 "use client";
-import React, { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import Image from "next/image";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import type { ArticlesSectionProps } from "@/types/ArticleTypes";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { toTitleCase, toSentenceCase } from "@/lib/utils/stringUtils";
 import {
   Pagination,
   PaginationContent,
@@ -13,6 +14,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+
 const ARTICLES_PER_PAGE = 8;
 
 export default function ArticlesListSection({
@@ -39,27 +41,12 @@ export default function ArticlesListSection({
     );
   }
 
-  const sentenceCase = (str: string) => {
-    if (!str) return "";
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  };
-
-  const titleCase = (str: string) => {
-    if (!str) return "";
-    return str
-      .toLowerCase()
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
-
-  // Filter out featured articles
   const regularArticles = articles
     .filter((article) => article.is_featured !== true)
     .sort((a, b) => a.title.localeCompare(b.title));
 
-  // Pagination logic
   const totalPages = Math.ceil(regularArticles.length / ARTICLES_PER_PAGE);
+
   const paginatedArticles = regularArticles.slice(
     (page - 1) * ARTICLES_PER_PAGE,
     page * ARTICLES_PER_PAGE
@@ -88,20 +75,19 @@ export default function ArticlesListSection({
                   </CardHeader>
                   <CardContent className="px-4 pb-4 flex flex-col flex-1">
                     <h4 className="font-bold text-base mb-2 text-neutral-800 line-clamp-2 leading-tight">
-                      {titleCase(article.title)}
+                      {toTitleCase(article.title)}
                     </h4>
                     <p className="text-xs text-gray-600 mb-2 line-clamp-4 flex-1">
-                      {sentenceCase(article.content?.substring(0, 120))}...
+                      {toSentenceCase(article.content?.substring(0, 120))}...
                     </p>
                     <Badge className="px-3 bg-teal-100 text-teal-800 rounded-full text-xs font-medium">
-                      {article.type ? titleCase(article.type) : "General"}
+                      {article.type ? toTitleCase(article.type) : "General"}
                     </Badge>
                   </CardContent>
                 </Card>
               </Link>
             ))}
           </div>
-          {/* Pagination Controls */}
           {totalPages > 1 && (
             <Pagination className="pb-3">
               <PaginationContent>

@@ -4,7 +4,7 @@ import React from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TourGuideApplication } from "@/app/(User)/profile/[id]/apply-to-tour-operator/page";
+import { TourGuideApplication } from "@/app/profile/[id]/apply-to-tour-operator/page";
 
 export type ApplyTourOperator = {
   id: number;

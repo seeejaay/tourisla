@@ -6,7 +6,7 @@ import { islandEntryFields } from "@/app/static/islandEntry/islandEntryFields";
 import { useFormik } from "formik";
 import { getLatestIslandEntry } from "@/lib/api/islandEntry";
 import * as yup from "yup";
-import NewHeader from "@/components/custom/header";
+import NewHeader from "@/components/custom/Header";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";

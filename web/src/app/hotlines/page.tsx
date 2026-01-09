@@ -1,7 +1,7 @@
 "use client";
 import { useHotlineManager } from "@/hooks/useHotlineManager";
 import { useState } from "react";
-import NewHeader from "@/components/custom/header";
+import NewHeader from "@/components/custom/Header";
 import Footer from "@/components/custom/footer";
 import Link from "next/link";
 export default function HotlinesPage() {

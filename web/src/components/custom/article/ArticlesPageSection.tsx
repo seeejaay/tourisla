@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { ArticlesSectionProps } from "@/types/ArticleTypes";
-
+import { toTitleCase, toSentenceCase } from "@/lib/utils/stringUtils";
 export default function ArticlesPageSection({
   articles,
 }: ArticlesSectionProps) {
@@ -39,18 +39,6 @@ export default function ArticlesPageSection({
 
   const featuredArticle = getRandomFeaturedArticle();
 
-  const sentenceCase = (str: string) => {
-    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-  };
-
-  const titleCase = (str: string) => {
-    return str
-      .toLowerCase()
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
-
   return (
     <section className="bg-gradient-to-b from-[#000000]/5 to-[#ffffff] w-full py-20">
       <div className="container mx-auto px-4 py-0 my-0">
@@ -72,10 +60,10 @@ export default function ArticlesPageSection({
                     >
                       <CardHeader className="p-0">
                         <h2 className="font-extrabold text-neutral-900 lg:text-2xl text-lg ">
-                          {titleCase(featuredArticle.title)}
+                          {toTitleCase(featuredArticle.title)}
                         </h2>
                         <h4 className=" text-gray-500 font-medium ">
-                          Posted By: {titleCase(featuredArticle.author)}{" "}
+                          Posted By: {toTitleCase(featuredArticle.author)}{" "}
                           <span className="hidden sm:inline">•</span>{" "}
                           {new Date(
                             featuredArticle.created_at
@@ -137,15 +125,17 @@ export default function ArticlesPageSection({
                           )}
                           <CardContent className="w-2/3 px-4 flex flex-col h-full">
                             <h4 className="font-bold text-sm lg:text-base mb-2 text-neutral-800 line-clamp-2 leading-tight">
-                              {titleCase(article.title)}
+                              {toTitleCase(article.title)}
                             </h4>
                             <p className="text-xs text-gray-600 mb-2 line-clamp-4">
-                              {sentenceCase(article.content?.substring(0, 100))}
+                              {toSentenceCase(
+                                article.content?.substring(0, 100)
+                              )}
                               ...
                             </p>
                             <Badge className="px-3 bg-teal-100 text-teal-800 rounded-full text-xs font-medium mt-auto">
                               {article.type
-                                ? titleCase(article.type)
+                                ? toTitleCase(article.type)
                                 : "General"}
                             </Badge>
                           </CardContent>

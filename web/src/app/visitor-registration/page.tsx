@@ -7,7 +7,7 @@ import { Visitor } from "@/app/static/visitor-registration/visitorSchema";
 import visitorSchema from "@/app/static/visitor-registration/visitorSchema";
 import { useVisitorRegistration } from "@/hooks/useVisitorRegistration";
 import { Button } from "@/components/ui/button";
-import NewHeader from "@/components/custom/header";
+import NewHeader from "@/components/custom/Header";
 import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
 import { fetchRegions, fetchCities } from "@/lib/api/philippines";
