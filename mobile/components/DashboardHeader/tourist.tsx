@@ -1,23 +1,12 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  TouchableOpacity,
-  Image,
-  Text,
-  StyleSheet,
-  Platform,
-  StatusBar,
-} from "react-native";
+import { View, TouchableOpacity, Image, Text, StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { toTitleCase } from "@/lib/utils/textFormat";
-toTitleCase;
 
 export default function DashboardHeader() {
-  const insets = useSafeAreaInsets();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -26,13 +15,33 @@ export default function DashboardHeader() {
       try {
         setLoading(true);
         const stored = await AsyncStorage.getItem("userData");
-        if (!stored) throw new Error("No stored user");
-        const data = JSON.parse(stored);
-        if (!data.role) throw new Error("Invalid user");
+
+        if (!stored) {
+          console.warn("Header: No stored user data found");
+          router.replace("/login");
+          return;
+        }
+
+        let data;
+        try {
+          data = JSON.parse(stored);
+        } catch (parseError) {
+          console.error("Header: Failed to parse user data:", parseError);
+          await AsyncStorage.clear();
+          router.replace("/login");
+          return;
+        }
+
+        if (!data || !data.role) {
+          console.warn("Header: Invalid user data - missing role");
+          await AsyncStorage.clear();
+          router.replace("/login");
+          return;
+        }
+
         setCurrentUser(data);
       } catch (err: any) {
-        console.warn("Header: user invalid:", err.message);
-        await AsyncStorage.clear();
+        console.error("Header: Unexpected error:", err);
         router.replace("/login");
       } finally {
         setLoading(false);
@@ -85,7 +94,7 @@ export default function DashboardHeader() {
                 <Text style={styles.avatarInitial}>
                   {currentUser?.first_name?.[0] ||
                     currentUser?.email?.[0] ||
-                    "U"}
+                    "?"}
                 </Text>
               </View>
             )}
@@ -101,7 +110,7 @@ export default function DashboardHeader() {
                 <Text style={styles.userName} numberOfLines={1}>
                   {currentUser
                     ? toTitleCase(
-                        `${currentUser.first_name || ""} ${currentUser.last_name || ""}`.trim()
+                        `${currentUser.first_name || ""} ${currentUser.last_name || ""}`.trim(),
                       )
                     : "Unknown User"}
                 </Text>

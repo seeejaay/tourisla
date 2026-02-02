@@ -106,6 +106,7 @@ export default function SignUpScreen() {
         { text: "OK", onPress: () => router.push("/login") },
       ]);
     } catch (error) {
+      console.error("Registration error:", error);
       Alert.alert("Error", "Registration failed");
     }
   };
@@ -231,7 +232,7 @@ export default function SignUpScreen() {
 
           {/* Sign Up Button */}
           <TouchableOpacity onPress={handleSignUp} style={styles.signupButton}>
-            <Text style={styles.signupButtonText}>SIGN UP</Text>
+            <Text style={styles.signupButtonText}>Sign Up</Text>
           </TouchableOpacity>
 
           {/* Login Redirect */}
@@ -279,7 +280,6 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
     backgroundColor: "#ffffff",
-    color: "#005582",
   },
   pickerWrapper: {
     borderColor: "#7eccb6",
@@ -287,10 +287,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 16,
     backgroundColor: "#ffffff",
+    height: 48, // Match TextInput height
+    justifyContent: "center",
+    paddingHorizontal: 12, // Match TextInput padding
   },
   picker: {
-    height: 50,
-    color: "#0eb28d",
+    fontSize: 16, // Match TextInput font size
+    height: 48, // Match wrapper height
   },
   passwordContainer: {
     position: "relative",
@@ -303,7 +306,6 @@ const styles = StyleSheet.create({
     padding: 12,
     paddingRight: 40,
     backgroundColor: "#ffffff",
-    color: "#005582",
   },
   eyeIcon: {
     position: "absolute",
@@ -322,7 +324,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   signupButton: {
-    backgroundColor: "#7eccb6",
+    backgroundColor: "#3f9678",
     padding: 15,
     borderRadius: 8,
     marginTop: 10,

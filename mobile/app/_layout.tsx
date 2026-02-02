@@ -1,8 +1,12 @@
-import { Stack, SplashScreen, router } from "expo-router";
+import { Stack, SplashScreen } from "expo-router";
 import { useFonts } from "expo-font";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
+import { View, ActivityIndicator } from "react-native";
 import "./global.css";
+
+// Prevent auto-hide of splash screen
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -21,50 +25,51 @@ export default function RootLayout() {
     "Poppins-BlackItalic": require("../assets/fonts/Poppins-BlackItalic.ttf"),
   });
 
-  const [checkingSession, setCheckingSession] = useState(true);
+  const [appReady, setAppReady] = useState(false);
 
   useEffect(() => {
-    const restoreSession = async () => {
+    async function prepare() {
       try {
-        const role = await AsyncStorage.getItem("role");
-        if (role) {
-          switch (role) {
-            case "Admin":
-              router.replace("/admin/admin_dashboard");
-              break;
-            case "Tourist":
-              router.replace("/tourist/tourist_dashboard");
-              break;
-            case "Tour Guide":
-            case "tour_guide":
-              router.replace("/guide/guide_dashboard");
-              break;
-            case "Tour Operator":
-            case "tour_operator":
-              router.replace("/operator/operator_dashboard");
-              break;
-            case "Tourism Staff":
-              router.replace("/staff/staff_dashboard");
-              break;
-            default:
-              router.replace("/login");
+        // Check if user data exists
+        const userData = await AsyncStorage.getItem("userData");
+        console.log("App startup - userData exists:", !!userData);
+
+        if (userData) {
+          try {
+            const parsed = JSON.parse(userData);
+            console.log("App startup - user role:", parsed?.role);
+          } catch (e) {
+            console.error("App startup - corrupted data, clearing:", e);
+            await AsyncStorage.clear();
           }
         }
       } catch (e) {
-        console.error("Error restoring session:", e);
-        router.replace("/login");
+        console.error("App startup error:", e);
       } finally {
-        setCheckingSession(false);
+        setAppReady(true);
         await SplashScreen.hideAsync();
       }
-    };
+    }
 
     if (fontsLoaded) {
-      restoreSession();
+      prepare();
     }
   }, [fontsLoaded]);
 
-  if (!fontsLoaded || checkingSession) return null;
+  if (!fontsLoaded || !appReady) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#fff",
+        }}
+      >
+        <ActivityIndicator size="large" color="#3e979f" />
+      </View>
+    );
+  }
 
   return <Stack screenOptions={{ headerShown: false }} />;
 }
