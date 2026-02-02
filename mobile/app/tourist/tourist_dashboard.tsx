@@ -7,20 +7,12 @@ import TouristHotlines from "./profile/about/hotlines/tourist_hotlines";
 import TouristPackagesScreen from "./packages/tourist_packages";
 import MoreScreen from "./more/MoreScreen";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
-import {
-  StyleSheet,
-  View,
-  Platform,
-  TouchableOpacity,
-  Dimensions,
-} from "react-native";
+import { StyleSheet, View, Platform, TouchableOpacity } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated from "react-native-reanimated";
 
 const Tab = createBottomTabNavigator();
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 function CustomTabBar({ state, descriptors, navigation }) {
   return (
@@ -40,7 +32,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
 
-          let iconName;
+          let iconName: any = "home-outline";
           let IconComponent = Ionicons;
 
           switch (route.name) {
@@ -56,14 +48,18 @@ function CustomTabBar({ state, descriptors, navigation }) {
               IconComponent = Ionicons;
               break;
             case "Packages":
-              iconName = isFocused ? "calendar-clear" : "calendar-clear-outline";
+              iconName = isFocused
+                ? "calendar-clear"
+                : "calendar-clear-outline";
               break;
             case "Hotlines":
               iconName = isFocused ? "call" : "call-outline";
               IconComponent = Ionicons;
               break;
             case "More":
-              iconName = isFocused ? "ellipsis-horizontal" : "ellipsis-horizontal-outline";
+              iconName = isFocused
+                ? "ellipsis-horizontal"
+                : "ellipsis-horizontal-outline";
               break;
           }
 
@@ -149,7 +145,10 @@ export default function TouristDashboard() {
               </View>
             )}
           </Tab.Screen>
-          <Tab.Screen name="Registration" options={{ tabBarLabel: "Registration" }}>
+          <Tab.Screen
+            name="Registration"
+            options={{ tabBarLabel: "Registration" }}
+          >
             {() => (
               <View style={{ flex: 1 }}>
                 <DashboardHeader />

@@ -9,20 +9,22 @@ import {
   Switch,
   SafeAreaView,
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { useVisitorRegistration } from "@/hooks/useVisitorRegistration";
 import { visitorRegistrationFields } from "@/static/visitor-registration/visitor";
 import type { Visitor } from "@/static/visitor-registration/visitorSchema";
 import { Picker } from "@react-native-picker/picker";
 import HeaderWithBack from "@/components/HeaderWithBack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { fetchRegions, fetchCities } from "@/lib/api/philippines";
 
 const emptyVisitor = () =>
   Object.fromEntries(
     visitorRegistrationFields.map((f) => [
       f.name,
       f.type === "checkbox" ? false : "",
-    ])
+    ]),
   ) as Partial<Visitor>;
 
 type FieldValue = string | boolean;
@@ -37,21 +39,125 @@ export default function VisitorRegistrationScreen() {
   const [mainVisitor, setMainVisitor] =
     useState<Partial<Visitor>>(emptyVisitor());
   const [companions, setCompanions] = useState<Partial<Visitor>[]>([]);
+  const [regions, setRegions] = useState<any[]>([]);
+  const [cities, setCities] = useState<any[]>([]);
   const { createVisitor, loading, error } = useVisitorRegistration();
   const router = useRouter();
+
+  // Load regions and cities on mount
+  useEffect(() => {
+    const loadPhilippinesData = async () => {
+      try {
+        const [regionsData, citiesData] = await Promise.all([
+          fetchRegions(),
+          fetchCities(),
+        ]);
+        setRegions(regionsData);
+        setCities(citiesData);
+      } catch (error) {
+        console.error("Error loading Philippines data:", error);
+      }
+    };
+
+    loadPhilippinesData();
+  }, []);
+
+  // Load user data on mount to pre-fill form
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const userData = await AsyncStorage.getItem("userData");
+        if (userData) {
+          const user = JSON.parse(userData);
+
+          // Determine if user is foreign based on country
+          const country = user.country || user.nationality || "";
+          const isForeign = country.toLowerCase() !== "philippines";
+
+          // Calculate age from birth_date if available
+          let age = "";
+          if (user.birth_date) {
+            const birthDate = new Date(user.birth_date);
+            const today = new Date();
+            const calculatedAge = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (
+              monthDiff < 0 ||
+              (monthDiff === 0 && today.getDate() < birthDate.getDate())
+            ) {
+              age = String(calculatedAge - 1);
+            } else {
+              age = String(calculatedAge);
+            }
+          }
+
+          // Combine first_name and last_name into name
+          const fullName = [user.first_name, user.last_name]
+            .filter(Boolean)
+            .join(" ");
+
+          // Pre-fill main visitor with available user data
+          setMainVisitor((prev) => ({
+            ...prev,
+            name: fullName || "",
+            age: age || "",
+            sex: user.sex || user.gender || "",
+            country: country,
+            is_foreign: isForeign,
+            municipality: !isForeign ? user.municipality || "" : "",
+            province: !isForeign ? user.province || "" : "",
+          }));
+        }
+      } catch (error) {
+        console.error("Error loading user data:", error);
+      }
+    };
+
+    loadUserData();
+  }, []);
 
   const handleInputChange = (
     index: number | null,
     field: keyof Visitor,
-    value: FieldValue
+    value: FieldValue,
   ) => {
     if (index === null) {
-      setMainVisitor((prev) => ({ ...prev, [field]: value }));
+      setMainVisitor((prev) => {
+        const updated = { ...prev, [field]: value };
+
+        // Auto-update is_foreign when country changes
+        if (field === "country") {
+          updated.is_foreign = String(value).toLowerCase() !== "philippines";
+        }
+
+        // Clear municipality when province/region changes
+        if (field === "province") {
+          updated.municipality = "";
+        }
+
+        return updated;
+      });
     } else {
       setCompanions((prev) =>
-        prev.map((comp, i) =>
-          i === index ? { ...comp, [field]: value } : comp
-        )
+        prev.map((comp, i) => {
+          if (i === index) {
+            const updated = { ...comp, [field]: value };
+
+            // Auto-update is_foreign when country changes
+            if (field === "country") {
+              updated.is_foreign =
+                String(value).toLowerCase() !== "philippines";
+            }
+
+            // Clear municipality when province/region changes
+            if (field === "province") {
+              updated.municipality = "";
+            }
+
+            return updated;
+          }
+          return comp;
+        }),
       );
     }
   };
@@ -67,7 +173,7 @@ export default function VisitorRegistrationScreen() {
 
       if (response.registration.unique_code) {
         router.push(
-          `/tourist/regis/visitor_registration/result/visitor_registration_result?code=${encodeURIComponent(response.registration.unique_code)}`
+          `/tourist/regis/visitor_registration/result/visitor_registration_result?code=${encodeURIComponent(response.registration.unique_code)}`,
         );
       }
     } catch (err) {
@@ -75,76 +181,113 @@ export default function VisitorRegistrationScreen() {
     }
   };
 
-  const renderFields = (visitor: Partial<Visitor>, index: number | null) => (
-    <>
-      {visitorRegistrationFields
-        .filter((field) => {
-          if (
-            (field.name === "municipality" || field.name === "province") &&
-            visitor.is_foreign
-          ) {
-            return false;
-          }
-          return true;
-        })
-        .map((field) => (
-          <View key={field.name} style={styles.fieldRow}>
-            <Text style={styles.label}>{field.label}</Text>
+  const renderFields = (visitor: Partial<Visitor>, index: number | null) => {
+    // Filter cities based on selected province/region
+    const getFilteredCities = () => {
+      if (!visitor.province) return [];
 
-            {field.type === "text" || field.type === "number" ? (
-              <TextInput
-                keyboardType={field.type === "number" ? "numeric" : "default"}
-                placeholder={field.placeholder}
-                value={String(visitor[field.name as keyof Visitor] || "")}
-                onChangeText={(val) =>
-                  handleInputChange(index, field.name as keyof Visitor, val)
-                }
-                style={styles.input}
-              />
-            ) : field.type === "select" ? (
-              <View style={styles.selectWrapper}>
-                <Picker
-                  selectedValue={String(
-                    visitor[field.name as keyof Visitor] || ""
-                  )}
+      const selectedRegion = regions.find((r) => r.name === visitor.province);
+
+      if (!selectedRegion) return [];
+
+      return cities.filter((city) => city.regionCode === selectedRegion.code);
+    };
+
+    const filteredCities = getFilteredCities();
+
+    return (
+      <>
+        {visitorRegistrationFields
+          .filter((field) => {
+            if (
+              (field.name === "municipality" || field.name === "province") &&
+              visitor.is_foreign
+            ) {
+              return false;
+            }
+            return true;
+          })
+          .map((field) => (
+            <View key={field.name} style={styles.fieldRow}>
+              <Text style={styles.label}>{field.label}</Text>
+
+              {field.type === "text" || field.type === "number" ? (
+                <TextInput
+                  keyboardType={field.type === "number" ? "numeric" : "default"}
+                  placeholder={field.placeholder}
+                  value={String(visitor[field.name as keyof Visitor] || "")}
+                  onChangeText={(val) =>
+                    handleInputChange(index, field.name as keyof Visitor, val)
+                  }
+                  style={styles.input}
+                />
+              ) : field.type === "select" ? (
+                <View style={styles.selectWrapper}>
+                  <Picker
+                    selectedValue={String(
+                      visitor[field.name as keyof Visitor] || "",
+                    )}
+                    onValueChange={(val) =>
+                      handleInputChange(index, field.name as keyof Visitor, val)
+                    }
+                    style={styles.selectPicker}
+                  >
+                    <Picker.Item label="Select..." value="" />
+                    {field.name === "province"
+                      ? regions.map((region) => (
+                          <Picker.Item
+                            key={region.code}
+                            label={region.name}
+                            value={region.name}
+                          />
+                        ))
+                      : field.name === "municipality"
+                        ? filteredCities.map((city) => (
+                            <Picker.Item
+                              key={city.code}
+                              label={city.name}
+                              value={city.name}
+                            />
+                          ))
+                        : field.options?.map((opt) => (
+                            <Picker.Item
+                              key={opt.value}
+                              label={opt.label}
+                              value={opt.value}
+                            />
+                          ))}
+                  </Picker>
+                </View>
+              ) : field.type === "checkbox" ? (
+                <Switch
+                  value={!!visitor[field.name as keyof Visitor]}
                   onValueChange={(val) =>
                     handleInputChange(index, field.name as keyof Visitor, val)
                   }
-                  style={styles.selectPicker}
-                >
-                  <Picker.Item label="Select..." value="" />
-                  {field.options?.map((opt) => (
-                    <Picker.Item
-                      key={opt.value}
-                      label={opt.label}
-                      value={opt.value}
-                    />
-                  ))}
-                </Picker>
-              </View>
-            ) : field.type === "checkbox" ? (
-              <Switch
-                value={!!visitor[field.name as keyof Visitor]}
-                onValueChange={(val) =>
-                  handleInputChange(index, field.name as keyof Visitor, val)
-                }
-              />
-            ) : null}
-          </View>
-        ))}
-    </>
-  );
+                  disabled={
+                    field.name === "is_foreign" &&
+                    visitor.country?.toLowerCase() === "philippines"
+                  }
+                />
+              ) : null}
+            </View>
+          ))}
+      </>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-    <HeaderWithBack
-      title="Visitor Registration"
-      onBackPress={() => router.back()}
-    />
+      <HeaderWithBack
+        title="Visitor Registration"
+        onBackPress={() => router.back()}
+      />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.heading}>Register</Text>
-        {renderFields(mainVisitor, null)}
-
+        <Text style={styles.sectionTitle}>Main Visitor</Text>
+        <View style={styles.companionCard}>
+          {renderFields(mainVisitor, null)}
+        </View>
         <Text style={styles.sectionTitle}>Companions</Text>
         {companions.map((comp, idx) => (
           <View key={idx} style={styles.companionCard}>
@@ -181,8 +324,8 @@ export default function VisitorRegistrationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
-    paddingBottom: 40
+    backgroundColor: "#f9fafb",
+    paddingBottom: 40,
   },
   scrollContent: {
     padding: 16,
@@ -300,13 +443,13 @@ const styles = StyleSheet.create({
   },
   selectWrapper: {
     borderWidth: 1,
-    borderColor: '#ececee',
+    borderColor: "#ececee",
     borderRadius: 8,
-    backgroundColor: '#f8fafc',
+    backgroundColor: "#f8fafc",
     marginBottom: 12,
   },
   selectPicker: {
     height: 50,
-    width: '100%',
+    width: "100%",
   },
 });

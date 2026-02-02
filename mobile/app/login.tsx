@@ -146,10 +146,10 @@ export default function LoginScreen() {
         case "tour_guide":
           router.replace("/guide/guide_dashboard");
           break;
-        case "Tour Operator":
-        case "tour_operator":
-          router.replace("/operator/operator_dashboard");
-          break;
+        // case "Tour Operator":
+        // case "tour_operator":
+        //   router.replace("/operator/operator_dashboard");
+        //   break;
         case "Tourism Staff":
           router.replace("/staff/staff_dashboard");
           break;
@@ -252,7 +252,9 @@ export default function LoginScreen() {
       {/* Login Redirect */}
       <View style={styles.footer}>
         <TouchableOpacity onPress={() => router.push("/role-selection")}>
-          <Text style={styles.signupText}>Don't have an account? Sign Up</Text>
+          <Text style={styles.signupText}>
+            Don&apos;t have an account? Sign Up
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

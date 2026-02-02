@@ -38,10 +38,10 @@ const formatNameWords = (name) => {
 };
 
 export default function TouristProfile() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("Visitor Registration");
   const handleTabPress = (tab) => setActiveTab(tab);
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -221,7 +221,12 @@ export default function TouristProfile() {
                 {user.mobile_number?.toLowerCase()}
               </Text>
               <Text style={styles.displayRole}>
-                {user.birth_date?.toLowerCase()}
+                {user.birth_date &&
+                  new Date(user.birth_date).toLocaleDateString("en-PH", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
               </Text>
             </View>
           )}
