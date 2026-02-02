@@ -68,7 +68,9 @@ export const showArticle = async (articleId) => {
 export const fetchArticlesSSR = async () => {
   try {
     const res = await fetch(`${API_URL}articles`, {
-      cache: "no-store",
+      next: {
+        revalidate: 60,
+      },
       headers: {
         "Content-Type": "application/json",
       },

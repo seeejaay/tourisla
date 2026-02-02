@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import ReCAPTCHA from "react-google-recaptcha";
 import { useRef, useState } from "react";
@@ -55,7 +56,7 @@ export default function TourGuideRegister() {
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({
@@ -127,7 +128,7 @@ export default function TourGuideRegister() {
         reason_for_applying: form.reason_for_applying,
         mobile_number: form.mobile_number,
         profile_picture:
-          form.profile_picture instanceof File
+          typeof File !== "undefined" && form.profile_picture instanceof File
             ? form.profile_picture
             : undefined,
         application_status: "PENDING" as const,
@@ -141,7 +142,7 @@ export default function TourGuideRegister() {
       }
 
       setSuccess(
-        "Registration successful! Please check your email to verify your account."
+        "Registration successful! Please check your email to verify your account.",
       );
       setForm({
         first_name: "",

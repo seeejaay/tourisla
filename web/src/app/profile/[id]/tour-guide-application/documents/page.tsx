@@ -91,7 +91,7 @@ export default function TourGuideDocumentsApprovalPage() {
       } catch (error) {
         setError(
           "Failed to load tour guide: " +
-            (error instanceof Error ? error.message : String(error))
+            (error instanceof Error ? error.message : String(error)),
         );
       }
     }
@@ -107,7 +107,7 @@ export default function TourGuideDocumentsApprovalPage() {
       } catch (error) {
         setError(
           "Failed to load tour guide application: " +
-            (error instanceof Error ? error.message : String(error))
+            (error instanceof Error ? error.message : String(error)),
         );
       }
     }
@@ -125,7 +125,7 @@ export default function TourGuideDocumentsApprovalPage() {
       } catch (error) {
         setError(
           "Failed to load documents: " +
-            (error instanceof Error ? error.message : String(error))
+            (error instanceof Error ? error.message : String(error)),
         );
         setLoading(false);
       }
@@ -160,7 +160,7 @@ export default function TourGuideDocumentsApprovalPage() {
     } catch (error) {
       setError(
         "Failed to approve tour guide: " +
-          (error instanceof Error ? error.message : String(error))
+          (error instanceof Error ? error.message : String(error)),
       );
     }
   };
@@ -176,7 +176,7 @@ export default function TourGuideDocumentsApprovalPage() {
     } catch (error) {
       setError(
         "Failed to reject tour guide: " +
-          (error instanceof Error ? error.message : String(error))
+          (error instanceof Error ? error.message : String(error)),
       );
     }
   };
@@ -186,18 +186,18 @@ export default function TourGuideDocumentsApprovalPage() {
     activeTab === "All"
       ? documents
       : documents.filter(
-          (doc) => doc.status?.toLowerCase() === activeTab.toLowerCase()
+          (doc) => doc.status?.toLowerCase() === activeTab.toLowerCase(),
         );
 
   // Calculate verification progress
   const requiredDocs = documentTypes.filter((doc) => doc.required);
   const verifiedDocs = requiredDocs.filter((req) =>
     documents.some(
-      (doc) => doc.document_type === req.value && doc.status === "APPROVED"
-    )
+      (doc) => doc.document_type === req.value && doc.status === "APPROVED",
+    ),
   ).length;
   const verificationPercentage = Math.round(
-    (verifiedDocs / requiredDocs.length) * 100
+    (verifiedDocs / requiredDocs.length) * 100,
   );
 
   return (
@@ -224,9 +224,10 @@ export default function TourGuideDocumentsApprovalPage() {
                     src={
                       typeof tourGuide.profile_picture === "string"
                         ? tourGuide.profile_picture
-                        : tourGuide.profile_picture instanceof File
-                        ? URL.createObjectURL(tourGuide.profile_picture)
-                        : "/images/maleavatar.png"
+                        : typeof File !== "undefined" &&
+                            tourGuide.profile_picture instanceof File
+                          ? URL.createObjectURL(tourGuide.profile_picture)
+                          : "/images/maleavatar.png"
                     }
                     alt={`${tourGuide.first_name} ${tourGuide.last_name}`}
                     width={96}
@@ -294,7 +295,7 @@ export default function TourGuideDocumentsApprovalPage() {
                 {toSentenceCase(
                   guideApplicant?.reason_for_applying
                     ? guideApplicant.reason_for_applying
-                    : ""
+                    : "",
                 )}
               </p>
             </div>
@@ -331,7 +332,7 @@ export default function TourGuideDocumentsApprovalPage() {
               <ul className="space-y-3">
                 {documentTypes.map((doc) => {
                   const uploadedDoc = documents.find(
-                    (d) => d.document_type === doc.value
+                    (d) => d.document_type === doc.value,
                   );
                   return (
                     <li key={doc.value} className="flex items-start gap-3">
@@ -341,8 +342,8 @@ export default function TourGuideDocumentsApprovalPage() {
                             ? uploadedDoc.status === "APPROVED"
                               ? "bg-green-100 text-green-600"
                               : uploadedDoc.status === "REJECTED"
-                              ? "bg-red-100 text-red-600"
-                              : "bg-yellow-100 text-yellow-600"
+                                ? "bg-red-100 text-red-600"
+                                : "bg-yellow-100 text-yellow-600"
                             : "bg-gray-100 text-gray-400"
                         }`}
                       >
@@ -376,8 +377,8 @@ export default function TourGuideDocumentsApprovalPage() {
                                   ? uploadedDoc.status === "APPROVED"
                                     ? "default"
                                     : uploadedDoc.status === "REJECTED"
-                                    ? "destructive"
-                                    : "secondary"
+                                      ? "destructive"
+                                      : "secondary"
                                   : "destructive"
                               }
                               className={`text-xs w-24 ${
@@ -385,8 +386,8 @@ export default function TourGuideDocumentsApprovalPage() {
                                   ? uploadedDoc.status === "APPROVED"
                                     ? "bg-blue-100 text-blue-600"
                                     : uploadedDoc.status === "REJECTED"
-                                    ? "bg-red-100 text-red-600"
-                                    : "bg-yellow-100 text-yellow-600"
+                                      ? "bg-red-100 text-red-600"
+                                      : "bg-yellow-100 text-yellow-600"
                                   : ""
                               }`}
                             >
@@ -394,8 +395,8 @@ export default function TourGuideDocumentsApprovalPage() {
                                 ? uploadedDoc.status === "APPROVED"
                                   ? "Verified"
                                   : uploadedDoc.status === "REJECTED"
-                                  ? "Rejected"
-                                  : "Pending"
+                                    ? "Rejected"
+                                    : "Pending"
                                 : "Required"}
                             </Badge>
                           )}
@@ -485,7 +486,7 @@ export default function TourGuideDocumentsApprovalPage() {
                         (doc) =>
                           doc.value ===
                           documents.find((d) => d.file_path === enlargedImage)
-                            ?.document_type
+                            ?.document_type,
                       )?.label || "Document Preview"}
                     </span>
                   )}

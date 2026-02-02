@@ -45,6 +45,7 @@ export const useArticleManager = () => {
           typeof FormData !== "undefined" &&
           Object.prototype.hasOwnProperty.call(articleData, "images") &&
           Array.isArray(articleData.images) &&
+          typeof File !== "undefined" &&
           articleData.images[0] instanceof File
         ) {
           const formData = new FormData();
@@ -52,6 +53,7 @@ export const useArticleManager = () => {
             if (
               key === "images" &&
               Array.isArray(value) &&
+              typeof File !== "undefined" &&
               value[0] instanceof File
             ) {
               value.forEach((file) => {
@@ -78,7 +80,7 @@ export const useArticleManager = () => {
         setLoading(false);
       }
     },
-    []
+    [],
   );
 
   const edit = useCallback(
@@ -94,6 +96,7 @@ export const useArticleManager = () => {
           typeof FormData !== "undefined" &&
           Object.prototype.hasOwnProperty.call(articleData, "images") &&
           Array.isArray(articleData.images) &&
+          typeof File !== "undefined" &&
           articleData.images[0] instanceof File
         ) {
           const formData = new FormData();
@@ -101,6 +104,7 @@ export const useArticleManager = () => {
             if (
               key === "images" &&
               Array.isArray(value) &&
+              typeof File !== "undefined" &&
               value[0] instanceof File
             ) {
               value.forEach((file) => {
@@ -127,7 +131,7 @@ export const useArticleManager = () => {
         setLoading(false);
       }
     },
-    []
+    [],
   );
   const remove = useCallback(async (id: number): Promise<boolean> => {
     setLoading(true);

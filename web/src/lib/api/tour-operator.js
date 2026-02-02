@@ -15,7 +15,7 @@ export const fetchTourOperatorApplicants = async () => {
   } catch (error) {
     console.error(
       "Error Fetching Tour Operator Applicants: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -34,7 +34,7 @@ export const fetchTourOperatorApplicant = async (operatorId) => {
   } catch (error) {
     console.error(
       "Error Fetching Tour Operator Applicant: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -56,7 +56,7 @@ export const createTourOperatorApplicant = async (operatorData) => {
   } catch (error) {
     console.error(
       "Error Creating Tour Operator Applicant: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -68,7 +68,11 @@ export const editTourOperatorApplicant = async (operatorId, operatorData) => {
     const formData = new FormData();
     for (const key in operatorData) {
       if (operatorData[key] !== undefined && operatorData[key] !== null) {
-        if (key === "profile_picture" && operatorData[key] instanceof File) {
+        if (
+          key === "profile_picture" &&
+          typeof File !== "undefined" &&
+          operatorData[key] instanceof File
+        ) {
           formData.append(key, operatorData[key]);
         } else {
           formData.append(key, operatorData[key]);
@@ -83,7 +87,7 @@ export const editTourOperatorApplicant = async (operatorId, operatorData) => {
           "Content-Type": "multipart/form-data",
         },
         withCredentials: true,
-      }
+      },
     );
     if (response.status < 200 || response.status >= 300) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
@@ -92,7 +96,7 @@ export const editTourOperatorApplicant = async (operatorId, operatorData) => {
   } catch (error) {
     console.error(
       "Error Editing Tour Operator Applicant: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -105,7 +109,7 @@ export const deleteTourOperatorApplicant = async (operatorId) => {
       `${API_URL}operatorRegis/${operatorId}`,
       {
         withCredentials: true,
-      }
+      },
     );
     if (response.status < 200 || response.status >= 300) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
@@ -114,7 +118,7 @@ export const deleteTourOperatorApplicant = async (operatorId) => {
   } catch (error) {
     console.error(
       "Error Deleting Tour Operator Applicant: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -128,14 +132,14 @@ export const fetchOperatorUploadDocuById = async (docuId) => {
     });
     if (response.status < 200 || response.status >= 300) {
       throw new Error(
-        `Failed to fetch operator upload document. Server responded with status: ${response.status}`
+        `Failed to fetch operator upload document. Server responded with status: ${response.status}`,
       );
     }
     return response.data;
   } catch (error) {
     console.error(
       "Error fetching operator upload document:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -151,18 +155,18 @@ export const createOperatorUploadDocu = async (operatorId, formData) => {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }
+      },
     );
     if (response.status < 200 || response.status >= 300) {
       throw new Error(
-        `Failed to create operator upload document. Server responded with status: ${response.status}`
+        `Failed to create operator upload document. Server responded with status: ${response.status}`,
       );
     }
     return response.data;
   } catch (error) {
     console.error(
       "Error creating operator upload document:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -178,18 +182,18 @@ export const editOperatorUploadDocu = async (docuId, formData) => {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }
+      },
     );
     if (response.status < 200 || response.status >= 300) {
       throw new Error(
-        `Failed to edit operator upload document. Server responded with status: ${response.status}`
+        `Failed to edit operator upload document. Server responded with status: ${response.status}`,
       );
     }
     return response.data;
   } catch (error) {
     console.error(
       "Error editing operator upload document:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -209,7 +213,7 @@ export const fetchAllTourOperatorApplicants = async () => {
   } catch (error) {
     console.error(
       "Error Fetching All Tour Operator Applicants: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -221,7 +225,7 @@ export const fetchOneTourOperatorApplicant = async (applicantId) => {
       `${API_URL}operatorApplicants/${applicantId}`,
       {
         withCredentials: true,
-      }
+      },
     );
     if (response.status < 200 || response.status >= 300) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
@@ -230,7 +234,7 @@ export const fetchOneTourOperatorApplicant = async (applicantId) => {
   } catch (error) {
     console.error(
       "Error Fetching One Tour Operator Applicant: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -245,7 +249,7 @@ export const approveTourOperatorApplicant = async (applicantId) => {
       },
       {
         withCredentials: true,
-      }
+      },
     );
     if (response.status < 200 || response.status >= 300) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
@@ -254,7 +258,7 @@ export const approveTourOperatorApplicant = async (applicantId) => {
   } catch (error) {
     console.error(
       "Error Approving Tour Operator Applicant: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -269,7 +273,7 @@ export const rejectTourOperatorApplicant = async (applicantId) => {
       },
       {
         withCredentials: true,
-      }
+      },
     );
     if (response.status < 200 || response.status >= 300) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
@@ -278,7 +282,7 @@ export const rejectTourOperatorApplicant = async (applicantId) => {
   } catch (error) {
     console.error(
       "Error Rejecting Tour Operator Applicant: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }

@@ -36,21 +36,32 @@ const tourGuideSchema = z.object({
     .email({ message: "Invalid email address." })
     .max(100, { message: "Email must be less than 100 characters." }),
   profile_picture: z
-    .instanceof(File, {
-      message: "Profile picture must be a valid file.",
-    })
+    .any()
+    .optional()
     .refine(
       (file) => {
+        if (file === undefined || file === null) return true;
+        if (typeof File === "undefined") return true; // skip runtime File checks on server
+        return file instanceof File;
+      },
+      { message: "Profile picture must be a valid file." },
+    )
+    .refine(
+      (file) => {
+        if (!file) return true;
+        if (typeof File === "undefined") return true;
         return file.size <= 5 * 1024 * 1024; // 5MB limit
       },
-      {
-        message: "Profile picture must be less than 5MB.",
-      }
+      { message: "Profile picture must be less than 5MB." },
     )
-    .refine((file) => file.type.startsWith("image/"), {
-      message: "Profile picture must be an image file.",
-    })
-    .optional(),
+    .refine(
+      (file) => {
+        if (!file) return true;
+        if (typeof File === "undefined") return true;
+        return file.type && file.type.startsWith("image/");
+      },
+      { message: "Profile picture must be an image file." },
+    ),
   reason_for_applying: z
     .string()
     .min(10, { message: "Reason for applying is required. " })

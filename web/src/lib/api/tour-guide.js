@@ -16,7 +16,7 @@ export const fetchTourGuideApplicants = async () => {
   } catch (error) {
     console.error(
       "Error Fetching Tour Guide Applicants: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -35,7 +35,7 @@ export const fetchTourGuideApplicant = async (guideId) => {
   } catch (error) {
     console.error(
       "Error Fetching Tour Guide Applicant: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -47,7 +47,11 @@ export const createTourGuideApplicant = async (guideData) => {
     for (const key in guideData) {
       if (guideData[key] !== undefined && guideData[key] !== null) {
         // If it's a file, append as file, else as string
-        if (key === "profile_picture" && guideData[key] instanceof File) {
+        if (
+          key === "profile_picture" &&
+          typeof File !== "undefined" &&
+          guideData[key] instanceof File
+        ) {
           formData.append(key, guideData[key]);
         } else {
           formData.append(key, guideData[key]);
@@ -67,7 +71,7 @@ export const createTourGuideApplicant = async (guideData) => {
   } catch (error) {
     console.error(
       "Error Creating Tour Guide Applicant: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -79,7 +83,7 @@ export const editTourGuideApplicant = async (guideId, guideData) => {
       guideData,
       {
         withCredentials: true,
-      }
+      },
     );
     if (response.status !== 200) {
       throw new Error(`HTTP Error! Status: ${response.status}`);
@@ -88,7 +92,7 @@ export const editTourGuideApplicant = async (guideId, guideData) => {
   } catch (error) {
     console.error(
       "Error Editing Tour Guide Applicant: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -108,7 +112,7 @@ export const deleteTourGuideApplicant = async (guideId) => {
   } catch (error) {
     console.error(
       "Error Deleting Tour Guide Applicant: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -130,7 +134,7 @@ export const fetchAllTourGuideApplicants = async () => {
   } catch (error) {
     console.error(
       "Error Fetching All Tour Guide Applicants: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -142,7 +146,7 @@ export const fetchOneTourGuideApplicant = async (applicantId) => {
       `${API_URL}guideApplicants/${applicantId}`,
       {
         withCredentials: true,
-      }
+      },
     );
 
     if (response.status !== 200) {
@@ -153,7 +157,7 @@ export const fetchOneTourGuideApplicant = async (applicantId) => {
   } catch (error) {
     console.error(
       "Error Fetching One Tour Guide Applicant: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -166,7 +170,7 @@ export const approveTourGuideApplicant = async (applicantId, guideUserId) => {
       { guideUserId },
       {
         withCredentials: true,
-      }
+      },
     );
 
     if (response.status !== 200) {
@@ -177,7 +181,7 @@ export const approveTourGuideApplicant = async (applicantId, guideUserId) => {
   } catch (error) {
     console.error(
       "Error Approving Tour Guide Applicant: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -189,7 +193,7 @@ export const rejectTourGuideApplicant = async (applicantId, guideUserId) => {
       { guideUserId },
       {
         withCredentials: true,
-      }
+      },
     );
 
     if (response.status !== 200) {
@@ -200,7 +204,7 @@ export const rejectTourGuideApplicant = async (applicantId, guideUserId) => {
   } catch (error) {
     console.error(
       "Error Rejecting Tour Guide Applicant: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }

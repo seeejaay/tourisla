@@ -73,6 +73,7 @@ export default function IslandEntryCheckInScreen() {
       const res = await getIslandEntryMembers(code.trim());
       setResult(res.data);
       setSuccess("Marked as paid!");
+      return true;
     } catch {
       setError("Failed to mark as paid.");
     }
@@ -144,7 +145,7 @@ export default function IslandEntryCheckInScreen() {
                 <Text style={styles.receiptLabel}>Date:</Text>
                 <Text style={styles.receiptValue}>
                   {new Date(
-                    result.registration.registration_date
+                    result.registration.registration_date,
                   ).toLocaleString()}
                 </Text>
               </View>
