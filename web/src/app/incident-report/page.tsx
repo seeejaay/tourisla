@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useIncidentManager } from "@/hooks/useIncidentManager";
-import NewHeader from "@/components/custom/Header";
+import Header from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
 import { incidentFields } from "@/app/static/incident-report/incidentFields";
 
@@ -81,7 +81,7 @@ export default function IncidentReportPage() {
 
   return (
     <>
-      <NewHeader />
+      <Header />
       <div className="min-h-screen bg-gradient-to-b from-[#e6f7fa] via-[#f0f0f0] to-[#b6e0e4] flex flex-col items-center justify-center px-4  pb-20">
         <main className="w-full max-w-2xl pt-16">
           <div className="p-8 shadow-lg border border-[#e6f7fa] bg-white rounded-2xl space-y-8">
@@ -212,10 +212,10 @@ export default function IncidentReportPage() {
                                 if (date) {
                                   setIncidentDate(
                                     `${date.getFullYear()}-${String(
-                                      date.getMonth() + 1
+                                      date.getMonth() + 1,
                                     ).padStart(2, "0")}-${String(
-                                      date.getDate()
-                                    ).padStart(2, "0")}`
+                                      date.getDate(),
+                                    ).padStart(2, "0")}`,
                                   );
                                 }
                               }}
