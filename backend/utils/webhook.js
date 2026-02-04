@@ -4,11 +4,11 @@ require("dotenv").config();
 const createPayMongoWebhook = async () => {
   try {
     const response = await axios.post(
-      "https://api.paymongo.com/v1/webhooks",
+      "https://paymongo-proxy.carljustinem984.workers.dev/v1/webhooks",
       {
         data: {
           attributes: {
-            url: "https://tourisla-production-5c54.up.railway.app/api/v1/paymongo/webhook", // railway public URL
+            url: "https://api.tourisla.space/api/v1/paymongo/webhook", // railway public URL
             events: ["link.payment.paid"],
           },
         },
@@ -20,10 +20,10 @@ const createPayMongoWebhook = async () => {
           authorization:
             "Basic " +
             Buffer.from(process.env.PAYMONGO_SECRET_KEY + ":").toString(
-              "base64"
+              "base64",
             ),
         },
-      }
+      },
     );
 
     console.log("Webhook created: ", response.data.data);
@@ -31,7 +31,7 @@ const createPayMongoWebhook = async () => {
   } catch (error) {
     console.error(
       "Failed to create webhook: ",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
