@@ -6,7 +6,7 @@ const createPayMongoLink = async ({ amount, referenceNumber, description }) => {
   const amountInCentavos = Math.round(amount * 100); // PayMongo uses centavos
 
   const response = await axios.post(
-    "https://paymongo-proxy.carljustinem984.workers.dev/v1/webhooks",
+    "https://paymongo-proxy.carljustinem984.workers.dev/v1/links",
     {
       data: {
         attributes: {
