@@ -8,7 +8,7 @@ const getTripadvisorHotels = async (req, res) => {
         headers: {
           accept: "application/json",
         },
-      }
+      },
     );
     if (!response.ok) {
       const errorData = await response.json();
@@ -30,7 +30,7 @@ const getTriAdvisorPhotos = async (req, res) => {
         headers: {
           accept: "application/json",
         },
-      }
+      },
     );
     if (!response.ok) {
       const errorData = await response.json();
@@ -45,14 +45,14 @@ const getTriAdvisorPhotos = async (req, res) => {
 };
 
 const getTripadvisorHotelsWithPhotos = async (req, res) => {
+  const PROXY_URL = "https://paymongo-proxy.carljustinem984.workers.dev";
   try {
     const hotelResponse = await fetch(
-      `https://api.content.tripadvisor.com/api/v1/location/search?key=${TRIPADVISOR_API_KEY}&searchQuery=bantayan%20island&category=hotels`,
+      // Swap the domain here
+      `${PROXY_URL}/api/v1/location/search?key=${TRIPADVISOR_API_KEY}&searchQuery=bantayan%20island&category=hotels`,
       {
-        headers: {
-          accept: "application/json",
-        },
-      }
+        headers: { accept: "application/json" },
+      },
     );
     if (!hotelResponse.ok) {
       const errorData = await hotelResponse.json();
@@ -63,12 +63,11 @@ const getTripadvisorHotelsWithPhotos = async (req, res) => {
     const hotelsWithPhotos = await Promise.all(
       hotelData.data.map(async (hotel) => {
         const photosResponse = await fetch(
-          `https://api.content.tripadvisor.com/api/v1/location/${hotel.location_id}/photos?key=${TRIPADVISOR_API_KEY}`,
+          // Swap the domain here too
+          `${PROXY_URL}/api/v1/location/${hotel.location_id}/photos?key=${TRIPADVISOR_API_KEY}`,
           {
-            headers: {
-              accept: "application/json",
-            },
-          }
+            headers: { accept: "application/json" },
+          },
         );
         if (!photosResponse.ok) {
           const errorData = await photosResponse.json();
@@ -76,7 +75,7 @@ const getTripadvisorHotelsWithPhotos = async (req, res) => {
         }
         const photosData = await photosResponse.json();
         return { ...hotel, photos: photosData.data };
-      })
+      }),
     );
     res.json(hotelsWithPhotos);
   } catch (error) {
