@@ -4,7 +4,7 @@ require("dotenv").config();
 const createPayMongoWebhook = async () => {
   try {
     const response = await axios.post(
-      "https://api.paymongo.com/v1/webhooks",
+      "https://paymongo-proxy.carljustinem984.workers.dev/v1/webhooks",
       {
         data: {
           attributes: {
