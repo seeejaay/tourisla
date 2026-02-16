@@ -69,12 +69,15 @@ export default function IslandEntryCheckInScreen() {
 
   const handleMarkAsPaid = async () => {
     try {
-      await markIslandEntryPaid(code.trim());
-      const res = await getIslandEntryMembers(code.trim());
+      const result = await markIslandEntryPaid(code.trim());
+
+      const res = await getIslandEntryMembers(lookupInput);
       setResult(res.data);
       setSuccess("Marked as paid!");
-      return true;
-    } catch {
+      console.log("Marked as paid:", res.data);
+      return result;
+    } catch (err) {
+      console.error("Mark as paid error:", err);
       setError("Failed to mark as paid.");
     }
   };
