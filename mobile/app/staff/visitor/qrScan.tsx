@@ -54,7 +54,7 @@ export default function QrScan() {
     console.log("Trimmed code:", trimmedCode);
     try {
       const payload = { unique_code: trimmedCode };
-      console.log("API URL:", API_URL);
+
       // Handle Island Entry Code: Mark as paid first, then check-in
       if (isIslandEntryCode(trimmedCode)) {
         // Step 1: Mark as paid

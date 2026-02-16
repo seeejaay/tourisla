@@ -74,10 +74,10 @@ export default function IslandEntryCheckInScreen() {
       const res = await getIslandEntryMembers(lookupInput);
       setResult(res.data);
       setSuccess("Marked as paid!");
-      console.log("Marked as paid:", res.data);
+
       return result;
     } catch (err) {
-      console.error("Mark as paid error:", err);
+      console.log(err);
       setError("Failed to mark as paid.");
     }
   };
