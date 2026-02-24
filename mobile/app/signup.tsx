@@ -34,6 +34,7 @@ export default function SignUpScreen() {
     terms: false,
     role: role || "Tourist", // Use the role from params or default to Tourist
     status: "Active",
+    sex: "Not Specified",
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -55,6 +56,7 @@ export default function SignUpScreen() {
       terms,
       role,
       status,
+      sex,
     } = form;
 
     if (
@@ -64,7 +66,8 @@ export default function SignUpScreen() {
       !phone_number ||
       !nationality ||
       !password ||
-      !confirm_password
+      !confirm_password ||
+      !sex
     ) {
       Alert.alert("Error", "Please fill in all fields");
       return;
@@ -93,6 +96,7 @@ export default function SignUpScreen() {
         role,
         status,
         captchaToken: "mobile-app-verification-token",
+        sex,
       };
 
       console.log("Sending user data:", {
@@ -106,6 +110,7 @@ export default function SignUpScreen() {
         { text: "OK", onPress: () => router.push("/login") },
       ]);
     } catch (error) {
+      console.error("Registration error:", error);
       Alert.alert("Error", "Registration failed");
     }
   };
@@ -153,6 +158,20 @@ export default function SignUpScreen() {
             onChangeText={(text) => handleChange("phone_number", text)}
             value={form.phone_number}
           />
+
+          <View style={styles.pickerWrapper}>
+            <Picker
+              selectedValue={form.sex}
+              onValueChange={(value) => handleChange("sex", value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select Gender" value="" />
+              <Picker.Item label="Male" value="Male" />
+              <Picker.Item label="Female" value="Female" />
+              <Picker.Item label="Other" value="Other" />
+              <Picker.Item label="Not Specified" value="Not Specified" />
+            </Picker>
+          </View>
 
           {/* Nationality */}
           <View style={styles.pickerWrapper}>
@@ -231,7 +250,7 @@ export default function SignUpScreen() {
 
           {/* Sign Up Button */}
           <TouchableOpacity onPress={handleSignUp} style={styles.signupButton}>
-            <Text style={styles.signupButtonText}>SIGN UP</Text>
+            <Text style={styles.signupButtonText}>Sign Up</Text>
           </TouchableOpacity>
 
           {/* Login Redirect */}
@@ -279,7 +298,6 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
     backgroundColor: "#ffffff",
-    color: "#005582",
   },
   pickerWrapper: {
     borderColor: "#7eccb6",
@@ -287,10 +305,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 16,
     backgroundColor: "#ffffff",
+    height: 48, // Match TextInput height
+    justifyContent: "center",
+    paddingHorizontal: 12, // Match TextInput padding
   },
   picker: {
-    height: 50,
-    color: "#0eb28d",
+    fontSize: 16, // Match TextInput font size
+    height: 48, // Match wrapper height
   },
   passwordContainer: {
     position: "relative",
@@ -303,7 +324,6 @@ const styles = StyleSheet.create({
     padding: 12,
     paddingRight: 40,
     backgroundColor: "#ffffff",
-    color: "#005582",
   },
   eyeIcon: {
     position: "absolute",
@@ -322,7 +342,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   signupButton: {
-    backgroundColor: "#7eccb6",
+    backgroundColor: "#3f9678",
     padding: 15,
     borderRadius: 8,
     marginTop: 10,

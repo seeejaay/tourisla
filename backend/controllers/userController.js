@@ -42,13 +42,13 @@ const createUserController = async (req, res) => {
 
     const captchaToken = req.body.captchaToken;
     const isAdmin = req.session.user && req.session.user.role === "Admin";
-
+    console.log(req.body);
     // Admin bypasses captcha
     if (!isAdmin) {
       // Special handling for mobile app
       if (captchaToken === "mobile-app-verification-token") {
         console.log(
-          "Mobile app verification token received - bypassing reCAPTCHA check"
+          "Mobile app verification token received - bypassing reCAPTCHA check",
         );
         // Skip the reCAPTCHA verification for mobile app
       } else if (!captchaToken) {
@@ -129,7 +129,7 @@ const createUserController = async (req, res) => {
       first_name,
       last_name,
       verifyToken,
-      verifyTokenExpires
+      verifyTokenExpires,
     );
     await sendWelcomeEmail(email, first_name, last_name);
     res.status(201).json({
