@@ -6,6 +6,8 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  Platform, // Added Platform
+  Pressable, // Added Pressable
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { router, useLocalSearchParams } from "expo-router";
@@ -14,14 +16,13 @@ import { useState } from "react";
 import CheckBox from "expo-checkbox";
 import { useUserManager } from "@/hooks/useUserManager";
 import selectFields from "@/static/selectFields";
+import DateTimePicker from "@react-native-community/datetimepicker"; // Added Import
 
 export default function SignUpScreen() {
   const { registerUser } = useUserManager();
   const { role } = useLocalSearchParams();
   const nationalityOptions =
     selectFields().find((field) => field.name === "nationality")?.options || [];
-
-  // Replace captcha with a simple verification
 
   const [form, setForm] = useState({
     first_name: "",
@@ -32,19 +33,36 @@ export default function SignUpScreen() {
     password: "",
     confirm_password: "",
     terms: false,
-    role: role || "Tourist", // Use the role from params or default to Tourist
+    role: role || "Tourist",
     status: "Active",
     sex: "Not Specified",
+    birth_date: "",
+    captchaToken: "mobile-app-verification-token",
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // New State for DatePicker
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dateValue, setDateValue] = useState(new Date());
+
   const handleChange = (field: string, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Handler for Date Change
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === "ios"); // iOS stays open, Android closes
+    if (selectedDate) {
+      setDateValue(selectedDate);
+      const formattedDate = selectedDate.toISOString().split("T")[0]; // YYYY-MM-DD
+      handleChange("birth_date", formattedDate);
+    }
+  };
+
   const handleSignUp = async () => {
+    // ... (Your existing validation logic remains the same)
     const {
       first_name,
       last_name,
@@ -57,6 +75,8 @@ export default function SignUpScreen() {
       role,
       status,
       sex,
+      birth_date,
+      captchaToken,
     } = form;
 
     if (
@@ -67,7 +87,9 @@ export default function SignUpScreen() {
       !nationality ||
       !password ||
       !confirm_password ||
-      !sex
+      !sex ||
+      !birth_date ||
+      !captchaToken
     ) {
       Alert.alert("Error", "Please fill in all fields");
       return;
@@ -85,33 +107,17 @@ export default function SignUpScreen() {
 
     try {
       const userData = {
-        first_name,
-        last_name,
+        ...form,
         email: email.toUpperCase(),
-        phone_number,
-        nationality,
-        password,
-        confirm_password,
-        terms,
-        role,
-        status,
-        captchaToken: "mobile-app-verification-token",
-        sex,
+        captchaToken: form.captchaToken || "mobile-app-verification-token",
       };
-
-      console.log("Sending user data:", {
-        ...userData,
-        password: "[MASKED]",
-        confirm_password: "[MASKED]",
-      });
-
+      console.log("Registering user with data:", userData);
       await registerUser(userData);
       Alert.alert("Success", "Registration successful!", [
         { text: "OK", onPress: () => router.push("/login") },
       ]);
     } catch (error) {
-      console.error("Registration error:", error);
-      Alert.alert("Error", "Registration failed");
+      Alert.alert("Error", "Registration failed: " + (error as any).message);
     }
   };
 
@@ -121,7 +127,7 @@ export default function SignUpScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.formContainer}>
-          {/* First Name and Last Name in a row */}
+          {/* ... (First Name, Last Name, Email, Phone, Sex sections remain unchanged) */}
           <View style={styles.nameRow}>
             <View style={styles.nameField}>
               <TextInput
@@ -141,7 +147,6 @@ export default function SignUpScreen() {
             </View>
           </View>
 
-          {/* Email */}
           <TextInput
             placeholder="Email"
             style={styles.input}
@@ -150,7 +155,6 @@ export default function SignUpScreen() {
             value={form.email}
           />
 
-          {/* Phone Number */}
           <TextInput
             placeholder="Phone Number"
             style={styles.input}
@@ -173,7 +177,31 @@ export default function SignUpScreen() {
             </Picker>
           </View>
 
-          {/* Nationality */}
+          {/* Birth Date Section - Updated */}
+          <View style={styles.dateContainer}>
+            <Pressable onPress={() => setShowDatePicker(true)}>
+              <View pointerEvents="none">
+                <TextInput
+                  placeholder="Birth Date (YYYY-MM-DD)"
+                  style={styles.input}
+                  value={form.birth_date}
+                  editable={false}
+                />
+              </View>
+            </Pressable>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={dateValue}
+                mode="date"
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                onChange={onDateChange}
+                maximumDate={new Date()} // Can't be born in the future
+              />
+            )}
+          </View>
+
+          {/* ... (Nationality, Password, Terms, and Button sections remain unchanged) */}
           <View style={styles.pickerWrapper}>
             <Picker
               selectedValue={form.nationality}
@@ -191,7 +219,6 @@ export default function SignUpScreen() {
             </Picker>
           </View>
 
-          {/* Password */}
           <View style={styles.passwordContainer}>
             <TextInput
               placeholder="Password"
@@ -212,7 +239,6 @@ export default function SignUpScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Confirm Password */}
           <View style={styles.passwordContainer}>
             <TextInput
               placeholder="Confirm Password"
@@ -233,7 +259,6 @@ export default function SignUpScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Terms and Conditions */}
           <View style={styles.checkboxContainer}>
             <CheckBox
               value={form.terms}
@@ -248,12 +273,10 @@ export default function SignUpScreen() {
             </Text>
           </View>
 
-          {/* Sign Up Button */}
           <TouchableOpacity onPress={handleSignUp} style={styles.signupButton}>
             <Text style={styles.signupButtonText}>Sign Up</Text>
           </TouchableOpacity>
 
-          {/* Login Redirect */}
           <TouchableOpacity onPress={() => router.push("/login")}>
             <Text style={styles.loginRedirectText}>
               Already have an account? Login
@@ -373,5 +396,9 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+
+  dateContainer: {
+    marginBottom: 16,
   },
 });
