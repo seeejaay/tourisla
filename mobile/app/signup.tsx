@@ -73,6 +73,7 @@ export default function SignUpScreen() {
       confirm_password,
       terms,
       birth_date,
+      role,
     } = form;
 
     // 1. Basic Validation
@@ -84,7 +85,8 @@ export default function SignUpScreen() {
       !nationality ||
       !password ||
       !confirm_password ||
-      !birth_date
+      !birth_date ||
+      !role
     ) {
       Alert.alert("Error", "Please fill in all fields");
       return;
