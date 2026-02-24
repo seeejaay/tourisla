@@ -34,6 +34,7 @@ export default function SignUpScreen() {
     terms: false,
     role: role || "Tourist", // Use the role from params or default to Tourist
     status: "Active",
+    sex: "Not Specified",
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -55,6 +56,7 @@ export default function SignUpScreen() {
       terms,
       role,
       status,
+      sex,
     } = form;
 
     if (
@@ -64,7 +66,8 @@ export default function SignUpScreen() {
       !phone_number ||
       !nationality ||
       !password ||
-      !confirm_password
+      !confirm_password ||
+      !sex
     ) {
       Alert.alert("Error", "Please fill in all fields");
       return;
@@ -93,6 +96,7 @@ export default function SignUpScreen() {
         role,
         status,
         captchaToken: "mobile-app-verification-token",
+        sex,
       };
 
       console.log("Sending user data:", {
@@ -154,6 +158,20 @@ export default function SignUpScreen() {
             onChangeText={(text) => handleChange("phone_number", text)}
             value={form.phone_number}
           />
+
+          <View style={styles.pickerWrapper}>
+            <Picker
+              selectedValue={form.sex}
+              onValueChange={(value) => handleChange("sex", value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select Gender" value="" />
+              <Picker.Item label="Male" value="Male" />
+              <Picker.Item label="Female" value="Female" />
+              <Picker.Item label="Other" value="Other" />
+              <Picker.Item label="Not Specified" value="Not Specified" />
+            </Picker>
+          </View>
 
           {/* Nationality */}
           <View style={styles.pickerWrapper}>
