@@ -32,6 +32,7 @@ const createUserController = async (req, res) => {
       nationality,
       birth_date,
       sex,
+      captchaToken,
     } = req.body;
     console.log(req.body);
     console.log("Creating user with email:", email);
@@ -40,7 +41,7 @@ const createUserController = async (req, res) => {
     const formatedEmail = email.toUpperCase();
     const formattedSex = sex.toUpperCase();
 
-    const captchaToken = req.body.captchaToken;
+    // const captchaToken = req.body.captchaToken;
     const isAdmin = req.session.user && req.session.user.role === "Admin";
     console.log(req.body);
     // Admin bypasses captcha
