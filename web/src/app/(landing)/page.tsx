@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Header from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
 import Image from "next/image";
-import { MapPin, Waves, Sun, TreePalm, ChevronRight, Car } from "lucide-react";
+import { MapPin, Waves, Sun, TreePalm, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import useTripAdvisor from "@/hooks/useTripAdvisor";
 import { useTouristSpotManager } from "@/hooks/useTouristSpotManager";
@@ -30,19 +30,6 @@ const MapDisplay = dynamic(() => import("@/components/custom/map"), {
   ssr: false,
   loading: () => <p>Loading map...</p>,
 });
-
-const images = [
-  "/images/hero-carousel/4.jpg",
-  "/images/hero-carousel/1.jpg",
-  "/images/hero-carousel/9.jpg",
-  "/images/hero-carousel/3.jpg",
-  "/images/hero-carousel/13.jpg",
-  "/images/hero-carousel/5.jpg",
-  "/images/hero-carousel/8.jpg",
-  "/images/hero-carousel/7.jpg",
-  "/images/hero-carousel/10.jpg",
-  "/images/hero-carousel/11.webp",
-];
 
 const cardData = [
   {

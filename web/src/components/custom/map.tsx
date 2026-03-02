@@ -21,7 +21,7 @@ function SpotPopupContent({
   destLat,
   destLng,
 }: {
-  spot: any;
+  spot: string;
   destLat: number;
   destLng: number;
 }) {
