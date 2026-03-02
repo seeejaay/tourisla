@@ -47,7 +47,9 @@ export function useUserManager() {
     setLoading(true);
     setError("");
     try {
-      const response = await createUser({ ...data, captchaToken });
+      const payload = captchaToken ? { ...data, captchaToken } : { ...data };
+      console.log("Registering user with data:", payload);
+      const response = await createUser(payload);
       await viewAllUsers();
 
       return response;
@@ -115,8 +117,8 @@ export function useUserManager() {
       // Update the users state after changing status
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
-          user.user_id === userId ? { ...user, status } : user
-        )
+          user.user_id === userId ? { ...user, status } : user,
+        ),
       );
       return response;
     } catch (error) {

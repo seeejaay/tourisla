@@ -1,99 +1,161 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import GuideHomeScreen from './home/guide_home';
-import GuideAnnouncementsScreen from './announcements/guide_announcements';
-import IncidentReportScreen from './profile/about/incident-report';
-import MoreScreen from './more/MoreScreen';
-import GuideProfile from './profile/guide_profile';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
-import { StyleSheet, View, Platform, TouchableOpacity, Image, Text, StatusBar, Dimensions } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated from 'react-native-reanimated';
-import { useEffect, useState } from 'react';
-import * as auth from '@/lib/api/auth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import GuideHomeScreen from "./home/guide_home";
+import GuideAnnouncementsScreen from "./announcements/guide_announcements";
+import IncidentReportScreen from "./profile/about/incident-report";
+import MoreScreen from "./more/MoreScreen";
+import GuideProfile from "./profile/guide_profile";
+import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
+import {
+  StyleSheet,
+  View,
+  Platform,
+  TouchableOpacity,
+  Image,
+  Text,
+  StatusBar,
+  Dimensions,
+} from "react-native";
+import { useLocalSearchParams, router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated from "react-native-reanimated";
+import { useEffect, useState } from "react";
+import * as auth from "@/lib/api/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Tab = createBottomTabNavigator();
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 function ProfileHeader() {
   const insets = useSafeAreaInsets();
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
         setLoading(true);
-  
+
         const storedUser = await AsyncStorage.getItem("userData");
-  
+
         if (!storedUser) {
-          throw new Error("No stored user found");
+          console.warn("Guide Dashboard: No stored user found");
+          router.replace("/login");
+          return;
         }
-  
-        const userData = JSON.parse(storedUser);
-  
+
+        let userData;
+        try {
+          userData = JSON.parse(storedUser);
+        } catch (parseError) {
+          console.error(
+            "Guide Dashboard: Failed to parse user data:",
+            parseError,
+          );
+          await AsyncStorage.clear();
+          router.replace("/login");
+          return;
+        }
+
         if (!userData || !userData.role) {
-          throw new Error("Invalid user data");
+          console.warn("Guide Dashboard: Invalid user data");
+          // Try to recover from API
+          try {
+            const response = await fetch(
+              process.env.EXPO_PUBLIC_API_URL + "user",
+              {
+                credentials: "include",
+              },
+            );
+
+            if (response.ok) {
+              const freshData = await response.json();
+              const recoveredUser =
+                freshData?.data?.user ||
+                freshData?.user ||
+                freshData?.data ||
+                freshData;
+
+              if (recoveredUser && recoveredUser.role) {
+                const merged = { ...userData, ...recoveredUser };
+                await AsyncStorage.setItem("userData", JSON.stringify(merged));
+                await AsyncStorage.setItem("role", recoveredUser.role);
+                setCurrentUser(merged);
+                return;
+              }
+            }
+          } catch (apiError) {
+            console.error(
+              "Guide Dashboard: Failed to recover user data:",
+              apiError,
+            );
+          }
+
+          await AsyncStorage.clear();
+          router.replace("/login");
+          return;
         }
-  
+
         setCurrentUser(userData);
       } catch (error) {
-        console.warn("User not found or session invalid:", error.message);
-        await AsyncStorage.clear();
+        console.error("Guide Dashboard: Error loading user:", error);
         router.replace("/login");
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchCurrentUser();
   }, []);
-  
+
   const formatRole = (role) => {
-    if (!role) return 'User';
-    if (role === 'Admin' || role === 'admin') return 'Administrator';
-    if (role === 'Tourist' || role === 'tourist') return 'Tourist';
-    if (role === 'tour_guide') return 'Tour Guide';
-    if (role === 'tour_operator') return 'Tour Operator';
-    
-    return role.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+    if (!role) return "User";
+    if (role === "Admin" || role === "admin") return "Administrator";
+    if (role === "Tourist" || role === "tourist") return "Tourist";
+    if (role === "tour_guide") return "Tour Guide";
+    if (role === "tour_operator") return "Tour Operator";
+
+    return role
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
-  
+
   return (
     <View style={styles.profileHeader}>
       {/* Status bar placeholder */}
-      
+
       {/* Header with gradient background */}
       <LinearGradient
-        colors={['#014b55', '#014e65']}
+        colors={["#014b55", "#014e65"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 3 }}
         style={styles.headerContainer}
       >
         {/* Left side - User profile */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.profileSection}
-          onPress={() => router.push('/guide/profile/guide_profile')}
+          onPress={() => router.push("/guide/profile/guide_profile")}
           activeOpacity={0.7}
         >
           {/* Avatar */}
           <View style={styles.avatarContainer}>
             {currentUser?.avatar ? (
-              <Image source={{ uri: currentUser.avatar }} style={styles.avatar} />
+              <Image
+                source={{ uri: currentUser.avatar }}
+                style={styles.avatar}
+              />
             ) : (
               <View style={styles.avatarPlaceholder}>
                 <Text style={styles.avatarInitial}>
-                  {currentUser?.first_name?.charAt(0) || currentUser?.email?.charAt(0) || 'U'}
+                  {currentUser?.first_name?.charAt(0) ||
+                    currentUser?.email?.charAt(0) ||
+                    "U"}
                 </Text>
               </View>
             )}
           </View>
-          
+
           {/* User info */}
           <View style={styles.userInfo}>
             {loading ? (
@@ -101,21 +163,28 @@ function ProfileHeader() {
             ) : (
               <>
                 <Text style={styles.userName} numberOfLines={1}>
-                  {currentUser ? 
-                    `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim() || currentUser.email 
-                    : 'Unknown User'}
+                  {currentUser
+                    ? `${currentUser.first_name || ""} ${currentUser.last_name || ""}`.trim() ||
+                      currentUser.email
+                    : "Unknown User"}
                 </Text>
                 <Text style={styles.userRole}>
-                  {currentUser && currentUser.role ? formatRole(currentUser.role) : 'User'}
+                  {currentUser && currentUser.role
+                    ? formatRole(currentUser.role)
+                    : "User"}
                 </Text>
               </>
             )}
           </View>
-          
-          <Ionicons name="chevron-forward" size={16} color="rgba(255, 255, 255, 0.5)" />
+
+          <Ionicons
+            name="chevron-forward"
+            size={16}
+            color="rgba(255, 255, 255, 0.5)"
+          />
         </TouchableOpacity>
       </LinearGradient>
-      
+
       {/* Bottom shadow effect */}
       <View style={styles.headerBottomShadow} />
     </View>
@@ -124,59 +193,63 @@ function ProfileHeader() {
 
 function CustomTabBar({ state, descriptors, navigation }) {
   const insets = useSafeAreaInsets();
-  
+
   return (
     <View style={[styles.customTabBar]}>
       <View style={styles.tabBarBackground}>
         <LinearGradient
-          colors={['#014b55', '#014e65']}
+          colors={["#014b55", "#014e65"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 3 }}
           style={styles.tabBarGradient}
         />
         <View style={styles.tabBarInnerShadow} />
       </View>
-      
+
       <View style={styles.tabButtonsContainer}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const label = options.tabBarLabel || options.title || route.name;
           const isFocused = state.index === index;
-          
+
           let iconName;
           let IconComponent = Ionicons; // default
-          
+
           switch (route.name) {
-            case 'Home':
+            case "Home":
               iconName = isFocused ? "home" : "home-outline";
               break;
-            case 'Announcement':
+            case "Announcement":
               IconComponent = FontAwesome5; // switch to FontAwesome5 just for this
               iconName = "bullhorn";
               break;
-            case 'Incident Report':
+            case "Incident Report":
               iconName = isFocused ? "flag" : "flag-outline";
               break;
-            case 'Packages':
-              iconName = isFocused ? "calendar-clear" : "calendar-clear-outline";
+            case "Packages":
+              iconName = isFocused
+                ? "calendar-clear"
+                : "calendar-clear-outline";
               break;
-            case 'More':
-              iconName = isFocused ? "ellipsis-horizontal" : "ellipsis-horizontal-outline";
+            case "More":
+              iconName = isFocused
+                ? "ellipsis-horizontal"
+                : "ellipsis-horizontal-outline";
               break;
           }
-          
+
           const onPress = () => {
             const event = navigation.emit({
-              type: 'tabPress',
+              type: "tabPress",
               target: route.key,
               canPreventDefault: true,
             });
-            
+
             if (!isFocused && !event.defaultPrevented) {
               navigation.navigate(route.name);
             }
           };
-          
+
           return (
             <TouchableOpacity
               key={route.key}
@@ -191,24 +264,24 @@ function CustomTabBar({ state, descriptors, navigation }) {
               {isFocused && (
                 <View style={styles.activeTabIndicator}>
                   <LinearGradient
-                    colors={['#f9fbf2', '#afeed5']}
+                    colors={["#f9fbf2", "#afeed5"]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 2, y: 0 }}
                     style={styles.activeTabGradient}
                   />
                 </View>
               )}
-              
-              <Animated.View 
+
+              <Animated.View
                 style={[
                   styles.tabIconContainer,
-                  isFocused && styles.activeTabIconContainer
+                  isFocused && styles.activeTabIconContainer,
                 ]}
               >
-                <IconComponent 
-                  name={iconName} 
-                  size={22} 
-                  color={isFocused ? '#ffffff' : 'rgba(148, 163, 184, 0.8)'} 
+                <IconComponent
+                  name={iconName}
+                  size={22}
+                  color={isFocused ? "#ffffff" : "rgba(148, 163, 184, 0.8)"}
                 />
               </Animated.View>
             </TouchableOpacity>
@@ -222,54 +295,52 @@ function CustomTabBar({ state, descriptors, navigation }) {
 export default function GuideDashboard() {
   const { tab } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
-  
+
   // Calculate header height including safe area
   const headerHeight = 70 + insets.top;
-  
+
   return (
     <View style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="light-content"
+      />
       <ProfileHeader />
-      
+
       <View style={styles.tabNavigatorContainer}>
-      <Tab.Navigator
-        initialRouteName={tab as string || 'Home'}
-        tabBar={props => <CustomTabBar {...props} />}
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        <Tab.Screen 
-          name="Home"
-          options={{ tabBarLabel: 'Home' }}
+        <Tab.Navigator
+          initialRouteName={(tab as string) || "Home"}
+          tabBar={(props) => <CustomTabBar {...props} />}
+          screenOptions={{
+            headerShown: false,
+          }}
         >
-          {() => <GuideHomeScreen headerHeight={headerHeight} />}
-        </Tab.Screen>
-        <Tab.Screen
-          name="Announcement"
-          options={{ tabBarLabel: 'Announcement' }}
-        >
-          {() => <GuideAnnouncementsScreen headerHeight={headerHeight} />}
-        </Tab.Screen>
-        <Tab.Screen
-          name="Incident Report"
-          options={{ tabBarLabel: 'Incident Report' }}
-        >
-          {() => <IncidentReportScreen headerHeight={headerHeight} />}
-        </Tab.Screen>
-        <Tab.Screen
-          name="More"
-          options={{ tabBarLabel: 'More' }}
-        >
-          {() => <MoreScreen headerHeight={headerHeight} />}
-        </Tab.Screen>
-      </Tab.Navigator>
+          <Tab.Screen name="Home" options={{ tabBarLabel: "Home" }}>
+            {() => <GuideHomeScreen headerHeight={headerHeight} />}
+          </Tab.Screen>
+          <Tab.Screen
+            name="Announcement"
+            options={{ tabBarLabel: "Announcement" }}
+          >
+            {() => <GuideAnnouncementsScreen headerHeight={headerHeight} />}
+          </Tab.Screen>
+          <Tab.Screen
+            name="Incident Report"
+            options={{ tabBarLabel: "Incident Report" }}
+          >
+            {() => <IncidentReportScreen headerHeight={headerHeight} />}
+          </Tab.Screen>
+          <Tab.Screen name="More" options={{ tabBarLabel: "More" }}>
+            {() => <MoreScreen headerHeight={headerHeight} />}
+          </Tab.Screen>
+        </Tab.Navigator>
       </View>
       <LinearGradient
-          colors={['transparent', '#fff']} // Fade into dark background
-          style={styles.bottomFade}
-          pointerEvents="none"
-        />
+        colors={["transparent", "#fff"]} // Fade into dark background
+        style={styles.bottomFade}
+        pointerEvents="none"
+      />
     </View>
   );
 }
@@ -277,33 +348,34 @@ export default function GuideDashboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: "#f8fafc",
   },
   profileHeader: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     zIndex: 100,
   },
   statusBarPlaceholder: {
-    width: '100%',
-    backgroundColor: '#0f172a',
+    width: "100%",
+    backgroundColor: "#0f172a",
   },
   headerContainer: {
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 44,
-    height: 60 + (Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 44),
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 44,
+    height:
+      60 + (Platform.OS === "android" ? StatusBar.currentHeight || 0 : 44),
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
   profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
     marginRight: 8,
   },
@@ -311,140 +383,140 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    overflow: "hidden",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
     marginRight: 12,
   },
   avatar: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   avatarPlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#d0c7a2',
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#d0c7a2",
+    justifyContent: "center",
+    alignItems: "center",
   },
   avatarInitial: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   userInfo: {
     flex: 1,
   },
   userName: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   userRole: {
-    color: '#94a3b8',
+    color: "#94a3b8",
     fontSize: 12,
     marginTop: 2,
   },
   headerBottomShadow: {
-    position: 'absolute',
+    position: "absolute",
     bottom: -10,
     left: 0,
     right: 0,
     height: 10,
-    backgroundColor: 'transparent',
-    shadowColor: '#000',
+    backgroundColor: "transparent",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 5,
   },
   customTabBar: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 40 : 40,
+    position: "absolute",
+    bottom: Platform.OS === "ios" ? 40 : 40,
     left: 8,
     right: 8,
     height: 60,
     zIndex: 100,
   },
   tabBarBackground: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
     borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#000',
+    overflow: "hidden",
+    shadowColor: "#000",
     shadowOffset: { width: 10, height: 10 },
     shadowOpacity: 0.2,
     shadowRadius: 20,
     elevation: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: "rgba(255, 255, 255, 0.1)",
     paddingBottom: 20,
   },
   tabBarGradient: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
   },
   tabBarInnerShadow: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
   },
   tabButtonsContainer: {
-    flexDirection: 'row',
-    height: '100%',
+    flexDirection: "row",
+    height: "100%",
     paddingHorizontal: 10,
   },
   tabButton: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: 10,
   },
   activeTabIndicator: {
-    position: 'absolute',
+    position: "absolute",
     top: 8,
     width: 30,
     height: 3,
     borderRadius: 1.5,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   activeTabGradient: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   tabIconContainer: {
     width: 50,
     height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 12,
   },
   activeTabIconContainer: {
-    backgroundColor: 'rgba(27, 229, 188, 0.15)',
+    backgroundColor: "rgba(27, 229, 188, 0.15)",
   },
   activeTabLabel: {
-    color: '#ffffff',
-    fontWeight: '600',
+    color: "#ffffff",
+    fontWeight: "600",
   },
   inactiveTabLabel: {
-    color: 'rgba(148, 163, 184, 0.9)',
+    color: "rgba(148, 163, 184, 0.9)",
   },
   tabNavigatorContainer: {
     flex: 1,
   },
   bottomFade: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     right: 0,
-    bottom: Platform.OS === 'ios' ? 0 : 0,
+    bottom: Platform.OS === "ios" ? 0 : 0,
     height: 80,
     zIndex: 10,
   },

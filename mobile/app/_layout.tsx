@@ -1,72 +1,72 @@
-import {
-  Stack,
-  useRouter,
-  useRootNavigationState,
-  usePathname,
-} from "expo-router";
+import { Stack, SplashScreen } from "expo-router";
 import { useFonts } from "expo-font";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { useEffect, useState } from "react";
+import { View, ActivityIndicator } from "react-native";
 import "./global.css";
+
+// Prevent auto-hide of splash screen
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    // ...existing code...
+    "Poppins-Regular": require("../assets/fonts/Poppins-Regular.ttf"),
+    "Poppins-Medium": require("../assets/fonts/Poppins-Medium.ttf"),
+    "Poppins-SemiBold": require("../assets/fonts/Poppins-SemiBold.ttf"),
+    "Poppins-Bold": require("../assets/fonts/Poppins-Bold.ttf"),
+    "Poppins-Italic": require("../assets/fonts/Poppins-Italic.ttf"),
+    "Poppins-MediumItalic": require("../assets/fonts/Poppins-MediumItalic.ttf"),
+    "Poppins-SemiBoldItalic": require("../assets/fonts/Poppins-SemiBoldItalic.ttf"),
+    "Poppins-BoldItalic": require("../assets/fonts/Poppins-BoldItalic.ttf"),
+    "Poppins-ExtraBold": require("../assets/fonts/Poppins-ExtraBold.ttf"),
+    "Poppins-Light": require("../assets/fonts/Poppins-Light.ttf"),
+    "Poppins-Thin": require("../assets/fonts/Poppins-Thin.ttf"),
+    "Poppins-Black": require("../assets/fonts/Poppins-Black.ttf"),
     "Poppins-BlackItalic": require("../assets/fonts/Poppins-BlackItalic.ttf"),
   });
 
-  const router = useRouter();
-  const pathname = usePathname();
-  const navState = useRootNavigationState(); // navigation readiness
-  const [checkingSession, setCheckingSession] = useState(true);
-  const ranRef = useRef(false); // guard against multiple runs (Strict Mode, re-nav)
-
-  const routeForRole = (role: string) => {
-    switch (role) {
-      case "Admin":
-        return "/admin/admin_dashboard";
-      case "Tourist":
-        return "/tourist/tourist_dashboard";
-      case "Tour Guide":
-      case "tour_guide":
-        return "/guide/guide_dashboard";
-      case "Tour Operator":
-      case "tour_operator":
-        return "/operator/operator_dashboard";
-      case "Tourism Staff":
-        return "/staff/staff_dashboard";
-      default:
-        return "/login";
-    }
-  };
+  const [appReady, setAppReady] = useState(false);
 
   useEffect(() => {
-    if (!fontsLoaded || !navState?.key || ranRef.current) return;
-    ranRef.current = true;
-
-    (async () => {
+    async function prepare() {
       try {
-        const role = await AsyncStorage.getItem("role");
-        console.log("Restored role from AsyncStorage:", role);
-        const target = role ? routeForRole(role) : "/login";
+        // Check if user data exists
+        const userData = await AsyncStorage.getItem("userData");
+        console.log("App startup - userData exists:", !!userData);
 
-        if (pathname !== target) {
-          router.replace(target);
+        if (userData) {
+          try {
+            const parsed = JSON.parse(userData);
+            console.log("App startup - user role:", parsed?.role);
+          } catch (e) {
+            console.error("App startup - corrupted data, clearing:", e);
+            await AsyncStorage.clear();
+          }
         }
-      } catch {
-        if (pathname !== "/login") router.replace("/login");
+      } catch (e) {
+        console.error("App startup error:", e);
       } finally {
-        setCheckingSession(false);
+        setAppReady(true);
+        await SplashScreen.hideAsync();
       }
-    })();
-    // Intentionally do NOT depend on pathname/router to avoid re-runs on navigation
-  }, [fontsLoaded, navState?.key]);
+    }
 
-  if (!fontsLoaded || checkingSession || !navState?.key) {
+    if (fontsLoaded) {
+      prepare();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded || !appReady) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator size="large" />
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#fff",
+        }}
+      >
+        <ActivityIndicator size="large" color="#3e979f" />
       </View>
     );
   }

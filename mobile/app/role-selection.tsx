@@ -1,31 +1,31 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { FontAwesome5 } from '@expo/vector-icons';
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { router } from "expo-router";
+import { useState } from "react";
+import { FontAwesome5 } from "@expo/vector-icons";
 
 export default function RoleSelectionScreen() {
-  const [selectedRole, setSelectedRole] = useState('');
+  const [selectedRole, setSelectedRole] = useState("");
 
   const roles = [
     {
-      id: 'tourist',
-      title: 'Tourist',
-      description: 'Explore destinations and book tours',
-      icon: 'user',
+      id: "tourist",
+      title: "Tourist",
+      description: "Explore destinations and book tours",
+      icon: "user",
     },
     {
-      id: 'tour_guide',
-      title: 'Tour Guide',
-      description: 'Create and lead tours for tourists',
-      icon: 'map-marked-alt',
+      id: "tour_guide",
+      title: "Tour Guide",
+      description: "Create and lead tours for tourists",
+      icon: "map-marked-alt",
     },
   ];
 
   const handleContinue = () => {
     if (selectedRole) {
       router.push({
-        pathname: '/signup',
-        params: { role: selectedRole }
+        pathname: "/signup",
+        params: { role: selectedRole },
       });
     }
   };
@@ -57,18 +57,17 @@ export default function RoleSelectionScreen() {
       </View>
 
       <TouchableOpacity
-        style={[
-          styles.continueButton,
-          !selectedRole && styles.disabledButton,
-        ]}
+        style={[styles.continueButton, !selectedRole && styles.disabledButton]}
         onPress={handleContinue}
         disabled={!selectedRole}
       >
         <Text style={styles.continueButtonText}>Continue</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push('/login')}>
-        <Text style={styles.loginRedirectText}>Already have an account? Login</Text>
+      <TouchableOpacity onPress={() => router.push("/login")}>
+        <Text style={styles.loginRedirectText}>
+          Already have an account? Login
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -77,20 +76,20 @@ export default function RoleSelectionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingHorizontal: 20,
     paddingTop: 60,
   },
   title: {
     fontSize: 32,
-    fontWeight: '900',
-    textAlign: 'center',
-    color: '#1c5461',
+    fontWeight: "900",
+    textAlign: "center",
+    color: "#1c5461",
   },
   subtitle: {
     fontSize: 16,
-    textAlign: 'center',
-    color: '#1c5461',
+    textAlign: "center",
+    color: "#1c5461",
     marginBottom: 40,
   },
   rolesContainer: {
@@ -98,25 +97,25 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   roleCard: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#7eccb6',
-    flexDirection: 'row',
-    alignItems: 'center',
+    borderColor: "#7eccb6",
+    flexDirection: "row",
+    alignItems: "center",
   },
   selectedCard: {
-    borderColor: '#00c2c7',
-    backgroundColor: '#e6fdfb',
+    borderColor: "#00c2c7",
+    backgroundColor: "#e6fdfb",
   },
   iconContainer: {
     width: 50,
     height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 16,
-    backgroundColor: '#7eccb6',
+    backgroundColor: "#7eccb6",
     borderRadius: 25,
   },
   roleTextContainer: {
@@ -124,33 +123,33 @@ const styles = StyleSheet.create({
   },
   roleTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1c5461',
+    fontWeight: "bold",
+    color: "#1c5461",
     marginBottom: 4,
   },
   roleDescription: {
     fontSize: 14,
-    color: '#0086ad',
+    color: "#0086ad",
   },
   continueButton: {
-    backgroundColor: '#7eccb6',
+    backgroundColor: "#3f9678",
     padding: 16,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
   },
   disabledButton: {
-    backgroundColor: '#aedbd3',
+    backgroundColor: "#aedbd3",
   },
   continueButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 16,
   },
   loginRedirectText: {
-    textAlign: 'center',
-    color: '#1c5461',
+    textAlign: "center",
+    color: "#1c5461",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

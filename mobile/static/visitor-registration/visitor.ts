@@ -30,15 +30,15 @@ export const visitorRegistrationFields = [
   },
   {
     name: "municipality",
-    label: "Municipality",
-    type: "text",
-    placeholder: "Enter your municipality",
+    label: "Municipality/City",
+    type: "select",
+    options: [],
   },
   {
     name: "province",
-    label: "Province",
-    type: "text",
-    placeholder: "Enter your province",
+    label: "Region",
+    type: "select",
+    options: [],
   },
   {
     name: "country",

@@ -13,9 +13,8 @@ import { useState, useEffect, useRef } from "react";
 import Overlay from "@/components/Overlay"; // <-- default import now!
 import { LinearGradient } from "expo-linear-gradient";
 
-// Replace with your API URL
-const API_URL = "https://tourisla-production-5c54.up.railway.app/api/v1";
-// const API_URL = "http://192.168.0.130:3005/api/v1";
+// Use API URL from environment variable
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export default function QrScan() {
   const [ready, setReady] = useState(false);
@@ -38,7 +37,7 @@ export default function QrScan() {
           duration: 0,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
 
     setTimeout(() => setReady(true), 100);
@@ -54,17 +53,79 @@ export default function QrScan() {
     const trimmedCode = match ? match[1] : extracted;
     console.log("Trimmed code:", trimmedCode);
     try {
+      const payload = { unique_code: trimmedCode };
+
+      // Handle Island Entry Code: Mark as paid first, then check-in
+      if (isIslandEntryCode(trimmedCode)) {
+        // Step 1: Mark as paid
+        const markPaidRes = await fetch(`${API_URL}island-entry/mark-paid`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          credentials: "include",
+        });
+
+        const markPaidResult = await markPaidRes.json();
+        console.log("Mark as paid response:", markPaidResult);
+
+        if (!markPaidRes.ok) {
+          Alert.alert(
+            "Error",
+            markPaidResult.error || "Failed to mark as paid.",
+            [{ text: "OK", onPress: () => setIsScanning(true) }],
+          );
+          return;
+        }
+
+        // Step 2: Manual check-in
+        const checkInRes = await fetch(
+          `${API_URL}island-entry/manual-check-in`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            credentials: "include",
+          },
+        );
+
+        const checkInResult = await checkInRes.json();
+        console.log("Check-in response:", checkInResult);
+
+        if (checkInRes.ok) {
+          Alert.alert(
+            "Success",
+            `Check-in successful for code ${trimmedCode}`,
+            [{ text: "OK", onPress: () => router.back() }],
+          );
+        } else {
+          if (
+            checkInResult.error?.toLowerCase().includes("already") ||
+            checkInResult.message?.toLowerCase().includes("already")
+          ) {
+            Alert.alert(
+              "Already Scanned",
+              "This QR code has already been checked in.",
+              [{ text: "OK", onPress: () => setIsScanning(true) }],
+            );
+          } else {
+            Alert.alert("Error", checkInResult.error || "Check-in failed.", [
+              { text: "OK", onPress: () => setIsScanning(true) },
+            ]);
+          }
+        }
+        return;
+      }
+
+      // Handle Visitor Code: Direct check-in
       let endpoint = "";
       if (isVisitorCode(trimmedCode)) {
-        endpoint = `${API_URL}/register/manual-check-in`;
-      } else if (isIslandEntryCode(trimmedCode)) {
-        endpoint = `${API_URL}/island-entry/manual-check-in`;
+        endpoint = `${API_URL}register/manual-check-in`;
       } else {
         Alert.alert("Invalid Code", "Unrecognized QR code format.");
         setIsScanning(true);
         return;
       }
-      const payload = { unique_code: trimmedCode }; // FIX
+
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -86,7 +147,7 @@ export default function QrScan() {
           Alert.alert(
             "Already Scanned",
             "This QR code has already been checked in.",
-            [{ text: "OK", onPress: () => setIsScanning(true) }]
+            [{ text: "OK", onPress: () => setIsScanning(true) }],
           );
         } else {
           Alert.alert("Error", result.error || "Check-in failed.", [

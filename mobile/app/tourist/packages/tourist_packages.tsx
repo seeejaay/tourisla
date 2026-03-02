@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,6 @@ import {
   StyleSheet,
   ActivityIndicator,
   Image,
-  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTourPackageManager } from "@/hooks/useTourPackagesManager";
@@ -21,7 +20,7 @@ const PAGE_SIZE = 6;
 
 const TouristPackagesScreen = () => {
   const { fetchAllTourPackages } = useTourPackageManager();
-  const [tourPackages, setTourPackages] = useState([]);
+  const [tourPackages, setTourPackages] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,65 +47,64 @@ const TouristPackagesScreen = () => {
   const today = new Date();
 
   const filteredPackages = useMemo(() => {
-    return tourPackages
-      .filter(pkg => {
-        const endDate = new Date(pkg.date_end);
-        const matchesSearch =
-          pkg.package_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          pkg.description.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesLocation =
-          filteredLocation === "All" || pkg.location === filteredLocation;
-        const matchesOperator =
-          filteredOperator === "All" ||
-          pkg.operator_name === filteredOperator;
-        const matchesGuide =
-          filteredGuide === "All" ||
-          pkg.assigned_guides?.some(
-            g =>
-              `${g.first_name} ${g.last_name}`.trim() === filteredGuide.trim()
-          );
-
-        return (
-          pkg.is_active &&
-          endDate >= today &&
-          matchesSearch &&
-          matchesLocation &&
-          matchesOperator &&
-          matchesGuide
+    return tourPackages.filter((pkg) => {
+      const endDate = new Date(pkg.date_end);
+      const matchesSearch =
+        pkg.package_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pkg.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesLocation =
+        filteredLocation === "All" || pkg.location === filteredLocation;
+      const matchesOperator =
+        filteredOperator === "All" || pkg.operator_name === filteredOperator;
+      const matchesGuide =
+        filteredGuide === "All" ||
+        pkg.assigned_guides?.some(
+          (g) =>
+            `${g.first_name} ${g.last_name}`.trim() === filteredGuide.trim(),
         );
-      });
+
+      return (
+        pkg.is_active &&
+        endDate >= today &&
+        matchesSearch &&
+        matchesLocation &&
+        matchesOperator &&
+        matchesGuide
+      );
+    });
   }, [
     tourPackages,
     searchTerm,
     filteredLocation,
     filteredOperator,
     filteredGuide,
+    today,
   ]);
 
   const totalPages = Math.ceil(filteredPackages.length / PAGE_SIZE);
   const paginatedPackages = filteredPackages.slice(
     (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE
+    page * PAGE_SIZE,
   );
 
   const uniqueLocations = useMemo(() => {
     const set = new Set(
-      tourPackages?.map(pkg => pkg.location).filter(Boolean)
+      tourPackages?.map((pkg) => pkg.location).filter(Boolean),
     );
     return ["All", ...Array.from(set)];
   }, [tourPackages]);
 
   const uniqueOperators = useMemo(() => {
     const set = new Set(
-      tourPackages?.map(pkg => pkg.operator_name).filter(Boolean)
+      tourPackages?.map((pkg) => pkg.operator_name).filter(Boolean),
     );
     return ["All", ...Array.from(set)];
   }, [tourPackages]);
 
   const uniqueGuides = useMemo(() => {
     const guideNames = new Set<string>();
-    tourPackages?.forEach(pkg => {
-      pkg.assigned_guides?.forEach(g => {
+    tourPackages?.forEach((pkg) => {
+      pkg.assigned_guides?.forEach((g) => {
         guideNames.add(`${g.first_name} ${g.last_name}`.trim());
       });
     });
@@ -131,7 +129,9 @@ const TouristPackagesScreen = () => {
           <Text style={styles.title}>{toTitleCase(item.package_name)}</Text>
           <Text style={styles.subtitle}>{item.location}</Text>
           <Text style={styles.text}>Price: ₱ {item.price}</Text>
-          <Text style={styles.subtitle}>{item.available_slots} slots available</Text>
+          <Text style={styles.subtitle}>
+            {item.available_slots} slots available
+          </Text>
           <Text numberOfLines={3} style={styles.description}>
             {toTitleCase(item.description)}
           </Text>
@@ -151,9 +151,7 @@ const TouristPackagesScreen = () => {
           )}
           <TouchableOpacity
             style={styles.detailsBtn}
-            onPress={() =>
-              router.push(`/tourist/packages/packages/${item.id}`)
-            }
+            onPress={() => router.push(`/tourist/packages/packages/${item.id}`)}
           >
             <Text style={styles.detailsBtnText}>View Details</Text>
           </TouchableOpacity>
@@ -161,78 +159,82 @@ const TouristPackagesScreen = () => {
       </View>
     </View>
   );
-  
+
   if (isLoading) {
     return <ActivityIndicator size="large" style={{ marginTop: 100 }} />;
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Search packages..."
-        value={searchTerm}
-        onChangeText={setSearchTerm}
-      />
-
-      {/* Filters */}
-      <View style={styles.dropdownContainer}>
-  {/* Location Dropdown */}
-  <View style={styles.dropdownWrapper}>
-    <Text style={styles.filterLabel}>Location</Text>
-    <Picker
-      selectedValue={filteredLocation}
-      onValueChange={(value) => setFilteredLocation(value)}
-      style={styles.picker}
-    >
-      {uniqueLocations.map((loc, i) => (
-        <Picker.Item label={loc} value={loc} key={i} />
-      ))}
-    </Picker>
-  </View>
-
-  {/* Operator Dropdown */}
-  <View style={styles.dropdownWrapper}>
-    <Text style={styles.filterLabel}>Operator</Text>
-    <Picker
-      selectedValue={filteredOperator}
-      onValueChange={(value) => setFilteredOperator(value)}
-      style={styles.picker}
-    >
-      {uniqueOperators.map((op, i) => (
-        <Picker.Item label={op} value={op} key={i} />
-      ))}
-    </Picker>
-  </View>
-
-  {/* Guide Dropdown */}
-  <View style={styles.dropdownWrapper}>
-    <Text style={styles.filterLabel}>Guide</Text>
-    <Picker
-      selectedValue={filteredGuide}
-      onValueChange={(value) => setFilteredGuide(value)}
-      style={styles.picker}
-    >
-      {uniqueGuides.map((g, i) => (
-        <Picker.Item label={g} value={g} key={i} />
-      ))}
-    </Picker>
-  </View>
-</View>
-
-      {/* Packages */}
+    <View style={{ flex: 1, backgroundColor: "#f7fafa" }}>
       <FlatList
         data={paginatedPackages}
-        keyExtractor={item => item.id?.toString() || Math.random().toString()}
+        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
         renderItem={renderPackage}
-        contentContainerStyle={{ paddingBottom: 0 }}
+        ListHeaderComponent={
+          <>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search packages..."
+              value={searchTerm}
+              onChangeText={setSearchTerm}
+            />
+
+            {/* Filters */}
+            <View style={styles.dropdownContainer}>
+              {/* Location Dropdown */}
+              <View style={styles.dropdownWrapper}>
+                <Text style={styles.filterLabel}>Location</Text>
+                <Picker
+                  selectedValue={filteredLocation}
+                  onValueChange={(value) => setFilteredLocation(value)}
+                  style={styles.picker}
+                >
+                  {uniqueLocations.map((loc, i) => (
+                    <Picker.Item label={loc} value={loc} key={i} />
+                  ))}
+                </Picker>
+              </View>
+
+              {/* Operator Dropdown */}
+              <View style={styles.dropdownWrapper}>
+                <Text style={styles.filterLabel}>Operator</Text>
+                <Picker
+                  selectedValue={filteredOperator}
+                  onValueChange={(value) => setFilteredOperator(value)}
+                  style={styles.picker}
+                >
+                  {uniqueOperators.map((op, i) => (
+                    <Picker.Item label={op} value={op} key={i} />
+                  ))}
+                </Picker>
+              </View>
+
+              {/* Guide Dropdown */}
+              <View style={styles.dropdownWrapper}>
+                <Text style={styles.filterLabel}>Guide</Text>
+                <Picker
+                  selectedValue={filteredGuide}
+                  onValueChange={(value) => setFilteredGuide(value)}
+                  style={styles.picker}
+                >
+                  {uniqueGuides.map((g, i) => (
+                    <Picker.Item label={g} value={g} key={i} />
+                  ))}
+                </Picker>
+              </View>
+            </View>
+          </>
+        }
+        ListFooterComponent={
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        }
+        contentContainerStyle={styles.container}
       />
-      <Pagination
-        currentPage={page}
-        totalPages={totalPages}
-        onPageChange={setPage}
-      />
-    </ScrollView>
+    </View>
   );
 };
 
@@ -257,14 +259,14 @@ const styles = StyleSheet.create({
   dropdownWrapper: {
     flex: 1,
   },
-picker: {
-  backgroundColor: "#fff",
-  borderColor: "#ccc",
-  borderWidth: 1,
-  borderRadius: 6,
-  paddingHorizontal: 4,
-  marginBottom: 8,
-},
+  picker: {
+    backgroundColor: "#fff",
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 4,
+    marginBottom: 8,
+  },
   filters: {
     marginBottom: 16,
   },

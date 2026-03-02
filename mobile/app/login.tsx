@@ -1,4 +1,4 @@
-import { login } from "@/lib/api/auth.js";
+import { login, currentUser } from "@/lib/api/auth.js";
 import {
   View,
   Text,
@@ -66,22 +66,16 @@ export default function LoginScreen() {
       const res = (await login({
         email: trimmedEmail,
         password: trimmedPassword,
-      })) as {
-        token: string;
-        user: any;
-        first_name: string;
-        last_name: string;
-      };
+      })) as { token: string; user: any };
       console.log("Login response:", JSON.stringify(res));
-      // Check if response is valid
 
-      // Make sure we're getting the correct role
+      // Check if response is valid
       if (!res || !res.user) {
         setError("Invalid login response");
         return;
       }
-      console.log("User data from login:", res.user);
 
+      // res.user is just the role string from the API
       const role = res.user;
       console.log("User role from login:", role);
 
@@ -90,18 +84,55 @@ export default function LoginScreen() {
         return;
       }
 
-      // Store the exact role as returned by the API
-      await AsyncStorage.setItem(
-        "userData",
-        JSON.stringify({
-          role: res.user, // ← still just the string
-          first_name: res.first_name, // ← optional fallback if needed
-          last_name: res.last_name,
+      // Fetch complete user data after login
+      try {
+        const userResponse = await currentUser();
+        console.log("Current user response:", userResponse);
+
+        // Extract user data from different possible response structures
+        let userData = null;
+        if (userResponse?.data?.user) {
+          userData = userResponse.data.user;
+        } else if (userResponse?.user) {
+          userData = userResponse.user;
+        } else if (userResponse?.data) {
+          userData = userResponse.data;
+        } else if (typeof userResponse === "object") {
+          userData = userResponse;
+        }
+
+        // Store complete user data with role
+        const completeUserData = {
+          ...(userData || {}),
+          role: role,
           email: trimmedEmail,
-        })
-      );
-      console.log("User data stored in AsyncStorage:", res.user);
-      await AsyncStorage.setItem("role", res.user);
+          first_name: userData?.first_name || "",
+          last_name: userData?.last_name || "",
+        };
+
+        await AsyncStorage.setItem(
+          "userData",
+          JSON.stringify(completeUserData),
+        );
+        await AsyncStorage.setItem("role", role);
+        console.log("Complete user data stored in AsyncStorage");
+      } catch (userError) {
+        console.error(
+          "Error fetching user data, using minimal data:",
+          userError,
+        );
+        // Fallback to minimal data if currentUser fails
+        await AsyncStorage.setItem(
+          "userData",
+          JSON.stringify({
+            role: role,
+            first_name: "",
+            last_name: "",
+            email: trimmedEmail,
+          }),
+        );
+        await AsyncStorage.setItem("role", role);
+      }
 
       // Use the role directly from the response
       switch (role) {
@@ -115,10 +146,10 @@ export default function LoginScreen() {
         case "tour_guide":
           router.replace("/guide/guide_dashboard");
           break;
-        case "Tour Operator":
-        case "tour_operator":
-          router.replace("/operator/operator_dashboard");
-          break;
+        // case "Tour Operator":
+        // case "tour_operator":
+        //   router.replace("/operator/operator_dashboard");
+        //   break;
         case "Tourism Staff":
           router.replace("/staff/staff_dashboard");
           break;
@@ -126,16 +157,16 @@ export default function LoginScreen() {
           console.log("Unknown role received:", role);
           setError("Unknown role: " + role);
       }
-    } catch (err) {
-      console.error("Login Error:", err.response?.data || err.message);
+    } catch (err: any) {
+      console.error("Login Error:", err?.response?.data || err?.message || err);
       // Extract the error message
-      if (err.response?.data?.error === "Invalid email or password") {
+      if (err?.response?.data?.error === "Invalid email or password") {
         setError("Invalid email or password");
       } else {
         setError(
-          err.response?.data?.message ||
-            err.message ||
-            "An error occurred during login."
+          err?.response?.data?.message ||
+            err?.message ||
+            "An error occurred during login.",
         );
       }
     }
@@ -215,13 +246,15 @@ export default function LoginScreen() {
       </TouchableOpacity>
 
       <TouchableOpacity onPress={handleLogin} style={styles.loginButton}>
-        <Text style={styles.loginButtonText}>LOGIN</Text>
+        <Text style={styles.loginButtonText}>Login</Text>
       </TouchableOpacity>
 
       {/* Login Redirect */}
       <View style={styles.footer}>
         <TouchableOpacity onPress={() => router.push("/role-selection")}>
-          <Text style={styles.signupText}>Don't have an account? Sign Up</Text>
+          <Text style={styles.signupText}>
+            Don&apos;t have an account? Sign Up
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -280,7 +313,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
-    backgroundColor: "#ffffff",
     color: "#005582",
   },
   passwordContainer: {
@@ -293,7 +325,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     paddingRight: 40,
-    backgroundColor: "#ffffff",
     color: "#005582",
   },
   eyeIcon: {
@@ -308,7 +339,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   loginButton: {
-    backgroundColor: "#7eccb6",
+    backgroundColor: "#3f9678",
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",

@@ -1,100 +1,121 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { 
-  View, Text, StyleSheet, TouchableOpacity, Image, 
-  ScrollView, RefreshControl, ActivityIndicator, 
-  Platform, Animated, Dimensions
-} from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { StatusBar } from 'expo-status-bar';
-import * as auth from '@/lib/api/auth';
-import { useIsFocused } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
-import PersonalInfoCard from '@/components/profile/PersonalInfoCard';
-import TabBar from '@/components/profile/TabBar';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  RefreshControl,
+  ActivityIndicator,
+  Platform,
+  Animated,
+  Dimensions,
+} from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { StatusBar } from "expo-status-bar";
+import * as auth from "@/lib/api/auth";
+import { useIsFocused } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
+import PersonalInfoCard from "@/components/profile/PersonalInfoCard";
+import TabBar from "@/components/profile/TabBar";
 
-import TouristActivityScreen from '../activity/tourist_activity';
-import VisitHistoryScreen from '../activity/attraction_history/visitHistory';
-import BookingHistoryScreen from '../activity/booking_history/visitHistory';
-import IncidentHistoryScreen from '../profile/about/incident-report/IncidentHistoryScreen';
+import TouristActivityScreen from "../activity/tourist_activity";
+import VisitHistoryScreen from "../activity/attraction_history/visitHistory";
+import BookingHistoryScreen from "../activity/booking_history/visitHistory";
+import IncidentHistoryScreen from "../profile/about/incident-report/IncidentHistoryScreen";
 
-
-
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 const formatNameWords = (name) => {
-  if (!name) return '';
-  return name.split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+  if (!name) return "";
+  return name
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 };
 
 export default function TouristProfile() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('Visitor Registration');
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("Visitor Registration");
   const handleTabPress = (tab) => setActiveTab(tab);
   const scrollY = useRef(new Animated.Value(0)).current;
   const params = useLocalSearchParams();
   const isFocused = useIsFocused();
 
+  const fetchUser = useCallback(async () => {
+    try {
+      setLoading(true);
+      setUser(null);
 
+      const storedUserData = await AsyncStorage.getItem("userData");
+      let parsedStored = null;
+
+      try {
+        parsedStored = storedUserData ? JSON.parse(storedUserData) : null;
+      } catch (parseError) {
+        console.error("Failed to parse stored user data:", parseError);
+        // If stored data is corrupted, clear it
+        await AsyncStorage.removeItem("userData");
+      }
+
+      // Fetch fresh data from API
+      const response = await auth.currentUser();
+      let userData = null;
+
+      if (response.data?.user) userData = response.data.user;
+      else if (response.user) userData = response.user;
+      else if (response.data) userData = response.data;
+      else if (typeof response === "object") userData = response;
+
+      if (userData) {
+        // Merge with stored data - prefer stored values for profile_image and avatar
+        // This prevents losing uploaded images when API doesn't return them yet
+        const mergedData = {
+          ...userData,
+          ...(parsedStored?.profile_image && {
+            profile_image: parsedStored.profile_image,
+          }),
+          ...(parsedStored?.avatar && { avatar: parsedStored.avatar }),
+        };
+
+        console.log("Fetched and merged userData:", mergedData);
+
+        // Update both state and AsyncStorage atomically
+        setUser(mergedData);
+        await AsyncStorage.setItem("userData", JSON.stringify(mergedData));
+      } else {
+        setError("Invalid user data format received from server.");
+      }
+    } catch (err) {
+      console.error("Error in fetchUser:", err);
+      setError(
+        "Failed to fetch user data. " + (err.message || "Unknown error"),
+      );
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
   useEffect(() => {
     if (isFocused) {
       fetchUser();
     }
   }, [isFocused, fetchUser]);
 
-  const fetchUser = useCallback(async () => {
-    try {
-      setLoading(true);
-      setUser(null);
-  
-      const storedUserData = await AsyncStorage.getItem('userData');
-      const parsedStored = storedUserData ? JSON.parse(storedUserData) : null;
-  
-      const response = await auth.currentUser();
-      let userData = null;
-  
-      if (response.data?.user) userData = response.data.user;
-      else if (response.user) userData = response.user;
-      else if (response.data) userData = response.data;
-      else if (typeof response === 'object') userData = response;
-  
-      if (userData) {
-        // Merge only specific fields
-        if (parsedStored) {
-          if (parsedStored.profile_image) userData.profile_image = parsedStored.profile_image;
-          if (parsedStored.avatar) userData.avatar = parsedStored.avatar;
-        }
-  
-        console.log("Fetched userData:", userData);
-
-        // ✅ Set fresh user data to state and AsyncStorage
-        setUser(userData);
-        await AsyncStorage.setItem('userData', JSON.stringify(userData));
-      } else {
-        setError("Invalid user data format received from server.");
-      }
-    } catch (err) {
-      setError("Failed to fetch user data. " + (err.message || "Unknown error"));
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
   useFocusEffect(
     useCallback(() => {
       const checkProfileUpdate = async () => {
         try {
-          const wasUpdated = await AsyncStorage.getItem('profileUpdated');
-          if (wasUpdated === 'true') {
+          const wasUpdated = await AsyncStorage.getItem("profileUpdated");
+          if (wasUpdated === "true") {
             fetchUser();
-            await AsyncStorage.setItem('profileUpdated', 'false');
+            await AsyncStorage.setItem("profileUpdated", "false");
           }
         } catch (error) {
           console.error("Error checking profile update status:", error);
@@ -102,7 +123,7 @@ export default function TouristProfile() {
       };
       checkProfileUpdate();
       return () => {};
-    }, [fetchUser])
+    }, [fetchUser]),
   );
 
   useEffect(() => {
@@ -115,32 +136,39 @@ export default function TouristProfile() {
   }, [fetchUser]);
 
   const handleSettings = () => {
-    router.push('/tourist/profile/settings');
+    router.push("/tourist/profile/settings");
   };
 
   if (loading) {
     return (
-      <View style={styles.centered}><ActivityIndicator size="large" color="#38bdf8" /></View>
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#38bdf8" />
+      </View>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.centered}><Text style={styles.errorText}>{error}</Text></View>
+      <View style={styles.centered}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
     );
   }
 
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#f8fafc', '#f8fafc']}
+        colors={["#f8fafc", "#f8fafc"]}
         start={{ x: 1, y: 2 }}
         end={{ x: 1, y: 0 }}
         style={styles.headerGradient}
       >
         <Animated.View style={styles.header}>
           <View style={styles.headerLeft}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
               <Feather name="arrow-left" size={24} color="#545454" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Profile</Text>
@@ -150,99 +178,115 @@ export default function TouristProfile() {
           </TouchableOpacity>
         </Animated.View>
       </LinearGradient>
-  
+
       <View style={{ flex: 1 }}>
-      <Animated.ScrollView
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
-        stickyHeaderIndices={[2]} // TabBar index
-      >
-        {/* Profile Header */}
-        {user && (
-          <View style={styles.profileHeader}>
-            <View style={styles.storyRing}>
-              {user.profile_image ? (
-                <Image source={{ uri: user.profile_image }} style={styles.profileImage} />
-              ) : (
-                <View style={styles.profileImagePlaceholder}>
-                  <Text style={styles.profileImageInitials}>
-                    {user.first_name?.charAt(0)}
-                    {user.last_name?.charAt(0)}
-                  </Text>
-                </View>
-              )}
+        <Animated.ScrollView
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false },
+          )}
+          scrollEventThrottle={16}
+          stickyHeaderIndices={[2]} // TabBar index
+        >
+          {/* Profile Header */}
+          {user && (
+            <View style={styles.profileHeader}>
+              <View style={styles.storyRing}>
+                {user.profile_image ? (
+                  <Image
+                    source={{ uri: user.profile_image }}
+                    style={styles.profileImage}
+                  />
+                ) : (
+                  <View style={styles.profileImagePlaceholder}>
+                    <Text style={styles.profileImageInitials}>
+                      {user.first_name?.charAt(0)}
+                      {user.last_name?.charAt(0)}
+                    </Text>
+                  </View>
+                )}
+              </View>
+              <Text style={styles.displayName}>
+                {formatNameWords(user.first_name)}{" "}
+                {formatNameWords(user.last_name)}
+              </Text>
+              <Text style={styles.displayRole}>
+                {user.email?.toLowerCase()}
+              </Text>
+              <Text style={styles.displayRole}>
+                {user.mobile_number?.toLowerCase()}
+              </Text>
+              <Text style={styles.displayRole}>
+                {user.birth_date &&
+                  new Date(user.birth_date).toLocaleDateString("en-PH", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+              </Text>
             </View>
-            <Text style={styles.displayName}>
-              {formatNameWords(user.first_name)} {formatNameWords(user.last_name)}
-            </Text>
-            <Text style={styles.displayRole}>{user.email?.toLowerCase()}</Text>
-            <Text style={styles.displayRole}>{user.mobile_number?.toLowerCase()}</Text>
-            <Text style={styles.displayRole}>{user.birth_date?.toLowerCase()}</Text> 
-            
+          )}
+
+          {/* Info Card */}
+          {user && <PersonalInfoCard user={user} />}
+
+          {/* Sticky TabBar */}
+          <TabBar activeTab={activeTab} onTabPress={handleTabPress} />
+
+          {/* Scrollable Tab Content (INCLUDED INSIDE) */}
+          <View style={{ padding: 20 }}>
+            {activeTab === "Booking History" && <BookingHistoryScreen />}
+            {activeTab === "Attraction Visit History" && <VisitHistoryScreen />}
+            {activeTab === "Visitor Registration" && <TouristActivityScreen />}
+            {activeTab === "Incident Report" && <IncidentHistoryScreen />}
           </View>
-        )}
-
-        {/* Info Card */}
-        {user && <PersonalInfoCard user={user} />}
-
-        {/* Sticky TabBar */}
-        <TabBar activeTab={activeTab} onTabPress={handleTabPress} />
-
-        {/* Scrollable Tab Content (INCLUDED INSIDE) */}
-        <View style={{ padding: 20 }}>
-          {activeTab === 'Booking History' && <BookingHistoryScreen />}
-          {activeTab === 'Attraction Visit History' && <VisitHistoryScreen />}
-          {activeTab === 'Visitor Registration' && <TouristActivityScreen />}
-          {activeTab === 'Incident Report' && <IncidentHistoryScreen />}
-        </View>
-      </Animated.ScrollView>
-
+        </Animated.ScrollView>
       </View>
     </View>
-    );
+  );
 }
 
-const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 44;
+const STATUS_BAR_HEIGHT =
+  Platform.OS === "android" ? StatusBar.currentHeight || 24 : 44;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: "#f8fafc",
     marginBottom: 45,
   },
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   errorText: {
-    color: '#ef4444',
+    color: "#ef4444",
     fontSize: 16,
   },
   header: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     height: 60 + STATUS_BAR_HEIGHT,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingTop: STATUS_BAR_HEIGHT,
     paddingHorizontal: 16,
     zIndex: 50,
   },
   headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   headerGradient: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
@@ -253,30 +297,30 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(230, 247, 250,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(230, 247, 250,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 10,
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '900',
-    color: '#1c5461',
+    fontWeight: "900",
+    color: "#1c5461",
     letterSpacing: 0.5,
   },
   menuButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(230, 247, 250,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(230, 247, 250,0.7)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   scrollContent: {
     paddingTop: 65 + STATUS_BAR_HEIGHT,
   },
   profileHeader: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 0,
     marginBottom: 15,
   },
@@ -285,9 +329,9 @@ const styles = StyleSheet.create({
     height: 86,
     borderRadius: 43,
     borderWidth: 2,
-    borderColor: '#64c5a5',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: "#64c5a5",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 10,
   },
   profileImage: {
@@ -299,24 +343,24 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#e2e8f0',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#e2e8f0",
+    justifyContent: "center",
+    alignItems: "center",
   },
   profileImageInitials: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#64c5a5',
+    fontWeight: "bold",
+    color: "#64c5a5",
   },
   displayName: {
     fontSize: 25,
-    fontWeight: '900',
-    color: '#1c5461',
+    fontWeight: "900",
+    color: "#1c5461",
     marginBottom: -2,
   },
   displayRole: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#1c5461',
+    fontWeight: "600",
+    color: "#1c5461",
   },
 });
