@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
 import Image from "next/image";
-import { MapPin, Waves, Sun, TreePalm, ChevronRight } from "lucide-react";
+import { MapPin, Waves, Sun, TreePalm, ChevronRight, Car } from "lucide-react";
 import { motion } from "framer-motion";
 import useTripAdvisor from "@/hooks/useTripAdvisor";
 import { useTouristSpotManager } from "@/hooks/useTouristSpotManager";
-import MapPage from "@/components/custom/map";
-// import AutoPlay from "embla-carousel-autoplay";
 import { useArticleManager } from "@/hooks/useArticleManager";
 import {
   Carousel,
@@ -17,6 +15,21 @@ import {
   CarouselContent,
 } from "@/components/ui/carousel";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+import barangays from "@/app/static/barangay.json";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+
+const MapDisplay = dynamic(() => import("@/components/custom/map"), {
+  ssr: false,
+  loading: () => <p>Loading map...</p>,
+});
 
 const images = [
   "/images/hero-carousel/4.jpg",
@@ -67,6 +80,18 @@ const cardData = [
   },
 ];
 
+const spotTypes = [
+  "ADVENTURE",
+  "BEACH",
+  "CAMPING",
+  "CULTURAL",
+  "HISTORICAL",
+  "NATURAL",
+  "RECREATIONAL",
+  "RELIGIOUS",
+  "OTHERS",
+];
+
 export default function Home() {
   const { hotels, loading, error } = useTripAdvisor();
   const { articles, loading: articlesLoading } = useArticleManager();
@@ -76,6 +101,27 @@ export default function Home() {
     error: spotsError,
     fetchTouristSpots,
   } = useTouristSpotManager();
+  const [filteredSpots, setFilteredSpots] = useState(touristSpots);
+  const [selectedBarangay, setSelectedBarangay] = useState("all");
+  const [selectedType, setSelectedType] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    let spots = touristSpots;
+    if (selectedBarangay !== "all") {
+      spots = spots.filter((spot) => spot.barangay === selectedBarangay);
+    }
+    if (selectedType !== "all") {
+      spots = spots.filter((spot) => spot.type === selectedType);
+    }
+    if (searchTerm) {
+      spots = spots.filter((spot) =>
+        spot.name.toLowerCase().includes(searchTerm.toLowerCase()),
+      );
+    }
+    setFilteredSpots(spots);
+  }, [touristSpots, selectedBarangay, selectedType, searchTerm]);
+
   function shuffleArray<T>(array: T[]): T[] {
     const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -126,19 +172,14 @@ export default function Home() {
         >
           <div className="h-[80vh] w-full flex flex-col items-center justify-center mx-auto relative rounded-2xl overflow-hidden shadow-md">
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
-            <Carousel
-              opts={{
-                align: "start",
-                loop: true,
-              }}
-              // plugins={[
-              //   AutoPlay({
-              //     delay: 3000,
-              //     stopOnInteraction: false,
-              //   }),
-              // ]}
-              className="w-full"
-            >
+            <Image
+              src="/images/hero-carousel/4.jpg"
+              alt="Bantayan Island"
+              quality={100}
+              fill
+              className="object-cover object-top"
+            />
+            {/* <Carousel>
               <CarouselContent>
                 {images.map((src, index) => (
                   <CarouselItem key={index} className="basis-full">
@@ -154,7 +195,7 @@ export default function Home() {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-            </Carousel>
+            </Carousel> */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
@@ -337,14 +378,9 @@ export default function Home() {
                   align: "start",
                   loop: true,
                 }}
-                // plugins={[
-                //   AutoPlay({
-                //     delay: 4000,
-                //     stopOnInteraction: false,
-                //   }),
-                // ]}
                 className="w-full"
               >
+                {" "}
                 <CarouselContent>
                   {touristSpots.map((spot) => (
                     <CarouselItem
@@ -415,14 +451,9 @@ export default function Home() {
                   align: "start",
                   loop: true,
                 }}
-                // plugins={[
-                //   AutoPlay({
-                //     delay: 4000,
-                //     stopOnInteraction: false,
-                //   }),
-                // ]}
                 className="w-full"
               >
+                {" "}
                 <CarouselContent>
                   {hotels.map((hotel) => (
                     <CarouselItem
@@ -473,7 +504,46 @@ export default function Home() {
               Explore Bantayan Island
             </h2>
             <div className="bg-[#1c8773] border-2 border-[#1c8773] w-24 mb-8 mx-auto" />
-            <MapPage />
+            <div className="flex flex-col md:flex-row gap-4 mb-4 p-4 bg-white rounded-lg shadow-md z-10 relative">
+              <Input
+                placeholder="Search for a tourist spot..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full md:w-1/3"
+              />
+              <Select
+                value={selectedBarangay}
+                onValueChange={setSelectedBarangay}
+              >
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Filter by Barangay" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Barangays</SelectItem>
+                  {barangays.map((brgy) => (
+                    <SelectItem key={brgy.code} value={brgy.code}>
+                      {brgy.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={selectedType} onValueChange={setSelectedType}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Filter by Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  {spotTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="relative isolate">
+              <MapDisplay touristSpots={filteredSpots} />
+            </div>
           </div>
         </section>
       </main>
